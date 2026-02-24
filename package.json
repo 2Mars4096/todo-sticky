@@ -1,0 +1,38 @@
+{
+  "name": "todo-sticky",
+  "version": "1.0.0",
+  "description": "macOS sticky note todo planner with AI task breakdown",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && npm run electron:start\"",
+    "dev:web": "vite --port 5173 --strictPort",
+    "electron:compile": "tsc -p tsconfig.electron.json",
+    "electron:start": "tsc -p tsconfig.electron.json && unset ELECTRON_RUN_AS_NODE && electron dist-electron/main.js --dev",
+    "build": "vite build && tsc -p tsconfig.electron.json && electron-builder",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "react": "^18.3.1",
+    "react-day-picker": "^9.6.0",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.todo-sticky.app",
+    "productName": "Sticky Todo",
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}
