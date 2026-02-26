@@ -4,6 +4,8 @@
   "description": "macOS sticky note todo planner with AI task breakdown",
   "main": "dist-electron/main.js",
   "scripts": {
+    "start": "npm run dev",
+    "seed-demo": "node scripts/seed-demo.js",
     "dev": "concurrently \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && npm run electron:start\"",
     "dev:web": "vite --port 5173 --strictPort",
     "electron:compile": "tsc -p tsconfig.electron.json",
