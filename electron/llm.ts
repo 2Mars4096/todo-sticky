@@ -1,5 +1,5 @@
 const getConfig = () => ({
-  apiBase: process.env.VITE_LLM_API_BASE || 'https://api.vectorengine.ai/v1',
+  apiBase: process.env.VITE_LLM_API_BASE || 'https://api.openai.com/v1',
   apiKey: process.env.VITE_LLM_API_KEY || '',
   model: process.env.VITE_LLM_MODEL || 'claude-sonnet-4-20250514',
 })
