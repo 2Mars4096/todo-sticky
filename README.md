@@ -21,7 +21,9 @@ The app will open as an Electron window. Vite runs on port 5173; Electron loads 
 
 ## Demo
 
-![Demo](demo/demo.gif)
+<p align="center">
+  <img src="demo/demo.gif" width="600" alt="Demo">
+</p>
 
 ## Features
 
