@@ -1,6 +1,6 @@
 {
   "name": "todo-sticky",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "macOS sticky note todo planner with AI task breakdown",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -50,8 +50,16 @@
       "title": "Sticky Todo",
       "iconSize": 80,
       "contents": [
-        { "x": 130, "y": 220 },
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
       ]
     },
     "publish": {
