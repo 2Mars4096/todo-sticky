@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { DateHeader } from './components/DateHeader'
 import { TaskList } from './components/TaskList'
 import { AddTask } from './components/AddTask'
@@ -12,8 +12,18 @@ export default function App() {
   const tasks = useTasks(calendar.dateStr)
   const [viewMode, setViewMode] = useState<ViewMode>('all')
   const [showSettings, setShowSettings] = useState(false)
+  const [firstRun, setFirstRun] = useState(false)
   const [aiLoading, setAiLoading] = useState<string | null>(null)
   const [schedulePlan, setSchedulePlan] = useState<string | null>(null)
+
+  useEffect(() => {
+    window.electronAPI?.checkFirstRun().then(isFirst => {
+      if (isFirst) {
+        setFirstRun(true)
+        setShowSettings(true)
+      }
+    })
+  }, [])
 
   const handleAIBreakdown = useCallback(async (taskId: string) => {
     const task = tasks.tasks.find(t => t.id === taskId)
@@ -104,7 +114,12 @@ export default function App() {
           <p>{schedulePlan}</p>
         </div>
       )}
-      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      {showSettings && (
+        <SettingsPanel
+          onClose={() => { setShowSettings(false); setFirstRun(false) }}
+          firstRun={firstRun}
+        />
+      )}
     </div>
   )
 }
