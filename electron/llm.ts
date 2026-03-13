@@ -1,8 +1,11 @@
-const getConfig = () => ({
-  apiBase: process.env.VITE_LLM_API_BASE || 'https://api.openai.com/v1',
-  apiKey: process.env.VITE_LLM_API_KEY || '',
-  model: process.env.VITE_LLM_MODEL || 'claude-sonnet-4-20250514',
-})
+import { loadSettings, type AppSettings } from './config'
+
+interface LLMConfig {
+  provider: string
+  apiBase: string
+  apiKey: string
+  model: string
+}
 
 interface BreakdownInput {
   taskText: string
@@ -14,10 +17,12 @@ interface ScheduleInput {
   machines: any[]
 }
 
-async function chatCompletion(messages: { role: string; content: string }[]): Promise<string> {
-  const { apiBase, apiKey, model } = getConfig()
-  if (!apiKey) throw new Error('LLM API key not configured. Set VITE_LLM_API_KEY in .env')
+function getConfig(): LLMConfig {
+  const s = loadSettings()
+  return { provider: s.provider, apiBase: s.apiBase, apiKey: s.apiKey, model: s.model }
+}
 
+async function openaiCompletion(apiBase: string, apiKey: string, model: string, messages: { role: string; content: string }[]): Promise<string> {
   const resp = await fetch(`${apiBase}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -26,14 +31,91 @@ async function chatCompletion(messages: { role: string; content: string }[]): Pr
     },
     body: JSON.stringify({ model, messages, temperature: 0.4 }),
   })
-
   if (!resp.ok) {
     const text = await resp.text()
-    throw new Error(`LLM API error ${resp.status}: ${text}`)
+    throw new Error(`API error ${resp.status}: ${text}`)
   }
-
   const data: any = await resp.json()
   return data.choices?.[0]?.message?.content || ''
+}
+
+async function anthropicCompletion(apiBase: string, apiKey: string, model: string, messages: { role: string; content: string }[]): Promise<string> {
+  const systemMsg = messages.find(m => m.role === 'system')
+  const userMessages = messages.filter(m => m.role !== 'system')
+
+  const resp = await fetch(`${apiBase}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 4096,
+      ...(systemMsg ? { system: systemMsg.content } : {}),
+      messages: userMessages.map(m => ({ role: m.role, content: m.content })),
+    }),
+  })
+  if (!resp.ok) {
+    const text = await resp.text()
+    throw new Error(`API error ${resp.status}: ${text}`)
+  }
+  const data: any = await resp.json()
+  return data.content?.[0]?.text || ''
+}
+
+async function geminiCompletion(apiBase: string, apiKey: string, model: string, messages: { role: string; content: string }[]): Promise<string> {
+  const systemMsg = messages.find(m => m.role === 'system')
+  const userMessages = messages.filter(m => m.role !== 'system')
+
+  const contents = userMessages.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }],
+  }))
+
+  const body: any = { contents, generationConfig: { temperature: 0.4 } }
+  if (systemMsg) {
+    body.systemInstruction = { parts: [{ text: systemMsg.content }] }
+  }
+
+  const resp = await fetch(`${apiBase}/models/${model}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!resp.ok) {
+    const text = await resp.text()
+    throw new Error(`API error ${resp.status}: ${text}`)
+  }
+  const data: any = await resp.json()
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+}
+
+async function chatCompletion(messages: { role: string; content: string }[], configOverride?: LLMConfig): Promise<string> {
+  const { provider, apiBase, apiKey, model } = configOverride || getConfig()
+  if (!apiKey) throw new Error('API key not configured. Open Settings to add your key.')
+
+  switch (provider) {
+    case 'anthropic':
+      return anthropicCompletion(apiBase, apiKey, model, messages)
+    case 'gemini':
+      return geminiCompletion(apiBase, apiKey, model, messages)
+    default:
+      return openaiCompletion(apiBase, apiKey, model, messages)
+  }
+}
+
+export async function testConnection(config: LLMConfig): Promise<{ ok: boolean; message: string }> {
+  try {
+    const reply = await chatCompletion(
+      [{ role: 'user', content: 'Reply with exactly one word: ok' }],
+      config,
+    )
+    return { ok: true, message: reply.slice(0, 80) }
+  } catch (e: any) {
+    return { ok: false, message: e.message || 'Connection failed' }
+  }
 }
 
 async function breakdown(input: BreakdownInput): Promise<{ subtasks: { text: string; estimatedMinutes?: number; machineTask?: boolean }[] }> {
@@ -68,10 +150,8 @@ Keep subtasks concrete and actionable. Estimate time realistically. Mark machine
 
 function getMachines(overrides: any[]): any[] {
   if (overrides.length > 0) return overrides
-  const raw = process.env.VITE_MACHINES
-  if (raw) {
-    try { return JSON.parse(raw) } catch { /* fall through */ }
-  }
+  const settings = loadSettings()
+  if (settings.machines.length > 0) return settings.machines
   return [
     { name: 'mini', type: 'server', specs: '18-core CPU, 64GB RAM, Ubuntu', capabilities: ['data processing', 'model training', 'long-running jobs'] },
     { name: 'mac', type: 'workstation', specs: 'Apple M4 Pro, 48GB RAM, macOS', capabilities: ['coding', 'writing', 'analysis', 'web browsing'] },
