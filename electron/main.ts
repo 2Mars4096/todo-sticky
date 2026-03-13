@@ -1,13 +1,40 @@
-import { app, BrowserWindow, ipcMain, screen, Tray, Menu, globalShortcut, nativeImage } from 'electron'
+import { app, BrowserWindow, ipcMain, screen, Tray, Menu, globalShortcut, nativeImage, dialog } from 'electron'
 import path from 'path'
-import { readFileSync, existsSync, watch, FSWatcher } from 'fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, watch, FSWatcher } from 'fs'
 import { parseWeeklyFile, serializeDateSection, getTasksForDate } from './markdown'
 import { findWeeklyFile, writeBackSection, ensureDateSection, listWeeklyFiles, appendTasksToDate } from './fileSync'
-import { callLLM } from './llm'
+import { callLLM, testConnection } from './llm'
+import { loadSettings, saveSettings as persistSettings, type AppSettings } from './config'
 
 function loadEnv() {
-  const envPath = path.join(__dirname, '..', '.env')
-  if (!existsSync(envPath)) return
+  const isDev = process.argv.includes('--dev')
+  const envPath = isDev
+    ? path.join(__dirname, '..', '.env')
+    : path.join(app.getPath('userData'), '.env')
+
+  if (!existsSync(envPath)) {
+    if (!isDev) {
+      const dir = path.dirname(envPath)
+      if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+      const defaultKb = path.join(app.getPath('home'), 'Documents', 'Sticky Todo')
+      writeFileSync(envPath, [
+        '# Sticky Todo Configuration',
+        '# See README for all options.',
+        '',
+        '# Where tasks are stored (content/to-do/ subdirectory)',
+        `VITE_KB_PATH=${defaultKb}`,
+        '',
+        '# LLM API (optional — for AI breakdown & schedule)',
+        '# VITE_LLM_API_BASE=https://api.openai.com/v1',
+        '# VITE_LLM_API_KEY=your-key-here',
+        '# VITE_LLM_MODEL=gpt-4o',
+        '',
+      ].join('\n'), 'utf-8')
+    } else {
+      return
+    }
+  }
+
   const content = readFileSync(envPath, 'utf-8')
   for (const line of content.split('\n')) {
     const trimmed = line.trim()
@@ -145,7 +172,8 @@ const SHORTCUT = 'CommandOrControl+Alt+T'
 app.whenReady().then(() => {
   if (process.platform === 'darwin') app.dock.hide()
 
-  app.setLoginItemSettings({ openAtLogin: true })
+  const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev')
+  app.setLoginItemSettings({ openAtLogin: !isDev })
 
   createWindow()
   createTray()
@@ -164,7 +192,15 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll()
 })
 
-const getKbPath = () => process.env.VITE_KB_PATH || path.join(__dirname, '..', '..', 'my-knowledge-base')
+const getKbPath = () => {
+  const settings = loadSettings()
+  if (settings.kbPath) return settings.kbPath
+  if (process.env.VITE_KB_PATH) return process.env.VITE_KB_PATH
+  const isDev = process.argv.includes('--dev')
+  return isDev
+    ? path.join(__dirname, '..')
+    : path.join(app.getPath('home'), 'Documents', 'Sticky Todo')
+}
 
 let activeWatcher: FSWatcher | null = null
 let lastOwnWrite = 0
@@ -247,12 +283,41 @@ ipcMain.handle('llm-schedule', async (_event, { tasks, machines }: { tasks: any[
 })
 
 ipcMain.handle('get-env', async () => {
-  let machines: any[] = []
-  try { machines = JSON.parse(process.env.VITE_MACHINES || '[]') } catch { /* ignore */ }
+  const settings = loadSettings()
   return {
-    apiBase: process.env.VITE_LLM_API_BASE || '',
-    model: process.env.VITE_LLM_MODEL || '',
-    hasKey: !!process.env.VITE_LLM_API_KEY,
-    machines,
+    apiBase: settings.apiBase,
+    model: settings.model,
+    hasKey: !!settings.apiKey,
+    machines: settings.machines,
   }
+})
+
+ipcMain.handle('get-settings', async () => {
+  const settings = loadSettings()
+  return { ...settings, apiKey: settings.apiKey }
+})
+
+ipcMain.handle('save-settings', async (_event, settings: AppSettings) => {
+  persistSettings(settings)
+  return { ok: true }
+})
+
+ipcMain.handle('test-connection', async (_event, settings: { provider: string; apiBase: string; apiKey: string; model: string }) => {
+  return testConnection(settings)
+})
+
+ipcMain.handle('check-first-run', async () => {
+  const settings = loadSettings()
+  return !settings.apiKey
+})
+
+ipcMain.handle('select-folder', async () => {
+  const win = mainWindow || BrowserWindow.getFocusedWindow()
+  if (!win) return null
+  const result = await dialog.showOpenDialog(win, {
+    properties: ['openDirectory'],
+    title: 'Select Knowledge Base Folder',
+  })
+  if (result.canceled || !result.filePaths.length) return null
+  return result.filePaths[0]
 })
