@@ -2,19 +2,38 @@
 
 macOS sticky note todo planner with AI task breakdown.
 
-## Quick Start
+## Install
+
+1. Download the latest `.dmg` from [Releases](https://github.com/2Mars4096/todo-sticky/releases)
+2. Open the `.dmg` and drag **Sticky Todo** to Applications
+3. Launch the app — a first-run settings panel will appear:
+
+| Field | What to enter |
+|-------|---------------|
+| **Provider** | Choose **OpenAI**, **Anthropic (Claude)**, **Google Gemini**, or **Custom** (any OpenAI-compatible endpoint). Base URL and model suggestions auto-fill. |
+| **API Base URL** | Pre-filled for standard providers. Edit if you use a proxy, Azure, OpenRouter, etc. |
+| **Model** | Pick from suggestions or type any model name (e.g. `gpt-4o`, `claude-sonnet-4-20250514`, `gemini-2.0-flash`). |
+| **API Key** | Paste your key. Stored locally in `~/Library/Application Support/Sticky Todo/config.json` — never sent anywhere except your chosen API. |
+| **KB Path** | Where task files live (`content/to-do/` inside this folder). Default: `~/Documents/Sticky Todo`. Use 📁 to browse. |
+| **Machines** | *(Optional)* Add servers/workstations for AI scheduling — name, type, specs, capabilities. |
+
+4. Click **Test Connection** to verify, then **Get Started**
+
+You can change any setting later via the gear icon (⚙) in the bottom-right corner.
+
+> macOS Gatekeeper may warn about an unsigned app. Right-click the app → **Open** to bypass.
+
+## Development
 
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Copy environment config (optional, for AI features)
+# 2. (Optional) Copy .env for dev-mode AI config
 cp .env.example .env
-# Edit .env and add your LLM API key if you want AI task breakdown
 
 # 3. Start the app
 npm start
-# or: npm run dev
 ```
 
 The app will open as an Electron window. Vite runs on port 5173; Electron loads the UI from it.
@@ -37,17 +56,20 @@ The app will open as an Electron window. Vite runs on port 5173; Electron loads 
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in menu bar with tray icon
 
-## Environment (.env)
+## Configuration
 
-Copy `.env.example` to `.env` and configure:
+**Packaged app:** All settings are managed in-app via the gear icon (⚙). Settings are stored in `~/Library/Application Support/Sticky Todo/config.json`.
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_LLM_API_BASE` | OpenAI-compatible API endpoint (e.g. `https://api.openai.com/v1`) |
-| `VITE_LLM_API_KEY` | Your API key |
-| `VITE_LLM_MODEL` | Model name (e.g. `gpt-4o`, `claude-sonnet-4-20250514`) |
-| `VITE_KB_PATH` | Absolute path to your knowledge base root (default: `./`). Tasks live in `content/to-do/`. |
-| `VITE_MACHINES` | JSON array of machines for AI scheduling. Each object: `name`, `type`, `specs`, `capabilities`. See `.env.example` for format. |
+| Setting | Description |
+|---------|-------------|
+| Provider | OpenAI, Anthropic (Claude), Google Gemini, or Custom (OpenAI-compatible) |
+| API Base URL | Auto-filled per provider; editable for proxies or custom endpoints |
+| Model | Model name with suggestions per provider |
+| API Key | Your API key (stored locally, never sent anywhere except your chosen API) |
+| KB Path | Where tasks are stored (`content/to-do/` inside this folder) |
+| Machines | Servers/workstations for AI scheduling |
+
+**Dev mode:** You can also use a `.env` file (see `.env.example`). The app checks `config.json` first, then falls back to `.env`.
 
 AI features (breakdown, schedule) are optional; the app works without them.
 
@@ -67,9 +89,23 @@ AI features (breakdown, schedule) are optional; the app works without them.
 | `npm start` | Start full app (Vite + Electron) — **use this to run the app** |
 | `npm run dev` | Same as `npm start` |
 | `npm run dev:web` | Web-only mode (browser at http://localhost:5173) |
-| `npm run build` | Build distributable `.dmg` for macOS |
+| `npm run build` | Build `.dmg` + `.zip` locally |
+| `npm run release` | Bump patch version, tag, and push (triggers CI release) |
 | `npm run preview` | Preview production build in browser |
 | `npm run seed-demo` | Seed demo tasks for recording |
+
+## Releasing
+
+Releases are automated via GitHub Actions. To publish a new version:
+
+```bash
+npm run release        # bumps patch (1.0.0 → 1.0.1), creates tag, pushes
+# or manually:
+npm version minor      # 1.0.0 → 1.1.0
+git push --follow-tags
+```
+
+The workflow builds a macOS `.dmg` and `.zip`, then uploads them as a **draft** GitHub Release. Go to the [Releases page](https://github.com/2Mars4096/todo-sticky/releases) to review and publish.
 
 ## Requirements
 
