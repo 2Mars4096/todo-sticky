@@ -16,6 +16,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   llmSchedule: (data: { tasks: any[]; machines: any[] }) =>
     ipcRenderer.invoke('llm-schedule', data),
   getEnv: () => ipcRenderer.invoke('get-env'),
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
+  testConnection: (settings: any) => ipcRenderer.invoke('test-connection', settings),
+  checkFirstRun: () => ipcRenderer.invoke('check-first-run'),
+  selectFolder: () => ipcRenderer.invoke('select-folder'),
   onFileChanged: (cb: () => void) => {
     const listener = () => cb()
     ipcRenderer.on('file-changed', listener)
