@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "npx tauri dev",
     "dev:vite": "vite --port 5173 --strictPort",
+    "tauri": "npx tauri",
     "build": "node scripts/tauri-build.js",
     "build:frontend": "vite build",
     "release": "npm version patch && git push --follow-tags",
