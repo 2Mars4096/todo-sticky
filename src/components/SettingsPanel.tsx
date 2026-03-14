@@ -163,6 +163,9 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
                 {preset.models.map(m => <option key={m} value={m} />)}
               </datalist>
             )}
+            <p className="hint">
+              Default model is <code>{preset.model || 'custom'}</code>. AI features only run after you add an API key.
+            </p>
 
             <label>API Key</label>
             <div className="input-row">
@@ -212,7 +215,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
               </button>
             </div>
             <p className="hint">
-              Tasks are stored in <code>content/to-do/</code> inside this folder.
+              Leave this blank to use <code>~/Documents/Sticky Todo</code>. Tasks are stored in <code>content/to-do/</code> inside that folder.
             </p>
           </div>
 

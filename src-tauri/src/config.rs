@@ -60,6 +60,10 @@ fn config_path(app: &AppHandle) -> PathBuf {
     dir.join("config.json")
 }
 
+pub fn has_saved_config(app: &AppHandle) -> bool {
+    config_path(app).exists() || load_legacy_settings().is_some() || migrate_from_env().is_some()
+}
+
 fn load_settings_file(path: &Path) -> Option<AppSettings> {
     let data = fs::read_to_string(path).ok()?;
     serde_json::from_str::<AppSettings>(&data).ok()

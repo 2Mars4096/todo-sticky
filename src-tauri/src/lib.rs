@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use tauri::{
-    menu::{MenuBuilder, MenuItemBuilder},
+    menu::{MenuBuilder, MenuItem, MenuItemBuilder, SubmenuBuilder},
     tray::TrayIconBuilder,
     AppHandle, Emitter, Manager, WebviewWindow,
 };
@@ -23,6 +23,32 @@ fn toggle_window(win: &WebviewWindow) {
         win.show().ok();
         win.set_focus().ok();
     }
+}
+
+fn toggle_main_window(app: &AppHandle) {
+    if let Some(win) = app.get_webview_window("main") {
+        toggle_window(&win);
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn shortcut_accelerator() -> &'static str {
+    "Alt+Command+T"
+}
+
+#[cfg(not(target_os = "macos"))]
+fn shortcut_accelerator() -> &'static str {
+    "Ctrl+Alt+T"
+}
+
+#[cfg(target_os = "macos")]
+fn shortcut_label() -> &'static str {
+    "⌥⌘T"
+}
+
+#[cfg(not(target_os = "macos"))]
+fn shortcut_label() -> &'static str {
+    "Ctrl+Alt+T"
 }
 
 struct WatcherState {
@@ -132,33 +158,55 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle().clone();
 
-            // Register global shortcut
             #[cfg(target_os = "macos")]
             {
-                use tauri_plugin_global_shortcut::GlobalShortcutExt;
-                app.global_shortcut().register("CmdOrCtrl+Alt+T").ok();
+                app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                app.set_dock_visibility(false);
             }
-            #[cfg(not(target_os = "macos"))]
+
+            // Register global shortcut
             {
                 use tauri_plugin_global_shortcut::GlobalShortcutExt;
-                app.global_shortcut().register("CmdOrCtrl+Alt+T").ok();
+                app.global_shortcut().register(shortcut_accelerator()).ok();
+            }
+
+            #[cfg(target_os = "macos")]
+            {
+                let show_hide_menu =
+                    MenuItem::with_id(app, "show_hide", "Show / Hide", true, Some(shortcut_accelerator()))?;
+                let app_submenu = SubmenuBuilder::new(app, "Sticky Todo")
+                    .about(None)
+                    .separator()
+                    .item(&show_hide_menu)
+                    .separator()
+                    .hide()
+                    .hide_others()
+                    .separator()
+                    .quit()
+                    .build()?;
+                let app_menu = MenuBuilder::new(app).item(&app_submenu).build()?;
+                app_menu.set_as_app_menu()?;
+
+                app.on_menu_event(|app, event| {
+                    if event.id().as_ref() == "show_hide" {
+                        toggle_main_window(app);
+                    }
+                });
             }
 
             // System tray
-            let show_hide = MenuItemBuilder::with_id("toggle", "Show / Hide   ⌥⌘T").build(app)?;
+            let show_hide = MenuItemBuilder::with_id("toggle", format!("Show / Hide   {}", shortcut_label())).build(app)?;
             let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
             let menu = MenuBuilder::new(app).items(&[&show_hide, &quit]).build()?;
 
             let handle_clone = handle.clone();
             TrayIconBuilder::new()
-                .tooltip("Sticky Todo  (⌥⌘T)")
+                .tooltip(format!("Sticky Todo  ({})", shortcut_label()))
                 .menu(&menu)
                 .on_menu_event(move |app, event| {
                     match event.id().as_ref() {
                         "toggle" => {
-                            if let Some(win) = app.get_webview_window("main") {
-                                toggle_window(&win);
-                            }
+                            toggle_main_window(app);
                         }
                         "quit" => app.exit(0),
                         _ => {}
@@ -166,9 +214,7 @@ pub fn run() {
                 })
                 .on_tray_icon_event(move |_tray, event| {
                     if let tauri::tray::TrayIconEvent::Click { button: tauri::tray::MouseButton::Left, .. } = event {
-                        if let Some(win) = handle_clone.get_webview_window("main") {
-                            toggle_window(&win);
-                        }
+                        toggle_main_window(&handle_clone);
                     }
                 })
                 .build(app)?;

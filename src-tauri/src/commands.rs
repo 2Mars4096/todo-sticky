@@ -111,8 +111,7 @@ pub async fn test_connection(settings: LLMConfig) -> Result<Value, String> {
 
 #[tauri::command]
 pub fn check_first_run(app: AppHandle) -> Result<bool, String> {
-    let s = config::load_settings(&app);
-    Ok(s.api_key.is_empty())
+    Ok(!config::has_saved_config(&app))
 }
 
 #[tauri::command]

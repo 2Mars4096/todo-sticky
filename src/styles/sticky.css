@@ -43,16 +43,30 @@ body {
 
 /* Drag area / Header */
 .sticky-header {
-  -webkit-app-region: drag;
   padding: 12px 16px 8px;
   background: var(--sticky-bg-dark);
   border-bottom: 1px solid var(--sticky-border);
   flex-shrink: 0;
 }
 
-.sticky-header button,
-.sticky-header input {
-  -webkit-app-region: no-drag;
+.window-drag-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 16px;
+  margin: -4px 0 6px;
+  cursor: grab;
+}
+
+.window-drag-pill {
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.window-drag-bar:active {
+  cursor: grabbing;
 }
 
 .date-nav {

@@ -36,6 +36,9 @@ export function DateHeader({
 
   return (
     <div className="sticky-header">
+      <div className="window-drag-bar" data-tauri-drag-region>
+        <div className="window-drag-pill" data-tauri-drag-region />
+      </div>
       <div className="date-nav">
         <button onClick={onPrev} title="Previous day">‹</button>
         <div style={{ position: 'relative' }} ref={calRef}>
