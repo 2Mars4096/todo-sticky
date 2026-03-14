@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings, Provider } from '../types'
+import { api } from '../api'
 
 const PROVIDER_PRESETS: Record<string, { apiBase: string; model: string; models: string[] }> = {
   openai: {
@@ -47,7 +48,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    window.electronAPI?.getSettings().then(s => {
+    api.getSettings().then(s => {
       if (s) setSettings(s)
     })
   }, [])
@@ -66,7 +67,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await window.electronAPI?.saveSettings(settings)
+      await api.saveSettings(settings)
       setDirty(false)
       onClose()
     } finally {
@@ -78,13 +79,13 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
     setTesting(true)
     setTestResult(null)
     try {
-      const result = await window.electronAPI?.testConnection({
+      const result = await api.testConnection({
         provider: settings.provider,
         apiBase: settings.apiBase,
         apiKey: settings.apiKey,
         model: settings.model,
       })
-      if (result) setTestResult(result)
+      setTestResult(result)
     } catch (e: any) {
       setTestResult({ ok: false, message: e.message })
     } finally {
@@ -93,7 +94,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
   }
 
   const handleSelectFolder = async () => {
-    const folder = await window.electronAPI?.selectFolder()
+    const folder = await api.selectFolder()
     if (folder) update({ kbPath: folder })
   }
 

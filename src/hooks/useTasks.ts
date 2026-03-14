@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { AggregatedTask, Task } from '../types'
-
-const api = () => window.electronAPI
+import { api } from '../api'
 
 function flattenToday(aggregated: AggregatedTask[]): Task[] {
   return aggregated.map(a => ({
@@ -36,11 +35,10 @@ export function useTasks(dateStr: string) {
   useEffect(() => { filePathRef.current = filePath }, [filePath])
 
   const load = useCallback(async () => {
-    if (!api()) return
     if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
     setLoading(true)
     try {
-      const result = await api()!.getTasks(dateStr)
+      const result = await api.getTasks(dateStr)
       setTasks(result.tasks)
       setFilePath(result.filePath || null)
     } catch (e) {
@@ -53,8 +51,7 @@ export function useTasks(dateStr: string) {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    if (!api()?.onFileChanged) return
-    return api()!.onFileChanged(() => { load() })
+    return api.onFileChanged(() => { load() })
   }, [load])
 
   const persist = useCallback((updatedTasks: AggregatedTask[]) => {
@@ -65,9 +62,9 @@ export function useTasks(dateStr: string) {
       const flat = flattenToday(updatedTasks)
       try {
         if (snapshotPath) {
-          await api()!.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
+          await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
         } else {
-          const result = await api()!.createDateSection({ dateStr: snapshotDate, tasks: flat })
+          const result = await api.createDateSection({ dateStr: snapshotDate, tasks: flat })
           if (dateRef.current === snapshotDate) setFilePath(result.filePath)
         }
       } catch (e) {
@@ -129,7 +126,6 @@ export function useTasks(dateStr: string) {
   }, [persist])
 
   const pushToTomorrow = useCallback(async (taskId: string, subtaskId?: string) => {
-    if (!api()) return
 
     const tomorrow = new Date(dateStr + 'T12:00:00')
     tomorrow.setDate(tomorrow.getDate() + 1)
@@ -167,14 +163,14 @@ export function useTasks(dateStr: string) {
       if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
 
       // Append to tomorrow's section
-      await api()!.pushTask({ fromDate: dateStr, toDate: tomorrowStr, taskText, subtaskTexts })
+      await api.pushTask({ fromDate: dateStr, toDate: tomorrowStr, taskText, subtaskTexts })
 
       // Save today's section (task removed) — re-read state via getter
       setTasks(prev => {
         const flat = flattenToday(prev)
         const fp = filePathRef.current
         if (fp) {
-          api()!.saveTasks({ filePath: fp, dateStr, tasks: flat })
+          api.saveTasks({ filePath: fp, dateStr, tasks: flat })
         }
         return prev
       })

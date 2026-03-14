@@ -5,6 +5,7 @@ import { AddTask } from './components/AddTask'
 import { SettingsPanel } from './components/SettingsPanel'
 import { useCalendar } from './hooks/useCalendar'
 import { useTasks } from './hooks/useTasks'
+import { api } from './api'
 import type { ViewMode } from './types'
 
 export default function App() {
@@ -17,22 +18,22 @@ export default function App() {
   const [schedulePlan, setSchedulePlan] = useState<string | null>(null)
 
   useEffect(() => {
-    window.electronAPI?.checkFirstRun().then(isFirst => {
+    api.checkFirstRun().then(isFirst => {
       if (isFirst) {
         setFirstRun(true)
         setShowSettings(true)
       }
-    })
+    }).catch(() => {})
   }, [])
 
   const handleAIBreakdown = useCallback(async (taskId: string) => {
     const task = tasks.tasks.find(t => t.id === taskId)
-    if (!task || !window.electronAPI) return
+    if (!task) return
 
     setAiLoading(taskId)
     try {
       const existing = task.todaySubtasks.map(s => s.text)
-      const result = await window.electronAPI.llmBreakdown({
+      const result = await api.llmBreakdown({
         taskText: task.text,
         existingSubtasks: existing,
       })
@@ -47,10 +48,10 @@ export default function App() {
   }, [tasks])
 
   const handleSchedule = useCallback(async () => {
-    if (!tasks.tasks.length || !window.electronAPI) return
+    if (!tasks.tasks.length) return
     setAiLoading('schedule')
     try {
-      const result = await window.electronAPI.llmSchedule({ tasks: tasks.tasks, machines: [] })
+      const result = await api.llmSchedule({ tasks: tasks.tasks, machines: [] })
       if (result.schedule?.length) {
         tasks.applySchedule(result.schedule)
       }
