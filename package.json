@@ -1,72 +1,31 @@
 {
   "name": "todo-sticky",
-  "version": "1.0.1",
-  "description": "macOS sticky note todo planner with AI task breakdown",
-  "main": "dist-electron/main.js",
+  "version": "2.0.0",
+  "description": "Cross-platform sticky note todo planner with AI task breakdown",
   "scripts": {
-    "start": "npm run dev",
-    "seed-demo": "node scripts/seed-demo.js",
-    "dev": "concurrently \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && npm run electron:start\"",
-    "dev:web": "vite --port 5173 --strictPort",
-    "electron:compile": "tsc -p tsconfig.electron.json",
-    "electron:start": "tsc -p tsconfig.electron.json && unset ELECTRON_RUN_AS_NODE && electron dist-electron/main.js --dev",
-    "build": "vite build && tsc -p tsconfig.electron.json && electron-builder",
-    "build:dist": "vite build && tsc -p tsconfig.electron.json",
+    "dev": "npx tauri dev",
+    "dev:vite": "vite --port 5173 --strictPort",
+    "build": "node scripts/tauri-build.js",
+    "build:frontend": "vite build",
     "release": "npm version patch && git push --follow-tags",
+    "seed-demo": "node scripts/seed-demo.js",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-dialog": "^2.6.0",
+    "@tauri-apps/plugin-global-shortcut": "^2.3.1",
     "date-fns": "^4.1.0",
     "react": "^18.3.1",
     "react-day-picker": "^9.6.0",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "concurrently": "^9.1.2",
-    "electron": "^33.3.1",
-    "electron-builder": "^25.1.8",
     "typescript": "^5.7.3",
-    "vite": "^6.1.0",
-    "wait-on": "^8.0.3"
-  },
-  "build": {
-    "appId": "com.todo-sticky.app",
-    "productName": "Sticky Todo",
-    "files": [
-      "dist/**/*",
-      "dist-electron/**/*"
-    ],
-    "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "category": "public.app-category.productivity"
-    },
-    "dmg": {
-      "title": "Sticky Todo",
-      "iconSize": 80,
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "2Mars4096",
-      "repo": "todo-sticky"
-    },
-    "npmRebuild": false
+    "vite": "^6.1.0"
   }
 }
