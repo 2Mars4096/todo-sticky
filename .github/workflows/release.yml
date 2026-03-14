@@ -9,8 +9,20 @@ permissions:
   contents: write
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: '--target universal-apple-darwin'
+          - platform: ubuntu-22.04
+            args: ''
+          - platform: windows-latest
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -19,16 +31,28 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install JS dependencies
         run: npm ci
 
-      - name: Build frontend
-        run: npx vite build
-
-      - name: Compile Electron
-        run: npx tsc -p tsconfig.electron.json
-
-      - name: Package & upload to GitHub Releases
-        run: npx electron-builder --mac --publish always
+      - name: Build & Release
+        uses: tauri-apps/tauri-action@v0
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'v__VERSION__'
+          releaseBody: 'Download the installer for your platform below.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
