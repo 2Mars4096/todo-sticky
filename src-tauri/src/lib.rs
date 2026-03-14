@@ -10,9 +10,12 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
+#[cfg(target_os = "macos")]
+use tauri::image::Image;
+use tauri::menu::MenuItemBuilder;
 use tauri::{
-    menu::{MenuBuilder, MenuItem, MenuItemBuilder, SubmenuBuilder},
-    tray::TrayIconBuilder,
+    menu::{MenuBuilder, MenuItem, SubmenuBuilder},
+    tray::{MouseButton, MouseButtonState, TrayIconEvent},
     AppHandle, Emitter, Manager, WebviewWindow,
 };
 
@@ -36,9 +39,14 @@ fn shortcut_accelerator() -> &'static str {
     "Alt+Command+T"
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
 fn shortcut_accelerator() -> &'static str {
     "Ctrl+Alt+T"
+}
+
+#[cfg(target_os = "linux")]
+fn shortcut_accelerator() -> &'static str {
+    "Ctrl+Shift+Alt+T"
 }
 
 #[cfg(target_os = "macos")]
@@ -46,9 +54,75 @@ fn shortcut_label() -> &'static str {
     "⌥⌘T"
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
 fn shortcut_label() -> &'static str {
     "Ctrl+Alt+T"
+}
+
+#[cfg(target_os = "linux")]
+fn shortcut_label() -> &'static str {
+    "Ctrl+Shift+Alt+T"
+}
+
+#[cfg(target_os = "macos")]
+fn tray_icon_image() -> Image<'static> {
+    let width = 32usize;
+    let height = 32usize;
+    let mut rgba = vec![0u8; width * height * 4];
+
+    fn set_pixel(rgba: &mut [u8], width: usize, height: usize, x: usize, y: usize) {
+        if x >= width || y >= height {
+            return;
+        }
+        let idx = (y * width + x) * 4;
+        rgba[idx] = 0;
+        rgba[idx + 1] = 0;
+        rgba[idx + 2] = 0;
+        rgba[idx + 3] = 255;
+    }
+
+    for x in 6..=21 {
+        set_pixel(&mut rgba, width, height, x, 5);
+        set_pixel(&mut rgba, width, height, x, 6);
+        set_pixel(&mut rgba, width, height, x, 26);
+    }
+
+    for y in 5..=26 {
+        set_pixel(&mut rgba, width, height, 5, y);
+        set_pixel(&mut rgba, width, height, 6, y);
+        set_pixel(&mut rgba, width, height, 26, y);
+    }
+
+    for offset in 0..5 {
+        set_pixel(&mut rgba, width, height, 21 + offset, 5 + offset);
+        set_pixel(&mut rgba, width, height, 22 + offset, 5 + offset);
+    }
+
+    for y in 10..=12 {
+        set_pixel(&mut rgba, width, height, 10, y);
+    }
+    for y in 17..=19 {
+        set_pixel(&mut rgba, width, height, 10, y);
+    }
+
+    for (x, y) in [(9, 12), (10, 13), (11, 14), (12, 13), (13, 12), (14, 11), (15, 10)] {
+        set_pixel(&mut rgba, width, height, x, y);
+        set_pixel(&mut rgba, width, height, x, y + 1);
+    }
+
+    for (x, y) in [(9, 19), (10, 20), (11, 21), (12, 20), (13, 19), (14, 18), (15, 17)] {
+        set_pixel(&mut rgba, width, height, x, y);
+        set_pixel(&mut rgba, width, height, x, y + 1);
+    }
+
+    for x in 17..=23 {
+        set_pixel(&mut rgba, width, height, x, 12);
+        set_pixel(&mut rgba, width, height, x, 13);
+        set_pixel(&mut rgba, width, height, x, 19);
+        set_pixel(&mut rgba, width, height, x, 20);
+    }
+
+    Image::new_owned(rgba, width as u32, height as u32)
 }
 
 struct WatcherState {
@@ -186,38 +260,46 @@ pub fn run() {
                     .build()?;
                 let app_menu = MenuBuilder::new(app).item(&app_submenu).build()?;
                 app_menu.set_as_app_menu()?;
-
-                app.on_menu_event(|app, event| {
-                    if event.id().as_ref() == "show_hide" {
-                        toggle_main_window(app);
-                    }
-                });
             }
 
-            // System tray
+            app.on_menu_event(|app, event| match event.id().as_ref() {
+                "show_hide" | "toggle" => toggle_main_window(app),
+                "quit" => app.exit(0),
+                _ => {}
+            });
+
+            #[cfg(target_os = "macos")]
+            app.on_tray_icon_event(|app, event| {
+                if event.id().as_ref() != "main" {
+                    return;
+                }
+
+                if let TrayIconEvent::Click {
+                    button: MouseButton::Left,
+                    button_state: MouseButtonState::Up,
+                    ..
+                } = event
+                {
+                    toggle_main_window(app);
+                }
+            });
+
             let show_hide = MenuItemBuilder::with_id("toggle", format!("Show / Hide   {}", shortcut_label())).build(app)?;
             let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
-            let menu = MenuBuilder::new(app).items(&[&show_hide, &quit]).build()?;
+            let tray_menu = MenuBuilder::new(app).items(&[&show_hide, &quit]).build()?;
 
-            let handle_clone = handle.clone();
-            TrayIconBuilder::new()
-                .tooltip(format!("Sticky Todo  ({})", shortcut_label()))
-                .menu(&menu)
-                .on_menu_event(move |app, event| {
-                    match event.id().as_ref() {
-                        "toggle" => {
-                            toggle_main_window(app);
-                        }
-                        "quit" => app.exit(0),
-                        _ => {}
-                    }
-                })
-                .on_tray_icon_event(move |_tray, event| {
-                    if let tauri::tray::TrayIconEvent::Click { button: tauri::tray::MouseButton::Left, .. } = event {
-                        toggle_main_window(&handle_clone);
-                    }
-                })
-                .build(app)?;
+            let tray = app
+                .tray_by_id("main")
+                .ok_or_else(|| "Failed to find default tray icon".to_string())?;
+            tray.set_menu(Some(tray_menu))?;
+            tray.set_tooltip(Some(format!("Sticky Todo  ({})", shortcut_label())))?;
+
+            #[cfg(target_os = "macos")]
+            {
+                tray.set_icon(Some(tray_icon_image()))?;
+                tray.set_icon_as_template(true)?;
+                tray.set_show_menu_on_left_click(false)?;
+            }
 
             // Show main window after setup
             if let Some(win) = app.get_webview_window("main") {

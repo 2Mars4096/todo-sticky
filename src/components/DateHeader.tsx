@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { ViewMode } from '../types'
 import { MiniCalendar } from './MiniCalendar'
 
@@ -23,6 +24,14 @@ export function DateHeader({
 }: Props) {
   const calRef = useRef<HTMLDivElement>(null)
 
+  const handleDragMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return
+    event.preventDefault()
+    void getCurrentWindow().startDragging().catch((error) => {
+      console.error('Window drag failed', error)
+    })
+  }
+
   useEffect(() => {
     if (!calendarOpen) return
     const handler = (e: MouseEvent) => {
@@ -36,8 +45,8 @@ export function DateHeader({
 
   return (
     <div className="sticky-header">
-      <div className="window-drag-bar" data-tauri-drag-region>
-        <div className="window-drag-pill" data-tauri-drag-region />
+      <div className="window-drag-bar" onMouseDown={handleDragMouseDown} title="Drag window">
+        <div className="window-drag-pill" />
       </div>
       <div className="date-nav">
         <button onClick={onPrev} title="Previous day">‹</button>

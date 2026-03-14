@@ -16,6 +16,7 @@
         "title": "Sticky Todo",
         "width": 380,
         "height": 560,
+        "dragDropEnabled": false,
         "decorations": false,
         "transparent": true,
         "alwaysOnTop": true,
@@ -26,7 +27,7 @@
     ],
     "trayIcon": {
       "iconPath": "icons/icon.png",
-      "tooltip": "Sticky Todo  (⌥⌘T)",
+      "tooltip": "Sticky Todo",
       "iconAsTemplate": true
     },
     "security": {

@@ -81,7 +81,7 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 
 | Shortcut | Action |
 |----------|--------|
-| **⌥⌘T** / **Ctrl+Alt+T** | Show/hide window (global) |
+| **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
 | **Enter** | Add task / submit subtask / commit edit |
 | **Escape** | Cancel edit or subtask input |
 | **Double-click** | Edit task text |

@@ -53,14 +53,15 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 16px;
-  margin: -4px 0 6px;
+  height: 22px;
+  margin: -2px 0 8px;
   cursor: grab;
+  user-select: none;
 }
 
 .window-drag-pill {
-  width: 42px;
-  height: 4px;
+  width: 58px;
+  height: 6px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.16);
 }
