@@ -24,8 +24,14 @@ export function DateHeader({
 }: Props) {
   const calRef = useRef<HTMLDivElement>(null)
 
-  const handleDragMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleDragMouseDown = (event: React.MouseEvent<HTMLElement>) => {
     if (event.button !== 0) return
+
+    const target = event.target as HTMLElement
+    if (target.closest('button, input, textarea, select, .calendar-popup, [data-no-window-drag="true"]')) {
+      return
+    }
+
     event.preventDefault()
     void getCurrentWindow().startDragging().catch((error) => {
       console.error('Window drag failed', error)
@@ -44,8 +50,8 @@ export function DateHeader({
   }, [calendarOpen, onCloseCalendar])
 
   return (
-    <div className="sticky-header">
-      <div className="window-drag-bar" onMouseDown={handleDragMouseDown} title="Drag window">
+    <div className="sticky-header" onMouseDown={handleDragMouseDown}>
+      <div className="window-drag-bar" data-tauri-drag-region title="Drag window">
         <div className="window-drag-pill" />
       </div>
       <div className="date-nav">

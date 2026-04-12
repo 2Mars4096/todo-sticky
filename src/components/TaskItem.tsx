@@ -86,7 +86,7 @@ export function TaskItem({
         ) : (
           <span
             className={`task-text ${status === 'done' ? 'done' : ''}`}
-            onDoubleClick={() => { if (!isOtherDate) { setEditing(true); setEditText(text) } }}
+            onClick={() => { if (!isOtherDate) { setEditing(true); setEditText(text) } }}
           >
             {text}
           </span>
