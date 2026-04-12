@@ -18,13 +18,24 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconEvent},
     AppHandle, Emitter, Manager, WebviewWindow,
 };
+use tauri_plugin_global_shortcut::ShortcutState;
+
+fn show_window(win: &WebviewWindow, focus: bool) {
+    win.show().ok();
+    if focus {
+        win.set_focus().ok();
+    }
+}
+
+fn hide_window(win: &WebviewWindow) {
+    win.hide().ok();
+}
 
 fn toggle_window(win: &WebviewWindow) {
     if win.is_visible().unwrap_or(false) {
-        win.hide().ok();
+        hide_window(win);
     } else {
-        win.show().ok();
-        win.set_focus().ok();
+        show_window(win, true);
     }
 }
 
@@ -131,6 +142,7 @@ struct WatcherState {
     last_own_write: Instant,
 }
 
+
 impl Default for WatcherState {
     fn default() -> Self {
         Self {
@@ -219,10 +231,8 @@ pub fn run() {
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
-                    if event.state == tauri_plugin_global_shortcut::ShortcutState::Pressed {
-                        if let Some(win) = app.get_webview_window("main") {
-                            toggle_window(&win);
-                        }
+                    if event.state == ShortcutState::Pressed {
+                        toggle_main_window(app);
                     }
                     let _ = shortcut;
                 })
@@ -247,7 +257,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 let show_hide_menu =
-                    MenuItem::with_id(app, "show_hide", "Show / Hide", true, Some(shortcut_accelerator()))?;
+                    MenuItem::with_id(app, "show_hide", "Show / Hide", true, None::<&str>)?;
                 let app_submenu = SubmenuBuilder::new(app, "Sticky Todo")
                     .about(None)
                     .separator()
@@ -284,7 +294,7 @@ pub fn run() {
                 }
             });
 
-            let show_hide = MenuItemBuilder::with_id("toggle", format!("Show / Hide   {}", shortcut_label())).build(app)?;
+            let show_hide = MenuItemBuilder::with_id("toggle", "Show / Hide").build(app)?;
             let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
             let tray_menu = MenuBuilder::new(app).items(&[&show_hide, &quit]).build()?;
 
@@ -292,18 +302,13 @@ pub fn run() {
                 .tray_by_id("main")
                 .ok_or_else(|| "Failed to find default tray icon".to_string())?;
             tray.set_menu(Some(tray_menu))?;
-            tray.set_tooltip(Some(format!("Sticky Todo  ({})", shortcut_label())))?;
+            tray.set_tooltip(Some(format!("Sticky Todo  ({} to toggle)", shortcut_label())))?;
 
             #[cfg(target_os = "macos")]
             {
                 tray.set_icon(Some(tray_icon_image()))?;
                 tray.set_icon_as_template(true)?;
                 tray.set_show_menu_on_left_click(false)?;
-            }
-
-            // Show main window after setup
-            if let Some(win) = app.get_webview_window("main") {
-                win.show().ok();
             }
 
             refresh_watcher(&handle)?;
