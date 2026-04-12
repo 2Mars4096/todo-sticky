@@ -18,6 +18,7 @@ export interface AggregatedTask {
 }
 
 export type ViewMode = 'all' | 'today'
+export type GoalCategory = 'targets' | 'recurring'
 
 export type Provider = 'openai' | 'anthropic' | 'gemini' | 'custom'
 
@@ -28,4 +29,16 @@ export interface AppSettings {
   model: string
   kbPath: string
   machines: { name: string; type: string; specs?: string; capabilities?: string[] }[]
+}
+
+export interface GoalItem {
+  id: string
+  text: string
+  done: boolean
+}
+
+export interface GoalsState {
+  sidebarCollapsed: boolean
+  targets: GoalItem[]
+  recurring: GoalItem[]
 }
