@@ -4,7 +4,7 @@ import type { GoalCategory, GoalItem, GoalsState } from '../types'
 const STORAGE_KEY = 'todo-sticky-goals-v1'
 
 const defaultState: GoalsState = {
-  sidebarCollapsed: false,
+  sidebarCollapsed: true,
   targets: [],
   recurring: [],
 }
@@ -40,7 +40,9 @@ function normalizeState(value: unknown): GoalsState {
     : []
 
   return {
-    sidebarCollapsed: Boolean(candidate.sidebarCollapsed),
+    sidebarCollapsed: typeof candidate.sidebarCollapsed === 'boolean'
+      ? candidate.sidebarCollapsed
+      : defaultState.sidebarCollapsed,
     targets,
     recurring,
   }
@@ -124,6 +126,14 @@ export function useGoals() {
     setState(prev => ({ ...prev, sidebarCollapsed: !prev.sidebarCollapsed }))
   }, [])
 
+  const setSidebarCollapsed = useCallback((collapsed: boolean) => {
+    setState(prev => (
+      prev.sidebarCollapsed === collapsed
+        ? prev
+        : { ...prev, sidebarCollapsed: collapsed }
+    ))
+  }, [])
+
   return {
     sidebarCollapsed: state.sidebarCollapsed,
     targets: state.targets,
@@ -133,5 +143,6 @@ export function useGoals() {
     deleteGoal,
     toggleGoal,
     toggleSidebar,
+    setSidebarCollapsed,
   }
 }

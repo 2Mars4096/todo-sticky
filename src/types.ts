@@ -42,3 +42,36 @@ export interface GoalsState {
   targets: GoalItem[]
   recurring: GoalItem[]
 }
+
+export type StarFocusPhase = 'ignition' | 'ascent' | 'heating' | 'staging' | 'orbit'
+
+export interface StarFocusSession {
+  taskId: string
+  taskText: string
+  durationMinutes: number
+  startedAt: number
+  endsAt: number
+  pausedAt: number | null
+}
+
+export interface StarFocusMissionRecord {
+  id: string
+  taskId: string
+  taskText: string
+  durationMinutes: number
+  completedAt: number
+  vehicleCode: string
+  orbitIndex: number
+  orbitLabel: string
+}
+
+export interface StarFocusState {
+  sidebarCollapsed: boolean
+  selectedTaskId: string | null
+  selectedTaskText: string | null
+  sessionDurationMinutes: number
+  archiveRetentionLimit: number
+  activeSession: StarFocusSession | null
+  missionHistory: StarFocusMissionRecord[]
+  lastCompletedMissionId: string | null
+}

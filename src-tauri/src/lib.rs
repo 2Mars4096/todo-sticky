@@ -326,6 +326,8 @@ pub fn run() {
             commands::llm_schedule,
             commands::get_settings,
             commands::save_settings,
+            commands::get_star_focus_state,
+            commands::save_star_focus_state,
             commands::test_connection,
             commands::check_first_run,
             commands::select_folder,

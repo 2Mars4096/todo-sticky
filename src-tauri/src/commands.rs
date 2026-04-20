@@ -1,4 +1,4 @@
-use crate::config::{self, AppSettings, get_kb_path};
+use crate::config::{self, AppSettings, StarFocusState, get_kb_path};
 use crate::file_sync;
 use crate::llm::{self, LLMConfig};
 use crate::markdown::{AggregatedTask, Task};
@@ -101,6 +101,17 @@ pub fn get_settings(app: AppHandle) -> Result<AppSettings, String> {
 pub fn save_settings(settings: AppSettings, app: AppHandle) -> Result<Value, String> {
     config::save_settings(&app, &settings)?;
     crate::refresh_watcher(&app)?;
+    Ok(serde_json::json!({"ok": true}))
+}
+
+#[tauri::command]
+pub fn get_star_focus_state(app: AppHandle) -> Result<Option<StarFocusState>, String> {
+    Ok(config::load_star_focus_state(&app))
+}
+
+#[tauri::command]
+pub fn save_star_focus_state(state: StarFocusState, app: AppHandle) -> Result<Value, String> {
+    config::save_star_focus_state(&app, &state)?;
     Ok(serde_json::json!({"ok": true}))
 }
 

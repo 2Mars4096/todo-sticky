@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
-import type { AggregatedTask, Task, AppSettings } from './types'
+import type { AggregatedTask, Task, AppSettings, StarFocusState } from './types'
 
 export const api = {
   getTasks: (dateStr: string) =>
@@ -32,6 +32,12 @@ export const api = {
 
   saveSettings: (settings: AppSettings) =>
     invoke<{ ok: boolean }>('save_settings', { settings }),
+
+  getStarFocusState: () =>
+    invoke<StarFocusState | null>('get_star_focus_state'),
+
+  saveStarFocusState: (state: StarFocusState) =>
+    invoke<{ ok: boolean }>('save_star_focus_state', { state }),
 
   testConnection: (settings: { provider: string; apiBase: string; apiKey: string; model: string }) =>
     invoke<{ ok: boolean; message: string }>('test_connection', { settings }),

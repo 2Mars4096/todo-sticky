@@ -8,12 +8,15 @@ interface Props {
   status: Task['status']
   isSubtask?: boolean
   isOtherDate?: boolean
+  isFocusSelected?: boolean
+  isFocusLocked?: boolean
   sourceDate?: string
   viewMode: ViewMode
   onToggle: () => void
   onDelete: () => void
   onPush: () => void
   onTextChange: (text: string) => void
+  onFocusSelect?: () => void
   onAddSubtask?: (text: string) => void
   onAIBreakdown?: () => void
   todaySubtasks?: Task[]
@@ -26,7 +29,9 @@ interface Props {
 
 export function TaskItem({
   id, text, status, isSubtask, isOtherDate, sourceDate,
+  isFocusSelected, isFocusLocked,
   viewMode, onToggle, onDelete, onPush, onTextChange,
+  onFocusSelect,
   onAddSubtask, onAIBreakdown,
   todaySubtasks, otherSubtasks,
   onToggleSubtask, onDeleteSubtask, onPushSubtask, onSubtaskTextChange,
@@ -64,6 +69,7 @@ export function TaskItem({
     'task-item',
     isSubtask ? 'subtask' : 'main-task',
     isOtherDate ? 'other-date' : '',
+    isFocusSelected ? 'selected-for-focus' : '',
   ].filter(Boolean).join(' ')
 
   return (
@@ -93,6 +99,22 @@ export function TaskItem({
         )}
         {dateLabel && <span className="date-tag">{dateLabel}</span>}
         <div className="task-actions">
+          {!isSubtask && !isOtherDate && onFocusSelect && (
+            <button
+              className={`focus-link ${isFocusSelected ? 'active' : ''}`}
+              onClick={onFocusSelect}
+              title={
+                isFocusSelected
+                  ? 'Task armed for Mission Control'
+                  : isFocusLocked
+                    ? 'Mission Control is locked to the active session'
+                    : 'Send to Mission Control'
+              }
+              disabled={Boolean(isFocusLocked && !isFocusSelected)}
+            >
+              {isFocusSelected ? 'Armed' : 'Focus'}
+            </button>
+          )}
           {!isSubtask && !isOtherDate && onAIBreakdown && (
             <button className="ai-btn" onClick={onAIBreakdown} title="AI breakdown">✦</button>
           )}

@@ -23,6 +23,56 @@ function localDateStr(d: Date): string {
   return `${y}-${m}-${day}`
 }
 
+let debugSeedCounter = 0
+
+function nextDebugLabel(prefix: string) {
+  debugSeedCounter += 1
+  return `${prefix} #${debugSeedCounter}`
+}
+
+function buildTaskSubtask(text: string, status: Task['status'] = 'todo'): Task {
+  return {
+    id: newId(),
+    text,
+    status,
+    subtasks: [],
+  }
+}
+
+function buildDebugTask(
+  text: string,
+  status: Task['status'],
+  subtasks: Array<{ text: string; status?: Task['status'] }>,
+): AggregatedTask {
+  return {
+    id: newId(),
+    text,
+    status,
+    todaySubtasks: subtasks.map(subtask => buildTaskSubtask(subtask.text, subtask.status)),
+    otherSubtasks: [],
+  }
+}
+
+function buildDebugTaskPack() {
+  return [
+    buildDebugTask(nextDebugLabel('Debug launch checklist'), 'todo', [
+      { text: 'Arm from the center column', status: 'done' },
+      { text: 'Launch a short session' },
+      { text: 'Confirm archive reward appears' },
+    ]),
+    buildDebugTask(nextDebugLabel('Compact breakpoint sweep'), 'partial', [
+      { text: 'Collapse both rails', status: 'done' },
+      { text: 'Open Tracking Station from the rail' },
+      { text: 'Verify narrow-window layout' },
+    ]),
+    buildDebugTask(nextDebugLabel('Archive retention pass'), 'question', [
+      { text: 'Seed more completed missions' },
+      { text: 'Switch retention cap' },
+      { text: 'Check Recent vs Full archive' },
+    ]),
+  ]
+}
+
 export function useTasks(dateStr: string) {
   const [tasks, setTasks] = useState<AggregatedTask[]>([])
   const [filePath, setFilePath] = useState<string | null>(null)
@@ -83,6 +133,29 @@ export function useTasks(dateStr: string) {
     }
     setTasks(prev => {
       const next = [...prev, task]
+      persist(next)
+      return next
+    })
+  }, [persist])
+
+  const addDebugTask = useCallback(() => {
+    const task = buildDebugTask(nextDebugLabel('Debug task'), 'todo', [
+      { text: 'Toggle status once', status: 'done' },
+      { text: 'Open Focus controls' },
+    ])
+
+    setTasks(prev => {
+      const next = [...prev, task]
+      persist(next)
+      return next
+    })
+  }, [persist])
+
+  const addDebugTaskPack = useCallback(() => {
+    const debugTasks = buildDebugTaskPack()
+
+    setTasks(prev => {
+      const next = [...prev, ...debugTasks]
       persist(next)
       return next
     })
@@ -264,10 +337,20 @@ export function useTasks(dateStr: string) {
     })
   }, [persist])
 
+  const clearAllTasks = useCallback(() => {
+    setTasks(prev => {
+      if (!prev.length) return prev
+      const next: AggregatedTask[] = []
+      persist(next)
+      return next
+    })
+  }, [persist])
+
   return {
     tasks, loading, load,
     addTask, toggleStatus, deleteTask, pushToTomorrow,
     addSubtask, updateTaskText, addAISubtasks, applySchedule,
+    addDebugTask, addDebugTaskPack, clearAllTasks,
   }
 }
 

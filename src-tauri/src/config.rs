@@ -5,6 +5,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
+const DEFAULT_STAR_FOCUS_ARCHIVE_RETENTION_LIMIT: u32 = 12;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Machine {
@@ -55,9 +57,94 @@ impl Default for AppSettings {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct StarFocusSession {
+    pub task_id: String,
+    pub task_text: String,
+    pub duration_minutes: u32,
+    pub started_at: i64,
+    pub ends_at: i64,
+    pub paused_at: Option<i64>,
+}
+
+impl Default for StarFocusSession {
+    fn default() -> Self {
+        Self {
+            task_id: String::new(),
+            task_text: String::new(),
+            duration_minutes: 25,
+            started_at: 0,
+            ends_at: 0,
+            paused_at: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct StarFocusMissionRecord {
+    pub id: String,
+    pub task_id: String,
+    pub task_text: String,
+    pub duration_minutes: u32,
+    pub completed_at: i64,
+    pub vehicle_code: String,
+    pub orbit_index: u32,
+    pub orbit_label: String,
+}
+
+impl Default for StarFocusMissionRecord {
+    fn default() -> Self {
+        Self {
+            id: String::new(),
+            task_id: String::new(),
+            task_text: String::new(),
+            duration_minutes: 25,
+            completed_at: 0,
+            vehicle_code: String::new(),
+            orbit_index: 0,
+            orbit_label: String::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct StarFocusState {
+    pub sidebar_collapsed: bool,
+    pub selected_task_id: Option<String>,
+    pub selected_task_text: Option<String>,
+    pub session_duration_minutes: u32,
+    pub archive_retention_limit: u32,
+    pub active_session: Option<StarFocusSession>,
+    pub mission_history: Vec<StarFocusMissionRecord>,
+    pub last_completed_mission_id: Option<String>,
+}
+
+impl Default for StarFocusState {
+    fn default() -> Self {
+        Self {
+            sidebar_collapsed: true,
+            selected_task_id: None,
+            selected_task_text: None,
+            session_duration_minutes: 25,
+            archive_retention_limit: DEFAULT_STAR_FOCUS_ARCHIVE_RETENTION_LIMIT,
+            active_session: None,
+            mission_history: Vec::new(),
+            last_completed_mission_id: None,
+        }
+    }
+}
+
 fn config_path(app: &AppHandle) -> PathBuf {
     let dir = app.path().app_data_dir().expect("no app data dir");
     dir.join("config.json")
+}
+
+fn star_focus_path(app: &AppHandle) -> PathBuf {
+    let dir = app.path().app_data_dir().expect("no app data dir");
+    dir.join("star_focus.json")
 }
 
 pub fn has_saved_config(app: &AppHandle) -> bool {
@@ -67,6 +154,39 @@ pub fn has_saved_config(app: &AppHandle) -> bool {
 fn load_settings_file(path: &Path) -> Option<AppSettings> {
     let data = fs::read_to_string(path).ok()?;
     serde_json::from_str::<AppSettings>(&data).ok()
+}
+
+fn sanitize_archive_retention_limit(limit: u32) -> u32 {
+    match limit {
+        6 | 12 | 24 => limit,
+        _ => DEFAULT_STAR_FOCUS_ARCHIVE_RETENTION_LIMIT,
+    }
+}
+
+fn sanitize_star_focus_state(mut state: StarFocusState) -> StarFocusState {
+    state.archive_retention_limit = sanitize_archive_retention_limit(state.archive_retention_limit);
+    state
+        .mission_history
+        .truncate(state.archive_retention_limit as usize);
+
+    if let Some(last_completed_mission_id) = state.last_completed_mission_id.as_ref() {
+        if !state
+            .mission_history
+            .iter()
+            .any(|mission| &mission.id == last_completed_mission_id)
+        {
+            state.last_completed_mission_id = None;
+        }
+    }
+
+    state
+}
+
+fn load_star_focus_file(path: &Path) -> Option<StarFocusState> {
+    let data = fs::read_to_string(path).ok()?;
+    serde_json::from_str::<StarFocusState>(&data)
+        .ok()
+        .map(sanitize_star_focus_state)
 }
 
 fn infer_provider(api_base: &str) -> String {
@@ -238,6 +358,21 @@ pub fn save_settings(app: &AppHandle, settings: &AppSettings) -> Result<(), Stri
         fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     }
     let json = serde_json::to_string_pretty(settings).map_err(|e| e.to_string())?;
+    fs::write(&path, json).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn load_star_focus_state(app: &AppHandle) -> Option<StarFocusState> {
+    load_star_focus_file(&star_focus_path(app))
+}
+
+pub fn save_star_focus_state(app: &AppHandle, state: &StarFocusState) -> Result<(), String> {
+    let path = star_focus_path(app);
+    if let Some(dir) = path.parent() {
+        fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    }
+    let sanitized_state = sanitize_star_focus_state(state.clone());
+    let json = serde_json::to_string_pretty(&sanitized_state).map_err(|e| e.to_string())?;
     fs::write(&path, json).map_err(|e| e.to_string())?;
     Ok(())
 }

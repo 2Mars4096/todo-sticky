@@ -1,0 +1,55 @@
+# Changelog
+
+## 2026-04-20
+
+- [frontend] Push the shared Star Focus scene further toward a cinematic Tracking Station finish with deeper atmosphere, stronger framing, and richer planetary surface detail.
+- [docs] Close plan `1-19-star-focus-tracking-station-cinematic-polish` and record the latest cinematic polish pass in the tracking docs.
+- [frontend] Improve the shared Star Focus orbital map with richer planetary surface detail, deeper space atmosphere, and a more premium overlay-first finish.
+- [docs] Close plan `1-18-star-focus-orbital-map-materials-pass` and record the new materials-and-atmosphere pass in the tracking docs.
+- [frontend] Remove the sidebar map HUD and camera dock so Mission Control stays quieter while Tracking Station remains the rich orbital-view surface.
+- [docs] Close plan `1-17-star-focus-sidebar-map-simplification` and record the overlay-first map-chrome split in the tracking docs.
+- [frontend] Declutter the shared Star Focus solar-system scene by reducing simultaneous bodies, archive labels, guide intensity, and sidebar control density while keeping the new realism direction.
+- [docs] Close plan `1-16-star-focus-orbital-map-declutter-pass` and record the calmer visual-density split between Mission Control and Tracking Station.
+- [frontend] Upgrade the shared Star Focus map into a compressed solar-system scene with distinct planets, a moon, an asteroid belt, and a ringed outer world while keeping mission markers and camera controls intact.
+- [docs] Close plan `1-15-star-focus-compressed-solar-system-pass` and record the new celestial-body pass in the tracking docs.
+- [frontend] Add direct Star Focus map camera controls with drag-to-pan, wheel/button zoom, and above/level/below pseudo-3D tilt in both Mission Control and Tracking Station.
+- [docs] Close plan `1-14-star-focus-orbital-map-camera-controls` and record the lightweight camera-control boundary in the tracking docs.
+- [frontend] Replace the Star Focus orbital map with a shared telemetry-style scene that adds a live trajectory, labeled archive markers, and a stronger sense of mission progress in both Mission Control and Tracking Station.
+- [docs] Close plan `1-13-star-focus-orbital-map-realism-pass` and record the new shared orbital-scene component in the tracking docs.
+- [frontend] Add dev-only Star Focus mission time-scale controls so local debugging can slow down or fast-forward the live track without changing production behavior.
+- [docs] Close plan `2-1-dev-mode-star-focus-time-scale` and record the new dev-only mission-speed controls in the tracking docs.
+- [frontend] Add a development-only task debug tray with sample-task seeding, sample-pack seeding, clear-day, and reload actions for faster local testing.
+- [docs] Close plan `2-dev-mode-task-debug-panel` and record the dev-only debug surface in the tracking docs.
+- [frontend] Remove duplicate secondary Star Focus labels and rebalance captions so the rail and overlay feel quieter without changing the layout model.
+- [docs] Close plan `1-12` and record the Star Focus hierarchy-trim pass in the tracking docs.
+- [frontend] Remove more explanatory Star Focus copy so Mission Control and Tracking Station rely on labels, metrics, and actions instead of help text.
+- [docs] Close plan `1-11` and record the more guided, less descriptive Star Focus presentation in the tracking docs.
+- [frontend] Trim Star Focus copy density in Mission Control and Tracking Station, and remove redundant overlay help text while keeping the existing visual direction.
+- [docs] Close plan `1-10` and record the new copy-light Star Focus presentation in the tracking docs.
+- [docs] Close plans `1-8` and `1-9`, record the no-markdown-sync boundary, and move the remaining Star Focus retention questions back to backlog.
+- [frontend] Add configurable local Star Focus archive-retention presets in Tracking Station and trim retained mission history through the shared Star Focus state hook.
+- [native] Persist the Star Focus archive-retention limit in native local state, sanitize unsupported values, and re-run `cargo +stable check --manifest-path src-tauri/Cargo.toml`.
+- [docs] Close plan `1-7`, create follow-up plan `1-8`, and update the repo tracking/docs around the new archive-retention decision.
+- [frontend] Expand the local Star Focus archive to 12 missions, add a simple `Recent` vs `Full` Tracking Station archive view, and clarify archive-retention copy.
+- [frontend] Fix Star Focus mission numbering so vehicle codes and orbit indices continue advancing after the retained archive reaches its cap.
+- [native] Enforce the same 12-mission Star Focus archive cap in the native persistence layer and re-run `cargo +stable check --manifest-path src-tauri/Cargo.toml`.
+- [docs] Close plan `1-6`, create follow-up plan `1-7`, and update the repo tracking/docs around the compact-rail and archive-retention decisions.
+- [frontend] Keep the sticky-note window compact by default with both side rails collapsed for new users and compact-mode rail exclusivity when one side expands.
+- [frontend] Auto-open Tracking Station once for restored active sessions when the mission rail is collapsed, and add clearer armed/restored/completed state banners plus explicit local archive-retention copy.
+- [native] Re-run `cargo +stable check --manifest-path src-tauri/Cargo.toml` after the compact/layout polish slice.
+- [docs] Close plans `1-4` and `1-5`, create follow-up plan `1-6`, and update the repo tracking/docs around the new Tracking Station model.
+- [frontend] Add the first Star Focus Tracking Station overlay with a larger starmap, mirrored session controls, full local mission archive, and maintenance actions.
+- [frontend] Let Focus selection open Tracking Station when the rail is collapsed and default new Star Focus state to a compact right-rail baseline.
+- [native] Align the native Star Focus default state with the compact-by-default right Mission Control rail.
+- [native] Validate the new Star Focus persistence path with `cargo +stable check --manifest-path src-tauri/Cargo.toml`.
+- [docs] Close plan `1-3` after native verification and create follow-up plan `1-4` for the overlay reassessment track.
+- [native] Add Tauri-backed Star Focus persistence commands and migrate Mission Control state off browser-only storage into native app data.
+- [frontend] Add orbit-history maintenance controls and wire Mission Control state saves through the new native persistence path.
+- [docs] Move plan `1-3` to in-progress and note that native verification remains pending because this environment had to provision Rust first.
+- [frontend] Add pause/resume, reload-safe active sessions, clearer cancel semantics, and stronger phase-driven Mission Control visuals.
+- [docs] Close plan `1-2`, create follow-up plan `1-3`, and defer expanded-overlay work behind persistence hardening.
+- [frontend] Add the first Star Focus Mission Control shell with a right sidebar, local mission/session state, task handoff, and a sidebar-only starmap view.
+- [docs] Close plan `1-1`, create follow-up plan `1-2`, and move the active Star Focus track to session controls plus animation polish.
+- [docs] Lock the Star Focus v1 design decisions and create the first implementation sub-plan for a frontend-only Mission Control shell.
+- [docs] Initialize the dev documentation scaffold and tracking files.
+- [docs] Tailor the new tracking docs to the Sticky Todo codebase and seed the Star Focus design-planning workstream.

@@ -42,6 +42,7 @@ Click **Test Connection** to verify, then **Get Started**. Change settings later
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires LLM API)
 - **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)
+- **Star Focus Mission Control + Tracking Station** — Compact side rails open on demand; arm a task, launch a focus session, pause/resume it, recover restored live sessions in Tracking Station, and browse a native-local mission archive with a compressed solar-system map that stays quiet in the sidebar while Tracking Station owns the richer planetary materials, atmospheric framing, camera controls, readouts, and local archive views with `6` / `12` / `24` retention presets
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in menu bar with tray icon
 - **Lightweight** — Built with Tauri; ~5 MB installer (no bundled browser)
@@ -56,6 +57,7 @@ npm run dev
 ```
 
 This starts Vite on port 5173 and launches the Tauri window.
+In development builds, a `Dev` button appears in the bottom action bar so you can seed sample tasks, clear the current day, reload task state, and slow down or fast-forward Star Focus mission time.
 
 | Command | Description |
 |---------|-------------|
@@ -83,5 +85,5 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 |----------|--------|
 | **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
 | **Enter** | Add task / submit subtask / commit edit |
-| **Escape** | Cancel edit or subtask input |
+| **Escape** | Close Tracking Station or cancel edit/subtask input |
 | **Double-click** | Edit task text |
