@@ -47,10 +47,10 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            provider: "openai".into(),
-            api_base: "https://api.openai.com/v1".into(),
+            provider: "moonshot".into(),
+            api_base: "https://api.moonshot.ai/v1".into(),
             api_key: String::new(),
-            model: "gpt-4o".into(),
+            model: "kimi-k2.6".into(),
             kb_path: String::new(),
             machines: Vec::new(),
         }
@@ -192,6 +192,8 @@ fn load_star_focus_file(path: &Path) -> Option<StarFocusState> {
 fn infer_provider(api_base: &str) -> String {
     if api_base.contains("openai.com") {
         "openai".into()
+    } else if api_base.contains("moonshot.ai") || api_base.contains("kimi.ai") {
+        "moonshot".into()
     } else if api_base.contains("anthropic.com") {
         "anthropic".into()
     } else if api_base.contains("googleapis.com") {

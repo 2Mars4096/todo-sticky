@@ -18,22 +18,55 @@ struct Message {
     content: String,
 }
 
-async fn openai_completion(api_base: &str, api_key: &str, model: &str, messages: &[Message]) -> Result<String, String> {
-    let msgs: Vec<Value> = messages.iter().map(|m| json!({"role": m.role, "content": m.content})).collect();
+const DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE: f32 = 0.4;
+const KIMI_TEMPERATURE: f32 = 1.0;
+
+fn openai_compatible_temperature(config: &LLMConfig) -> f32 {
+    let provider = config.provider.to_lowercase();
+    let api_base = config.api_base.to_lowercase();
+    let model = config.model.to_lowercase();
+
+    if provider == "moonshot"
+        || api_base.contains("moonshot.ai")
+        || api_base.contains("kimi.ai")
+        || model.starts_with("kimi-")
+    {
+        KIMI_TEMPERATURE
+    } else {
+        DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE
+    }
+}
+
+async fn openai_completion(
+    api_base: &str,
+    api_key: &str,
+    model: &str,
+    messages: &[Message],
+    temperature: f32,
+) -> Result<String, String> {
+    let msgs: Vec<Value> = messages
+        .iter()
+        .map(|m| json!({"role": m.role, "content": m.content}))
+        .collect();
     let client = reqwest::Client::new();
     let resp = client
         .post(format!("{}/chat/completions", api_base))
         .header("Content-Type", "application/json")
         .header("Authorization", format!("Bearer {}", api_key))
-        .json(&json!({"model": model, "messages": msgs, "temperature": 0.4}))
-        .send().await.map_err(|e| e.to_string())?;
+        .json(&json!({"model": model, "messages": msgs, "temperature": temperature}))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
 
     if !resp.status().is_success() {
         let text = resp.text().await.unwrap_or_default();
         return Err(format!("API error: {}", text));
     }
     let data: Value = resp.json().await.map_err(|e| e.to_string())?;
-    Ok(data["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string())
+    Ok(data["choices"][0]["message"]["content"]
+        .as_str()
+        .unwrap_or("")
+        .to_string())
 }
 
 async fn anthropic_completion(api_base: &str, api_key: &str, model: &str, messages: &[Message]) -> Result<String, String> {
@@ -102,7 +135,14 @@ async fn chat_completion(config: &LLMConfig, messages: &[Message]) -> Result<Str
     match config.provider.as_str() {
         "anthropic" => anthropic_completion(&config.api_base, &config.api_key, &config.model, messages).await,
         "gemini" => gemini_completion(&config.api_base, &config.api_key, &config.model, messages).await,
-        _ => openai_completion(&config.api_base, &config.api_key, &config.model, messages).await,
+        _ => openai_completion(
+            &config.api_base,
+            &config.api_key,
+            &config.model,
+            messages,
+            openai_compatible_temperature(config),
+        )
+        .await,
     }
 }
 

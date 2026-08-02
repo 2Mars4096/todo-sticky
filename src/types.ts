@@ -20,7 +20,7 @@ export interface AggregatedTask {
 export type ViewMode = 'all' | 'today'
 export type GoalCategory = 'targets' | 'recurring'
 
-export type Provider = 'openai' | 'anthropic' | 'gemini' | 'custom'
+export type Provider = 'moonshot' | 'openai' | 'anthropic' | 'gemini' | 'custom'
 
 export interface AppSettings {
   provider: Provider

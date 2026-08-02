@@ -3,6 +3,11 @@ import type { AppSettings, Provider } from '../types'
 import { api } from '../api'
 
 const PROVIDER_PRESETS: Record<string, { apiBase: string; model: string; models: string[] }> = {
+  moonshot: {
+    apiBase: 'https://api.moonshot.ai/v1',
+    model: 'kimi-k2.6',
+    models: ['kimi-k2.6', 'kimi-k2.5'],
+  },
   openai: {
     apiBase: 'https://api.openai.com/v1',
     model: 'gpt-4o',
@@ -26,10 +31,10 @@ const PROVIDER_PRESETS: Record<string, { apiBase: string; model: string; models:
 }
 
 const EMPTY_SETTINGS: AppSettings = {
-  provider: 'openai',
-  apiBase: 'https://api.openai.com/v1',
+  provider: 'moonshot',
+  apiBase: 'https://api.moonshot.ai/v1',
   apiKey: '',
-  model: 'gpt-4o',
+  model: 'kimi-k2.6',
   kbPath: '',
   machines: [],
 }
@@ -123,8 +128,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
         <h3>{firstRun ? 'Welcome to Sticky Todo' : 'Settings'}</h3>
         {firstRun && (
           <p className="settings-subtitle">
-            Configure your AI provider to enable task breakdown and scheduling.
-            You can always change these later.
+            AI is optional. Start without a key, or connect a provider for task breakdown and day planning.
           </p>
         )}
 
@@ -138,6 +142,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
               value={settings.provider}
               onChange={e => handleProviderChange(e.target.value as Provider)}
             >
+              <option value="moonshot">Moonshot (Kimi)</option>
               <option value="openai">OpenAI</option>
               <option value="anthropic">Anthropic (Claude)</option>
               <option value="gemini">Google Gemini</option>
@@ -179,6 +184,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
                 className="input-row-btn"
                 onClick={() => setShowKey(!showKey)}
                 title={showKey ? 'Hide key' : 'Show key'}
+                aria-label={showKey ? 'Hide API key' : 'Show API key'}
               >
                 {showKey ? '◉' : '○'}
               </button>
@@ -210,7 +216,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
                 onChange={e => update({ kbPath: e.target.value })}
                 placeholder="Default: ~/Documents/Sticky Todo"
               />
-              <button className="input-row-btn" onClick={handleSelectFolder} title="Browse…">
+              <button className="input-row-btn" onClick={handleSelectFolder} title="Browse…" aria-label="Choose storage folder">
                 📁
               </button>
             </div>
@@ -243,7 +249,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
                     <option value="server">Server</option>
                     <option value="workstation">Workstation</option>
                   </select>
-                  <button className="machine-rm" onClick={() => removeMachine(i)} title="Remove">✕</button>
+                  <button className="machine-rm" onClick={() => removeMachine(i)} title="Remove" aria-label={`Remove machine ${m.name || i + 1}`}>✕</button>
                 </div>
                 <input
                   value={m.specs || ''}
@@ -270,7 +276,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
         <div className="btn-row">
           {!firstRun && <button onClick={onClose}>Cancel</button>}
           <button className="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : firstRun ? 'Get Started' : 'Save'}
+            {saving ? 'Saving…' : firstRun ? settings.apiKey ? 'Save & Start' : 'Start without AI' : 'Save'}
           </button>
         </div>
       </div>
