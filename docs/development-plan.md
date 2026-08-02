@@ -26,6 +26,7 @@
 - [x] Land [1-10-star-focus-copy-density-polish](plans/1-10-star-focus-copy-density-polish.md).
 - [x] Land [1-11-star-focus-guided-copy-minimization](plans/1-11-star-focus-guided-copy-minimization.md).
 - [x] Land [1-12-star-focus-hierarchy-trim](plans/1-12-star-focus-hierarchy-trim.md).
+- [x] Land [4-ready-shell-and-ux-path-pass](plans/4-ready-shell-and-ux-path-pass.md).
 
 ## Open Questions
 

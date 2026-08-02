@@ -34,12 +34,45 @@
 - [x] [1-17-star-focus-sidebar-map-simplification](plans/1-17-star-focus-sidebar-map-simplification.md) - Remove sidebar map chrome so Tracking Station remains the richer orbital surface.
 - [x] [1-18-star-focus-orbital-map-materials-pass](plans/1-18-star-focus-orbital-map-materials-pass.md) - Improve planetary materials and scene atmosphere so the orbital map feels more premium.
 - [x] [1-19-star-focus-tracking-station-cinematic-polish](plans/1-19-star-focus-tracking-station-cinematic-polish.md) - Push the shared orbital scene toward a more cinematic Tracking Station finish without adding new chrome.
+- [x] [1-20-star-focus-projected-3d-orbital-pass](plans/1-20-star-focus-projected-3d-orbital-pass.md) - Rebuild the shared orbital scene as a projected 3D view with orbit-camera interaction instead of a flat tilted map.
+- [x] [1-21-star-focus-planet-detail-pass](plans/1-21-star-focus-planet-detail-pass.md) - Add finer-grained planet, moon, and ring detail so the projected orbital scene holds up better at close inspection.
+- [x] [1-22-star-focus-planet-motion-and-atmosphere-pass](plans/1-22-star-focus-planet-motion-and-atmosphere-pass.md) - Add restrained planet motion, atmosphere shells, and stronger ring-shadow treatment so the projected scene feels more alive.
+- [x] [1-23-star-focus-lighting-and-ring-occlusion-pass](plans/1-23-star-focus-lighting-and-ring-occlusion-pass.md) - Make planetary lighting follow the scene geometry more believably and let Saturn's ring occlusion follow the projected ring path.
+- [x] [1-24-star-focus-ring-structure-and-scattering-pass](plans/1-24-star-focus-ring-structure-and-scattering-pass.md) - Add richer Saturn ring breakup and better atmospheric scattering falloff so local depth holds up better under close inspection.
+- [x] [1-25-star-focus-disc-microtexture-pass](plans/1-25-star-focus-disc-microtexture-pass.md) - Add fine disc-level currents, swirls, dunes, and micro-bands so the planets keep their read when you zoom in.
+- [x] [1-26-star-focus-phase-responsive-material-pass](plans/1-26-star-focus-phase-responsive-material-pass.md) - Let the shared orbital scene shift its materials, atmosphere, and motion pacing with the live mission phase instead of adding more chrome.
+- [x] [1-27-star-focus-weather-layer-lock-pass](plans/1-27-star-focus-weather-layer-lock-pass.md) - Lock cloud and weather motion back onto the planets so close-up inspection stays coherent instead of sloppy.
+- [x] [1-28-star-focus-spherical-falloff-pass](plans/1-28-star-focus-spherical-falloff-pass.md) - Strengthen the spherical read with quieter weather motion, stronger limb falloff, and less posterized cloud/band contrast.
+- [x] [1-29-star-focus-true-3d-tracking-foundation](plans/1-29-star-focus-true-3d-tracking-foundation.md) - Start the first true 3D/WebGL Star Focus renderer in Tracking Station while keeping the sidebar on the lighter projected map.
+- [x] [1-30-star-focus-3d-material-realism-pass](plans/1-30-star-focus-3d-material-realism-pass.md) - Deepen the true 3D Tracking Station renderer with layered planet materials, cloud shells, and textured rings.
+- [x] [1-31-star-focus-3d-atmosphere-and-shadow-pass](plans/1-31-star-focus-3d-atmosphere-and-shadow-pass.md) - Add fresnel atmosphere glow, shadow-enabled lighting, and stronger ring occlusion cues to the true 3D renderer.
+- [x] [1-32-star-focus-3d-solar-lighting-and-depth-pass](plans/1-32-star-focus-3d-solar-lighting-and-depth-pass.md) - Make the true 3D renderer react more directly to the sun angle and add layered background depth behind the system.
+- [x] [1-33-star-focus-3d-occultation-and-night-detail-pass](plans/1-33-star-focus-3d-occultation-and-night-detail-pass.md) - Add Earth dark-side lights and Saturn ring-shadow detail to the true 3D renderer.
+- [x] [1-34-star-focus-3d-reflected-light-pass](plans/1-34-star-focus-3d-reflected-light-pass.md) - Add Earth ocean glint and Moon Earthshine cues to the true 3D renderer.
+- [x] [1-35-star-focus-3d-eclipse-and-transit-pass](plans/1-35-star-focus-3d-eclipse-and-transit-pass.md) - Add Earth-Moon eclipse and transit cues to the true 3D renderer.
+- [x] [1-36-star-focus-3d-phase-rim-pass](plans/1-36-star-focus-3d-phase-rim-pass.md) - Add clearer phase and crescent rims to the true 3D renderer.
+- [x] [1-37-star-focus-3d-scattering-pass](plans/1-37-star-focus-3d-scattering-pass.md) - Add color-separated atmospheric terminators and stronger ring scattering to the true 3D renderer.
+- [x] [1-38-star-focus-3d-cloud-shadow-coupling-pass](plans/1-38-star-focus-3d-cloud-shadow-coupling-pass.md) - Add Earth/Venus cloud-shadow coupling so the true 3D bodies feel more light-linked and less like stacked layers.
+- [x] [1-39-star-focus-3d-cloud-shell-scattering-pass](plans/1-39-star-focus-3d-cloud-shell-scattering-pass.md) - Upgrade Earth/Venus cloud shells with darker night sides, stronger terminators, and restrained silver-lining behavior.
+- [x] [1-40-star-focus-3d-atmosphere-shell-depth-pass](plans/1-40-star-focus-3d-atmosphere-shell-depth-pass.md) - Replace the flat front atmosphere shell with a deeper day/terminator/limb haze pass in the true 3D renderer.
+- [x] [1-41-star-focus-3d-background-depth-pass](plans/1-41-star-focus-3d-background-depth-pass.md) - Add layered nebula and dust-haze depth behind the true 3D system so the scene feels less empty.
+- [x] [1-42-star-focus-3d-solar-scatter-pass](plans/1-42-star-focus-3d-solar-scatter-pass.md) - Add richer solar flare structure and a restrained sun-lit scatter band through the true 3D system.
+- [x] [1-43-star-focus-3d-shadow-interaction-pass](plans/1-43-star-focus-3d-shadow-interaction-pass.md) - Let cloud shells and rings participate more cleanly in the shared solar shadow path.
 
 ## Phase 3 - Developer Tools
 
 - [x] [2-dev-mode-task-debug-panel](plans/2-dev-mode-task-debug-panel.md) - Add a development-only panel for seeding, clearing, and reloading tasks during local debugging.
   - [x] [2-1-dev-mode-star-focus-time-scale](plans/2-1-dev-mode-star-focus-time-scale.md) - Add dev-only Star Focus mission time-speed controls for inspecting track progress.
 
+## Phase 4 - AI Provider Defaults
+
+- [x] [3-kimi-moonshot-default-provider](plans/3-kimi-moonshot-default-provider.md) - Make Moonshot Kimi the default AI provider and use Kimi's recommended temperature.
+
+## Phase 5 - Ready-To-Use Frontend
+
+- [x] [4-ready-shell-and-ux-path-pass](plans/4-ready-shell-and-ux-path-pass.md) - Optimize the default layout, frameless-window resizing, and shortest paths through core workflows.
+
 ## Backlog
 
 - [ ] Revisit whether Star Focus archive retention needs a wider preset range or a dedicated settings-panel home beyond the first local-only `6` / `12` / `24` control pass.
+- [ ] Add a lightweight undo path for task deletion without introducing a confirmation modal.

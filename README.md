@@ -12,18 +12,18 @@ Download the latest installer from [Releases](https://github.com/2Mars4096/todo-
 | **Windows** | `.msi` or `.exe` |
 | **Linux** | `.deb` or `.AppImage` |
 
-On first launch the app opens a settings panel:
+On first launch the app opens an optional setup panel. Choose **Start without AI** to begin immediately, or configure a provider to enable AI task breakdown and day planning:
 
 | Field | What to enter |
 |-------|---------------|
-| **Provider** | Choose **OpenAI**, **Anthropic (Claude)**, **Google Gemini**, or **Custom** (any OpenAI-compatible endpoint). Base URL and model suggestions auto-fill. |
+| **Provider** | Default is **Moonshot (Kimi)**. You can also choose **OpenAI**, **Anthropic (Claude)**, **Google Gemini**, or **Custom** (any OpenAI-compatible endpoint). Base URL and model suggestions auto-fill. |
 | **API Base URL** | Pre-filled for standard providers. Edit if you use a proxy, Azure, OpenRouter, etc. |
-| **Model** | Pick from suggestions or type any model name (e.g. `gpt-4o`, `claude-sonnet-4-20250514`, `gemini-2.0-flash`). |
+| **Model** | Pick from suggestions or type any model name (default `kimi-k2.6`; examples: `gpt-4o`, `claude-sonnet-4-20250514`, `gemini-2.0-flash`). |
 | **API Key** | Paste your key. Stored locally — never sent anywhere except your chosen API. |
 | **KB Path** | Where task files live (`content/to-do/` inside this folder). Default: `~/Documents/Sticky Todo`. |
 | **Machines** | *(Optional)* Add servers/workstations for AI scheduling. |
 
-Click **Test Connection** to verify, then **Get Started**. Change settings later via ⚙.
+Click **Test Connection** to verify, then **Save & Start**. Change settings later via ⚙.
 
 > macOS Gatekeeper may warn about an unsigned app. Right-click → **Open** to bypass.
 
@@ -36,13 +36,14 @@ Click **Test Connection** to verify, then **Get Started**. Change settings later
 ## Features
 
 - **Tasks & subtasks** — Add tasks, break them into subtasks manually or with AI
+- **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Status cycle** — Toggle task status: todo → done → partial → todo
 - **Push to tomorrow** — Move unfinished tasks to the next day
 - **Date navigation** — Jump between days with prev/next arrows or calendar picker
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires LLM API)
 - **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)
-- **Star Focus Mission Control + Tracking Station** — Compact side rails open on demand; arm a task, launch a focus session, pause/resume it, recover restored live sessions in Tracking Station, and browse a native-local mission archive with a compressed solar-system map that stays quiet in the sidebar while Tracking Station owns the richer planetary materials, atmospheric framing, camera controls, readouts, and local archive views with `6` / `12` / `24` retention presets
+- **Star Focus Mission Control + Tracking Station** — Compact side rails open on demand; arm a task, launch a focus session, pause/resume it, recover restored live sessions in Tracking Station, and browse a native-local mission archive with a compressed solar-system map that stays quiet in the sidebar while Tracking Station now owns the true 3D orbital renderer with real camera orbit, layered planet materials, shader-driven front atmosphere haze, Earth/Venus cloud-shadow coupling under shader-driven cloud shells, alpha-aware solar shadow interaction for cloud shells and rings, color-separated atmosphere scattering, shadowed lighting, richer sun flare and solar scatter structure, inner-body phase rims, Earth dark-side lights, Earth ocean glint, Earth-Moon eclipse/transit cues, Moon Earthshine, Saturn ring-shadow detail, Saturn ring scattering, textured rings, layered starfield depth, nebula veils, dust-haze background depth, live mission pathing, and local archive views, while the sidebar stays on the lighter projected map with `6` / `12` / `24` retention presets
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in menu bar with tray icon
 - **Lightweight** — Built with Tauri; ~5 MB installer (no bundled browser)
@@ -84,6 +85,7 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 | Shortcut | Action |
 |----------|--------|
 | **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
-| **Enter** | Add task / submit subtask / commit edit |
-| **Escape** | Close Tracking Station or cancel edit/subtask input |
+| **Enter** | Add task / submit subtask or goal / commit edit |
+| **Escape** | Close Tracking Station or a compact side panel; cancel edit/subtask input |
+| **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
 | **Double-click** | Edit task text |

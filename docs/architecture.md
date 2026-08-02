@@ -3,7 +3,7 @@
 ## Tech Stack
 
 - [ ] Languages: TypeScript/TSX for the frontend, Rust for the Tauri native layer, Markdown for task storage.
-- [ ] Frameworks: React 18, Vite 6, Tauri 2, date-fns, react-day-picker.
+- [ ] Frameworks: React 18, Vite 6, Tauri 2, Three.js, date-fns, react-day-picker.
 - [ ] Build and test tools: `vite build`, `npx tauri dev`, `npx tauri build`; there is no established automated test suite yet.
 - [ ] Runtime or deployment targets: desktop app for macOS, Windows, and Linux.
 
@@ -14,17 +14,28 @@
 - [ ] `docs/`: live project tracking, roadmap, plans, changelog, bugs, and architecture notes.
 - [ ] `content/`: markdown-backed task data under `content/to-do/`.
 - [ ] Other top-level directories: `demo/` for assets, `scripts/` for build/demo utilities, `dist/` for built frontend assets.
+- [ ] `PRODUCT.md` and `DESIGN.md`: strategic product context and the reusable visual-system contract for future frontend work.
+
+## Ready Shell Modules
+
+- [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, and day-first view default.
+- [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
+- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top and provide an instructional empty state.
+- [ ] `src/components/TaskItem.tsx`: keeps edit, focus, step, AI breakdown, delete, and move actions directly reachable; compact CSS wraps the action strip below task text.
+- [ ] `src-tauri/tauri.conf.json` and `src-tauri/capabilities/default.json`: define the `460x640` default, `340x440` minimum, and native resize-drag permission.
 
 ## Star Focus Modules
 
 - [ ] `src/App.tsx`: app-shell coordination for compact window widths, rail exclusivity, and Tracking Station auto-open behavior for restored sessions.
 - [ ] `src/hooks/useStarFocus.ts`: Star Focus state, pause/resume lifecycle, reload-safe active sessions, configurable local archive-retention presets, dev-only mission time-scale simulation, mission numbering, migration from legacy localStorage, and native-backed persistence saves.
 - [ ] `src/components/MissionControlSidebar.tsx`: right-sidebar Mission Control shell, shared orbital telemetry scene, session controls, mission-history UI, and maintenance controls.
-- [ ] `src/components/TrackingStationOverlay.tsx`: expanded in-window Star Focus surface with the larger shared orbital telemetry scene, mirrored launch/live controls, recent/full archive browsing, archive-cap controls, and maintenance actions.
-- [ ] `src/components/StarFocusOrbitalMap.tsx`: shared SVG/CSS orbital-scene renderer used by both Mission Control and Tracking Station for celestial bodies, lightweight surface textures, atmospheric framing layers, live trajectory, archive markers, telemetry HUD readouts, and local pan/zoom/tilt camera controls.
+- [ ] `src/components/TrackingStationOverlay.tsx`: expanded in-window Star Focus surface with the larger orbital display, mirrored launch/live controls, recent/full archive browsing, archive-cap controls, maintenance actions, and a lazy-loaded true 3D Tracking Station map with projected-SVG fallback.
+- [ ] `src/components/StarFocusOrbitalMap.tsx`: lighter SVG/CSS orbital-scene renderer retained for Mission Control and as the Tracking Station fallback, with projected celestial bodies, fine-grained surface textures and microtextures, scene-aware lighting, restrained body motion, moon/ring detail, layered atmosphere shells and scattering, phase-responsive material tuning, locked weather-layer motion, stronger spherical limb falloff, live trajectory, archive markers, telemetry HUD readouts, and local orbit-camera zoom/tilt controls.
+- [ ] `src/components/StarFocusOrbitalMap3D.tsx`: true WebGL/Three.js orbital scene for Tracking Station with real meshes, camera orbit controls, layered procedural surface/bump/roughness materials, shader-driven front atmosphere haze, Earth/Venus cloud-shadow coupling beneath shader-driven cloud shells, alpha-aware solar shadow interaction for cloud shells and rings, color-separated atmosphere scattering, shadow-enabled lighting, richer sun flare and solar scatter structure, inner-body phase rims, Earth dark-side lights, Earth ocean glint, Earth-Moon eclipse/transit cues, Moon Earthshine, Saturn ring-shadow detail, Saturn ring scattering, textured rings, layered starfield depth, nebula veils and dust-haze background depth, archive markers, and a live mission craft path.
 - [ ] `src/components/TaskList.tsx` and `src/components/TaskItem.tsx`: explicit task-to-Mission-Control handoff plus active-session selection locking.
 - [ ] `src/components/DevToolsPanel.tsx`: development-only debug tray for seeding tasks, reloading task state, clearing the current day, and changing Star Focus mission speed during local testing.
 - [ ] `src/api.ts`: Tauri bridge for Star Focus load/save commands alongside the existing task and settings calls.
+- [ ] `src/components/SettingsPanel.tsx` and `src-tauri/src/llm.rs`: AI provider settings and native LLM calls, with Moonshot Kimi as the default OpenAI-compatible provider and Kimi/Moonshot requests using temperature `1.0`.
 - [ ] `src-tauri/src/config.rs` and `src-tauri/src/commands.rs`: native app-data persistence for Star Focus state in a dedicated file separate from the general settings payload, including archive-cap sanitization.
 
 ## Conventions
@@ -40,21 +51,33 @@
 - Start Star Focus with a frontend-only integration slice before adding Rust commands or markdown schema changes.
 - Keep task content as the existing markdown-backed source of truth even as Star Focus mission/session state moves into native local persistence.
 - Keep Star Focus mission history native-local only; do not sync mission/session rewards into the markdown task files.
-- Build Star Focus visuals with lightweight 2D DOM/SVG/CSS motion in v1; defer WebGL, 3D scenes, and heavyweight animation systems.
+- Keep the sidebar and fallback path lightweight, but Tracking Station can now use an on-demand true 3D/WebGL renderer where the realism gain is worth the heavier runtime.
 - Keep Star Focus copy terse; prefer labels, metrics, and direct actions over explanatory paragraphs.
 - Prefer one strong Star Focus readout over duplicated secondary labels when the context is already obvious.
 - Keep the right Mission Control rail as the quick-control entry surface even now that Tracking Station exists as an expanded overlay.
 - Default new left-goals and right-mission rails to collapsed so the sticky-note window keeps a usable center column before the user opts into the larger side surfaces.
-- In compact window widths, expanding one side rail should collapse the other instead of allowing both expanded rails to crush the center task column.
+- In compact window widths, expanding one side rail should collapse the other and overlay the center instead of crushing the task column.
+- Keep task capture immediately below the date header; secondary actions such as AI day planning stay in the lower action bar.
+- Keep frameless resizing discoverable through generous edge/corner hit zones and a visible bottom-right grip.
+- Keep essential task actions keyboard reachable and visible at low emphasis; wrap them below task text at the minimum width rather than hiding them.
 - Keep the first archive-retention control pass inside Tracking Station with a small preset range instead of adding another global settings surface.
 - Keep Star Focus map upgrades grounded in mission telemetry and accumulated-orbit feedback instead of drifting into descriptive filler or a separate vehicle-construction mechanic.
-- Keep Star Focus camera interaction lightweight: local drag/zoom/tilt controls are fine, but real 3D assets and WebGL remain out of scope for the current v1 implementation track.
+- Keep the first true 3D/WebGL rollout overlay-first: Tracking Station can own the heavier renderer while Mission Control keeps the lighter projected camera model.
 - Keep Star Focus solar-system visuals compressed and readable; the scene should suggest astronomy without becoming a literal-to-scale simulator.
 - Keep the Mission Control sidebar visually lighter than Tracking Station; the shared scene can scale density by surface instead of rendering everything everywhere.
 - Keep explicit map chrome overlay-first: Tracking Station can own the camera HUD and controls while the sidebar map stays mostly atmospheric.
 - Prefer realism gains from better materials, lighting, and atmosphere before adding more scene objects or UI chrome.
 - Prefer cinematic polish from framing, contrast, and surface detail before expanding the Star Focus control surface or reintroducing helper copy.
+- Prefer higher-fidelity planet reads from layered materials, terminators, and ring/moon treatment before considering heavier rendering technology.
+- Keep any planetary motion restrained and ambient so it supports realism and inspection instead of making the orbital scene feel gamey.
+- Keep planetary lighting cues tied to the projected scene geometry so highlight, rim, and night-side shading move coherently with the sun/camera relationship.
+- Prefer local depth gains from atmospheric falloff and ring structure before expanding the scene scope or jumping to heavier rendering systems.
+- Let mission phase shift the shared scene through material balance, atmosphere, and motion pacing before adding new UI chrome or narration.
+- Keep atmospheric/weather motion visually attached to the planet disc; subtle shimmer is fine, but detached layer sliding breaks the realism immediately.
+- Let close-up planet detail fade and compress toward the limb so the bodies read as spheres, not flat decals with full edge contrast.
+- Keep the smallest planetary linework and microtextures quieter in Mission Control than in Tracking Station so detail improves inspection without making the sidebar busy.
 - Keep Star Focus debug controls dev-only, non-persistent, and compact enough to stay in the bottom debug tray instead of expanding the production settings/UI surface.
+- Keep Moonshot Kimi as the default AI provider preset unless product direction changes; existing saved settings remain user-controlled and should not be silently overwritten by defaults.
 
 ## Star Focus V1 Integration
 
@@ -77,8 +100,32 @@
 - The latest sidebar-simplification pass removes the sidebar map HUD and control dock so Tracking Station remains the richer orbital surface.
 - The latest materials pass improves planet rendering and deep-space atmosphere so the orbital scene feels more premium without expanding the control surface.
 - The latest cinematic polish pass adds stronger atmospheric framing and richer body textures so Tracking Station feels more like a premium mission-display surface without adding more chrome.
+- The latest projected-3D pass replaces the old flat tilted layout with depth-sorted orbital rendering and orbit-camera interaction while staying inside SVG/CSS instead of switching to WebGL.
+- The latest planet-detail pass adds finer-grained surface layers, stronger light/shadow cues, richer moon treatment, and more refined Saturn rings so the projected scene holds up better under close inspection.
+- The latest motion-and-atmosphere pass adds subtle body rotation, drifting weather/band motion, outer planet shells, and clearer ring shadowing so the planets feel less static.
+- The latest lighting-and-occlusion pass makes surface gradients, highlight placement, night-side shading, and Saturn ring overlap follow the actual projected scene geometry more closely.
+- The latest ring-and-scattering pass adds more granular Saturn ring breakup and stronger layered atmosphere falloff so local depth reads better when you zoom in.
+- The latest disc-microtexture pass adds finer currents, swirls, dune traces, crater ridges, and gas-giant micro-bands so the planets keep character under close inspection without expanding the scene chrome.
+- The latest phase-responsive material pass lets ignition, ascent, heating, staging, orbit, and idle states steer atmosphere strength, rim/gloss balance, ring intensity, and subtle ambient motion pacing in the shared orbital scene.
+- The latest weather-layer lock pass reduces cloud/band translation and reshapes the shared drift animation so close-up planetary weather reads as attached atmosphere instead of a drifting decal.
+- The latest spherical-falloff pass removes the last weather slip, darkens detail toward the limb, and lowers cloud/band contrast so the projected bodies feel less like painted discs.
+- The latest true-3D Tracking Station pass adds a lazy-loaded Three.js orbital scene in the overlay while preserving the lighter SVG map in the sidebar and as fallback.
+- The latest 3D material-realism pass deepens the overlay renderer with layered body materials, separate cloud and atmosphere shells, textured Saturn rings, and cleaner phase-tuned scene behavior.
+- The latest 3D atmosphere-and-shadow pass replaces the flat outer glow with fresnel-style atmosphere shells, enables local shadow cues, and makes Saturn's ring brightness and occlusion react more like a lit 3D object.
+- The latest 3D solar-lighting-and-depth pass biases atmosphere and ring glow more directly to the sun angle and replaces the single flat star cloud with layered background depth.
+- The latest 3D occultation-and-night-detail pass adds restrained Earth dark-side lights and a dedicated Saturn ring-shadow layer so the planets gain more local realism without adding more UI chrome.
+- The latest 3D reflected-light pass adds Earth ocean glint and a subtle Moon Earthshine fill so the Earth-Moon pair feels more optically connected to the scene lighting.
+- The latest 3D eclipse-and-transit pass adds a moon-shadow cue on Earth and lunar-eclipse shading on the Moon so the Earth-Moon pair responds more like interacting bodies.
+- The latest 3D phase-rim pass adds restrained crescent/rim overlays to Venus, the inner bodies, and the Moon so phase separation reads more clearly under inspection.
+- The latest 3D scattering pass separates atmosphere day/terminator/night color and makes Saturn's glow respond more like a thin scattering ring instead of a constant additive band.
+- The latest 3D cloud-shadow pass projects the Earth and Venus cloud masks back onto the lit surface so the visible cloud shells feel more physically tied to the body lighting.
+- The latest 3D cloud-shell scattering pass gives the Earth and Venus cloud layers their own darker night-side response, warmer/cooler terminator lift, and restrained silver-lining behavior.
+- The latest 3D atmosphere-shell depth pass replaces the flat front atmosphere overlay with a shader-driven haze shell so day, twilight, night, and limb behavior read more like a volumetric atmosphere.
+- The latest 3D background-depth pass adds layered nebula sprites and broad dust veils behind and through the system plane so the scene feels more embedded in space instead of floating in empty black.
+- The latest 3D solar-scatter pass gives the sun a more structured flare read and adds a restrained illuminated scatter band through the inner system so the star feels more like a live light source.
+- The latest 3D shadow-interaction pass gives cloud shells and Saturn's rings masked shadow materials and tightens the main solar shadow-map settings so thin transparent geometry participates more believably in local shadowing.
 - Local development now has a dev-only debug tray for seeding tasks, clearing the current day, reloading task state, and slowing/fast-forwarding the Star Focus mission track.
-- There is no newer active implementation slice after [1-19-star-focus-tracking-station-cinematic-polish](plans/1-19-star-focus-tracking-station-cinematic-polish.md); remaining questions are parked in backlog.
+- There is no newer active implementation slice after [1-43-star-focus-3d-shadow-interaction-pass](plans/1-43-star-focus-3d-shadow-interaction-pass.md); remaining questions are parked in backlog.
 
 ## Quality Checks
 

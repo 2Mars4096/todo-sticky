@@ -1,7 +1,70 @@
 # Changelog
 
+## 2026-08-02
+
+- [frontend] Replace the cramped 380px baseline with a ready-to-use 460px shell, one-time collapsed-rail migration, compact overlay panels, and responsive populated-task action wrapping.
+- [frontend] Add native resize hit zones on every frameless edge and corner, including a visible bottom-right grip and explicit Tauri resize permission.
+- [frontend] Move task capture below the date header, add an actionable empty state, repair the unreachable add-step path, improve date/filter labels, and add accessible names plus reduced-motion handling.
+- [frontend] Add visible success/error feedback for AI planning, AI breakdown, and move-to-tomorrow actions; restore optimistic task state when a move fails.
+- [frontend] Clarify first-run setup so users can start without AI, while keeping provider setup available for breakdown and planning.
+- [docs] Add the product/design baseline, complete plan `4-ready-shell-and-ux-path-pass`, and record the core workflow audit in `docs/ux-review.md`.
+
+## 2026-04-24
+
+- [native] Make Moonshot Kimi the default LLM configuration with `https://api.moonshot.ai/v1`, `kimi-k2.6`, and temperature `1.0` for Kimi/Moonshot OpenAI-compatible calls.
+- [frontend] Add a Moonshot (Kimi) provider preset in Settings and update the first-run defaults to `kimi-k2.6`.
+- [docs] Add plan `3-kimi-moonshot-default-provider` and update the README/environment examples for the new default provider.
+
 ## 2026-04-20
 
+- [frontend] Improve the true 3D shadow path by giving cloud shells and Saturn's rings masked shadow materials, tightening the solar shadow-map settings, and easing back the older ring-shadow overlay so local shadow interaction feels less approximate.
+- [docs] Close plan `1-43-star-focus-3d-shadow-interaction-pass` and update the tracking docs for the new 3D shadow-interaction slice.
+- [frontend] Deepen the true 3D sun treatment with structured flare sprites and a restrained illuminated scatter veil through the inner system so the star feels more like an active light source than a bright sphere.
+- [docs] Close plan `1-42-star-focus-3d-solar-scatter-pass` and update the tracking docs for the new 3D solar-scatter slice.
+- [frontend] Deepen the true 3D Tracking Station background with layered far/near nebula sprites and broad dust-haze veils through the system plane so the planets sit in a richer environment instead of clean empty space.
+- [docs] Close plan `1-41-star-focus-3d-background-depth-pass` and update the tracking docs for the new 3D background-depth slice.
+- [frontend] Replace the flat front atmosphere layer in the true 3D Tracking Station renderer with a shader-driven haze shell that reacts to day, terminator, night, and limb angle so Earth, Venus, Mars, and the outer atmosphere feel less like uniform overlays.
+- [docs] Close plan `1-40-star-focus-3d-atmosphere-shell-depth-pass` and update the tracking docs for the new 3D atmosphere-shell slice.
+- [frontend] Replace the flat Earth/Venus cloud-shell material in the true 3D Tracking Station renderer with a shader-driven shell that carries darker night-side clouds, brighter terminator color, and restrained silver-lining scatter tied to the sun and camera angle.
+- [docs] Close plan `1-39-star-focus-3d-cloud-shell-scattering-pass` and update the tracking docs for the new 3D cloud-shell slice.
+- [frontend] Add cloud-shadow coupling to the true 3D Tracking Station renderer by projecting Earth and Venus cloud masks back onto the lit surface, keeping the shadows synchronized with the cloud shells, and slightly retuning cloud emissive lift so the layered planets read more like one lighting system.
+- [docs] Close plan `1-38-star-focus-3d-cloud-shadow-coupling-pass` and update the tracking docs for the new 3D cloud-shadow slice.
+- [frontend] Add more optical richness to the true 3D Tracking Station renderer by separating atmosphere day/terminator/night color and replacing Saturn's flat glow band with a light/view-responsive ring-scattering pass.
+- [docs] Close plan `1-37-star-focus-3d-scattering-pass` and update the tracking docs for the new 3D scattering slice.
+- [frontend] Add clearer planetary phase behavior to the true 3D Tracking Station renderer with restrained crescent/rim overlays on the inner bodies and the Moon so the lit shapes read more like phased bodies than evenly shaded spheres.
+- [docs] Close plan `1-36-star-focus-3d-phase-rim-pass` and update the tracking docs for the new 3D phase-rim slice.
+- [frontend] Add Earth-Moon eclipse/transit interaction to the true 3D Tracking Station renderer with a moon-shadow cue on Earth and lunar-eclipse shading on the Moon so the pair feels more physically linked.
+- [docs] Close plan `1-35-star-focus-3d-eclipse-and-transit-pass` and update the tracking docs for the new 3D eclipse-and-transit slice.
+- [frontend] Add reflected-light cues to the true 3D Tracking Station renderer with an Earth ocean-glint pass and a subtle Moon Earthshine fill so the Earth-Moon pair feels less like isolated assets under one light.
+- [docs] Close plan `1-34-star-focus-3d-reflected-light-pass` and update the tracking docs for the new 3D reflected-light slice.
+- [frontend] Add more local 3D realism with an Earth dark-side light pass, a Saturn ring-shadow overlay, and light-aware shader wiring so the planets feel less like uniformly lit spheres.
+- [docs] Close plan `1-33-star-focus-3d-occultation-and-night-detail-pass` and update the tracking docs for the new 3D local-detail slice.
+- [frontend] Push the true 3D Tracking Station renderer further with sun-biased atmosphere glow, stronger sun/view-responsive Saturn ring lighting, and layered starfield depth so the system feels less like a polished diagram floating in empty space.
+- [docs] Close plan `1-32-star-focus-3d-solar-lighting-and-depth-pass` and update the tracking docs for the new 3D solar-lighting-and-depth slice.
+- [frontend] Deepen the true 3D Tracking Station renderer again with fresnel-style atmosphere glow, shadow-enabled lighting, alpha-tested ring occlusion, and view-angle-tuned Saturn ring brightness so the scene reads more like a lit system than a clean diagram.
+- [docs] Close plan `1-31-star-focus-3d-atmosphere-and-shadow-pass` and update the tracking docs for the new 3D atmosphere-and-shadow slice.
+- [frontend] Deepen the true 3D Tracking Station renderer with layered surface, bump, and roughness materials, separate cloud and atmosphere shells, textured Saturn rings, and phase-tuned scene cleanup so the bodies read less like first-pass procedural spheres.
+- [docs] Close plan `1-30-star-focus-3d-material-realism-pass` and update the tracking docs for the new 3D realism slice.
+- [frontend] Start the first true 3D Star Focus renderer by adding a lazy-loaded Three.js Tracking Station orbital scene with real meshes, orbital camera movement, dynamic lighting, procedural planet materials, archive markers, and a live mission craft path while keeping the sidebar on the lighter projected SVG map.
+- [docs] Close plan `1-29-star-focus-true-3d-tracking-foundation` and record the new true-3D Tracking Station boundary in the tracking docs.
+- [frontend] Tighten the projected planets with zero-slip weather breathing, stronger limb/detail falloff, and lower cloud-band contrast so the bodies read more like spheres than painted discs.
+- [docs] Close plan `1-28-star-focus-spherical-falloff-pass` and record the new spherical-read refinement in the tracking docs.
+- [frontend] Tighten Star Focus weather-layer motion so cloud and band groups stay visually locked to the planet discs, replacing the obvious sliding drift with a smaller centered shimmer.
+- [docs] Close plan `1-27-star-focus-weather-layer-lock-pass` and record the weather-layer coherence fix in the tracking docs.
+- [frontend] Make the shared Star Focus orbital scene respond to mission phase with calmer idle/orbit states, hotter ignition/heating atmosphere, phase-tuned rim and ring intensity, and subtle motion-speed shifts instead of adding more HUD chrome.
+- [docs] Close plan `1-26-star-focus-phase-responsive-material-pass` and record the new phase-responsive material refinement in the tracking docs.
+- [frontend] Add finer disc-level microtextures with ocean-current lines, cloud-deck swirls, dune traces, crater-ridge accents, and micro-bands so the projected planets keep more character when zoomed in.
+- [docs] Close plan `1-25-star-focus-disc-microtexture-pass` and record the new disc-level microtexture refinement in the tracking docs.
+- [frontend] Improve local orbital-scene depth with richer Saturn ring breakup, thickness variation, and layered atmospheric scattering falloff on the lit edges of the planets.
+- [docs] Close plan `1-24-star-focus-ring-structure-and-scattering-pass` and record the new ring-and-scattering refinement in the tracking docs.
+- [frontend] Make projected-planet lighting follow the scene geometry more believably with sun-driven gradients, dynamic night-side shading, camera-aware rim light, and Saturn ring occlusion that follows the projected ring path.
+- [docs] Close plan `1-23-star-focus-lighting-and-ring-occlusion-pass` and record the new lighting-and-occlusion refinement in the tracking docs.
+- [frontend] Add restrained planetary motion, outer atmosphere shells, aurora/weather drift, and stronger Saturn ring-shadow treatment so the projected Star Focus scene feels more alive.
+- [docs] Close plan `1-22-star-focus-planet-motion-and-atmosphere-pass` and record the latest motion-and-atmosphere refinement in the tracking docs.
+- [frontend] Deepen the projected Star Focus planet rendering with finer-grained surface layers, stronger lighting cues, richer moon detail, and a more refined Saturn ring treatment.
+- [docs] Close plan `1-21-star-focus-planet-detail-pass` and record the latest fine-grained planetary-detail pass in the tracking docs.
+- [frontend] Rebuild the shared Star Focus orbital view as a projected 3D scene with orbit-camera drag, depth-sorted celestial bodies, and stronger spatial layering in Tracking Station and Mission Control.
+- [docs] Close plan `1-20-star-focus-projected-3d-orbital-pass` and record the new projected-3D scene boundary in the tracking docs.
 - [frontend] Push the shared Star Focus scene further toward a cinematic Tracking Station finish with deeper atmosphere, stronger framing, and richer planetary surface detail.
 - [docs] Close plan `1-19-star-focus-tracking-station-cinematic-polish` and record the latest cinematic polish pass in the tracking docs.
 - [frontend] Improve the shared Star Focus orbital map with richer planetary surface detail, deeper space atmosphere, and a more premium overlay-first finish.
