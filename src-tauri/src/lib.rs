@@ -16,15 +16,54 @@ use tauri::menu::MenuItemBuilder;
 use tauri::{
     menu::{MenuBuilder, MenuItem, SubmenuBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconEvent},
-    AppHandle, Emitter, Manager, WebviewWindow,
+    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, RunEvent, WebviewWindow,
 };
 use tauri_plugin_global_shortcut::ShortcutState;
+
+const WINDOW_EDGE_MARGIN_LOGICAL: f64 = 16.0;
 
 fn show_window(win: &WebviewWindow, focus: bool) {
     win.show().ok();
     if focus {
         win.set_focus().ok();
     }
+}
+
+fn top_right_position(
+    work_area_position: PhysicalPosition<i32>,
+    work_area_size: PhysicalSize<u32>,
+    window_size: PhysicalSize<u32>,
+    margin: i32,
+) -> PhysicalPosition<i32> {
+    let available_x = work_area_size.width.saturating_sub(window_size.width);
+    let available_x = i32::try_from(available_x).unwrap_or(i32::MAX);
+    let x = work_area_position
+        .x
+        .saturating_add(available_x)
+        .saturating_sub(margin)
+        .max(work_area_position.x.saturating_add(margin));
+    let y = work_area_position.y.saturating_add(margin);
+
+    PhysicalPosition::new(x, y)
+}
+
+fn place_window_top_right(win: &WebviewWindow) {
+    let monitor = win
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| win.primary_monitor().ok().flatten());
+    let Some(monitor) = monitor else {
+        return;
+    };
+    let Ok(window_size) = win.outer_size() else {
+        return;
+    };
+
+    let work_area = monitor.work_area();
+    let margin = (WINDOW_EDGE_MARGIN_LOGICAL * monitor.scale_factor()).round() as i32;
+    let position = top_right_position(work_area.position, work_area.size, window_size, margin);
+    win.set_position(position).ok();
 }
 
 fn hide_window(win: &WebviewWindow) {
@@ -254,7 +293,7 @@ pub(crate) fn refresh_watcher(app: &AppHandle) -> Result<(), String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
@@ -363,6 +402,45 @@ pub fn run() {
             commands::check_first_run,
             commands::select_folder,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running Sticky Todo");
+        .build(tauri::generate_context!())
+        .expect("error while building Sticky Todo");
+
+    app.run(|app, event| {
+        if let RunEvent::Ready = event {
+            if let Some(win) = app.get_webview_window("main") {
+                place_window_top_right(&win);
+                show_window(&win, true);
+            }
+        }
+    });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::top_right_position;
+    use tauri::{PhysicalPosition, PhysicalSize};
+
+    #[test]
+    fn places_window_inside_the_top_right_work_area_margin() {
+        let position = top_right_position(
+            PhysicalPosition::new(0, 48),
+            PhysicalSize::new(3024, 1880),
+            PhysicalSize::new(920, 1280),
+            32,
+        );
+
+        assert_eq!(position, PhysicalPosition::new(2072, 80));
+    }
+
+    #[test]
+    fn supports_monitors_left_of_the_primary_display() {
+        let position = top_right_position(
+            PhysicalPosition::new(-1920, 0),
+            PhysicalSize::new(1920, 1080),
+            PhysicalSize::new(460, 640),
+            16,
+        );
+
+        assert_eq!(position, PhysicalPosition::new(-476, 16));
+    }
 }
