@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import type { StarFocusMissionRecord, StarFocusSession } from '../types'
 import {
   STAR_FOCUS_ARCHIVE_LIMIT_OPTIONS,
@@ -6,6 +6,11 @@ import {
   type StarFocusSnapshot,
 } from '../hooks/useStarFocus'
 import { StarFocusOrbitalMap } from './StarFocusOrbitalMap'
+
+const TrackingStationOrbitalMap3D = lazy(async () => {
+  const module = await import('./StarFocusOrbitalMap3D')
+  return { default: module.StarFocusOrbitalMap3D }
+})
 
 interface Props {
   collapsed: boolean
@@ -190,14 +195,26 @@ export function TrackingStationOverlay({
               <span className="mission-section-label">Orbital Map</span>
             </div>
 
-            <StarFocusOrbitalMap
-              variant="overlay"
-              className={`tracking-starmap-viewport ${phaseTheme}`}
-              liveLabel={liveLabel}
-              missionHistory={missionHistory}
-              activeSession={activeSession}
-              activeSnapshot={activeSnapshot}
-            />
+            <Suspense
+              fallback={(
+                <StarFocusOrbitalMap
+                  variant="overlay"
+                  className={`tracking-starmap-viewport ${phaseTheme}`}
+                  liveLabel={liveLabel}
+                  missionHistory={missionHistory}
+                  activeSession={activeSession}
+                  activeSnapshot={activeSnapshot}
+                />
+              )}
+            >
+              <TrackingStationOrbitalMap3D
+                className={`tracking-starmap-viewport ${phaseTheme}`}
+                liveLabel={liveLabel}
+                missionHistory={missionHistory}
+                activeSession={activeSession}
+                activeSnapshot={activeSnapshot}
+              />
+            </Suspense>
 
             <div className="tracking-orbit-metrics">
               <div className="tracking-orbit-metric">

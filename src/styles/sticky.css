@@ -7,11 +7,12 @@
   --sidebar-ink: #5B4A1E;
   --text-primary: #3D3520;
   --text-secondary: #7A6F50;
-  --text-muted: #B0A67A;
+  --text-muted: #9C9169;
   --accent: #C4A44A;
   --accent-hover: #A8882E;
-  --done-color: #8FA87A;
-  --delete-color: #CC6B5A;
+  --done-color: #78956A;
+  --delete-color: #B85F52;
+  --focus-ring: rgba(168, 136, 46, 0.42);
   --radius: 6px;
 }
 
@@ -37,6 +38,7 @@ body {
 }
 
 .app-shell {
+  position: relative;
   width: 100%;
   height: 100vh;
   display: flex;
@@ -51,20 +53,90 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.window-resize-handles {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.window-resize-handle {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.window-resize-handle.north,
+.window-resize-handle.south {
+  left: 14px;
+  right: 14px;
+  height: 8px;
+}
+
+.window-resize-handle.north { top: 0; cursor: ns-resize; }
+.window-resize-handle.south { bottom: 0; cursor: ns-resize; }
+
+.window-resize-handle.east,
+.window-resize-handle.west {
+  top: 14px;
+  bottom: 14px;
+  width: 8px;
+}
+
+.window-resize-handle.east { right: 0; cursor: ew-resize; }
+.window-resize-handle.west { left: 0; cursor: ew-resize; }
+
+.window-resize-handle.north-east,
+.window-resize-handle.north-west,
+.window-resize-handle.south-east,
+.window-resize-handle.south-west {
+  width: 18px;
+  height: 18px;
+}
+
+.window-resize-handle.north-east { top: 0; right: 0; cursor: nesw-resize; }
+.window-resize-handle.north-west { top: 0; left: 0; cursor: nwse-resize; }
+.window-resize-handle.south-east { right: 0; bottom: 0; cursor: nwse-resize; }
+.window-resize-handle.south-west { left: 0; bottom: 0; cursor: nesw-resize; }
+
+.window-resize-handle.south-east::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  opacity: 0.66;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 2px,
+    rgba(255, 244, 210, 0.78) 2px 3px
+  );
+  pointer-events: none;
+}
+
 .goals-sidebar {
-  width: 176px;
+  width: 208px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background:
     linear-gradient(180deg, rgba(243, 229, 175, 0.98) 0%, rgba(233, 211, 132, 0.98) 100%);
   border-right: 1px solid rgba(168, 136, 46, 0.18);
-  transition: width 0.2s ease;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
 .goals-sidebar.collapsed {
-  width: 58px;
+  width: 44px;
 }
 
 .goals-sidebar.collapsed .sidebar-top {
@@ -72,7 +144,7 @@ body {
   justify-content: flex-start;
   align-items: center;
   gap: 6px;
-  padding-inline: 8px;
+  padding-inline: 7px;
 }
 
 .sidebar-top {
@@ -98,6 +170,16 @@ body {
   color: var(--sidebar-ink);
   cursor: pointer;
   transition: all 0.15s;
+}
+
+.rail-name {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.62;
 }
 
 .sidebar-toggle:hover {
@@ -126,14 +208,14 @@ body {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 0;
+  gap: 9px;
+  padding: 14px 0 12px;
 }
 
 .mini-stat {
-  width: 34px;
-  height: 54px;
-  border-radius: 14px;
+  width: 32px;
+  min-height: 44px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -150,14 +232,14 @@ body {
 }
 
 .mini-stat span {
-  font-size: 9px;
+  font-size: 7px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .mission-sidebar {
-  width: 224px;
+  width: 260px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -165,7 +247,7 @@ body {
     linear-gradient(180deg, rgba(62, 50, 27, 0.98) 0%, rgba(43, 33, 18, 0.98) 100%);
   border-left: 1px solid rgba(255, 221, 124, 0.18);
   color: #f8e7b2;
-  transition: width 0.2s ease;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
   position: relative;
 }
@@ -181,7 +263,7 @@ body {
 }
 
 .mission-sidebar.collapsed {
-  width: 62px;
+  width: 48px;
 }
 
 .mission-top {
@@ -241,13 +323,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 12px 0;
+  gap: 9px;
+  padding: 14px 0 12px;
 }
 
 .mission-mini-stats .mini-stat {
-  width: 38px;
-  min-height: 54px;
+  width: 34px;
+  min-height: 46px;
   background: rgba(255, 245, 211, 0.08);
   color: #ffe7a4;
 }
@@ -279,8 +361,41 @@ body {
 }
 
 .mission-mini-open {
-  width: 40px;
+  width: 36px;
   padding: 6px 0;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+.app-shell.is-compact .goals-sidebar:not(.collapsed),
+.app-shell.is-compact .mission-sidebar:not(.collapsed) {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 32;
+  width: min(272px, calc(100% - 52px));
+  box-shadow: 14px 0 30px rgba(72, 53, 17, 0.22);
+}
+
+.app-shell.is-compact .goals-sidebar:not(.collapsed) {
+  left: 0;
+}
+
+.app-shell.is-compact .mission-sidebar:not(.collapsed) {
+  right: 0;
+  box-shadow: -14px 0 30px rgba(20, 14, 8, 0.3);
+}
+
+.app-shell.is-compact .sidebar-backdrop {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  border: 0;
+  background: rgba(59, 46, 21, 0.18);
+  cursor: default;
 }
 
 .mission-link-btn {
@@ -590,6 +705,19 @@ body {
 .starmap-viewport {
   --starmap-accent: #ffcb6d;
   --starmap-accent-soft: rgba(255, 203, 109, 0.18);
+  --starmap-body-aura-opacity-mult: 1;
+  --starmap-shell-opacity-mult: 1;
+  --starmap-shell-width-mult: 1;
+  --starmap-scatter-opacity-mult: 1;
+  --starmap-night-opacity-mult: 1;
+  --starmap-gloss-opacity-mult: 1;
+  --starmap-rim-opacity-mult: 1;
+  --starmap-ring-opacity-mult: 1;
+  --starmap-nebula-opacity: 0.44;
+  --starmap-glow-opacity: 1;
+  --starmap-sweep-opacity: 0.38;
+  --starmap-planet-atmosphere-stroke: rgba(255, 227, 161, 0.18);
+  --starmap-planet-inner-ring-stroke: rgba(255, 214, 124, 0.08);
   position: relative;
   height: 164px;
   margin-top: 2px;
@@ -631,6 +759,10 @@ body {
   --starmap-accent-soft: rgba(255, 178, 104, 0.18);
 }
 
+.starmap-viewport.phase-idle {
+  --starmap-accent-soft: rgba(255, 203, 109, 0.12);
+}
+
 .starmap-viewport.phase-ascent {
   --starmap-accent: #88d2ff;
   --starmap-accent-soft: rgba(136, 210, 255, 0.18);
@@ -669,6 +801,8 @@ body {
   background-size: 44px 44px, 44px 44px;
   opacity: 0.16;
   mix-blend-mode: screen;
+  transform: translate3d(calc(var(--starmap-parallax-x, 0px) * -0.18), calc(var(--starmap-parallax-y, 0px) * -0.14), 0) rotate(var(--starmap-grid-rotate, 0deg));
+  transition: transform 0.22s ease;
 }
 
 .starmap-nebula {
@@ -677,18 +811,28 @@ body {
     radial-gradient(circle at 78% 34%, rgba(255, 174, 92, 0.16) 0%, transparent 28%),
     radial-gradient(circle at 54% 56%, rgba(255, 226, 158, 0.08) 0%, transparent 40%);
   mix-blend-mode: screen;
-  opacity: 0.44;
+  opacity: var(--starmap-nebula-opacity, 0.44);
+  transform: translate3d(var(--starmap-parallax-x, 0px), var(--starmap-parallax-y, 0px), 0) scale(1.08);
+  transition: transform 0.22s ease;
 }
 
 .starmap-glow {
   background:
     radial-gradient(circle at 30% 24%, rgba(255, 226, 148, 0.08) 0, transparent 28%),
     radial-gradient(circle at 70% 66%, rgba(156, 207, 255, 0.08) 0, transparent 26%);
+  opacity: var(--starmap-glow-opacity, 1);
+  transform: translate3d(calc(var(--starmap-parallax-x, 0px) * -0.38), calc(var(--starmap-parallax-y, 0px) * -0.28), 0);
+  transition: transform 0.22s ease;
 }
 
 .starmap-phase-wash {
   opacity: 0;
   transition: opacity 0.3s ease;
+}
+
+.starmap-viewport.phase-idle .starmap-phase-wash {
+  opacity: 1;
+  background: radial-gradient(circle at 50% 62%, rgba(255, 198, 110, 0.06) 0, transparent 44%);
 }
 
 .starmap-viewport.phase-ignition .starmap-phase-wash {
@@ -742,6 +886,20 @@ body {
   will-change: transform;
 }
 
+.starmap-3d-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.starmap-3d-canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+  filter: saturate(1.06) contrast(1.04);
+}
+
 .starmap-viewport.dragging .starmap-scene {
   transition: none;
 }
@@ -755,7 +913,7 @@ body {
     transparent 332deg 360deg
   );
   mix-blend-mode: screen;
-  opacity: 0.38;
+  opacity: var(--starmap-sweep-opacity, 0.38);
   animation: starmap-sweep 11s linear infinite;
 }
 
@@ -763,6 +921,7 @@ body {
   background:
     radial-gradient(circle at center, transparent 46%, rgba(8, 5, 4, 0.12) 78%, rgba(5, 4, 3, 0.34) 100%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, transparent 28%, transparent 72%, rgba(0, 0, 0, 0.12) 100%);
+  transform: scale(1.02);
 }
 
 .starmap-svg {
@@ -770,6 +929,7 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
 .starmap-stars circle {
@@ -793,18 +953,32 @@ body {
 }
 
 .starmap-orbit-lane {
-  stroke: rgba(255, 227, 159, 0.1);
   stroke-width: 1;
+}
+
+.starmap-orbit-lane.back {
+  stroke: rgba(255, 227, 159, 0.08);
+}
+
+.starmap-orbit-lane.front {
+  stroke: rgba(255, 227, 159, 0.16);
 }
 
 .starmap-orbit-lane.outer {
-  stroke: rgba(255, 227, 159, 0.14);
+  stroke: rgba(255, 227, 159, 0.18);
 }
 
 .starmap-transfer-lane {
-  stroke: rgba(149, 205, 255, 0.14);
   stroke-width: 1;
   stroke-dasharray: 4 10;
+}
+
+.starmap-transfer-lane.back {
+  stroke: rgba(149, 205, 255, 0.08);
+}
+
+.starmap-transfer-lane.front {
+  stroke: rgba(149, 205, 255, 0.16);
 }
 
 .starmap-planet-shadow {
@@ -813,13 +987,13 @@ body {
 
 .starmap-planet-atmosphere {
   fill: none;
-  stroke: rgba(255, 227, 161, 0.18);
+  stroke: var(--starmap-planet-atmosphere-stroke, rgba(255, 227, 161, 0.18));
   stroke-width: 1.2;
 }
 
 .starmap-planet-inner-ring {
   fill: none;
-  stroke: rgba(255, 214, 124, 0.08);
+  stroke: var(--starmap-planet-inner-ring-stroke, rgba(255, 214, 124, 0.08));
   stroke-width: 1;
 }
 
@@ -828,6 +1002,15 @@ body {
 }
 
 .starmap-system-body-aura,
+.starmap-system-body-shell,
+.starmap-system-body-shell .atmosphere,
+.starmap-system-body-shell .limb,
+.starmap-system-body-lighting,
+.starmap-system-body-lighting .night,
+.starmap-system-body-lighting .gloss,
+.starmap-system-body-lighting .rim,
+.starmap-system-body-lighting .detail-falloff,
+.starmap-system-body-lighting .ring-occlusion,
 .starmap-system-body-disc,
 .starmap-system-body-shadow,
 .starmap-system-body-highlight,
@@ -838,9 +1021,86 @@ body {
 }
 
 .starmap-system-body-aura {
-  opacity: 0.44;
+  opacity: calc(0.44 * var(--starmap-body-aura-opacity-mult, 1));
   filter: blur(10px);
   mix-blend-mode: screen;
+}
+
+.starmap-system-body-shell .atmosphere {
+  fill: none;
+}
+
+.starmap-system-body-shell .atmosphere.near {
+  stroke-width: calc(0.9px * var(--starmap-shell-width-mult, 1));
+  opacity: calc(0.54 * var(--starmap-shell-opacity-mult, 1));
+}
+
+.starmap-system-body-shell .atmosphere.mid {
+  stroke-width: calc(1.3px * var(--starmap-shell-width-mult, 1));
+  opacity: calc(0.28 * var(--starmap-shell-opacity-mult, 1));
+}
+
+.starmap-system-body-shell .atmosphere.far {
+  stroke-width: calc(2.2px * var(--starmap-shell-width-mult, 1));
+  opacity: calc(0.12 * var(--starmap-shell-opacity-mult, 1));
+  filter: blur(1.4px);
+}
+
+.starmap-system-body-shell .limb {
+  fill: none;
+  stroke-width: 0.9;
+  opacity: calc(0.44 * var(--starmap-shell-opacity-mult, 1));
+}
+
+.starmap-system-body-shell .scatter {
+  fill: none;
+  stroke-width: 1.6;
+  opacity: calc(0.24 * var(--starmap-scatter-opacity-mult, 1));
+  filter: blur(1px);
+}
+
+.starmap-system-body-shell.earth .atmosphere {
+  stroke: rgba(127, 214, 255, 0.38);
+}
+
+.starmap-system-body-shell.earth .limb {
+  stroke: rgba(180, 243, 255, 0.32);
+}
+
+.starmap-system-body-shell.earth .scatter {
+  stroke: rgba(173, 240, 255, 0.3);
+}
+
+.starmap-system-body-shell.venus .atmosphere {
+  stroke: rgba(255, 216, 154, 0.34);
+}
+
+.starmap-system-body-shell.venus .limb {
+  stroke: rgba(255, 239, 205, 0.26);
+}
+
+.starmap-system-body-shell.venus .scatter {
+  stroke: rgba(255, 230, 188, 0.28);
+}
+
+.starmap-system-body-shell.mars .atmosphere {
+  stroke: rgba(245, 162, 124, 0.18);
+}
+
+.starmap-system-body-shell.mars .scatter {
+  stroke: rgba(255, 189, 153, 0.16);
+}
+
+.starmap-system-body-shell.saturn .atmosphere {
+  stroke: rgba(255, 225, 172, 0.28);
+}
+
+.starmap-system-body-shell.saturn .limb {
+  stroke: rgba(255, 240, 212, 0.2);
+}
+
+.starmap-system-body-shell.saturn .scatter {
+  stroke: rgba(255, 231, 184, 0.24);
 }
 
 .starmap-system-body-disc {
@@ -849,12 +1109,103 @@ body {
   filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.26));
 }
 
+.starmap-system-body-lighting .night {
+  opacity: calc(0.7 * var(--starmap-night-opacity-mult, 1));
+}
+
+.starmap-system-body-lighting .detail-falloff {
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+}
+
+.starmap-system-body-lighting .gloss {
+  mix-blend-mode: screen;
+  opacity: calc(0.42 * var(--starmap-gloss-opacity-mult, 1));
+}
+
+.starmap-system-body-lighting .rim {
+  fill: none;
+  stroke-width: 0.78;
+  opacity: calc(0.72 * var(--starmap-rim-opacity-mult, 1));
+}
+
+.starmap-system-body-lighting .ring-occlusion {
+  fill: none;
+  stroke-width: 2.1;
+  opacity: 0.56;
+  filter: blur(0.4px);
+}
+
+.starmap-system-body-lighting.earth .night {
+  fill: rgba(3, 18, 31, 0.24);
+}
+
+.starmap-system-body-lighting.earth .gloss {
+  fill: rgba(197, 250, 255, 0.16);
+}
+
+.starmap-system-body-lighting.earth .rim {
+  stroke: rgba(181, 242, 255, 0.3);
+}
+
+.starmap-system-body-lighting.venus .night {
+  fill: rgba(102, 58, 26, 0.22);
+}
+
+.starmap-system-body-lighting.venus .gloss {
+  fill: rgba(255, 236, 204, 0.14);
+}
+
+.starmap-system-body-lighting.venus .rim {
+  stroke: rgba(255, 231, 184, 0.24);
+}
+
+.starmap-system-body-lighting.mercury .night {
+  fill: rgba(58, 35, 21, 0.24);
+}
+
+.starmap-system-body-lighting.mercury .gloss {
+  fill: rgba(255, 230, 198, 0.08);
+}
+
+.starmap-system-body-lighting.mercury .rim {
+  stroke: rgba(255, 226, 188, 0.14);
+}
+
+.starmap-system-body-lighting.mars .night {
+  fill: rgba(78, 27, 21, 0.22);
+}
+
+.starmap-system-body-lighting.mars .gloss {
+  fill: rgba(255, 218, 190, 0.1);
+}
+
+.starmap-system-body-lighting.mars .rim {
+  stroke: rgba(255, 202, 168, 0.18);
+}
+
+.starmap-system-body-lighting.saturn .night {
+  fill: rgba(85, 57, 32, 0.2);
+}
+
+.starmap-system-body-lighting.saturn .gloss {
+  fill: rgba(255, 239, 209, 0.12);
+}
+
+.starmap-system-body-lighting.saturn .rim {
+  stroke: rgba(255, 232, 182, 0.22);
+}
+
+.starmap-system-body-lighting.saturn .ring-occlusion {
+  stroke: rgba(59, 37, 20, 0.24);
+}
+
 .starmap-system-body-shadow {
-  fill: rgba(22, 12, 7, 0.46);
+  fill: rgba(22, 12, 7, 0.34);
 }
 
 .starmap-system-body-highlight {
-  fill: rgba(255, 249, 229, 0.26);
+  fill: rgba(255, 249, 229, 0.18);
 }
 
 .starmap-system-body-ring {
@@ -862,50 +1213,286 @@ body {
   stroke-width: 1.6;
 }
 
+.starmap-system-body.saturn .starmap-system-body-ring.glow {
+  stroke: rgba(255, 216, 150, 0.12);
+  stroke-width: 5.8;
+  filter: blur(2px);
+}
+
+.starmap-system-body.saturn .starmap-system-body-ring.halo {
+  stroke: rgba(255, 225, 176, 0.18);
+  stroke-width: 4.4;
+  filter: blur(0.8px);
+}
+
+.starmap-system-body.saturn .starmap-system-body-ring.dust {
+  stroke: rgba(255, 230, 190, 0.18);
+  stroke-width: 2.8;
+  stroke-dasharray: 1.6 2.8;
+  stroke-linecap: round;
+}
+
+.starmap-system-body.saturn .starmap-system-body-ring.grains {
+  stroke: rgba(255, 244, 219, 0.24);
+  stroke-width: 0.9;
+  stroke-dasharray: 0.1 4.9;
+  stroke-linecap: round;
+}
+
+.starmap-system-body.saturn .starmap-system-body-ring.core {
+  stroke: rgba(255, 244, 217, 0.54);
+  stroke-width: 1.1;
+}
+
 .starmap-system-body-ring.back {
-  opacity: 0.18;
+  opacity: calc(0.18 * var(--starmap-ring-opacity-mult, 1));
+}
+
+.starmap-system-body-ring.back.halo {
+  opacity: calc(0.14 * var(--starmap-ring-opacity-mult, 1));
+}
+
+.starmap-system-body-ring.back.grains {
+  opacity: calc(0.18 * var(--starmap-ring-opacity-mult, 1));
 }
 
 .starmap-system-body-ring.front {
-  opacity: 0.46;
+  opacity: calc(0.46 * var(--starmap-ring-opacity-mult, 1));
+}
+
+.starmap-system-body-ring.front.halo {
+  opacity: calc(0.22 * var(--starmap-ring-opacity-mult, 1));
+}
+
+.starmap-system-body-ring.front.dust {
+  opacity: calc(0.3 * var(--starmap-ring-opacity-mult, 1));
+}
+
+.starmap-system-body-ring.front.grains {
+  opacity: calc(0.32 * var(--starmap-ring-opacity-mult, 1));
 }
 
 .starmap-system-body-detail,
 .starmap-system-body-detail .continent,
+.starmap-system-body-detail .shoal,
+.starmap-system-body-detail .icecap,
+.starmap-system-body-detail .aurora,
+.starmap-system-body-detail .current,
 .starmap-system-body-detail .cloud,
 .starmap-system-body-detail .band,
+.starmap-system-body-detail .micro-band,
+.starmap-system-body-detail .haze,
+.starmap-system-body-detail .vein,
+.starmap-system-body-detail .swirl,
+.starmap-system-body-detail .dust,
 .starmap-system-body-detail .terrain,
+.starmap-system-body-detail .dune,
+.starmap-system-body-detail .canyon,
+.starmap-system-body-detail .storm,
+.starmap-system-body-detail .shear,
+.starmap-system-body-detail .polar-haze,
+.starmap-system-body-detail .basin,
+.starmap-system-body-detail .ridge,
+.starmap-system-body-detail .ring-shadow,
 .starmap-system-body-detail .crater {
   vector-effect: non-scaling-stroke;
+}
+
+.starmap-system-body-detail.motion-spin {
+  transform-box: fill-box;
+  animation: starmap-body-rotation linear infinite;
+}
+
+.starmap-system-body-detail .weather-drift {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: starmap-layer-drift ease-in-out infinite alternate;
+}
+
+.starmap-system-body-detail.earth .shoal {
+  fill: rgba(108, 224, 244, 0.18);
 }
 
 .starmap-system-body-detail.earth .continent {
   fill: rgba(133, 208, 134, 0.56);
 }
 
+.starmap-system-body-detail.earth .continent.major {
+  fill: rgba(119, 204, 118, 0.58);
+}
+
+.starmap-system-body-detail.earth .continent.minor,
+.starmap-system-body-detail.earth .continent.islet {
+  fill: rgba(165, 219, 140, 0.46);
+}
+
+.starmap-system-body-detail.earth .icecap {
+  fill: rgba(242, 251, 255, 0.4);
+}
+
 .starmap-system-body-detail.earth .cloud {
-  fill: rgba(255, 255, 255, 0.2);
+  fill: rgba(255, 255, 255, 0.13);
+}
+
+.starmap-system-body-detail.earth .cloud.storm {
+  fill: rgba(255, 255, 255, 0.1);
+  stroke: rgba(220, 247, 255, 0.2);
+  stroke-width: 0.4;
+}
+
+.starmap-system-body-detail.earth .aurora {
+  fill: rgba(120, 255, 195, 0.14);
+  stroke: rgba(180, 255, 224, 0.22);
+  stroke-width: 0.34;
+}
+
+.starmap-system-body-detail.earth .current {
+  fill: none;
+  stroke: rgba(137, 233, 255, 0.22);
+  stroke-width: 0.42;
+  stroke-linecap: round;
+}
+
+.starmap-system-body-detail.earth .current.secondary {
+  stroke: rgba(115, 215, 241, 0.16);
+}
+
+.starmap-system-body-detail.mercury .basin {
+  fill: rgba(246, 219, 179, 0.12);
+}
+
+.starmap-system-body-detail.mercury .ridge {
+  fill: none;
+  stroke: rgba(255, 225, 192, 0.12);
+  stroke-width: 0.34;
+  stroke-linecap: round;
+}
+
+.starmap-system-body-detail.mercury .ridge.secondary {
+  stroke: rgba(129, 95, 67, 0.16);
+}
+
+.starmap-system-body-detail.mercury .crater {
+  fill: rgba(84, 55, 37, 0.18);
+  stroke: rgba(255, 227, 196, 0.16);
+  stroke-width: 0.38;
 }
 
 .starmap-system-body-detail.venus .band,
 .starmap-system-body-detail.saturn .band {
-  fill: rgba(255, 245, 218, 0.1);
-  stroke: rgba(112, 78, 45, 0.14);
+  fill: rgba(255, 245, 218, 0.07);
+  stroke: rgba(112, 78, 45, 0.1);
   stroke-width: 0.5;
 }
 
+.starmap-system-body-detail.venus .haze {
+  fill: rgba(255, 239, 207, 0.09);
+}
+
+.starmap-system-body-detail.venus .band.high,
+.starmap-system-body-detail.venus .band.low {
+  fill: rgba(255, 247, 225, 0.1);
+}
+
+.starmap-system-body-detail.venus .band.deep {
+  fill: rgba(194, 132, 72, 0.11);
+}
+
+.starmap-system-body-detail.venus .micro-band {
+  fill: rgba(255, 242, 214, 0.09);
+}
+
+.starmap-system-body-detail.venus .vein {
+  fill: none;
+  stroke: rgba(154, 101, 55, 0.2);
+  stroke-width: 0.56;
+  stroke-linecap: round;
+}
+
+.starmap-system-body-detail.venus .swirl {
+  fill: none;
+  stroke: rgba(255, 232, 196, 0.1);
+  stroke-width: 0.42;
+  stroke-linecap: round;
+}
+
 .starmap-system-body-detail.saturn .band.deep {
-  fill: rgba(124, 88, 47, 0.18);
+  fill: rgba(124, 88, 47, 0.12);
+}
+
+.starmap-system-body-detail.saturn .band.high,
+.starmap-system-body-detail.saturn .band.low {
+  fill: rgba(255, 244, 216, 0.1);
+}
+
+.starmap-system-body-detail.saturn .polar-haze {
+  fill: rgba(255, 238, 198, 0.1);
+}
+
+.starmap-system-body-detail.saturn .micro-band {
+  fill: rgba(255, 246, 223, 0.09);
+}
+
+.starmap-system-body-detail.saturn .ring-shadow {
+  fill: rgba(54, 34, 18, 0.16);
+}
+
+.starmap-system-body-detail.saturn .storm {
+  fill: rgba(180, 125, 74, 0.1);
+  stroke: rgba(255, 226, 177, 0.08);
+  stroke-width: 0.44;
+}
+
+.starmap-system-body-detail.saturn .shear {
+  fill: none;
+  stroke: rgba(255, 228, 188, 0.1);
+  stroke-width: 0.44;
+  stroke-linecap: round;
+}
+
+.starmap-system-body-detail.mars .dust {
+  fill: rgba(222, 150, 109, 0.12);
 }
 
 .starmap-system-body-detail.mars .terrain {
   fill: rgba(120, 54, 40, 0.24);
 }
 
+.starmap-system-body-detail.mars .terrain.ridge {
+  fill: rgba(150, 83, 59, 0.18);
+}
+
+.starmap-system-body-detail.mars .dune {
+  fill: none;
+  stroke: rgba(227, 154, 117, 0.18);
+  stroke-width: 0.42;
+  stroke-linecap: round;
+}
+
+.starmap-system-body-detail.mars .dune.secondary {
+  stroke: rgba(195, 126, 92, 0.14);
+}
+
+.starmap-system-body-detail.mars .canyon {
+  fill: none;
+  stroke: rgba(98, 39, 29, 0.28);
+  stroke-width: 0.58;
+  stroke-linecap: round;
+}
+
+.starmap-system-body-detail.mars .icecap {
+  fill: rgba(255, 235, 221, 0.28);
+}
+
 .starmap-system-body-detail.mars .crater {
   fill: rgba(84, 35, 29, 0.3);
   stroke: rgba(255, 212, 192, 0.18);
   stroke-width: 0.4;
+}
+
+.starmap-system-body-detail.mars .crater.small {
+  stroke-width: 0.32;
 }
 
 .starmap-system-body-moon-link {
@@ -918,6 +1505,31 @@ body {
   stroke: rgba(255, 247, 228, 0.56);
   stroke-width: 0.8;
   filter: drop-shadow(0 0 5px rgba(236, 230, 214, 0.24));
+}
+
+.starmap-system-body-moon-detail,
+.starmap-system-body-moon-detail .moon-shadow,
+.starmap-system-body-moon-detail .moon-highlight,
+.starmap-system-body-moon-detail .moon-crater {
+  vector-effect: non-scaling-stroke;
+}
+
+.starmap-system-body-moon-detail .moon-shadow {
+  fill: rgba(107, 94, 79, 0.26);
+}
+
+.starmap-system-body-moon-detail .moon-highlight {
+  fill: rgba(255, 247, 228, 0.2);
+}
+
+.starmap-system-body-moon-detail .moon-crater {
+  fill: rgba(112, 99, 86, 0.18);
+  stroke: rgba(255, 247, 228, 0.1);
+  stroke-width: 0.34;
+}
+
+.starmap-system-body-moon-detail .moon-crater.small {
+  stroke-width: 0.26;
 }
 
 .starmap-history-halo,
@@ -977,10 +1589,19 @@ body {
 .starmap-live-trail {
   fill: none;
   stroke: var(--starmap-accent);
-  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: drop-shadow(0 0 10px var(--starmap-accent-soft));
+}
+
+.starmap-live-trail.back {
+  opacity: 0.28;
+  stroke-width: 1.7;
+}
+
+.starmap-live-trail.front {
+  opacity: 1;
+  stroke-width: 2.2;
 }
 
 .starmap-live-trail.paused {
@@ -1130,6 +1751,7 @@ body {
 
 .variant-sidebar .starmap-nebula {
   opacity: 0.18;
+  transform: translate3d(calc(var(--starmap-parallax-x, 0px) * 0.5), calc(var(--starmap-parallax-y, 0px) * 0.5), 0) scale(1.05);
 }
 
 .variant-sidebar .starmap-axis,
@@ -1139,6 +1761,28 @@ body {
 
 .variant-sidebar .starmap-system-body-aura {
   opacity: 0.34;
+}
+
+.variant-sidebar .starmap-system-body-shell {
+  opacity: 0.72;
+}
+
+.variant-sidebar .starmap-system-body-lighting {
+  opacity: 0.78;
+}
+
+.variant-sidebar .starmap-system-body.saturn .starmap-system-body-ring.halo,
+.variant-sidebar .starmap-system-body.saturn .starmap-system-body-ring.grains {
+  opacity: 0.12;
+}
+
+.variant-sidebar .starmap-system-body-detail .current,
+.variant-sidebar .starmap-system-body-detail .micro-band,
+.variant-sidebar .starmap-system-body-detail .swirl,
+.variant-sidebar .starmap-system-body-detail .dune,
+.variant-sidebar .starmap-system-body-detail .ridge,
+.variant-sidebar .starmap-system-body-detail .shear {
+  opacity: 0.58;
 }
 
 .variant-sidebar .starmap-system-body-detail {
@@ -1193,6 +1837,33 @@ body {
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes starmap-body-rotation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes starmap-layer-drift {
+  0% {
+    transform: scale(0.997);
+    opacity: 0.94;
+  }
+
+  50% {
+    transform: scale(1.003);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.998);
+    opacity: 0.96;
   }
 }
 
@@ -2266,7 +2937,7 @@ body {
 
 /* Drag area / Header */
 .sticky-header {
-  padding: 12px 16px 8px;
+  padding: 8px 14px 7px;
   background: var(--sticky-bg-dark);
   border-bottom: 1px solid var(--sticky-border);
   flex-shrink: 0;
@@ -2276,15 +2947,15 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 22px;
-  margin: -2px 0 8px;
+  height: 15px;
+  margin: -1px 0 5px;
   cursor: grab;
   user-select: none;
 }
 
 .window-drag-pill {
-  width: 58px;
-  height: 6px;
+  width: 44px;
+  height: 4px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.16);
 }
@@ -2297,7 +2968,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .date-nav button {
@@ -2318,7 +2989,7 @@ body {
 
 .date-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 650;
   color: var(--text-primary);
   cursor: pointer;
   padding: 2px 8px;
@@ -2331,6 +3002,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .date-title:hover {
@@ -2352,6 +3024,27 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-top: 4px;
+}
+
+.today-marker,
+.today-jump {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.today-marker {
+  color: var(--text-muted);
+}
+
+.today-jump {
+  border: 0;
+  border-radius: var(--radius);
+  background: rgba(196, 164, 74, 0.12);
+  color: var(--accent-hover);
+  padding: 3px 6px;
+  cursor: pointer;
 }
 
 /* View toggle */
@@ -2407,7 +3100,47 @@ body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 6px 0 10px;
+}
+
+.task-list.empty {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 30px 24px 20px;
+}
+
+.task-empty-state {
+  max-width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.task-empty-state strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.task-empty-state > span:last-child {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.task-empty-mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(168, 136, 46, 0.28);
+  border-radius: 50%;
+  background: rgba(196, 164, 74, 0.08);
+  color: var(--accent-hover);
+  font-size: 13px;
 }
 
 .task-list::-webkit-scrollbar {
@@ -2435,7 +3168,8 @@ body {
 
 .task-item.selected-for-focus {
   background: rgba(196, 164, 74, 0.1);
-  box-shadow: inset 2px 0 0 rgba(196, 164, 74, 0.72);
+  outline: 1px solid rgba(196, 164, 74, 0.34);
+  outline-offset: -1px;
 }
 
 .task-item.main-task {
@@ -2512,6 +3246,11 @@ body {
 /* Task text */
 .task-text {
   flex: 1;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   line-height: 1.4;
   min-height: 18px;
   word-break: break-word;
@@ -2524,6 +3263,10 @@ body {
 
 .task-text:hover:not(.done) {
   background: rgba(0, 0, 0, 0.04);
+}
+
+.task-text:disabled {
+  cursor: default;
 }
 
 .task-text.done {
@@ -2557,12 +3300,13 @@ body {
 .task-actions {
   display: flex;
   gap: 2px;
-  opacity: 0;
+  opacity: 0.54;
   transition: opacity 0.15s;
   flex-shrink: 0;
 }
 
-.task-item:hover .task-actions {
+.task-item:hover .task-actions,
+.task-item:focus-within .task-actions {
   opacity: 1;
 }
 
@@ -2604,6 +3348,19 @@ body {
   background: rgba(196, 164, 74, 0.08);
 }
 
+.task-actions button.subtask-link {
+  padding: 2px 5px;
+  font-size: 9px;
+  font-weight: 650;
+  color: var(--text-secondary);
+}
+
+.task-actions button.subtask-link.active,
+.task-actions button.subtask-link:hover {
+  color: var(--accent-hover);
+  background: rgba(196, 164, 74, 0.12);
+}
+
 .task-actions button.focus-link.active,
 .task-actions button.focus-link:hover {
   color: var(--accent-hover);
@@ -2619,17 +3376,33 @@ body {
 
 /* Add task */
 .add-task {
-  padding: 6px 12px;
-  border-top: 1px solid var(--sticky-border);
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(232, 217, 160, 0.82);
   flex-shrink: 0;
 }
 
+.add-task label {
+  display: block;
+  margin: 0 0 5px 2px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.add-task-row {
+  display: flex;
+  gap: 6px;
+}
+
 .add-task input {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 6px 8px;
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(168, 136, 46, 0.2);
+  border-radius: 6px;
+  padding: 7px 9px;
   font: inherit;
   color: var(--text-primary);
   outline: none;
@@ -2641,8 +3414,37 @@ body {
 }
 
 .add-task input:focus {
-  background: rgba(255, 255, 255, 0.6);
-  border-color: var(--sticky-border);
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(168, 136, 46, 0.52);
+}
+
+.add-task button {
+  min-width: 46px;
+  border: 1px solid rgba(168, 136, 46, 0.42);
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.add-task button:hover:not(:disabled) {
+  background: #B89435;
+}
+
+.add-task button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.add-task.prominent {
+  padding-top: 13px;
+  padding-bottom: 13px;
+  background: rgba(255, 252, 232, 0.32);
 }
 
 .dev-tools-panel {
@@ -2782,6 +3584,16 @@ body {
 .action-bar button:hover {
   background: rgba(0, 0, 0, 0.08);
   color: var(--text-primary);
+}
+
+.action-bar button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.action-bar button:disabled:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-secondary);
 }
 
 .action-bar .spacer {
@@ -3287,10 +4099,63 @@ body {
   animation: toast-in 0.25s ease;
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
+.schedule-toast.success { background: #3d6b35; }
+.schedule-toast.error { background: #7d3f35; }
 .schedule-toast strong { font-size: 12px; }
 .schedule-toast p { margin: 4px 0 0; opacity: 0.9; }
 
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (hover: none) {
+  .task-actions {
+    opacity: 0.82;
+  }
+}
+
+@media (max-width: 430px) {
+  .sticky-header {
+    padding-inline: 10px;
+  }
+
+  .date-nav {
+    gap: 2px;
+  }
+
+  .date-title {
+    font-size: 13px;
+    padding-inline: 5px;
+  }
+
+  .task-item {
+    padding-inline: 9px;
+  }
+
+  .task-item.main-task {
+    flex-wrap: wrap;
+  }
+
+  .task-item.main-task > .task-actions {
+    flex-basis: calc(100% - 22px);
+    justify-content: flex-end;
+    margin: 2px 0 0 22px;
+  }
+
+  .task-actions button.focus-link,
+  .task-actions button.subtask-link {
+    letter-spacing: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
