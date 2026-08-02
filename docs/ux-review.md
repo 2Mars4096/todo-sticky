@@ -5,6 +5,7 @@ Reviewed on 2026-08-02 against the frameless default window, the 340px minimum, 
 | Workflow | Previous path or issue | Current shortest path | Assessment |
 |---|---|---|---|
 | First useful action | Empty message in the center, task input at the bottom | Open app, type in the focused top composer, press Enter | Optimized |
+| Launch placement | Fresh launch could remain hidden in the tray or use an incidental OS position | Open visibly at the top-right of the current display; preserve later user placement | Optimized |
 | Window sizing | Thin native edge on a frameless transparent window | Drag any edge or corner; use the visible bottom-right grip | Optimized |
 | Compact layout | Expanded side panel compressed the task list to roughly 140px | Rails start collapsed; an expanded rail overlays the list and dismisses by backdrop or Escape | Optimized |
 | Complete task | Click status box | Click status box | Already optimal |

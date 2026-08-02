@@ -23,6 +23,7 @@
 - [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top and provide an instructional empty state.
 - [ ] `src/components/TaskItem.tsx`: keeps edit, focus, step, AI breakdown, delete, and move actions directly reachable; compact CSS wraps the action strip below task text.
 - [ ] `src-tauri/tauri.conf.json` and `src-tauri/capabilities/default.json`: define the `460x640` default, `340x440` minimum, and native resize-drag permission.
+- [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area and shows it from `RunEvent::Ready`, while later tray and shortcut toggles preserve user placement.
 
 ## Star Focus Modules
 
@@ -59,6 +60,7 @@
 - In compact window widths, expanding one side rail should collapse the other and overlay the center instead of crushing the task column.
 - Keep task capture immediately below the date header; secondary actions such as AI day planning stay in the lower action bar.
 - Keep frameless resizing discoverable through generous edge/corner hit zones and a visible bottom-right grip.
+- Position and show the app only once during native launch readiness; do not snap it back after the user moves it and later toggles visibility.
 - Keep essential task actions keyboard reachable and visible at low emphasis; wrap them below task text at the minimum width rather than hiding them.
 - Keep the first archive-retention control pass inside Tracking Station with a small preset range instead of adding another global settings surface.
 - Keep Star Focus map upgrades grounded in mission telemetry and accumulated-orbit feedback instead of drifting into descriptive filler or a separate vehicle-construction mechanic.

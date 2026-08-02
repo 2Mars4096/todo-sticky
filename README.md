@@ -37,6 +37,7 @@ Click **Test Connection** to verify, then **Save & Start**. Change settings late
 
 - **Tasks & subtasks** — Add tasks, break them into subtasks manually or with AI
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
+- **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Status cycle** — Toggle task status: todo → done → partial → todo
 - **Push to tomorrow** — Move unfinished tasks to the next day
 - **Date navigation** — Jump between days with prev/next arrows or calendar picker
@@ -45,7 +46,7 @@ Click **Test Connection** to verify, then **Save & Start**. Change settings late
 - **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)
 - **Star Focus Mission Control + Tracking Station** — Compact side rails open on demand; arm a task, launch a focus session, pause/resume it, recover restored live sessions in Tracking Station, and browse a native-local mission archive with a compressed solar-system map that stays quiet in the sidebar while Tracking Station now owns the true 3D orbital renderer with real camera orbit, layered planet materials, shader-driven front atmosphere haze, Earth/Venus cloud-shadow coupling under shader-driven cloud shells, alpha-aware solar shadow interaction for cloud shells and rings, color-separated atmosphere scattering, shadowed lighting, richer sun flare and solar scatter structure, inner-body phase rims, Earth dark-side lights, Earth ocean glint, Earth-Moon eclipse/transit cues, Moon Earthshine, Saturn ring-shadow detail, Saturn ring scattering, textured rings, layered starfield depth, nebula veils, dust-haze background depth, live mission pathing, and local archive views, while the sidebar stays on the lighter projected map with `6` / `12` / `24` retention presets
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
-- **Always on top** — Sticky window stays visible; runs in menu bar with tray icon
+- **Always on top** — Sticky window stays visible; runs in the menu bar with a tray icon
 - **Lightweight** — Built with Tauri; ~5 MB installer (no bundled browser)
 
 ## Development

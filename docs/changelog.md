@@ -2,6 +2,9 @@
 
 ## 2026-08-02
 
+- [native] Position fresh app launches at the top-right of the current display work area with a Retina-aware 16px margin, then show and focus the window from Tauri's ready event.
+- [native] Add focused placement tests for primary and left-side monitor coordinates, rebuild the macOS app-only bundle, seal it locally, replace the installed app, and relaunch it.
+- [docs] Complete plan `4-1-top-right-launch-placement` and document the new launch behavior and native lifecycle boundary.
 - [frontend] Replace the cramped 380px baseline with a ready-to-use 460px shell, one-time collapsed-rail migration, compact overlay panels, and responsive populated-task action wrapping.
 - [frontend] Add native resize hit zones on every frameless edge and corner, including a visible bottom-right grip and explicit Tauri resize permission.
 - [frontend] Move task capture below the date header, add an actionable empty state, repair the unreachable add-step path, improve date/filter labels, and add accessible names plus reduced-motion handling.

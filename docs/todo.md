@@ -71,6 +71,7 @@
 ## Phase 5 - Ready-To-Use Frontend
 
 - [x] [4-ready-shell-and-ux-path-pass](plans/4-ready-shell-and-ux-path-pass.md) - Optimize the default layout, frameless-window resizing, and shortest paths through core workflows.
+  - [x] [4-1-top-right-launch-placement](plans/4-1-top-right-launch-placement.md) - Open the installed app visibly in a predictable top-right launch position.
 
 ## Backlog
 
