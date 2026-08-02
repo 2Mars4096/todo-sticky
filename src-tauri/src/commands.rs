@@ -1,4 +1,4 @@
-use crate::config::{self, AppSettings, StarFocusState, get_kb_path};
+use crate::config::{self, get_kb_path, AppSettings, StarFocusState};
 use crate::file_sync;
 use crate::llm::{self, LLMConfig};
 use crate::markdown::{AggregatedTask, Task};
@@ -21,11 +21,20 @@ pub fn get_tasks(date_str: String, app: AppHandle) -> Result<TasksResult, String
     let kb = get_kb_path(&app);
     let todo_dir = PathBuf::from(&kb).join("content").join("to-do");
     let (tasks, fp, ws) = file_sync::get_tasks(&todo_dir.to_string_lossy(), &date_str)?;
-    Ok(TasksResult { tasks, file_path: fp, week_start: ws })
+    Ok(TasksResult {
+        tasks,
+        file_path: fp,
+        week_start: ws,
+    })
 }
 
 #[tauri::command]
-pub fn save_tasks(file_path: String, date_str: String, tasks: Vec<Task>, app: AppHandle) -> Result<Value, String> {
+pub fn save_tasks(
+    file_path: String,
+    date_str: String,
+    tasks: Vec<Task>,
+    app: AppHandle,
+) -> Result<Value, String> {
     crate::mark_own_write(&app);
     let section = crate::markdown::serialize_date_section(&date_str, &tasks);
     file_sync::write_back_section(&file_path, &date_str, &section)?;
@@ -33,7 +42,11 @@ pub fn save_tasks(file_path: String, date_str: String, tasks: Vec<Task>, app: Ap
 }
 
 #[tauri::command]
-pub fn create_date_section(date_str: String, tasks: Vec<Task>, app: AppHandle) -> Result<Value, String> {
+pub fn create_date_section(
+    date_str: String,
+    tasks: Vec<Task>,
+    app: AppHandle,
+) -> Result<Value, String> {
     crate::mark_own_write(&app);
     let kb = get_kb_path(&app);
     let todo_dir = PathBuf::from(&kb).join("content").join("to-do");
@@ -43,7 +56,11 @@ pub fn create_date_section(date_str: String, tasks: Vec<Task>, app: AppHandle) -
 }
 
 #[tauri::command]
-pub fn append_tasks_to_date(date_str: String, tasks: Vec<Task>, app: AppHandle) -> Result<Value, String> {
+pub fn append_tasks_to_date(
+    date_str: String,
+    tasks: Vec<Task>,
+    app: AppHandle,
+) -> Result<Value, String> {
     crate::mark_own_write(&app);
     let kb = get_kb_path(&app);
     let todo_dir = PathBuf::from(&kb).join("content").join("to-do");
@@ -53,21 +70,33 @@ pub fn append_tasks_to_date(date_str: String, tasks: Vec<Task>, app: AppHandle) 
 }
 
 #[tauri::command]
-pub fn push_task(to_date: String, task_text: String, subtask_texts: Vec<String>, app: AppHandle) -> Result<Value, String> {
+pub fn push_task(
+    to_date: String,
+    task_text: String,
+    subtask_texts: Vec<String>,
+    app: AppHandle,
+) -> Result<Value, String> {
     crate::mark_own_write(&app);
     let kb = get_kb_path(&app);
     let todo_dir = PathBuf::from(&kb).join("content").join("to-do");
-    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis();
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
     let task = Task {
         id: format!("push_{}", now),
         text: task_text,
         status: "todo".into(),
-        subtasks: subtask_texts.iter().enumerate().map(|(i, t)| Task {
-            id: format!("push_sub_{}_{}", now, i),
-            text: t.clone(),
-            status: "todo".into(),
-            subtasks: Vec::new(),
-        }).collect(),
+        subtasks: subtask_texts
+            .iter()
+            .enumerate()
+            .map(|(i, t)| Task {
+                id: format!("push_sub_{}_{}", now, i),
+                text: t.clone(),
+                status: "todo".into(),
+                subtasks: Vec::new(),
+            })
+            .collect(),
     };
     let info = file_sync::append_tasks_to_date(&todo_dir.to_string_lossy(), &to_date, &[task])?;
     crate::refresh_watcher(&app)?;
@@ -83,7 +112,11 @@ pub fn list_weekly_files(app: AppHandle) -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub async fn llm_breakdown(task_text: String, existing_subtasks: Vec<String>, app: AppHandle) -> Result<Value, String> {
+pub async fn llm_breakdown(
+    task_text: String,
+    existing_subtasks: Vec<String>,
+    app: AppHandle,
+) -> Result<Value, String> {
     llm::breakdown(&app, &task_text, &existing_subtasks).await
 }
 

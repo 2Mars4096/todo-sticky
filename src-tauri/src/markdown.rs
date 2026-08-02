@@ -6,7 +6,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 static ID_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn next_id() -> String {
-    let ts = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis();
+    let ts = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
     let c = ID_COUNTER.fetch_add(1, Ordering::Relaxed);
     format!("task_{}_{}", ts, c)
 }
@@ -147,7 +150,9 @@ pub fn parse_weekly_file(content: &str) -> ParsedFile {
         }
     }
 
-    ParsedFile { date_sections: sections }
+    ParsedFile {
+        date_sections: sections,
+    }
 }
 
 pub fn serialize_tasks(tasks: &[Task], indent: usize) -> String {
@@ -168,7 +173,11 @@ pub fn serialize_date_section(date: &str, tasks: &[Task]) -> String {
 }
 
 fn normalize_task_text(text: &str) -> String {
-    text.to_lowercase().trim().split_whitespace().collect::<Vec<_>>().join(" ")
+    text.to_lowercase()
+        .trim()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<AggregatedTask> {
@@ -191,7 +200,9 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
             if section.date == target_date {
                 entry.status = task.status.clone();
             }
-            entry.dates.insert(section.date.clone(), task.subtasks.clone());
+            entry
+                .dates
+                .insert(section.date.clone(), task.subtasks.clone());
         }
     }
 

@@ -1,4 +1,7 @@
-use crate::markdown::{parse_weekly_file, serialize_date_section, serialize_tasks, get_tasks_for_date, AggregatedTask, Task};
+use crate::markdown::{
+    get_tasks_for_date, parse_weekly_file, serialize_date_section, serialize_tasks, AggregatedTask,
+    Task,
+};
 use chrono::Datelike;
 use regex::Regex;
 use std::fs;
@@ -57,7 +60,11 @@ pub fn find_weekly_file(todo_dir: &str, date_str: &str) -> Result<Option<FileInf
     Ok(None)
 }
 
-pub fn write_back_section(file_path: &str, date_str: &str, new_section: &str) -> Result<(), String> {
+pub fn write_back_section(
+    file_path: &str,
+    date_str: &str,
+    new_section: &str,
+) -> Result<(), String> {
     let content = fs::read_to_string(file_path)
         .map_err(|e| format!("Failed to read {}: {}", file_path, e))?;
     let lines: Vec<&str> = content.lines().collect();
@@ -97,7 +104,11 @@ pub fn write_back_section(file_path: &str, date_str: &str, new_section: &str) ->
     Ok(())
 }
 
-pub fn ensure_date_section(todo_dir: &str, date_str: &str, tasks: &[Task]) -> Result<FileInfo, String> {
+pub fn ensure_date_section(
+    todo_dir: &str,
+    date_str: &str,
+    tasks: &[Task],
+) -> Result<FileInfo, String> {
     if let Some(existing) = find_weekly_file(todo_dir, date_str)? {
         let section = serialize_date_section(date_str, tasks);
         write_back_section(&existing.file_path, date_str, &section)?;
@@ -136,7 +147,11 @@ pub fn ensure_date_section(todo_dir: &str, date_str: &str, tasks: &[Task]) -> Re
     })
 }
 
-pub fn append_tasks_to_date(todo_dir: &str, date_str: &str, tasks: &[Task]) -> Result<FileInfo, String> {
+pub fn append_tasks_to_date(
+    todo_dir: &str,
+    date_str: &str,
+    tasks: &[Task],
+) -> Result<FileInfo, String> {
     let task_lines = serialize_tasks(tasks, 0);
 
     if let Some(file_info) = find_weekly_file(todo_dir, date_str)? {
@@ -179,7 +194,10 @@ pub fn append_tasks_to_date(todo_dir: &str, date_str: &str, tasks: &[Task]) -> R
     ensure_date_section(todo_dir, date_str, tasks)
 }
 
-pub fn get_tasks(todo_dir: &str, date_str: &str) -> Result<(Vec<AggregatedTask>, Option<String>, Option<String>), String> {
+pub fn get_tasks(
+    todo_dir: &str,
+    date_str: &str,
+) -> Result<(Vec<AggregatedTask>, Option<String>, Option<String>), String> {
     let result = find_weekly_file(todo_dir, date_str)?;
     match result {
         Some(info) => {

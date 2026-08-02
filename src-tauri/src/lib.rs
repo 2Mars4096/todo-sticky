@@ -116,12 +116,28 @@ fn tray_icon_image() -> Image<'static> {
         set_pixel(&mut rgba, width, height, 10, y);
     }
 
-    for (x, y) in [(9, 12), (10, 13), (11, 14), (12, 13), (13, 12), (14, 11), (15, 10)] {
+    for (x, y) in [
+        (9, 12),
+        (10, 13),
+        (11, 14),
+        (12, 13),
+        (13, 12),
+        (14, 11),
+        (15, 10),
+    ] {
         set_pixel(&mut rgba, width, height, x, y);
         set_pixel(&mut rgba, width, height, x, y + 1);
     }
 
-    for (x, y) in [(9, 19), (10, 20), (11, 21), (12, 20), (13, 19), (14, 18), (15, 17)] {
+    for (x, y) in [
+        (9, 19),
+        (10, 20),
+        (11, 21),
+        (12, 20),
+        (13, 19),
+        (14, 18),
+        (15, 17),
+    ] {
         set_pixel(&mut rgba, width, height, x, y);
         set_pixel(&mut rgba, width, height, x, y + 1);
     }
@@ -141,7 +157,6 @@ struct WatcherState {
     watched_root: Option<PathBuf>,
     last_own_write: Instant,
 }
-
 
 impl Default for WatcherState {
     fn default() -> Self {
@@ -177,8 +192,12 @@ pub(crate) fn refresh_watcher(app: &AppHandle) -> Result<(), String> {
 
     {
         let state = app.state::<Mutex<WatcherState>>();
-        let mut watcher_state = state.lock().map_err(|_| "Failed to lock watcher state".to_string())?;
-        if watcher_state.watched_root.as_ref() == Some(&watched_root) && watcher_state.watcher.is_some() {
+        let mut watcher_state = state
+            .lock()
+            .map_err(|_| "Failed to lock watcher state".to_string())?;
+        if watcher_state.watched_root.as_ref() == Some(&watched_root)
+            && watcher_state.watcher.is_some()
+        {
             return Ok(());
         }
         watcher_state.watcher = None;
@@ -187,37 +206,46 @@ pub(crate) fn refresh_watcher(app: &AppHandle) -> Result<(), String> {
 
     let handle = app.clone();
     let todo_dir_for_events = watched_todo_dir.clone();
-    let mut watcher = notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| {
-        let Ok(event) = res else {
-            return;
-        };
+    let mut watcher =
+        notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| {
+            let Ok(event) = res else {
+                return;
+            };
 
-        if !event.paths.iter().any(|path| path.starts_with(&todo_dir_for_events)) {
-            return;
-        }
+            if !event
+                .paths
+                .iter()
+                .any(|path| path.starts_with(&todo_dir_for_events))
+            {
+                return;
+            }
 
-        let state = handle.state::<Mutex<WatcherState>>();
-        let should_emit = state
-            .lock()
-            .map(|watcher_state| watcher_state.last_own_write.elapsed() >= Duration::from_millis(1000))
-            .unwrap_or(false);
+            let state = handle.state::<Mutex<WatcherState>>();
+            let should_emit = state
+                .lock()
+                .map(|watcher_state| {
+                    watcher_state.last_own_write.elapsed() >= Duration::from_millis(1000)
+                })
+                .unwrap_or(false);
 
-        if !should_emit {
-            return;
-        }
+            if !should_emit {
+                return;
+            }
 
-        if let Some(win) = handle.get_webview_window("main") {
-            win.emit("file-changed", ()).ok();
-        }
-    })
-    .map_err(|e| format!("Failed to create watcher: {}", e))?;
+            if let Some(win) = handle.get_webview_window("main") {
+                win.emit("file-changed", ()).ok();
+            }
+        })
+        .map_err(|e| format!("Failed to create watcher: {}", e))?;
 
     watcher
         .watch(&watched_root, RecursiveMode::Recursive)
         .map_err(|e| format!("Failed to watch {}: {}", watched_root.display(), e))?;
 
     let state = app.state::<Mutex<WatcherState>>();
-    let mut watcher_state = state.lock().map_err(|_| "Failed to lock watcher state".to_string())?;
+    let mut watcher_state = state
+        .lock()
+        .map_err(|_| "Failed to lock watcher state".to_string())?;
     watcher_state.watcher = Some(watcher);
     watcher_state.watched_root = Some(watched_root);
 
@@ -302,7 +330,10 @@ pub fn run() {
                 .tray_by_id("main")
                 .ok_or_else(|| "Failed to find default tray icon".to_string())?;
             tray.set_menu(Some(tray_menu))?;
-            tray.set_tooltip(Some(format!("Sticky Todo  ({} to toggle)", shortcut_label())))?;
+            tray.set_tooltip(Some(format!(
+                "Sticky Todo  ({} to toggle)",
+                shortcut_label()
+            )))?;
 
             #[cfg(target_os = "macos")]
             {
