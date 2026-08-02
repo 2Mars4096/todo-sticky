@@ -5,6 +5,7 @@
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
+    "core:window:allow-start-resize-dragging",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
     "dialog:allow-open"

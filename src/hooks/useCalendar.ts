@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { format, addDays, subDays } from 'date-fns'
+import { format, addDays, subDays, isToday } from 'date-fns'
 
 export function useCalendar() {
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -21,6 +21,11 @@ export function useCalendar() {
     setCalendarOpen(false)
   }, [])
 
+  const goToday = useCallback(() => {
+    setSelectedDate(new Date())
+    setCalendarOpen(false)
+  }, [])
+
   const toggleCalendar = useCallback(() => {
     setCalendarOpen(o => !o)
   }, [])
@@ -30,9 +35,11 @@ export function useCalendar() {
     dateStr,
     displayDate,
     calendarOpen,
+    isCurrentDay: isToday(selectedDate),
     goNext,
     goPrev,
     goToDate,
+    goToday,
     toggleCalendar,
     setCalendarOpen,
   }

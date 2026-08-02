@@ -78,7 +78,8 @@ export function TaskItem({
         <button
           className={`task-checkbox ${status === 'done' ? 'done' : ''} ${status === 'partial' ? 'partial' : ''}`}
           onClick={onToggle}
-          title={status}
+          title={`Status: ${status}. Click to change`}
+          aria-label={`${text}. Status ${status}. Change status`}
         />
         {editing ? (
           <input
@@ -90,12 +91,15 @@ export function TaskItem({
             onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setEditText(text) } }}
           />
         ) : (
-          <span
+          <button
+            type="button"
             className={`task-text ${status === 'done' ? 'done' : ''}`}
             onClick={() => { if (!isOtherDate) { setEditing(true); setEditText(text) } }}
+            disabled={isOtherDate}
+            title={isOtherDate ? undefined : 'Edit task'}
           >
             {text}
-          </span>
+          </button>
         )}
         {dateLabel && <span className="date-tag">{dateLabel}</span>}
         <div className="task-actions">
@@ -111,17 +115,28 @@ export function TaskItem({
                     : 'Send to Mission Control'
               }
               disabled={Boolean(isFocusLocked && !isFocusSelected)}
+              aria-label={isFocusSelected ? `Focused task: ${text}` : `Focus on ${text}`}
             >
               {isFocusSelected ? 'Armed' : 'Focus'}
             </button>
           )}
+          {!isSubtask && !isOtherDate && onAddSubtask && (
+            <button
+              className={`subtask-link ${showSubInput ? 'active' : ''}`}
+              onClick={() => setShowSubInput(true)}
+              title="Add a step"
+              aria-label={`Add a step to ${text}`}
+            >
+              + Step
+            </button>
+          )}
           {!isSubtask && !isOtherDate && onAIBreakdown && (
-            <button className="ai-btn" onClick={onAIBreakdown} title="AI breakdown">✦</button>
+            <button className="ai-btn" onClick={onAIBreakdown} title="Break into steps with AI" aria-label={`Break ${text} into steps with AI`}>✦</button>
           )}
           {!isOtherDate && (
             <>
-              <button className="delete" onClick={onDelete} title="Delete">✕</button>
-              <button className="push" onClick={onPush} title="Push to tomorrow">→</button>
+              <button className="delete" onClick={onDelete} title="Delete" aria-label={`Delete ${text}`}>✕</button>
+              <button className="push" onClick={onPush} title="Move to tomorrow" aria-label={`Move ${text} to tomorrow`}>→</button>
             </>
           )}
         </div>
@@ -174,24 +189,6 @@ export function TaskItem({
         </div>
       )}
 
-      {!isSubtask && !isOtherDate && !showSubInput && (
-        <div
-          className="task-item subtask"
-          style={{ opacity: 0, height: 0, overflow: 'hidden' }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget
-            el.style.opacity = '0.5'
-            el.style.height = 'auto'
-          }}
-        >
-          <button
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)', padding: '2px 0' }}
-            onClick={() => setShowSubInput(true)}
-          >
-            + subtask
-          </button>
-        </div>
-      )}
     </>
   )
 }

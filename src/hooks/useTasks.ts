@@ -249,8 +249,11 @@ export function useTasks(dateStr: string) {
       })
     } catch (e) {
       console.error('Failed to push to tomorrow:', e)
+      setTasks(currentTasks)
+      await load()
+      throw e
     }
-  }, [dateStr, tasks])
+  }, [dateStr, tasks, load])
 
   const addSubtask = useCallback((taskId: string, text: string) => {
     const sub: Task = { id: newId(), text, status: 'todo', subtasks: [] }

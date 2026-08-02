@@ -14,8 +14,10 @@
       {
         "label": "main",
         "title": "Sticky Todo",
-        "width": 380,
-        "height": 560,
+        "width": 460,
+        "height": 640,
+        "minWidth": 340,
+        "minHeight": 440,
         "dragDropEnabled": false,
         "decorations": false,
         "transparent": true,

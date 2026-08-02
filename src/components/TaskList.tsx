@@ -22,8 +22,12 @@ export function TaskList({
 }: Props) {
   if (tasks.length === 0) {
     return (
-      <div className="task-list" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>No tasks for this day</span>
+      <div className="task-list empty">
+        <div className="task-empty-state">
+          <span className="task-empty-mark" aria-hidden="true">✓</span>
+          <strong>Start with one clear task</strong>
+          <span>Add it above, then break it down, plan it, or start a focus session.</span>
+        </div>
       </div>
     )
   }

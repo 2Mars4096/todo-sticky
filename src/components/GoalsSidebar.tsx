@@ -62,6 +62,7 @@ function GoalRow({
         className={`goal-toggle ${item.done ? 'done' : ''}`}
         onClick={() => onToggleGoal(category, item.id)}
         title={item.done ? 'Mark active' : 'Mark done'}
+        aria-label={`${item.done ? 'Reactivate' : 'Complete'} ${item.text}`}
       />
       {editing ? (
         <textarea
@@ -72,7 +73,10 @@ function GoalRow({
           onChange={event => setDraft(event.target.value)}
           onBlur={commit}
           onKeyDown={event => {
-            if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') commit()
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault()
+              commit()
+            }
             if (event.key === 'Escape') {
               setEditing(false)
               setDraft(item.text)
@@ -92,6 +96,7 @@ function GoalRow({
         className="goal-delete"
         onClick={() => onDeleteGoal(category, item.id)}
         title="Delete item"
+        aria-label={`Delete ${item.text}`}
       >
         ✕
       </button>
@@ -149,7 +154,10 @@ function GoalSection({
           value={draft}
           onChange={event => setDraft(event.target.value)}
           onKeyDown={event => {
-            if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') handleAdd()
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault()
+              handleAdd()
+            }
           }}
         />
         <button onClick={handleAdd} disabled={!draft.trim()}>
@@ -171,27 +179,30 @@ export function GoalsSidebar({
   onToggleGoal,
 }: SidebarProps) {
   return (
-    <aside className={`goals-sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside className={`goals-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Goals and recurring tasks">
       <div className="sidebar-top">
         <div className="sidebar-spacer" />
         <button
           className="sidebar-toggle"
           onClick={onToggleCollapse}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Open goals' : 'Close goals'}
+          aria-expanded={!collapsed}
         >
           {collapsed ? '›' : '‹'}
         </button>
       </div>
 
       {collapsed ? (
-        <div className="sidebar-mini-stats">
+        <div className="sidebar-mini-stats" aria-label={`${targets.length} long-term goals and ${recurring.length} recurring tasks`}>
+          <span className="rail-name">Goals</span>
           <div className="mini-stat">
             <strong>{targets.length}</strong>
-            <span>LT</span>
+            <span>Long</span>
           </div>
           <div className="mini-stat">
             <strong>{recurring.length}</strong>
-            <span>RC</span>
+            <span>Repeat</span>
           </div>
         </div>
       ) : (
@@ -200,8 +211,8 @@ export function GoalsSidebar({
             title="Long-Term"
             category="targets"
             items={targets}
-            placeholder="Add a long-term target..."
-            emptyText="Nothing pinned here yet."
+            placeholder="Add a goal"
+            emptyText="Pin what matters beyond today."
             onAddGoal={onAddGoal}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}
@@ -212,8 +223,8 @@ export function GoalsSidebar({
             title="Recurring"
             category="recurring"
             items={recurring}
-            placeholder="Add a recurring item..."
-            emptyText="No recurring anchors yet."
+            placeholder="Add a recurring task"
+            emptyText="Add routines you want to repeat."
             onAddGoal={onAddGoal}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}

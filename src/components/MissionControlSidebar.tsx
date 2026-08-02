@@ -103,7 +103,7 @@ export function MissionControlSidebar({
   const hiddenHistoryCount = Math.max(0, missionHistory.length - 3)
 
   return (
-    <aside className={`mission-sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside className={`mission-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Star Focus mission control">
       <div className="mission-top">
         {!collapsed && (
           <div className="mission-heading">
@@ -115,6 +115,8 @@ export function MissionControlSidebar({
           className="sidebar-toggle"
           onClick={onToggleCollapse}
           title={collapsed ? 'Expand Mission Control' : 'Collapse Mission Control'}
+          aria-label={collapsed ? 'Open Mission Control' : 'Close Mission Control'}
+          aria-expanded={!collapsed}
         >
           {collapsed ? '‹' : '›'}
         </button>
@@ -122,24 +124,26 @@ export function MissionControlSidebar({
 
       {collapsed ? (
         <div className="mission-mini-stats">
+          <span className="rail-name">Focus</span>
           <div className="mini-stat">
             <strong>{activeSession ? activeSnapshot?.isPaused ? 'HOLD' : 'LIVE' : orbitCount}</strong>
-            <span>{activeSession ? 'State' : 'Orb'}</span>
+            <span>{activeSession ? 'State' : 'Orbit'}</span>
           </div>
           <div className="mini-stat">
             <strong>{selectedTaskText ? 'SET' : taskCount}</strong>
-            <span>{selectedTaskText ? 'Task' : 'Todo'}</span>
+            <span>{selectedTaskText ? 'Task' : 'Tasks'}</span>
           </div>
           <div className="mini-stat">
             <strong>{activeSnapshot ? formatClock(activeSnapshot.remainingMs) : formatDuration(sessionDurationMinutes)}</strong>
-            <span>{activeSnapshot ? 'ETA' : 'Burn'}</span>
+            <span>{activeSnapshot ? 'Left' : 'Timer'}</span>
           </div>
           <button
             className="mission-mini-open"
             onClick={onOpenOverlay}
             title="Open Tracking Station"
+            aria-label="Open Tracking Station"
           >
-            View
+            Map
           </button>
         </div>
       ) : (

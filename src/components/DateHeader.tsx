@@ -7,19 +7,21 @@ interface Props {
   displayDate: string
   selectedDate: Date
   calendarOpen: boolean
+  isCurrentDay: boolean
   viewMode: ViewMode
   onPrev: () => void
   onNext: () => void
   onToggleCalendar: () => void
   onSelectDate: (date: Date) => void
+  onToday: () => void
   onCloseCalendar: () => void
   onViewModeChange: (mode: ViewMode) => void
 }
 
 export function DateHeader({
-  displayDate, selectedDate, calendarOpen,
+  displayDate, selectedDate, calendarOpen, isCurrentDay,
   viewMode, onPrev, onNext,
-  onToggleCalendar, onSelectDate, onCloseCalendar,
+  onToggleCalendar, onSelectDate, onToday, onCloseCalendar,
   onViewModeChange,
 }: Props) {
   const calRef = useRef<HTMLDivElement>(null)
@@ -55,9 +57,14 @@ export function DateHeader({
         <div className="window-drag-pill" />
       </div>
       <div className="date-nav">
-        <button onClick={onPrev} title="Previous day">‹</button>
+        <button onClick={onPrev} title="Previous day" aria-label="Previous day">‹</button>
         <div style={{ position: 'relative' }} ref={calRef}>
-          <button className="date-title" onClick={onToggleCalendar}>
+          <button
+            className="date-title"
+            onClick={onToggleCalendar}
+            aria-expanded={calendarOpen}
+            aria-label={`${displayDate}. Open calendar`}
+          >
             {displayDate}
             <span className="cal-chevron">{calendarOpen ? '▴' : '▾'}</span>
           </button>
@@ -67,10 +74,14 @@ export function DateHeader({
             </div>
           )}
         </div>
-        <button onClick={onNext} title="Next day">›</button>
+        <button onClick={onNext} title="Next day" aria-label="Next day">›</button>
       </div>
       <div className="header-row">
-        <div />
+        {isCurrentDay ? (
+          <span className="today-marker">Today</span>
+        ) : (
+          <button className="today-jump" onClick={onToday}>Go to today</button>
+        )}
         <div className="view-toggle">
           <button
             className={viewMode === 'all' ? 'active' : ''}
@@ -82,7 +93,7 @@ export function DateHeader({
             className={viewMode === 'today' ? 'active' : ''}
             onClick={() => onViewModeChange('today')}
           >
-            Today
+            Day
           </button>
         </div>
       </div>
