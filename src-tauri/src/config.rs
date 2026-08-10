@@ -32,6 +32,26 @@ impl Default for Machine {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+pub struct LLMProviderProfile {
+    #[serde(rename = "apiBase")]
+    pub api_base: String,
+    #[serde(rename = "apiKey")]
+    pub api_key: String,
+    pub model: String,
+}
+
+impl Default for LLMProviderProfile {
+    fn default() -> Self {
+        Self {
+            api_base: String::new(),
+            api_key: String::new(),
+            model: String::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct AppSettings {
     pub provider: String,
     #[serde(rename = "apiBase")]
@@ -39,6 +59,8 @@ pub struct AppSettings {
     #[serde(rename = "apiKey")]
     pub api_key: String,
     pub model: String,
+    #[serde(rename = "providerProfiles")]
+    pub provider_profiles: HashMap<String, LLMProviderProfile>,
     #[serde(rename = "kbPath")]
     pub kb_path: String,
     pub machines: Vec<Machine>,
@@ -51,6 +73,7 @@ impl Default for AppSettings {
             api_base: "https://api.moonshot.ai/v1".into(),
             api_key: String::new(),
             model: "kimi-k2.6".into(),
+            provider_profiles: HashMap::new(),
             kb_path: String::new(),
             machines: Vec::new(),
         }
@@ -156,6 +179,18 @@ fn load_settings_file(path: &Path) -> Option<AppSettings> {
     serde_json::from_str::<AppSettings>(&data).ok()
 }
 
+fn normalize_provider_profiles(mut settings: AppSettings) -> AppSettings {
+    settings.provider_profiles.insert(
+        settings.provider.clone(),
+        LLMProviderProfile {
+            api_base: settings.api_base.clone(),
+            api_key: settings.api_key.clone(),
+            model: settings.model.clone(),
+        },
+    );
+    settings
+}
+
 fn sanitize_archive_retention_limit(limit: u32) -> u32 {
     match limit {
         6 | 12 | 24 => limit,
@@ -190,7 +225,11 @@ fn load_star_focus_file(path: &Path) -> Option<StarFocusState> {
 }
 
 fn infer_provider(api_base: &str) -> String {
-    if api_base.contains("openai.com") {
+    let api_base = api_base.to_lowercase();
+
+    if api_base.contains("openrouter.ai") {
+        "openrouter".into()
+    } else if api_base.contains("openai.com") {
         "openai".into()
     } else if api_base.contains("moonshot.ai") || api_base.contains("kimi.ai") {
         "moonshot".into()
@@ -340,18 +379,18 @@ fn migrate_from_env() -> Option<AppSettings> {
 pub fn load_settings(app: &AppHandle) -> AppSettings {
     let path = config_path(app);
     if let Some(settings) = load_settings_file(&path) {
-        return settings;
+        return normalize_provider_profiles(settings);
     }
 
     if let Some(settings) = load_legacy_settings() {
-        return settings;
+        return normalize_provider_profiles(settings);
     }
 
     if let Some(settings) = migrate_from_env() {
-        return settings;
+        return normalize_provider_profiles(settings);
     }
 
-    AppSettings::default()
+    normalize_provider_profiles(AppSettings::default())
 }
 
 pub fn save_settings(app: &AppHandle, settings: &AppSettings) -> Result<(), String> {
@@ -359,7 +398,8 @@ pub fn save_settings(app: &AppHandle, settings: &AppSettings) -> Result<(), Stri
     if let Some(dir) = path.parent() {
         fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     }
-    let json = serde_json::to_string_pretty(settings).map_err(|e| e.to_string())?;
+    let normalized_settings = normalize_provider_profiles(settings.clone());
+    let json = serde_json::to_string_pretty(&normalized_settings).map_err(|e| e.to_string())?;
     fs::write(&path, json).map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -386,4 +426,70 @@ pub fn get_kb_path(app: &AppHandle) -> String {
     }
     let home = dirs_next::home_dir().unwrap_or_default();
     home.join("Documents").join("Sticky Todo").to_string_lossy().into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        infer_provider, normalize_provider_profiles, AppSettings, LLMProviderProfile,
+    };
+
+    #[test]
+    fn infers_openrouter_from_legacy_api_base() {
+        assert_eq!(infer_provider("https://openrouter.ai/api/v1"), "openrouter");
+        assert_eq!(infer_provider("HTTPS://OPENROUTER.AI/API/V1"), "openrouter");
+    }
+
+    #[test]
+    fn migrates_active_settings_into_a_provider_profile() {
+        let legacy_json = r#"{
+            "provider": "openrouter",
+            "apiBase": "https://openrouter.ai/api/v1",
+            "apiKey": "router-key",
+            "model": "moonshotai/kimi-k3",
+            "kbPath": "",
+            "machines": []
+        }"#;
+        let legacy_settings: AppSettings =
+            serde_json::from_str(legacy_json).expect("legacy settings should deserialize");
+
+        let normalized = normalize_provider_profiles(legacy_settings);
+        let profile = normalized
+            .provider_profiles
+            .get("openrouter")
+            .expect("active provider should gain a profile");
+
+        assert_eq!(profile.api_key, "router-key");
+        assert_eq!(profile.model, "moonshotai/kimi-k3");
+    }
+
+    #[test]
+    fn preserves_inactive_profiles_while_syncing_the_active_provider() {
+        let mut settings = AppSettings {
+            provider: "openrouter".into(),
+            api_base: "https://openrouter.ai/api/v1".into(),
+            api_key: "router-key".into(),
+            model: "moonshotai/kimi-k3".into(),
+            ..AppSettings::default()
+        };
+        settings.provider_profiles.insert(
+            "openai".into(),
+            LLMProviderProfile {
+                api_base: "https://api.openai.com/v1".into(),
+                api_key: "openai-key".into(),
+                model: "gpt-4o".into(),
+            },
+        );
+
+        let normalized = normalize_provider_profiles(settings);
+
+        assert_eq!(
+            normalized.provider_profiles["openai"].api_key,
+            "openai-key"
+        );
+        assert_eq!(
+            normalized.provider_profiles["openrouter"].api_key,
+            "router-key"
+        );
+    }
 }

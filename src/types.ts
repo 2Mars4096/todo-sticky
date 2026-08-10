@@ -20,13 +20,20 @@ export interface AggregatedTask {
 export type ViewMode = 'all' | 'today'
 export type GoalCategory = 'targets' | 'recurring'
 
-export type Provider = 'moonshot' | 'openai' | 'anthropic' | 'gemini' | 'custom'
+export type Provider = 'moonshot' | 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom'
+
+export interface ProviderProfile {
+  apiBase: string
+  apiKey: string
+  model: string
+}
 
 export interface AppSettings {
   provider: Provider
   apiBase: string
   apiKey: string
   model: string
+  providerProfiles: Partial<Record<Provider, ProviderProfile>>
   kbPath: string
   machines: { name: string; type: string; specs?: string; capabilities?: string[] }[]
 }

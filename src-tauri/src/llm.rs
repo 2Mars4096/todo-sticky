@@ -20,6 +20,13 @@ struct Message {
 
 const DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE: f32 = 0.4;
 const KIMI_TEMPERATURE: f32 = 1.0;
+const OPENROUTER_APP_URL: &str = "https://github.com/2Mars4096/todo-sticky";
+const OPENROUTER_APP_TITLE: &str = "Sticky Todo";
+
+fn is_openrouter(config: &LLMConfig) -> bool {
+    config.provider.eq_ignore_ascii_case("openrouter")
+        || config.api_base.to_lowercase().contains("openrouter.ai")
+}
 
 fn openai_compatible_temperature(config: &LLMConfig) -> f32 {
     let provider = config.provider.to_lowercase();
@@ -30,6 +37,7 @@ fn openai_compatible_temperature(config: &LLMConfig) -> f32 {
         || api_base.contains("moonshot.ai")
         || api_base.contains("kimi.ai")
         || model.starts_with("kimi-")
+        || model.contains("/kimi-")
     {
         KIMI_TEMPERATURE
     } else {
@@ -37,23 +45,39 @@ fn openai_compatible_temperature(config: &LLMConfig) -> f32 {
     }
 }
 
+fn openai_request(client: &reqwest::Client, config: &LLMConfig) -> reqwest::RequestBuilder {
+    let mut request = client
+        .post(format!(
+            "{}/chat/completions",
+            config.api_base.trim_end_matches('/')
+        ))
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", config.api_key));
+
+    if is_openrouter(config) {
+        request = request
+            .header("HTTP-Referer", OPENROUTER_APP_URL)
+            .header("X-OpenRouter-Title", OPENROUTER_APP_TITLE);
+    }
+
+    request
+}
+
 async fn openai_completion(
-    api_base: &str,
-    api_key: &str,
-    model: &str,
+    config: &LLMConfig,
     messages: &[Message],
-    temperature: f32,
 ) -> Result<String, String> {
     let msgs: Vec<Value> = messages
         .iter()
         .map(|m| json!({"role": m.role, "content": m.content}))
         .collect();
     let client = reqwest::Client::new();
-    let resp = client
-        .post(format!("{}/chat/completions", api_base))
-        .header("Content-Type", "application/json")
-        .header("Authorization", format!("Bearer {}", api_key))
-        .json(&json!({"model": model, "messages": msgs, "temperature": temperature}))
+    let resp = openai_request(&client, config)
+        .json(&json!({
+            "model": config.model,
+            "messages": msgs,
+            "temperature": openai_compatible_temperature(config),
+        }))
         .send()
         .await
         .map_err(|e| e.to_string())?;
@@ -135,14 +159,7 @@ async fn chat_completion(config: &LLMConfig, messages: &[Message]) -> Result<Str
     match config.provider.as_str() {
         "anthropic" => anthropic_completion(&config.api_base, &config.api_key, &config.model, messages).await,
         "gemini" => gemini_completion(&config.api_base, &config.api_key, &config.model, messages).await,
-        _ => openai_completion(
-            &config.api_base,
-            &config.api_key,
-            &config.model,
-            messages,
-            openai_compatible_temperature(config),
-        )
-        .await,
+        _ => openai_completion(config, messages).await,
     }
 }
 
@@ -229,5 +246,95 @@ fn extract_json(content: &str) -> Result<Value, String> {
         serde_json::from_str(m.as_str()).map_err(|e| e.to_string())
     } else {
         Ok(json!({}))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        is_openrouter, openai_compatible_temperature, openai_request, LLMConfig,
+        DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE, KIMI_TEMPERATURE, OPENROUTER_APP_TITLE,
+        OPENROUTER_APP_URL,
+    };
+
+    fn config(provider: &str, api_base: &str, model: &str) -> LLMConfig {
+        LLMConfig {
+            provider: provider.into(),
+            api_base: api_base.into(),
+            api_key: "test-key".into(),
+            model: model.into(),
+        }
+    }
+
+    #[test]
+    fn recognizes_openrouter_by_provider_or_api_base() {
+        assert!(is_openrouter(&config(
+            "openrouter",
+            "https://example.com/v1",
+            "moonshotai/kimi-k3"
+        )));
+        assert!(is_openrouter(&config(
+            "custom",
+            "https://openrouter.ai/api/v1",
+            "openrouter/auto"
+        )));
+    }
+
+    #[test]
+    fn builds_openrouter_chat_request_with_attribution_headers() {
+        let config = config(
+            "openrouter",
+            "https://openrouter.ai/api/v1/",
+            "moonshotai/kimi-k3",
+        );
+        let request = openai_request(&reqwest::Client::new(), &config)
+            .build()
+            .expect("OpenRouter request should build");
+
+        assert_eq!(
+            request.url().as_str(),
+            "https://openrouter.ai/api/v1/chat/completions"
+        );
+        assert_eq!(
+            request.headers()["HTTP-Referer"],
+            OPENROUTER_APP_URL
+        );
+        assert_eq!(
+            request.headers()["X-OpenRouter-Title"],
+            OPENROUTER_APP_TITLE
+        );
+        assert_eq!(request.headers()["Authorization"], "Bearer test-key");
+    }
+
+    #[test]
+    fn keeps_kimi_temperature_for_openrouter_model_slugs() {
+        assert_eq!(
+            openai_compatible_temperature(&config(
+                "openrouter",
+                "https://openrouter.ai/api/v1",
+                "moonshotai/kimi-k3"
+            )),
+            KIMI_TEMPERATURE
+        );
+        assert_eq!(
+            openai_compatible_temperature(&config(
+                "openrouter",
+                "https://openrouter.ai/api/v1",
+                "~moonshotai/kimi-latest"
+            )),
+            KIMI_TEMPERATURE
+        );
+    }
+
+    #[test]
+    fn keeps_default_temperature_for_other_openrouter_models() {
+        assert_eq!(
+            openai_compatible_temperature(&config(
+                "openrouter",
+                "https://openrouter.ai/api/v1",
+                "openrouter/auto"
+            )),
+            DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE
+        );
     }
 }
