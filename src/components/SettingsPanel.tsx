@@ -1,50 +1,31 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings, Provider } from '../types'
 import { api } from '../api'
-
-const PROVIDER_PRESETS: Record<string, { apiBase: string; model: string; models: string[] }> = {
-  moonshot: {
-    apiBase: 'https://api.moonshot.ai/v1',
-    model: 'kimi-k2.6',
-    models: ['kimi-k2.6', 'kimi-k2.5'],
-  },
-  openai: {
-    apiBase: 'https://api.openai.com/v1',
-    model: 'gpt-4o',
-    models: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini'],
-  },
-  anthropic: {
-    apiBase: 'https://api.anthropic.com/v1',
-    model: 'claude-sonnet-4-20250514',
-    models: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022'],
-  },
-  gemini: {
-    apiBase: 'https://generativelanguage.googleapis.com/v1beta',
-    model: 'gemini-2.0-flash',
-    models: ['gemini-2.0-flash', 'gemini-2.0-pro', 'gemini-1.5-pro'],
-  },
-  custom: {
-    apiBase: '',
-    model: '',
-    models: [],
-  },
-}
+import {
+  PROVIDER_ORDER,
+  PROVIDER_PRESETS,
+  settingsForProvider,
+  syncActiveProviderProfile,
+} from '../llmProviders'
 
 const EMPTY_SETTINGS: AppSettings = {
   provider: 'moonshot',
   apiBase: 'https://api.moonshot.ai/v1',
   apiKey: '',
   model: 'kimi-k2.6',
+  providerProfiles: {},
   kbPath: '',
   machines: [],
 }
 
 interface Props {
   onClose: () => void
+  onSaved?: (settings: AppSettings) => void
   firstRun?: boolean
+  initialProvider?: Provider
 }
 
-export function SettingsPanel({ onClose, firstRun }: Props) {
+export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: Props) {
   const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS)
   const [showKey, setShowKey] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -54,9 +35,10 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
 
   useEffect(() => {
     api.getSettings().then(s => {
-      if (s) setSettings(s)
+      if (!s) return
+      setSettings(initialProvider ? settingsForProvider(s, initialProvider) : s)
     })
-  }, [])
+  }, [initialProvider])
 
   const update = (patch: Partial<AppSettings>) => {
     setSettings(prev => ({ ...prev, ...patch }))
@@ -65,15 +47,19 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
   }
 
   const handleProviderChange = (provider: Provider) => {
-    const preset = PROVIDER_PRESETS[provider]
-    update({ provider, apiBase: preset.apiBase, model: preset.model })
+    setSettings(prev => settingsForProvider(prev, provider))
+    setDirty(true)
+    setTestResult(null)
   }
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      await api.saveSettings(settings)
+      const settingsToSave = syncActiveProviderProfile(settings)
+      await api.saveSettings(settingsToSave)
+      setSettings(settingsToSave)
       setDirty(false)
+      onSaved?.(settingsToSave)
       onClose()
     } finally {
       setSaving(false)
@@ -120,6 +106,8 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
   }
 
   const preset = PROVIDER_PRESETS[settings.provider] || PROVIDER_PRESETS.custom
+  const isOpenRouter = settings.provider === 'openrouter'
+    || settings.apiBase.toLowerCase().includes('openrouter.ai')
 
   return (
     <div className="settings-overlay" onClick={firstRun ? undefined : onClose}>
@@ -142,11 +130,11 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
               value={settings.provider}
               onChange={e => handleProviderChange(e.target.value as Provider)}
             >
-              <option value="moonshot">Moonshot (Kimi)</option>
-              <option value="openai">OpenAI</option>
-              <option value="anthropic">Anthropic (Claude)</option>
-              <option value="gemini">Google Gemini</option>
-              <option value="custom">Custom (OpenAI-compatible)</option>
+              {PROVIDER_ORDER.map(provider => (
+                <option key={provider} value={provider}>
+                  {PROVIDER_PRESETS[provider].label}
+                </option>
+              ))}
             </select>
 
             <label>API Base URL</label>
@@ -169,7 +157,9 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
               </datalist>
             )}
             <p className="hint">
-              Default model is <code>{preset.model || 'custom'}</code>. AI features only run after you add an API key.
+              {isOpenRouter
+                ? <>Use any OpenRouter model slug, such as <code>moonshotai/kimi-k3</code>. AI features only run after you add an API key.</>
+                : <>Default model is <code>{preset.model || 'custom'}</code>. AI features only run after you add an API key.</>}
             </p>
 
             <label>API Key</label>
@@ -178,7 +168,7 @@ export function SettingsPanel({ onClose, firstRun }: Props) {
                 type={showKey ? 'text' : 'password'}
                 value={settings.apiKey}
                 onChange={e => update({ apiKey: e.target.value })}
-                placeholder="sk-..."
+                placeholder={isOpenRouter ? 'sk-or-v1-...' : 'sk-...'}
               />
               <button
                 className="input-row-btn"

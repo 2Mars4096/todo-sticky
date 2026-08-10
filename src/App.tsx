@@ -13,7 +13,13 @@ import { useGoals } from './hooks/useGoals'
 import { STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS, useStarFocus } from './hooks/useStarFocus'
 import { useTasks } from './hooks/useTasks'
 import { api } from './api'
-import type { ViewMode } from './types'
+import {
+  isProviderConfigured,
+  PROVIDER_ORDER,
+  PROVIDER_PRESETS,
+  settingsForProvider,
+} from './llmProviders'
+import type { AppSettings, Provider, ViewMode } from './types'
 
 const READY_LAYOUT_MIGRATION_KEY = 'todo-sticky-ready-layout-v1'
 const COMPACT_LAYOUT_MAX_WIDTH = 760
@@ -31,10 +37,13 @@ export default function App() {
   const starFocus = useStarFocus(tasks.tasks)
   const [viewMode, setViewMode] = useState<ViewMode>('today')
   const [showSettings, setShowSettings] = useState(false)
+  const [settingsProvider, setSettingsProvider] = useState<Provider | undefined>()
   const [showTrackingStation, setShowTrackingStation] = useState(false)
   const [showDevTools, setShowDevTools] = useState(false)
   const [firstRun, setFirstRun] = useState(false)
   const [aiLoading, setAiLoading] = useState<string | null>(null)
+  const [aiSettings, setAiSettings] = useState<AppSettings | null>(null)
+  const [providerSwitching, setProviderSwitching] = useState(false)
   const [appNotice, setAppNotice] = useState<AppNotice | null>(null)
   const [windowWidth, setWindowWidth] = useState(() => (
     typeof window === 'undefined' ? 1024 : window.innerWidth
@@ -48,6 +57,48 @@ export default function App() {
     window.setTimeout(() => setAppNotice(null), 6000)
   }, [])
 
+  const openSettingsForProvider = useCallback((provider?: Provider) => {
+    setSettingsProvider(provider)
+    setShowSettings(true)
+  }, [])
+
+  const handleQuickProviderChange = useCallback(async (provider: Provider) => {
+    if (!aiSettings) return
+
+    if (provider === aiSettings.provider) {
+      if (!isProviderConfigured(aiSettings, provider)) {
+        openSettingsForProvider(provider)
+      }
+      return
+    }
+
+    if (!isProviderConfigured(aiSettings, provider)) {
+      openSettingsForProvider(provider)
+      return
+    }
+
+    const nextSettings = settingsForProvider(aiSettings, provider)
+    setProviderSwitching(true)
+    try {
+      await api.saveSettings(nextSettings)
+      setAiSettings(nextSettings)
+      presentNotice({
+        kind: 'success',
+        title: `AI: ${PROVIDER_PRESETS[provider].shortLabel}`,
+        message: `Using ${nextSettings.model}.`,
+      })
+    } catch (error) {
+      console.error('Provider switch failed', error)
+      presentNotice({
+        kind: 'error',
+        title: 'Provider unchanged',
+        message: 'Could not save the selected AI provider.',
+      })
+    } finally {
+      setProviderSwitching(false)
+    }
+  }, [aiSettings, openSettingsForProvider, presentNotice])
+
   useEffect(() => {
     api.checkFirstRun().then(isFirst => {
       if (isFirst) {
@@ -55,6 +106,10 @@ export default function App() {
         setShowSettings(true)
       }
     }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    api.getSettings().then(setAiSettings).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -364,7 +419,52 @@ export default function App() {
             Plan day
           </button>
           <div className="spacer" />
-          <button className="gear" onClick={() => setShowSettings(true)} title="Settings" aria-label="Settings">⚙</button>
+          <div
+            className={`provider-quick-control ${
+              aiSettings && isProviderConfigured(aiSettings, aiSettings.provider)
+                ? 'configured'
+                : 'needs-setup'
+            }`}
+            title={aiSettings
+              ? isProviderConfigured(aiSettings, aiSettings.provider)
+                ? `AI provider: ${PROVIDER_PRESETS[aiSettings.provider].label}`
+                : `Set up ${PROVIDER_PRESETS[aiSettings.provider].label}`
+              : 'Loading AI provider'}
+          >
+            <span className="provider-status-dot" aria-hidden="true" />
+            <select
+              value={
+                aiSettings && isProviderConfigured(aiSettings, aiSettings.provider)
+                  ? aiSettings.provider
+                  : ''
+              }
+              onChange={event => handleQuickProviderChange(event.target.value as Provider)}
+              disabled={!aiSettings || providerSwitching || Boolean(aiLoading)}
+              aria-label="Active AI provider"
+              aria-busy={providerSwitching}
+            >
+              {!aiSettings && <option value="">AI</option>}
+              {aiSettings && !isProviderConfigured(aiSettings, aiSettings.provider) && (
+                <option value="">
+                  Set up {PROVIDER_PRESETS[aiSettings.provider].shortLabel}
+                </option>
+              )}
+              {PROVIDER_ORDER.map(provider => (
+                <option key={provider} value={provider}>
+                  {PROVIDER_PRESETS[provider].shortLabel}
+                  {aiSettings && !isProviderConfigured(aiSettings, provider) ? ' · Set up' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            className="gear"
+            onClick={() => openSettingsForProvider(aiSettings?.provider)}
+            title="Settings"
+            aria-label="Settings"
+          >
+            ⚙
+          </button>
         </div>
 
         {appNotice && (
@@ -379,8 +479,14 @@ export default function App() {
         )}
         {showSettings && (
           <SettingsPanel
-            onClose={() => { setShowSettings(false); setFirstRun(false) }}
+            onClose={() => {
+              setShowSettings(false)
+              setFirstRun(false)
+              setSettingsProvider(undefined)
+            }}
+            onSaved={setAiSettings}
             firstRun={firstRun}
+            initialProvider={settingsProvider}
           />
         )}
       </div>
