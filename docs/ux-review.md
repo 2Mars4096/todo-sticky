@@ -14,7 +14,7 @@ Reviewed on 2026-08-10 against the frameless default window, the 340px minimum, 
 | AI breakdown | Click `✦`; failures were silent | Click `✦`; success updates steps and failure shows a visible settings prompt | Optimized within optional AI setup |
 | Change AI provider | Open Settings, replace the active provider configuration, and lose the previous provider's fields | Choose a configured provider from the persistent action-bar selector; unconfigured choices open directly in Settings | Optimized with provider-specific profiles |
 | Carry task forward | Click arrow; stale tasks moved only one stale day at a time | Click arrow; past work catches up to today, while current/future work advances one day; labels and feedback state the destination | Optimized |
-| Date navigation | Previous/next or calendar | Previous/next, calendar, or one-click `Go to today` when away from today | Optimized |
+| Date navigation | Previous/next or calendar; an empty past/future date looked like missing data | Previous/next, calendar, or one-click `Go to today` in both the header and date-aware empty state | Optimized |
 | Day scope | `All` and `Today` competed with the date meaning of “Today” | `All` and `Day`, defaulting to the current day | Clearer default |
 | Plan the day | Bottom `Schedule` action could run with no tasks and fail silently | `Plan day` is disabled until tasks exist and reports success or provider errors | Optimized |
 | Long-term goals | Expand panel, type, click Add or use Command/Ctrl+Enter | Open Goals, type, press Enter | Optimized for a secondary workflow |

@@ -76,6 +76,8 @@
 - [x] [4-ready-shell-and-ux-path-pass](plans/4-ready-shell-and-ux-path-pass.md) - Optimize the default layout, frameless-window resizing, and shortest paths through core workflows.
   - [x] [4-1-top-right-launch-placement](plans/4-1-top-right-launch-placement.md) - Open the installed app visibly in a predictable top-right launch position.
   - [x] [4-2-smart-task-carry-forward](plans/4-2-smart-task-carry-forward.md) - Carry past tasks to today and current/future tasks to their next day.
+  - [x] [4-3-goals-rail-and-data-path-clarity](plans/4-3-goals-rail-and-data-path-clarity.md) - Align collapsed Goals metrics and clarify empty non-current dates.
+  - [x] [4-4-stable-data-home-recovery](plans/4-4-stable-data-home-recovery.md) - Keep macOS task and app-state paths stable when a launcher overrides `HOME`.
 
 ## Backlog
 

@@ -20,7 +20,7 @@
 
 - [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, and compact action-bar AI provider switching.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
-- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top and provide an instructional empty state.
+- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, provide an instructional empty state for today, and route empty past/future dates directly back to today.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
 - [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between provider-specific profiles.
 - [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and direct row actions reachable, including destination-aware carry-forward for tasks and subtasks; compact CSS wraps the action strip below task text.
@@ -40,7 +40,7 @@
 - [ ] `src/components/DevToolsPanel.tsx`: development-only debug tray for seeding tasks, reloading task state, clearing the current day, and changing Star Focus mission speed during local testing.
 - [ ] `src/api.ts`: Tauri bridge for Star Focus load/save commands alongside the existing task and settings calls.
 - [ ] `src/components/SettingsPanel.tsx` and `src-tauri/src/llm.rs`: AI provider settings and native LLM calls, with Moonshot Kimi as the default, OpenRouter as a first-class OpenAI-compatible provider, OpenRouter attribution headers, editable routed-model slugs, and direct or routed Kimi requests using temperature `1.0`.
-- [ ] `src-tauri/src/config.rs` and `src-tauri/src/commands.rs`: native app-data persistence for Star Focus state plus general settings, including archive-cap sanitization and backward-compatible per-provider AI profiles whose top-level fields remain the active runtime configuration.
+- [ ] `src-tauri/src/config.rs` and `src-tauri/src/commands.rs`: native app-data persistence for Star Focus state plus general settings, including archive-cap sanitization, backward-compatible per-provider AI profiles, and macOS account-home resolution that keeps task/config roots independent of launcher-provided environment overrides.
 
 ## Conventions
 
@@ -64,6 +64,7 @@
 - Keep task capture immediately below the date header; secondary actions such as AI day planning stay in the lower action bar.
 - Keep frameless resizing discoverable through generous edge/corner hit zones and a visible bottom-right grip.
 - Position and show the app only once during native launch readiness; do not snap it back after the user moves it and later toggles visibility.
+- On macOS, resolve default task and bundle app-data roots from the signed-in account record; do not let an inherited `HOME` create a parallel empty store.
 - Keep essential task actions keyboard reachable and visible at low emphasis; wrap them below task text at the minimum width rather than hiding them.
 - Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
 - Keep the first archive-retention control pass inside Tracking Station with a small preset range instead of adding another global settings surface.
@@ -136,7 +137,8 @@
 - The latest 3D shadow-interaction pass gives cloud shells and Saturn's rings masked shadow materials and tightens the main solar shadow-map settings so thin transparent geometry participates more believably in local shadowing.
 - The latest Solar Route layout pass reframes Tracking Station as Focus Mode, advances completed sessions through an Earth/Moon/Venus/Mars/Saturn loop, and puts task/timer controls ahead of the map on compact windows.
 - Local development now has a dev-only debug tray for seeding tasks, clearing the current day, reloading task state, and slowing/fast-forwarding the Star Focus mission track.
-- There is no newer active implementation slice after [3-2-quick-provider-switching](plans/3-2-quick-provider-switching.md); remaining questions are parked in backlog.
+- The latest data-home recovery pass keeps macOS task and app-state paths anchored to the signed-in account even when an installer or launcher overrides `HOME`.
+- There is no newer active implementation slice after [4-4-stable-data-home-recovery](plans/4-4-stable-data-home-recovery.md); remaining questions are parked in backlog.
 
 ## Quality Checks
 

@@ -23,6 +23,8 @@ On first launch the app opens an optional setup panel. Choose **Start without AI
 | **KB Path** | Where task files live (`content/to-do/` inside this folder). Default: `~/Documents/Sticky Todo`. |
 | **Machines** | *(Optional)* Add servers/workstations for AI scheduling. |
 
+On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Sticky Todo from an installer or automation tool cannot silently open a separate empty data store.
+
 Click **Test Connection** to verify, then **Save & Start**. Change settings later via ⚙.
 
 After configuring more than one provider, use the compact provider selector beside ⚙ to switch in one action. Each provider keeps its own API URL, key, and last-used model. Choosing an unconfigured provider opens Settings directly on that provider.
@@ -42,7 +44,7 @@ After configuring more than one provider, use the compact provider selector besi
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Status cycle** — Toggle task status: todo → done → partial → todo
 - **Smart carry-forward** — Move unfinished past work directly to today; tasks on today or a future date move to their following day
-- **Date navigation** — Jump between days with prev/next arrows or calendar picker
+- **Date navigation** — Jump between days with prev/next arrows or the calendar; empty past/future dates offer a direct return to today
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires LLM API)
 - **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)

@@ -2,6 +2,11 @@
 
 ## 2026-08-10
 
+- [native] Fix missing-data launches on macOS by resolving task and app-state roots from the signed-in account instead of a caller-overridden `HOME` environment.
+- [native] Add account-home precedence and stable task/app-data path tests, rebuild and install the repaired bundle, and confirm the normal store is used while the isolated store remains untouched.
+- [frontend] Fit the collapsed Goals `REPEAT` metric with a slightly wider measure, tighter tracking, and centered non-wrapping label text.
+- [frontend] Replace the misleading generic empty state on past/future dates with date-aware guidance and a direct `Go to today` action.
+- [native] Confirm the active markdown archive is intact and add regression coverage for loading current tasks and subtasks from a multi-date file.
 - [frontend] Add a compact action-bar AI provider selector that switches configured providers in one action and routes unconfigured choices directly into setup.
 - [settings] Preserve a separate API base, key, and model profile for each provider while migrating the existing active configuration without data loss.
 - [frontend] Centralize provider labels, presets, configured-state checks, and switching behavior so the quick selector and Settings stay synchronized.
