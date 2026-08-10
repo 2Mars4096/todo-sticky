@@ -210,23 +210,29 @@ export default function App() {
     }
   }, [starFocus.selectTask, starFocus.sidebarCollapsed])
 
-  const handlePushToTomorrow = useCallback(async (taskId: string, subtaskId?: string) => {
+  const handleCarryForward = useCallback(async (taskId: string, subtaskId?: string) => {
     try {
-      await tasks.pushToTomorrow(taskId, subtaskId)
+      const target = await tasks.carryForward(taskId, subtaskId)
+      if (!target) return
+
       presentNotice({
         kind: 'success',
-        title: 'Moved to tomorrow',
-        message: 'The task is ready on the next day.',
+        title: `Moved to ${target.actionLabel}`,
+        message: target.kind === 'today'
+          ? 'The task has caught up to today.'
+          : target.kind === 'tomorrow'
+            ? 'The task is ready tomorrow.'
+            : 'The task moved one day forward.',
       })
     } catch (error) {
-      console.error('Move to tomorrow failed:', error)
+      console.error('Carry task forward failed:', error)
       presentNotice({
         kind: 'error',
         title: 'Could not move task',
         message: 'The task was restored. Try again in a moment.',
       })
     }
-  }, [tasks.pushToTomorrow, presentNotice])
+  }, [tasks.carryForward, presentNotice])
 
   const handleToggleGoalsSidebar = useCallback(() => {
     const willExpand = goals.sidebarCollapsed
@@ -317,9 +323,10 @@ export default function App() {
           viewMode={viewMode}
           selectedTaskId={starFocus.selectedTaskId}
           focusLocked={Boolean(starFocus.activeSession)}
+          moveTargetLabel={tasks.carryForwardTarget.actionLabel}
           onToggle={tasks.toggleStatus}
           onDelete={tasks.deleteTask}
-          onPush={handlePushToTomorrow}
+          onPush={handleCarryForward}
           onTextChange={tasks.updateTaskText}
           onAddSubtask={tasks.addSubtask}
           onAIBreakdown={handleAIBreakdown}

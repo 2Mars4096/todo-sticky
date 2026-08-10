@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { AggregatedTask, Task } from '../types'
 import { api } from '../api'
+import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
 function flattenToday(aggregated: AggregatedTask[]): Task[] {
   return aggregated.map(a => ({
@@ -14,13 +15,6 @@ function flattenToday(aggregated: AggregatedTask[]): Task[] {
 let idCounter = 0
 function newId() {
   return `ui_${Date.now()}_${idCounter++}`
-}
-
-function localDateStr(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
 }
 
 let debugSeedCounter = 0
@@ -80,6 +74,7 @@ export function useTasks(dateStr: string) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const filePathRef = useRef<string | null>(null)
   const dateRef = useRef(dateStr)
+  const carryForwardTarget = resolveTaskCarryForwardTarget(dateStr)
 
   useEffect(() => { dateRef.current = dateStr }, [dateStr])
   useEffect(() => { filePathRef.current = filePath }, [filePath])
@@ -198,11 +193,8 @@ export function useTasks(dateStr: string) {
     })
   }, [persist])
 
-  const pushToTomorrow = useCallback(async (taskId: string, subtaskId?: string) => {
-
-    const tomorrow = new Date(dateStr + 'T12:00:00')
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const tomorrowStr = localDateStr(tomorrow)
+  const carryForward = useCallback(async (taskId: string, subtaskId?: string) => {
+    const target = resolveTaskCarryForwardTarget(dateStr)
 
     // Compute payload from current state BEFORE mutating
     const currentTasks = tasks
@@ -235,10 +227,10 @@ export function useTasks(dateStr: string) {
     try {
       if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
 
-      // Append to tomorrow's section
-      await api.pushTask({ fromDate: dateStr, toDate: tomorrowStr, taskText, subtaskTexts })
+      // Append to the resolved current or future section.
+      await api.pushTask({ fromDate: dateStr, toDate: target.dateStr, taskText, subtaskTexts })
 
-      // Save today's section (task removed) — re-read state via getter
+      // Save the source date section after removing the carried task.
       setTasks(prev => {
         const flat = flattenToday(prev)
         const fp = filePathRef.current
@@ -247,8 +239,9 @@ export function useTasks(dateStr: string) {
         }
         return prev
       })
+      return target
     } catch (e) {
-      console.error('Failed to push to tomorrow:', e)
+      console.error('Failed to carry task forward:', e)
       setTasks(currentTasks)
       await load()
       throw e
@@ -351,7 +344,7 @@ export function useTasks(dateStr: string) {
 
   return {
     tasks, loading, load,
-    addTask, toggleStatus, deleteTask, pushToTomorrow,
+    addTask, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,
   }

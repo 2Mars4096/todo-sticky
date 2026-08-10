@@ -11,6 +11,7 @@ interface Props {
   isFocusSelected?: boolean
   isFocusLocked?: boolean
   sourceDate?: string
+  moveTargetLabel: string
   viewMode: ViewMode
   onToggle: () => void
   onDelete: () => void
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export function TaskItem({
-  id, text, status, isSubtask, isOtherDate, sourceDate,
+  id, text, status, isSubtask, isOtherDate, sourceDate, moveTargetLabel,
   isFocusSelected, isFocusLocked,
   viewMode, onToggle, onDelete, onPush, onTextChange,
   onFocusSelect,
@@ -136,7 +137,14 @@ export function TaskItem({
           {!isOtherDate && (
             <>
               <button className="delete" onClick={onDelete} title="Delete" aria-label={`Delete ${text}`}>✕</button>
-              <button className="push" onClick={onPush} title="Move to tomorrow" aria-label={`Move ${text} to tomorrow`}>→</button>
+              <button
+                className="push"
+                onClick={onPush}
+                title={`Move to ${moveTargetLabel}`}
+                aria-label={`Move ${text} to ${moveTargetLabel}`}
+              >
+                →
+              </button>
             </>
           )}
         </div>
@@ -149,6 +157,7 @@ export function TaskItem({
           text={sub.text}
           status={sub.status}
           isSubtask
+          moveTargetLabel={moveTargetLabel}
           viewMode={viewMode}
           onToggle={() => onToggleSubtask?.(sub.id)}
           onDelete={() => onDeleteSubtask?.(sub.id)}
@@ -166,6 +175,7 @@ export function TaskItem({
           isSubtask
           isOtherDate
           sourceDate={sub.sourceDate}
+          moveTargetLabel={moveTargetLabel}
           viewMode={viewMode}
           onToggle={() => {}}
           onDelete={() => {}}

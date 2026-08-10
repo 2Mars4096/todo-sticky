@@ -6,6 +6,7 @@ interface Props {
   viewMode: ViewMode
   selectedTaskId?: string | null
   focusLocked?: boolean
+  moveTargetLabel: string
   onToggle: (taskId: string, subtaskId?: string) => void
   onDelete: (taskId: string, subtaskId?: string) => void
   onPush: (taskId: string, subtaskId?: string) => void
@@ -16,7 +17,7 @@ interface Props {
 }
 
 export function TaskList({
-  tasks, viewMode, selectedTaskId, focusLocked,
+  tasks, viewMode, selectedTaskId, focusLocked, moveTargetLabel,
   onToggle, onDelete, onPush, onTextChange,
   onAddSubtask, onAIBreakdown, onFocusTask,
 }: Props) {
@@ -42,6 +43,7 @@ export function TaskList({
           status={task.status}
           isFocusSelected={selectedTaskId === task.id}
           isFocusLocked={focusLocked}
+          moveTargetLabel={moveTargetLabel}
           viewMode={viewMode}
           todaySubtasks={task.todaySubtasks}
           otherSubtasks={task.otherSubtasks}
