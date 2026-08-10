@@ -160,14 +160,82 @@ impl Default for StarFocusState {
     }
 }
 
+fn choose_home_dir(
+    account_home: Option<PathBuf>,
+    environment_home: Option<PathBuf>,
+) -> Option<PathBuf> {
+    account_home.or(environment_home)
+}
+
+#[cfg(target_os = "macos")]
+fn macos_account_home_dir() -> Option<PathBuf> {
+    use std::ffi::{CStr, OsString};
+    use std::mem;
+    use std::os::unix::ffi::OsStringExt;
+    use std::ptr;
+
+    // LaunchServices can preserve a caller-provided HOME. Resolve the signed-in
+    // account directly so launcher isolation cannot create a second data root.
+    unsafe {
+        let capacity = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {
+            size if size > 0 => size as usize,
+            _ => 512,
+        };
+        let mut buffer = vec![0_u8; capacity];
+        let mut password: libc::passwd = mem::zeroed();
+        let mut result = ptr::null_mut();
+        let status = libc::getpwuid_r(
+            libc::getuid(),
+            &mut password,
+            buffer.as_mut_ptr().cast(),
+            buffer.len(),
+            &mut result,
+        );
+
+        if status != 0 || result.is_null() || password.pw_dir.is_null() {
+            return None;
+        }
+
+        let bytes = CStr::from_ptr(password.pw_dir).to_bytes();
+        (!bytes.is_empty()).then(|| PathBuf::from(OsString::from_vec(bytes.to_vec())))
+    }
+}
+
+fn stable_home_dir() -> Option<PathBuf> {
+    #[cfg(target_os = "macos")]
+    let account_home = macos_account_home_dir();
+    #[cfg(not(target_os = "macos"))]
+    let account_home = None;
+
+    choose_home_dir(account_home, dirs_next::home_dir())
+}
+
+#[cfg(target_os = "macos")]
+fn macos_app_data_dir(home: &Path, identifier: &str) -> PathBuf {
+    home.join("Library")
+        .join("Application Support")
+        .join(identifier)
+}
+
+fn stable_app_data_dir(app: &AppHandle) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    if let Some(home) = stable_home_dir() {
+        return macos_app_data_dir(&home, &app.config().identifier);
+    }
+
+    app.path().app_data_dir().expect("no app data dir")
+}
+
+fn default_kb_path(home: &Path) -> PathBuf {
+    home.join("Documents").join("Sticky Todo")
+}
+
 fn config_path(app: &AppHandle) -> PathBuf {
-    let dir = app.path().app_data_dir().expect("no app data dir");
-    dir.join("config.json")
+    stable_app_data_dir(app).join("config.json")
 }
 
 fn star_focus_path(app: &AppHandle) -> PathBuf {
-    let dir = app.path().app_data_dir().expect("no app data dir");
-    dir.join("star_focus.json")
+    stable_app_data_dir(app).join("star_focus.json")
 }
 
 pub fn has_saved_config(app: &AppHandle) -> bool {
@@ -424,15 +492,49 @@ pub fn get_kb_path(app: &AppHandle) -> String {
     if !settings.kb_path.is_empty() {
         return settings.kb_path;
     }
-    let home = dirs_next::home_dir().unwrap_or_default();
-    home.join("Documents").join("Sticky Todo").to_string_lossy().into()
+    let home = stable_home_dir().unwrap_or_default();
+    default_kb_path(&home).to_string_lossy().into()
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        infer_provider, normalize_provider_profiles, AppSettings, LLMProviderProfile,
+        choose_home_dir, default_kb_path, infer_provider, normalize_provider_profiles, AppSettings,
+        LLMProviderProfile,
     };
+    use std::path::{Path, PathBuf};
+
+    #[cfg(target_os = "macos")]
+    use super::macos_app_data_dir;
+
+    #[test]
+    fn account_home_takes_precedence_over_launcher_home() {
+        let resolved = choose_home_dir(
+            Some(PathBuf::from("/Users/example")),
+            Some(PathBuf::from("/tmp/isolated-home")),
+        );
+
+        assert_eq!(resolved, Some(PathBuf::from("/Users/example")));
+    }
+
+    #[test]
+    fn default_knowledge_base_stays_under_documents() {
+        assert_eq!(
+            default_kb_path(Path::new("/Users/example")),
+            PathBuf::from("/Users/example/Documents/Sticky Todo")
+        );
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_app_data_stays_under_the_account_home() {
+        assert_eq!(
+            macos_app_data_dir(Path::new("/Users/example"), "com.todo-sticky.app"),
+            PathBuf::from(
+                "/Users/example/Library/Application Support/com.todo-sticky.app"
+            )
+        );
+    }
 
     #[test]
     fn infers_openrouter_from_legacy_api_base() {
