@@ -68,6 +68,8 @@
 ## Phase 4 - AI Provider Defaults
 
 - [x] [3-kimi-moonshot-default-provider](plans/3-kimi-moonshot-default-provider.md) - Make Moonshot Kimi the default AI provider and use Kimi's recommended temperature.
+  - [x] [3-1-openrouter-provider-adapter](plans/3-1-openrouter-provider-adapter.md) - Add first-class OpenRouter configuration and routed-model support.
+  - [x] [3-2-quick-provider-switching](plans/3-2-quick-provider-switching.md) - Switch between saved provider profiles from the main action bar.
 
 ## Phase 5 - Ready-To-Use Frontend
 

@@ -1,6 +1,6 @@
 # UX Path Review
 
-Reviewed on 2026-08-02 against the frameless default window, the 340px minimum, the 460px default, and a 900px wide layout.
+Reviewed on 2026-08-10 against the frameless default window, the 340px minimum, the 460px default, and a 900px wide layout.
 
 | Workflow | Previous path or issue | Current shortest path | Assessment |
 |---|---|---|---|
@@ -12,6 +12,7 @@ Reviewed on 2026-08-02 against the frameless default window, the 340px minimum, 
 | Edit task | Click task text, edit, press Enter | Click task text, edit, press Enter | Already optimal |
 | Add a step | Zero-height hover target was effectively unreachable | Click `+ Step`, type, press Enter | Fixed and optimized |
 | AI breakdown | Click `✦`; failures were silent | Click `✦`; success updates steps and failure shows a visible settings prompt | Optimized within optional AI setup |
+| Change AI provider | Open Settings, replace the active provider configuration, and lose the previous provider's fields | Choose a configured provider from the persistent action-bar selector; unconfigured choices open directly in Settings | Optimized with provider-specific profiles |
 | Carry task forward | Click arrow; stale tasks moved only one stale day at a time | Click arrow; past work catches up to today, while current/future work advances one day; labels and feedback state the destination | Optimized |
 | Date navigation | Previous/next or calendar | Previous/next, calendar, or one-click `Go to today` when away from today | Optimized |
 | Day scope | `All` and `Today` competed with the date meaning of “Today” | `All` and `Day`, defaulting to the current day | Clearer default |

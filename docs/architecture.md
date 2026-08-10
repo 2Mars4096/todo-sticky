@@ -18,10 +18,11 @@
 
 ## Ready Shell Modules
 
-- [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, and day-first view default.
+- [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, and compact action-bar AI provider switching.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
 - [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top and provide an instructional empty state.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
+- [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between provider-specific profiles.
 - [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and direct row actions reachable, including destination-aware carry-forward for tasks and subtasks; compact CSS wraps the action strip below task text.
 - [ ] `src-tauri/tauri.conf.json` and `src-tauri/capabilities/default.json`: define the `460x640` default, `340x440` minimum, and native resize-drag permission.
 - [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area and shows it from `RunEvent::Ready`, while later tray and shortcut toggles preserve user placement.
@@ -38,8 +39,8 @@
 - [ ] `src/components/TaskList.tsx` and `src/components/TaskItem.tsx`: explicit task-to-Mission-Control handoff plus active-session selection locking.
 - [ ] `src/components/DevToolsPanel.tsx`: development-only debug tray for seeding tasks, reloading task state, clearing the current day, and changing Star Focus mission speed during local testing.
 - [ ] `src/api.ts`: Tauri bridge for Star Focus load/save commands alongside the existing task and settings calls.
-- [ ] `src/components/SettingsPanel.tsx` and `src-tauri/src/llm.rs`: AI provider settings and native LLM calls, with Moonshot Kimi as the default OpenAI-compatible provider and Kimi/Moonshot requests using temperature `1.0`.
-- [ ] `src-tauri/src/config.rs` and `src-tauri/src/commands.rs`: native app-data persistence for Star Focus state in a dedicated file separate from the general settings payload, including archive-cap sanitization.
+- [ ] `src/components/SettingsPanel.tsx` and `src-tauri/src/llm.rs`: AI provider settings and native LLM calls, with Moonshot Kimi as the default, OpenRouter as a first-class OpenAI-compatible provider, OpenRouter attribution headers, editable routed-model slugs, and direct or routed Kimi requests using temperature `1.0`.
+- [ ] `src-tauri/src/config.rs` and `src-tauri/src/commands.rs`: native app-data persistence for Star Focus state plus general settings, including archive-cap sanitization and backward-compatible per-provider AI profiles whose top-level fields remain the active runtime configuration.
 
 ## Conventions
 
@@ -85,6 +86,8 @@
 - Treat completed focus sessions as Solar Route legs, but derive the route from existing mission orbit indexes so destination UI does not create another persistence source of truth.
 - At compact widths, show the task, timer, and primary focus action before the orbital scene; on wider surfaces, pair one dominant map with one focused control column.
 - Keep Moonshot Kimi as the default AI provider preset unless product direction changes; existing saved settings remain user-controlled and should not be silently overwritten by defaults.
+- Route OpenRouter through the existing OpenAI-compatible adapter at `https://openrouter.ai/api/v1`; keep model slugs user-editable and add provider-specific behavior by provider or canonical base URL so legacy custom settings continue to work.
+- Keep each AI provider's API base, key, and model in its own local profile; quick switching may activate configured profiles directly, while unconfigured providers must open Settings before activation.
 
 ## Star Focus V1 Integration
 
@@ -133,7 +136,7 @@
 - The latest 3D shadow-interaction pass gives cloud shells and Saturn's rings masked shadow materials and tightens the main solar shadow-map settings so thin transparent geometry participates more believably in local shadowing.
 - The latest Solar Route layout pass reframes Tracking Station as Focus Mode, advances completed sessions through an Earth/Moon/Venus/Mars/Saturn loop, and puts task/timer controls ahead of the map on compact windows.
 - Local development now has a dev-only debug tray for seeding tasks, clearing the current day, reloading task state, and slowing/fast-forwarding the Star Focus mission track.
-- There is no newer active implementation slice after [1-44-star-focus-solar-route-layout-pass](plans/1-44-star-focus-solar-route-layout-pass.md); remaining questions are parked in backlog.
+- There is no newer active implementation slice after [3-2-quick-provider-switching](plans/3-2-quick-provider-switching.md); remaining questions are parked in backlog.
 
 ## Quality Checks
 

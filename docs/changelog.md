@@ -2,6 +2,12 @@
 
 ## 2026-08-10
 
+- [frontend] Add a compact action-bar AI provider selector that switches configured providers in one action and routes unconfigured choices directly into setup.
+- [settings] Preserve a separate API base, key, and model profile for each provider while migrating the existing active configuration without data loss.
+- [frontend] Centralize provider labels, presets, configured-state checks, and switching behavior so the quick selector and Settings stay synchronized.
+- [frontend] Add OpenRouter as a first-class AI provider with the canonical API base, Kimi K3 preset, routed-model suggestions, and OpenRouter-specific API-key guidance.
+- [native] Extend the OpenAI-compatible adapter with OpenRouter attribution headers, legacy base-URL inference, trailing-slash normalization, and temperature `1.0` for routed Kimi model slugs.
+- [native] Add focused coverage for OpenRouter inference, request URL and headers, provider/base detection, and Kimi versus non-Kimi temperature behavior.
 - [frontend] Make the task arrow carry work from any past date directly to local today, while today moves to tomorrow and future dates move one day forward.
 - [frontend] Give task and subtask arrows destination-aware tooltips, accessible names, and success feedback driven by the same centralized date rule.
 - [docs] Complete plan `4-2-smart-task-carry-forward` and update the core workflow documentation.

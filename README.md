@@ -16,14 +16,16 @@ On first launch the app opens an optional setup panel. Choose **Start without AI
 
 | Field | What to enter |
 |-------|---------------|
-| **Provider** | Default is **Moonshot (Kimi)**. You can also choose **OpenAI**, **Anthropic (Claude)**, **Google Gemini**, or **Custom** (any OpenAI-compatible endpoint). Base URL and model suggestions auto-fill. |
-| **API Base URL** | Pre-filled for standard providers. Edit if you use a proxy, Azure, OpenRouter, etc. |
-| **Model** | Pick from suggestions or type any model name (default `kimi-k2.6`; examples: `gpt-4o`, `claude-sonnet-4-20250514`, `gemini-2.0-flash`). |
+| **Provider** | Default is **Moonshot (Kimi)**. You can also choose **OpenRouter**, **OpenAI**, **Anthropic (Claude)**, **Google Gemini**, or **Custom** (any OpenAI-compatible endpoint). Base URL and model suggestions auto-fill. |
+| **API Base URL** | Pre-filled for standard providers, including `https://openrouter.ai/api/v1`. Edit it if you use a proxy, Azure, or another compatible gateway. |
+| **Model** | Pick from suggestions or type any model name. OpenRouter accepts any catalog slug such as `moonshotai/kimi-k3`; the direct Moonshot default remains `kimi-k2.6`. |
 | **API Key** | Paste your key. Stored locally — never sent anywhere except your chosen API. |
 | **KB Path** | Where task files live (`content/to-do/` inside this folder). Default: `~/Documents/Sticky Todo`. |
 | **Machines** | *(Optional)* Add servers/workstations for AI scheduling. |
 
 Click **Test Connection** to verify, then **Save & Start**. Change settings later via ⚙.
+
+After configuring more than one provider, use the compact provider selector beside ⚙ to switch in one action. Each provider keeps its own API URL, key, and last-used model. Choosing an unconfigured provider opens Settings directly on that provider.
 
 > macOS Gatekeeper may warn about an unsigned app. Right-click → **Open** to bypass.
 
