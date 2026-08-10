@@ -243,3 +243,31 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
 
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{get_tasks_for_date, parse_weekly_file};
+
+    #[test]
+    fn loads_current_tasks_from_a_multi_date_markdown_file() {
+        let content = r#"---
+title: Weekly Report
+---
+
+## 2026-08-09
+- [x] Earlier task
+
+## 2026-08-10
+- [ ] Current task
+  - [ ] Current step
+- [~] Partial task
+"#;
+
+        let parsed = parse_weekly_file(content);
+        let tasks = get_tasks_for_date(&parsed, "2026-08-10");
+
+        assert_eq!(tasks.len(), 2);
+        assert_eq!(tasks[0].today_subtasks.len(), 1);
+        assert_eq!(tasks[1].status, "partial");
+    }
+}
