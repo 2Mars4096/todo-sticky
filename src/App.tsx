@@ -378,6 +378,7 @@ export default function App() {
           viewMode={viewMode}
           selectedTaskId={starFocus.selectedTaskId}
           focusLocked={Boolean(starFocus.activeSession)}
+          isCurrentDay={calendar.isCurrentDay}
           moveTargetLabel={tasks.carryForwardTarget.actionLabel}
           onToggle={tasks.toggleStatus}
           onDelete={tasks.deleteTask}
@@ -386,6 +387,7 @@ export default function App() {
           onAddSubtask={tasks.addSubtask}
           onAIBreakdown={handleAIBreakdown}
           onFocusTask={handleFocusTask}
+          onGoToday={calendar.goToday}
         />
 
         {isDevMode && showDevTools && (
