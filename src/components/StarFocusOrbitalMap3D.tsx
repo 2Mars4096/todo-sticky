@@ -6,6 +6,7 @@ import type { StarFocusSnapshot } from '../hooks/useStarFocus'
 interface Props {
   className?: string
   liveLabel: string
+  destinationLabel?: string
   missionHistory: StarFocusMissionRecord[]
   activeSession: StarFocusSession | null
   activeSnapshot: StarFocusSnapshot | null
@@ -1527,6 +1528,22 @@ function createRingShadowMaterial(opacity: number, width: number, softness: numb
   return material
 }
 
+function createPointSpriteTexture() {
+  const canvas = createTextureCanvas(64, 64)
+  const context = canvas.getContext('2d')
+  if (!context) return createCanvasTexture(canvas)
+
+  const glow = context.createRadialGradient(32, 32, 0, 32, 32, 31)
+  glow.addColorStop(0, 'rgba(255,255,255,1)')
+  glow.addColorStop(0.28, 'rgba(255,255,255,0.9)')
+  glow.addColorStop(0.62, 'rgba(255,255,255,0.28)')
+  glow.addColorStop(1, 'rgba(255,255,255,0)')
+  context.fillStyle = glow
+  context.fillRect(0, 0, 64, 64)
+
+  return createCanvasTexture(canvas, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping)
+}
+
 function createStarfieldLayer({
   count,
   radiusMin,
@@ -1537,6 +1554,7 @@ function createStarfieldLayer({
   palette,
   blending = THREE.NormalBlending,
 }: StarfieldLayerOptions) {
+  const pointTexture = createPointSpriteTexture()
   const positions = new Float32Array(count * 3)
   const colors = new Float32Array(count * 3)
   const color = new THREE.Color()
@@ -1570,6 +1588,8 @@ function createStarfieldLayer({
     new THREE.PointsMaterial({
       size,
       sizeAttenuation: true,
+      map: pointTexture,
+      alphaTest: 0.025,
       vertexColors: true,
       transparent: true,
       opacity,
@@ -1580,6 +1600,7 @@ function createStarfieldLayer({
 }
 
 function createDustBandLayer(count: number) {
+  const pointTexture = createPointSpriteTexture()
   const positions = new Float32Array(count * 3)
   const colors = new Float32Array(count * 3)
   const color = new THREE.Color()
@@ -1609,6 +1630,8 @@ function createDustBandLayer(count: number) {
     new THREE.PointsMaterial({
       size: 1.65,
       sizeAttenuation: true,
+      map: pointTexture,
+      alphaTest: 0.025,
       vertexColors: true,
       transparent: true,
       opacity: 0.18,
@@ -2174,6 +2197,7 @@ function createBodyRuntime(definition: BodyDefinition, anisotropy: number) {
 export function StarFocusOrbitalMap3D({
   className,
   liveLabel,
+  destinationLabel,
   missionHistory,
   activeSession,
   activeSnapshot,
@@ -2188,11 +2212,13 @@ export function StarFocusOrbitalMap3D({
   const dragRef = useRef<DragState | null>(null)
   const latestMission = missionHistory[0] ?? null
   const hasLiveFlight = Boolean(activeSession && activeSnapshot)
-  const topHud = hasLiveFlight
-    ? { label: 'Track', value: activeSnapshot?.isPaused ? 'Hold' : liveLabel }
-    : latestMission
-      ? { label: 'Latest', value: latestMission.vehicleCode }
-      : { label: 'Grid', value: 'Standby' }
+  const topHud = destinationLabel
+    ? { label: hasLiveFlight ? 'Destination' : 'Next stop', value: destinationLabel }
+    : hasLiveFlight
+      ? { label: 'Track', value: activeSnapshot?.isPaused ? 'Hold' : liveLabel }
+      : latestMission
+        ? { label: 'Latest', value: latestMission.vehicleCode }
+        : { label: 'Grid', value: 'Standby' }
   const bottomHud = hasLiveFlight && activeSnapshot
     ? { label: 'T-Remain', value: formatClock(activeSnapshot.remainingMs) }
     : missionHistory.length

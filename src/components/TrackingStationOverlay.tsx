@@ -5,6 +5,11 @@ import {
   STAR_FOCUS_PHASES,
   type StarFocusSnapshot,
 } from '../hooks/useStarFocus'
+import {
+  getJourneyLeg,
+  getNextJourneyLeg,
+  type StarFocusJourneyLeg,
+} from '../starFocusJourney'
 import { StarFocusOrbitalMap } from './StarFocusOrbitalMap'
 
 const TrackingStationOrbitalMap3D = lazy(async () => {
@@ -40,21 +45,11 @@ interface Props {
 const durationOptions = [15, 25, 45]
 const RECENT_ARCHIVE_MISSION_COUNT = 6
 const phaseCopy = {
-  ignition: {
-    callSign: 'Clamp Release',
-  },
-  ascent: {
-    callSign: 'Pitch Program',
-  },
-  heating: {
-    callSign: 'Max-Q',
-  },
-  staging: {
-    callSign: 'Stage Separation',
-  },
-  orbit: {
-    callSign: 'Circularization',
-  },
+  ignition: 'Clamp release',
+  ascent: 'Outbound burn',
+  heating: 'Peak focus',
+  staging: 'Course correction',
+  orbit: 'Arrival window',
 } as const
 
 function formatClock(ms: number) {
@@ -77,8 +72,58 @@ function formatCompletedAt(timestamp: number) {
   })
 }
 
+function RouteReadout({
+  leg,
+  progress,
+  arrived = false,
+}: {
+  leg: StarFocusJourneyLeg
+  progress: number
+  arrived?: boolean
+}) {
+  return (
+    <div className="solar-route-readout">
+      <div className="solar-route-stop origin">
+        <span>From</span>
+        <strong>{leg.origin.name}</strong>
+      </div>
+      <div className="solar-route-track" aria-label={`${leg.origin.name} to ${leg.destination.name}`}>
+        <span className="solar-route-line" />
+        <span
+          className={`solar-route-craft ${arrived ? 'arrived' : ''}`}
+          style={{ left: `${Math.max(4, Math.min(96, progress * 100))}%` }}
+        />
+      </div>
+      <div className="solar-route-stop destination">
+        <span>To</span>
+        <strong>{leg.destination.name}</strong>
+      </div>
+    </div>
+  )
+}
+
+function PhaseRoute({ activeSnapshot }: { activeSnapshot: StarFocusSnapshot | null }) {
+  const currentIndex = activeSnapshot
+    ? STAR_FOCUS_PHASES.findIndex(phase => phase.id === activeSnapshot.phase)
+    : -1
+
+  return (
+    <div className="focus-phase-route" aria-label="Focus session phases">
+      {STAR_FOCUS_PHASES.map((phase, index) => (
+        <div
+          key={phase.id}
+          className={`focus-phase-step ${index < currentIndex ? 'done' : ''} ${index === currentIndex ? 'current' : ''}`}
+          aria-current={index === currentIndex ? 'step' : undefined}
+        >
+          <span className="focus-phase-node" />
+          <span>{phase.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function TrackingStationOverlay({
-  collapsed,
   taskCount,
   selectedTaskText,
   sessionDurationMinutes,
@@ -108,7 +153,6 @@ export function TrackingStationOverlay({
   const visibleArchiveMissions = effectiveArchiveView === 'recent'
     ? missionHistory.slice(0, RECENT_ARCHIVE_MISSION_COUNT)
     : missionHistory
-  const hiddenArchiveCount = Math.max(0, missionHistory.length - visibleArchiveMissions.length)
   const liveLabel = activeSnapshot
     ? STAR_FOCUS_PHASES.find(phase => phase.id === activeSnapshot.phase)?.label ?? 'Orbit'
     : 'Idle'
@@ -119,342 +163,243 @@ export function TrackingStationOverlay({
       : selectedTaskText
         ? 'phase-ignition'
         : 'phase-idle'
-  const activePhaseCopy = activeSnapshot ? phaseCopy[activeSnapshot.phase] : null
-  const statusBanner = activeSession && restoredSession
-    ? {
-        tone: 'restored' as const,
-        label: 'Recovered',
-        body: null,
-        actionLabel: null,
-        onAction: null,
-      }
-    : latestCompletedMission
-      ? {
-          tone: 'complete' as const,
-          label: 'Archived',
-          body: null,
-          actionLabel: 'Clear',
-          onAction: onDismissCompletion,
-        }
+  const nextLeg = getNextJourneyLeg(missionHistory)
+  const completedLeg = latestCompletedMission
+    ? getJourneyLeg(latestCompletedMission.orbitIndex)
+    : null
+  const displayLeg = completedLeg ?? nextLeg
+  const routeProgress = activeSnapshot?.progress ?? (completedLeg ? 1 : 0)
+  const stateLabel = activeSession
+    ? activeSnapshot?.isPaused ? 'Paused' : liveLabel
+    : completedLeg
+      ? 'Arrived'
       : selectedTaskText
-        ? {
-          tone: 'armed' as const,
-          label: 'Task Armed',
-          body: null,
-            actionLabel: 'Launch',
-            onAction: onLaunch,
-          }
-        : null
+        ? 'Ready'
+        : 'Choose task'
 
   return (
     <div className="tracking-overlay" onClick={onClose}>
-      <div className={`tracking-station ${phaseTheme}`} onClick={event => event.stopPropagation()}>
-        <div className="tracking-header">
+      <div
+        className={`tracking-station ${phaseTheme}`}
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Star Focus Mode"
+      >
+        <header className="tracking-header">
           <div className="tracking-heading">
-            <span className="mission-kicker">Star Focus</span>
-            <strong>Tracking Station</strong>
+            <span className="mission-kicker">Star Focus · Solar Route</span>
+            <strong>Focus Mode</strong>
+            <span className="tracking-route-summary">
+              {displayLeg.origin.name} → {displayLeg.destination.name} · Tour {displayLeg.tour}, leg {displayLeg.legNumber} of {displayLeg.legCount}
+            </span>
           </div>
           <div className="tracking-header-actions">
-            <div className="tracking-header-stats">
-              <div className="tracking-header-stat">
-                <span>Rail</span>
-                <strong>{collapsed ? 'Collapsed' : 'Expanded'}</strong>
-              </div>
-              <div className="tracking-header-stat">
-                <span>State</span>
-                <strong>
-                  {activeSession ? activeSnapshot?.isPaused ? 'Paused' : liveLabel : selectedTaskText ? 'Armed' : 'Idle'}
-                </strong>
-              </div>
-              <div className="tracking-header-stat">
-                <span>Archive</span>
-                <strong>{orbitCount}/{archiveRetentionLimit}</strong>
-              </div>
-            </div>
-            <button className="tracking-close-btn" onClick={onClose}>Close</button>
+            <span className={`tracking-live-chip ${activeSession ? activeSnapshot?.isPaused ? 'paused' : 'live' : completedLeg ? 'complete' : selectedTaskText ? 'armed' : 'idle'}`}>
+              {stateLabel}
+            </span>
+            <button className="tracking-close-btn" onClick={onClose} aria-label="Close Focus Mode">×</button>
           </div>
-        </div>
+        </header>
 
-        {statusBanner && (
-          <div className={`tracking-status-banner ${statusBanner.tone}`}>
-            <div className="tracking-status-copy">
-              <span className="tracking-status-label">{statusBanner.label}</span>
-              {statusBanner.body && <p>{statusBanner.body}</p>}
-            </div>
-            {statusBanner.actionLabel && statusBanner.onAction && (
-              <button className="tracking-status-action" onClick={statusBanner.onAction}>
-                {statusBanner.actionLabel}
-              </button>
-            )}
-          </div>
-        )}
+        <div className="tracking-scroll-area">
+          <main className="tracking-main">
+            <section className="tracking-map-surface" aria-label="Interactive solar route map">
+              <div className="tracking-section-head">
+                <span className="mission-section-label">Tracking Station</span>
+                <span className="tracking-map-note">Drag to orbit · Scroll to zoom</span>
+              </div>
 
-        <div className="tracking-grid">
-          <section className="mission-panel tracking-orbit-panel">
-            <div className="mission-panel-head">
-              <span className="mission-section-label">Orbital Map</span>
-            </div>
-
-            <Suspense
-              fallback={(
-                <StarFocusOrbitalMap
-                  variant="overlay"
+              <Suspense
+                fallback={(
+                  <StarFocusOrbitalMap
+                    variant="overlay"
+                    className={`tracking-starmap-viewport ${phaseTheme}`}
+                    liveLabel={liveLabel}
+                    destinationLabel={displayLeg.destination.name}
+                    missionHistory={missionHistory}
+                    activeSession={activeSession}
+                    activeSnapshot={activeSnapshot}
+                  />
+                )}
+              >
+                <TrackingStationOrbitalMap3D
                   className={`tracking-starmap-viewport ${phaseTheme}`}
                   liveLabel={liveLabel}
+                  destinationLabel={displayLeg.destination.name}
                   missionHistory={missionHistory}
                   activeSession={activeSession}
                   activeSnapshot={activeSnapshot}
                 />
-              )}
-            >
-              <TrackingStationOrbitalMap3D
-                className={`tracking-starmap-viewport ${phaseTheme}`}
-                liveLabel={liveLabel}
-                missionHistory={missionHistory}
-                activeSession={activeSession}
-                activeSnapshot={activeSnapshot}
-              />
-            </Suspense>
+              </Suspense>
 
-            <div className="tracking-orbit-metrics">
-              <div className="tracking-orbit-metric">
-                <span>Mission Archive</span>
-                <strong>{orbitCount} retained</strong>
+              <div className="tracking-route-bar">
+                <RouteReadout leg={displayLeg} progress={routeProgress} arrived={Boolean(completedLeg)} />
+                <div className="tracking-route-meta">
+                  <span>{displayLeg.destination.code}</span>
+                  <strong>{activeSnapshot ? `${Math.round(activeSnapshot.progress * 100)}%` : completedLeg ? 'Arrived' : 'Next leg'}</strong>
+                </div>
               </div>
-              <div className="tracking-orbit-metric">
-                <span>Current Burn</span>
-                <strong>{activeSession ? formatDuration(activeSession.durationMinutes) : formatDuration(sessionDurationMinutes)}</strong>
-              </div>
-              <div className="tracking-orbit-metric">
-                <span>Task Feed</span>
-                <strong>{taskCount} sticky task{taskCount === 1 ? '' : 's'}</strong>
-              </div>
-            </div>
+            </section>
 
-            <div className="phase-strip tracking-phase-strip">
-              {STAR_FOCUS_PHASES.map(phase => {
-                const currentIndex = activeSnapshot
-                  ? STAR_FOCUS_PHASES.findIndex(item => item.id === activeSnapshot.phase)
-                  : -1
-                const phaseIndex = STAR_FOCUS_PHASES.findIndex(item => item.id === phase.id)
+            <section className="tracking-focus-console" aria-label="Focus session controls">
+              <div className="tracking-section-head">
+                <span className="mission-section-label">Flight Deck</span>
+                {restoredSession && activeSession && <span className="focus-recovered-chip">Recovered</span>}
+              </div>
 
-                return (
-                  <div
-                    key={phase.id}
-                    className={`phase-pill ${
-                      activeSnapshot && phaseIndex < currentIndex ? 'done' : ''
-                    } ${
-                      activeSnapshot?.phase === phase.id ? 'current' : ''
-                    }`}
-                  >
-                    {phase.label}
+              {activeSession && activeSnapshot ? (
+                <div className="focus-session active">
+                  <div className="focus-task-block">
+                    <span>Current task</span>
+                    <h2>{activeSession.taskText}</h2>
                   </div>
-                )
-              })}
-            </div>
-          </section>
-
-          <section className="mission-panel tracking-flight-panel">
-            <div className="mission-panel-head">
-              <span className="mission-section-label">Flight Deck</span>
-              <span className={`mission-state-chip ${activeSession ? activeSnapshot?.isPaused ? 'paused' : 'live' : selectedTaskText ? 'armed' : 'idle'}`}>
-                {activeSession ? activeSnapshot?.isPaused ? 'Paused' : liveLabel : selectedTaskText ? 'Armed' : 'Idle'}
-              </span>
-            </div>
-
-            {activeSession && activeSnapshot ? (
-              <div className={`mission-status-card active ${phaseTheme}`}>
-                <div className="mission-phase-banner">
-                  <span>{activePhaseCopy?.callSign ?? 'Flight Path'}</span>
-                  <strong>{activeSnapshot.isPaused ? 'Timer Held' : 'Tracking'}</strong>
-                </div>
-                <div className="mission-task-title">{activeSession.taskText}</div>
-                <div className="mission-flag-row">
-                  {restoredSession && <span className="mission-flag">Reload Safe</span>}
-                  <span className="mission-flag">{activeSnapshot.isPaused ? 'Hold' : 'Live Burn'}</span>
-                  <span className="mission-flag">{formatDuration(activeSession.durationMinutes)}</span>
-                </div>
-                <div className="mission-time-row">
-                  <div>
-                    <span className="mission-metric-label">{activeSnapshot.isPaused ? 'Time On Hold' : 'Time Remaining'}</span>
+                  <div className="focus-clock-block" aria-label={`${formatClock(activeSnapshot.remainingMs)} remaining`}>
                     <strong>{formatClock(activeSnapshot.remainingMs)}</strong>
+                    <span>{activeSnapshot.isPaused ? `${liveLabel} paused` : phaseCopy[activeSnapshot.phase]}</span>
                   </div>
-                  <div>
-                    <span className="mission-metric-label">Flight Phase</span>
-                    <strong>{activeSnapshot.isPaused ? `${liveLabel} Hold` : liveLabel}</strong>
-                  </div>
-                </div>
-                <div className="mission-progress-shell">
                   <div
-                    className="mission-progress-fill"
-                    style={{ width: `${Math.round(activeSnapshot.progress * 100)}%` }}
-                  />
+                    className="focus-progress-shell"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(activeSnapshot.progress * 100)}
+                  >
+                    <div className="focus-progress-fill" style={{ width: `${Math.round(activeSnapshot.progress * 100)}%` }} />
+                  </div>
+                  <PhaseRoute activeSnapshot={activeSnapshot} />
+                  <div className="focus-primary-actions">
+                    <button className="focus-btn secondary" onClick={activeSnapshot.isPaused ? onResume : onPause}>
+                      {activeSnapshot.isPaused ? 'Resume' : 'Pause'}
+                    </button>
+                    <button className="focus-btn primary" onClick={onComplete}>Complete leg</button>
+                  </div>
+                  <button className="focus-cancel-btn" onClick={onCancel}>Cancel session</button>
                 </div>
-                <div className="mission-action-row">
-                  <button className="mission-btn subtle" onClick={activeSnapshot.isPaused ? onResume : onPause}>
-                    {activeSnapshot.isPaused ? 'Resume Burn' : 'Pause Burn'}
+              ) : latestCompletedMission && completedLeg ? (
+                <div className="focus-session complete">
+                  <div className="focus-arrival-mark" aria-hidden="true">✓</div>
+                  <span className="focus-eyebrow">Arrived at</span>
+                  <h2>{completedLeg.destination.name}</h2>
+                  <p className="focus-complete-task">{latestCompletedMission.taskText}</p>
+                  <div className="focus-complete-meta">
+                    <span>{formatDuration(latestCompletedMission.durationMinutes)} focused</span>
+                    <span>{formatCompletedAt(latestCompletedMission.completedAt)}</span>
+                  </div>
+                  <button className="focus-btn primary wide" onClick={onDismissCompletion}>Plan next leg</button>
+                </div>
+              ) : selectedTaskText ? (
+                <div className="focus-session armed">
+                  <div className="focus-task-block">
+                    <span>Task for this leg</span>
+                    <h2>{selectedTaskText}</h2>
+                  </div>
+                  <div className="focus-duration-field">
+                    <span>Focus burn</span>
+                    <div className="focus-duration-options" aria-label="Focus duration">
+                      {durationOptions.map(option => (
+                        <button
+                          key={option}
+                          className={sessionDurationMinutes === option ? 'active' : ''}
+                          onClick={() => onSelectDuration(option)}
+                          aria-pressed={sessionDurationMinutes === option}
+                        >
+                          {formatDuration(option)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button className="focus-btn primary wide" onClick={onLaunch}>
+                    Launch to {displayLeg.destination.name}
                   </button>
-                  <button className="mission-btn primary" onClick={onComplete}>Complete Orbit</button>
-                  <button className="mission-btn subtle danger" onClick={onCancel}>Cancel</button>
+                  <button className="focus-cancel-btn" onClick={onClearSelection}>Choose another task</button>
                 </div>
-              </div>
-            ) : latestCompletedMission ? (
-              <div className="mission-status-card success">
-                <div className="mission-panel-head compact">
-                  <span className="mission-section-label">Docked</span>
-                  <span className="mission-success-tag">{latestCompletedMission.vehicleCode}</span>
+              ) : (
+                <div className="focus-session idle">
+                  <div className="focus-idle-orbit" aria-hidden="true"><span /></div>
+                  <span className="focus-eyebrow">Next destination</span>
+                  <h2>{displayLeg.destination.name}</h2>
+                  <p>Choose one of your {taskCount || 'sticky'} task{taskCount === 1 ? '' : 's'}, then start a focused leg.</p>
+                  <button className="focus-btn primary wide" onClick={onClose}>Choose a task</button>
                 </div>
-                <div className="mission-task-title">{latestCompletedMission.taskText}</div>
-                <div className="mission-time-row">
-                  <div>
-                    <span className="mission-metric-label">Completed</span>
-                    <strong>{formatCompletedAt(latestCompletedMission.completedAt)}</strong>
+              )}
+            </section>
+          </main>
+
+          <div className="tracking-secondary">
+            <section className="tracking-archive-section">
+              <div className="tracking-section-head archive">
+                <div>
+                  <span className="mission-section-label">Travel Log</span>
+                  <strong>{orbitCount} completed leg{orbitCount === 1 ? '' : 's'}</strong>
+                </div>
+                {canBrowseFullArchive && (
+                  <div className="tracking-history-toggle">
+                    <button className={effectiveArchiveView === 'recent' ? 'active' : ''} onClick={() => setArchiveView('recent')} aria-pressed={effectiveArchiveView === 'recent'}>Recent</button>
+                    <button className={effectiveArchiveView === 'full' ? 'active' : ''} onClick={() => setArchiveView('full')} aria-pressed={effectiveArchiveView === 'full'}>Full</button>
                   </div>
-                  <div>
-                    <span className="mission-metric-label">Focus Burn</span>
-                    <strong>{formatDuration(latestCompletedMission.durationMinutes)}</strong>
-                  </div>
-                </div>
-                <div className="mission-action-row">
-                  <button className="mission-btn primary" onClick={onDismissCompletion}>Clear</button>
-                </div>
+                )}
               </div>
-            ) : selectedTaskText ? (
-              <div className="mission-status-card armed">
-                <div className="mission-task-title">{selectedTaskText}</div>
-                <div className="duration-row">
-                  {durationOptions.map(option => (
+
+              {visibleArchiveMissions.length ? (
+                <div className="tracking-history-list">
+                  {visibleArchiveMissions.map(mission => {
+                    const leg = getJourneyLeg(mission.orbitIndex)
+                    return (
+                      <article key={mission.id} className="tracking-history-card">
+                        <div className="tracking-history-top">
+                          <div className="tracking-history-code">
+                            <strong>{leg.destination.name}</strong>
+                            <span>{mission.vehicleCode}</span>
+                          </div>
+                          <span className="tracking-history-burn">{formatDuration(mission.durationMinutes)}</span>
+                        </div>
+                        <div className="tracking-history-task">{mission.taskText}</div>
+                        <div className="tracking-history-meta">
+                          <span>{leg.origin.code} → {leg.destination.code}</span>
+                          <span>{formatCompletedAt(mission.completedAt)}</span>
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="tracking-archive-empty">Completed focus legs will appear here.</div>
+              )}
+            </section>
+
+            <section className="tracking-settings-section">
+              <div className="tracking-section-head">
+                <span className="mission-section-label">Log Settings</span>
+                <span className="tracking-map-note">On-device</span>
+              </div>
+              <div className="tracking-retention-row">
+                <span>Keep latest</span>
+                <div className="tracking-retention-controls">
+                  {STAR_FOCUS_ARCHIVE_LIMIT_OPTIONS.map(limit => (
                     <button
-                      key={option}
-                      className={`duration-chip ${sessionDurationMinutes === option ? 'active' : ''}`}
-                      onClick={() => onSelectDuration(option)}
+                      key={limit}
+                      className={archiveRetentionLimit === limit ? 'active' : ''}
+                      onClick={() => onSelectArchiveRetentionLimit(limit)}
+                      aria-pressed={archiveRetentionLimit === limit}
                     >
-                      {formatDuration(option)}
+                      {limit}
                     </button>
                   ))}
                 </div>
-                <div className="mission-action-row">
-                  <button className="mission-btn primary" onClick={onLaunch}>Launch</button>
-                  <button className="mission-btn subtle" onClick={onClearSelection}>Clear</button>
-                </div>
               </div>
-            ) : (
-              <div className="mission-status-card idle">
-                <div className="mission-task-title">No task armed</div>
+              <div className="tracking-maintenance-row">
+                <button onClick={onClearHistory} disabled={!missionHistory.length}>Clear log</button>
+                <button
+                  onClick={onResetOrbitMap}
+                  disabled={Boolean(activeSession) || (!missionHistory.length && !selectedTaskText && !latestCompletedMission)}
+                  title={activeSession ? 'Route reset is disabled during an active focus session' : 'Reset local Star Focus route data'}
+                >
+                  Reset route
+                </button>
               </div>
-            )}
-          </section>
-
-          <section className="mission-panel tracking-history-panel">
-            <div className="mission-panel-head tracking-history-head">
-              <span className="mission-section-label">Mission Archive</span>
-              <div className="tracking-history-controls">
-                <span className="mission-meta-text">
-                  {effectiveArchiveView === 'recent'
-                    ? `${visibleArchiveMissions.length} recent`
-                    : `${missionHistory.length} retained`}
-                </span>
-                {canBrowseFullArchive && (
-                  <div className="tracking-history-toggle">
-                    <button
-                      className={`tracking-history-chip ${effectiveArchiveView === 'recent' ? 'active' : ''}`}
-                      onClick={() => setArchiveView('recent')}
-                    >
-                      Recent
-                    </button>
-                    <button
-                      className={`tracking-history-chip ${effectiveArchiveView === 'full' ? 'active' : ''}`}
-                      onClick={() => setArchiveView('full')}
-                    >
-                      Full
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="tracking-history-summary">
-              <div className="tracking-history-summary-copy">
-                <strong>Last {archiveRetentionLimit} kept on-device</strong>
-                {hiddenArchiveCount > 0 && (
-                  <small>+{hiddenArchiveCount} older in Full</small>
-                )}
-              </div>
-            </div>
-
-            {missionHistory.length ? (
-              <div className="tracking-history-list">
-                {visibleArchiveMissions.map(mission => (
-                  <div key={mission.id} className="tracking-history-card">
-                    <div className="tracking-history-top">
-                      <div className="tracking-history-code">
-                        <strong>{mission.vehicleCode}</strong>
-                        <span>{mission.orbitLabel}</span>
-                      </div>
-                      <span className="tracking-history-burn">{formatDuration(mission.durationMinutes)}</span>
-                    </div>
-                    <div className="tracking-history-task">{mission.taskText}</div>
-                    <div className="tracking-history-meta">
-                      <span>Orbit {mission.orbitIndex + 1}</span>
-                      <span>{formatCompletedAt(mission.completedAt)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mission-empty-copy">
-                No completed sessions.
-              </p>
-            )}
-          </section>
-
-          <section className="mission-panel tracking-logistics-panel">
-            <div className="mission-panel-head">
-              <span className="mission-section-label">Controls</span>
-            </div>
-
-            <div className="tracking-retention-card">
-              <div className="tracking-retention-copy">
-                <span>Archive Cap</span>
-                <strong>Keep last {archiveRetentionLimit}</strong>
-              </div>
-              <div className="tracking-retention-controls">
-                {STAR_FOCUS_ARCHIVE_LIMIT_OPTIONS.map(limit => (
-                  <button
-                    key={limit}
-                    className={`tracking-history-chip ${archiveRetentionLimit === limit ? 'active' : ''}`}
-                    onClick={() => onSelectArchiveRetentionLimit(limit)}
-                  >
-                    {limit}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mission-maintenance-row tracking-maintenance-row">
-              <button
-                className="mission-maintenance-btn"
-                onClick={onClearHistory}
-                disabled={!missionHistory.length}
-                title={missionHistory.length ? 'Clear mission history but keep current selection and session defaults' : 'No mission history to clear'}
-              >
-                Clear History
-              </button>
-              <button
-                className="mission-maintenance-btn"
-                onClick={onResetOrbitMap}
-                disabled={Boolean(activeSession) || (!missionHistory.length && !selectedTaskText && !latestCompletedMission)}
-                title={activeSession ? 'Orbit reset is disabled while a session is active' : 'Reset the local Star Focus orbit map'}
-              >
-                Reset Orbit Map
-              </button>
-            </div>
-            {activeSession && (
-              <p className="mission-maintenance-note">
-                Disabled during an active mission.
-              </p>
-            )}
-          </section>
+            </section>
+          </div>
         </div>
       </div>
     </div>

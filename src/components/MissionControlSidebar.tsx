@@ -1,5 +1,6 @@
 import type { StarFocusMissionRecord, StarFocusSession } from '../types'
 import { STAR_FOCUS_PHASES, type StarFocusSnapshot } from '../hooks/useStarFocus'
+import { getJourneyLeg, getNextJourneyLeg } from '../starFocusJourney'
 import { StarFocusOrbitalMap } from './StarFocusOrbitalMap'
 
 interface Props {
@@ -67,7 +68,6 @@ function formatCompletedAt(timestamp: number) {
 
 export function MissionControlSidebar({
   collapsed,
-  taskCount,
   selectedTaskText,
   sessionDurationMinutes,
   activeSession,
@@ -101,6 +101,11 @@ export function MissionControlSidebar({
         : 'phase-idle'
   const activePhaseCopy = activeSnapshot ? phaseCopy[activeSnapshot.phase] : null
   const hiddenHistoryCount = Math.max(0, missionHistory.length - 3)
+  const nextLeg = getNextJourneyLeg(missionHistory)
+  const completedLeg = latestCompletedMission
+    ? getJourneyLeg(latestCompletedMission.orbitIndex)
+    : null
+  const displayLeg = completedLeg ?? nextLeg
 
   return (
     <aside className={`mission-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Star Focus mission control">
@@ -130,8 +135,8 @@ export function MissionControlSidebar({
             <span>{activeSession ? 'State' : 'Orbit'}</span>
           </div>
           <div className="mini-stat">
-            <strong>{selectedTaskText ? 'SET' : taskCount}</strong>
-            <span>{selectedTaskText ? 'Task' : 'Tasks'}</span>
+            <strong>{displayLeg.destination.code}</strong>
+            <span>Next</span>
           </div>
           <div className="mini-stat">
             <strong>{activeSnapshot ? formatClock(activeSnapshot.remainingMs) : formatDuration(sessionDurationMinutes)}</strong>
@@ -140,10 +145,10 @@ export function MissionControlSidebar({
           <button
             className="mission-mini-open"
             onClick={onOpenOverlay}
-            title="Open Tracking Station"
-            aria-label="Open Tracking Station"
+            title="Open Focus Mode"
+            aria-label="Open Focus Mode"
           >
-            Map
+            Open
           </button>
         </div>
       ) : (
@@ -154,6 +159,13 @@ export function MissionControlSidebar({
               <span className={`mission-state-chip ${activeSession ? activeSnapshot?.isPaused ? 'paused' : 'live' : selectedTaskText ? 'armed' : 'idle'}`}>
                 {activeSession ? activeSnapshot?.isPaused ? 'Paused' : liveLabel : selectedTaskText ? 'Armed' : 'Idle'}
               </span>
+            </div>
+
+            <div className="mission-route-readout">
+              <span>{displayLeg.origin.code}</span>
+              <i aria-hidden="true" />
+              <strong>{displayLeg.destination.name}</strong>
+              <small>{displayLeg.legNumber}/{displayLeg.legCount}</small>
             </div>
 
             {activeSession && activeSnapshot ? (
@@ -243,7 +255,7 @@ export function MissionControlSidebar({
             <div className="mission-panel-head">
               <span className="mission-section-label">Orbital Map</span>
               <button className="mission-link-btn" onClick={onOpenOverlay}>
-                Tracking Station
+                Focus Mode
               </button>
             </div>
 
@@ -251,6 +263,7 @@ export function MissionControlSidebar({
               variant="sidebar"
               className={phaseTheme}
               liveLabel={liveLabel}
+              destinationLabel={displayLeg.destination.name}
               missionHistory={missionHistory}
               activeSession={activeSession}
               activeSnapshot={activeSnapshot}
@@ -290,7 +303,7 @@ export function MissionControlSidebar({
                   <div key={mission.id} className="mission-history-row">
                     <div className="mission-history-code">
                       <strong>{mission.vehicleCode}</strong>
-                      <span>{mission.orbitLabel}</span>
+                      <span>{getJourneyLeg(mission.orbitIndex).destination.code}</span>
                     </div>
                     <div className="mission-history-copy">
                       <div className="mission-history-task">{mission.taskText}</div>

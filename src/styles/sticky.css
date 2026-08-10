@@ -4149,6 +4149,878 @@ select:focus-visible {
   }
 }
 
+/* Star Focus solar-route layout */
+.tracking-station {
+  --focus-space: oklch(0.16 0.025 62);
+  --focus-space-deep: oklch(0.105 0.018 55);
+  --focus-panel: oklch(0.225 0.028 67);
+  --focus-panel-soft: oklch(0.255 0.03 70);
+  --focus-line: oklch(0.76 0.08 83 / 0.18);
+  --focus-text: oklch(0.93 0.05 85);
+  --focus-muted: oklch(0.76 0.055 82);
+  --focus-dim: oklch(0.62 0.045 78);
+  --focus-accent: oklch(0.81 0.14 83);
+  --focus-green: oklch(0.78 0.12 147);
+  --focus-blue: oklch(0.79 0.09 242);
+  width: min(1080px, 100%);
+  max-height: min(780px, calc(100vh - 28px));
+  border-radius: 18px;
+  color: var(--focus-text);
+  background:
+    radial-gradient(circle at 24% -18%, oklch(0.48 0.12 75 / 0.22), transparent 42%),
+    linear-gradient(160deg, var(--focus-space) 0%, var(--focus-space-deep) 76%);
+  border: 1px solid var(--focus-line);
+  box-shadow: 0 24px 64px oklch(0.08 0.015 55 / 0.54);
+}
+
+.tracking-overlay {
+  padding: 14px;
+  background: oklch(0.14 0.02 63 / 0.72);
+  backdrop-filter: blur(5px) saturate(0.78);
+}
+
+.tracking-header {
+  align-items: center;
+  padding: 14px 18px 13px;
+  border-bottom-color: var(--focus-line);
+  background: oklch(0.17 0.024 63 / 0.72);
+}
+
+.tracking-heading {
+  min-width: 0;
+}
+
+.tracking-heading strong {
+  margin-top: 3px;
+  font-size: 21px;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  color: var(--focus-text);
+}
+
+.tracking-route-summary {
+  display: block;
+  margin-top: 6px;
+  max-width: 62ch;
+  color: var(--focus-muted);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.tracking-header-actions {
+  align-items: center;
+  gap: 9px;
+}
+
+.tracking-live-chip,
+.focus-recovered-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  border: 1px solid var(--focus-line);
+  border-radius: 999px;
+  color: var(--focus-muted);
+  background: oklch(0.28 0.03 72 / 0.6);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.tracking-live-chip.live,
+.tracking-live-chip.complete {
+  color: oklch(0.87 0.11 148);
+  border-color: oklch(0.74 0.12 148 / 0.28);
+  background: oklch(0.31 0.08 148 / 0.42);
+}
+
+.tracking-live-chip.armed {
+  color: oklch(0.9 0.12 84);
+  border-color: oklch(0.8 0.13 84 / 0.3);
+}
+
+.tracking-live-chip.paused,
+.focus-recovered-chip {
+  color: oklch(0.87 0.08 242);
+  border-color: oklch(0.76 0.09 242 / 0.3);
+}
+
+.tracking-close-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0 0 2px;
+  border-radius: 50%;
+  border-color: var(--focus-line);
+  color: var(--focus-muted);
+  background: transparent;
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.tracking-close-btn:hover {
+  color: var(--focus-text);
+  background: oklch(0.4 0.035 74 / 0.34);
+}
+
+.tracking-scroll-area {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: oklch(0.65 0.06 78 / 0.28) transparent;
+}
+
+.tracking-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(288px, 0.78fr);
+  align-items: stretch;
+  gap: 14px;
+  padding: 14px 18px 0;
+}
+
+.tracking-map-surface,
+.tracking-focus-console,
+.tracking-archive-section,
+.tracking-settings-section {
+  min-width: 0;
+}
+
+.tracking-section-head {
+  min-height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.tracking-section-head .mission-section-label {
+  color: var(--focus-muted);
+}
+
+.tracking-map-note {
+  color: var(--focus-dim);
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+.tracking-starmap-viewport {
+  height: 410px;
+  margin: 0;
+  border-radius: 14px;
+  border-color: var(--focus-line);
+  box-shadow: inset 0 0 90px oklch(0.44 0.11 72 / 0.12);
+}
+
+.tracking-route-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 2px 0;
+}
+
+.solar-route-readout {
+  display: grid;
+  grid-template-columns: auto minmax(62px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.solar-route-stop {
+  min-width: 0;
+}
+
+.solar-route-stop.destination {
+  text-align: right;
+}
+
+.solar-route-stop span {
+  display: block;
+  color: var(--focus-dim);
+  font-size: 8px;
+  font-weight: 720;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.solar-route-stop strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--focus-text);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.solar-route-track {
+  position: relative;
+  height: 18px;
+}
+
+.solar-route-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--focus-dim), var(--focus-accent));
+}
+
+.solar-route-line::before,
+.solar-route-line::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--focus-dim);
+  border-radius: 50%;
+  background: var(--focus-space);
+}
+
+.solar-route-line::before { left: 0; }
+.solar-route-line::after {
+  right: 0;
+  border-color: var(--focus-accent);
+}
+
+.solar-route-craft {
+  position: absolute;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--focus-blue);
+  box-shadow: 0 0 0 3px oklch(0.76 0.09 242 / 0.12), 0 0 12px oklch(0.76 0.09 242 / 0.5);
+  transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.solar-route-craft.arrived {
+  background: var(--focus-green);
+  box-shadow: 0 0 0 3px oklch(0.74 0.12 148 / 0.14), 0 0 12px oklch(0.74 0.12 148 / 0.42);
+}
+
+.tracking-route-meta {
+  min-width: 68px;
+  padding-left: 14px;
+  border-left: 1px solid var(--focus-line);
+  text-align: right;
+}
+
+.tracking-route-meta span {
+  display: block;
+  color: var(--focus-dim);
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: 0.14em;
+}
+
+.tracking-route-meta strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--focus-text);
+  font-size: 11px;
+}
+
+.tracking-focus-console {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border: 1px solid var(--focus-line);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 82% 0%, oklch(0.48 0.11 78 / 0.13), transparent 34%),
+    var(--focus-panel);
+}
+
+.tracking-focus-console > .tracking-section-head {
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--focus-line);
+}
+
+.focus-session {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.focus-task-block {
+  margin-top: 7px;
+}
+
+.focus-task-block > span,
+.focus-eyebrow,
+.focus-duration-field > span {
+  display: block;
+  color: var(--focus-dim);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.focus-task-block h2,
+.focus-session > h2 {
+  margin: 7px 0 0;
+  color: var(--focus-text);
+  font-size: 16px;
+  font-weight: 660;
+  line-height: 1.34;
+  letter-spacing: -0.012em;
+  overflow-wrap: anywhere;
+}
+
+.focus-clock-block {
+  margin-top: 22px;
+}
+
+.focus-clock-block strong {
+  display: block;
+  color: var(--focus-text);
+  font-size: clamp(42px, 5vw, 58px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 520;
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.focus-clock-block span {
+  display: block;
+  margin-top: 10px;
+  color: var(--focus-muted);
+  font-size: 11px;
+}
+
+.focus-progress-shell {
+  height: 5px;
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(0.42 0.04 72 / 0.38);
+}
+
+.focus-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--focus-accent);
+  box-shadow: 0 0 14px oklch(0.81 0.14 83 / 0.3);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.focus-phase-route {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 18px;
+}
+
+.focus-phase-step {
+  position: relative;
+  min-width: 0;
+  color: var(--focus-dim);
+  font-size: 7px;
+  font-weight: 720;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.focus-phase-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 5px);
+  right: calc(-50% + 5px);
+  height: 1px;
+  background: var(--focus-line);
+}
+
+.focus-phase-node {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: 0 auto 7px;
+  border: 1px solid var(--focus-dim);
+  border-radius: 50%;
+  background: var(--focus-panel);
+}
+
+.focus-phase-step.done,
+.focus-phase-step.current {
+  color: var(--focus-muted);
+}
+
+.focus-phase-step.done .focus-phase-node,
+.focus-phase-step.current .focus-phase-node {
+  border-color: var(--focus-accent);
+  background: var(--focus-accent);
+}
+
+.focus-phase-step.current .focus-phase-node {
+  box-shadow: 0 0 0 3px oklch(0.81 0.14 83 / 0.12);
+}
+
+.focus-primary-actions {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.focus-btn {
+  min-height: 38px;
+  border: 1px solid var(--focus-line);
+  border-radius: 8px;
+  color: var(--focus-text);
+  background: oklch(0.31 0.035 72 / 0.82);
+  font-size: 11px;
+  font-weight: 720;
+  cursor: pointer;
+  transition: background 0.16s, border-color 0.16s, transform 0.16s;
+}
+
+.focus-btn:hover {
+  background: oklch(0.37 0.045 75 / 0.92);
+}
+
+.focus-btn:active {
+  transform: translateY(1px);
+}
+
+.focus-btn.primary {
+  color: oklch(0.25 0.05 65);
+  border-color: oklch(0.84 0.14 84);
+  background: var(--focus-accent);
+}
+
+.focus-btn.primary:hover {
+  background: oklch(0.86 0.13 84);
+}
+
+.focus-btn.wide {
+  width: 100%;
+  margin-top: auto;
+}
+
+.focus-cancel-btn {
+  align-self: center;
+  margin-top: 10px;
+  padding: 4px 7px;
+  border: 0;
+  color: var(--focus-dim);
+  background: transparent;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.focus-cancel-btn:hover {
+  color: var(--focus-muted);
+}
+
+.focus-duration-field {
+  margin-top: 24px;
+}
+
+.focus-duration-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-top: 8px;
+  padding: 4px;
+  border-radius: 9px;
+  background: oklch(0.17 0.022 62 / 0.72);
+}
+
+.focus-duration-options button {
+  min-height: 31px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--focus-muted);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.focus-duration-options button.active {
+  color: var(--focus-text);
+  border-color: var(--focus-line);
+  background: var(--focus-panel-soft);
+}
+
+.focus-session.armed .focus-btn.wide {
+  margin-top: 26px;
+}
+
+.focus-session.idle,
+.focus-session.complete {
+  align-items: center;
+  justify-content: center;
+  padding: 24px 6px 8px;
+  text-align: center;
+}
+
+.focus-session.idle p {
+  margin: 10px auto 22px;
+  max-width: 26ch;
+  color: var(--focus-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.focus-session.idle .focus-btn.wide,
+.focus-session.complete .focus-btn.wide {
+  margin-top: 22px;
+}
+
+.focus-idle-orbit {
+  position: relative;
+  width: 58px;
+  height: 30px;
+  margin-bottom: 18px;
+  border: 1px solid oklch(0.76 0.08 83 / 0.34);
+  border-radius: 50%;
+  transform: rotate(-13deg);
+}
+
+.focus-idle-orbit span {
+  position: absolute;
+  top: 8px;
+  left: 21px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--focus-accent);
+  box-shadow: 0 0 18px oklch(0.81 0.14 83 / 0.36);
+}
+
+.focus-arrival-mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+  border: 1px solid oklch(0.74 0.12 148 / 0.38);
+  border-radius: 50%;
+  color: var(--focus-green);
+  font-size: 17px;
+}
+
+.focus-complete-task {
+  margin-top: 14px;
+  color: var(--focus-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.focus-complete-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px 12px;
+  margin-top: 11px;
+  color: var(--focus-dim);
+  font-size: 9px;
+}
+
+.tracking-secondary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 264px;
+  gap: 14px;
+  padding: 18px;
+}
+
+.tracking-archive-section,
+.tracking-settings-section {
+  padding-top: 12px;
+  border-top: 1px solid var(--focus-line);
+}
+
+.tracking-section-head.archive {
+  align-items: flex-end;
+}
+
+.tracking-section-head.archive strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--focus-text);
+  font-size: 11px;
+}
+
+.tracking-history-toggle,
+.tracking-retention-controls {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 7px;
+  background: oklch(0.17 0.022 62 / 0.72);
+}
+
+.tracking-history-toggle button,
+.tracking-retention-controls button {
+  min-width: 34px;
+  min-height: 25px;
+  padding: 3px 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--focus-dim);
+  background: transparent;
+  font-size: 9px;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.tracking-history-toggle button.active,
+.tracking-retention-controls button.active {
+  color: var(--focus-text);
+  border-color: var(--focus-line);
+  background: var(--focus-panel-soft);
+}
+
+.tracking-history-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 14px;
+}
+
+.tracking-history-card {
+  padding: 10px 0 9px;
+  border: 0;
+  border-top: 1px solid var(--focus-line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.tracking-history-card:nth-child(-n + 3) {
+  border-top-color: transparent;
+}
+
+.tracking-history-code strong,
+.tracking-history-task {
+  color: var(--focus-text);
+}
+
+.tracking-history-code span,
+.tracking-history-burn,
+.tracking-history-meta {
+  color: var(--focus-dim);
+}
+
+.tracking-archive-empty {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  color: var(--focus-dim);
+  font-size: 11px;
+}
+
+.tracking-retention-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--focus-muted);
+  font-size: 10px;
+}
+
+.tracking-maintenance-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.tracking-maintenance-row button {
+  flex: 1;
+  min-height: 30px;
+  border: 1px solid var(--focus-line);
+  border-radius: 7px;
+  color: var(--focus-muted);
+  background: transparent;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.tracking-maintenance-row button:hover:not(:disabled) {
+  background: var(--focus-panel-soft);
+}
+
+.tracking-maintenance-row button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.mission-route-readout {
+  display: grid;
+  grid-template-columns: auto minmax(24px, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 9px;
+  padding: 7px 8px;
+  border-top: 1px solid rgba(255, 226, 148, 0.1);
+  border-bottom: 1px solid rgba(255, 226, 148, 0.1);
+  color: rgba(255, 239, 199, 0.68);
+}
+
+.mission-route-readout span,
+.mission-route-readout small {
+  font-size: 8px;
+  font-weight: 740;
+  letter-spacing: 0.11em;
+}
+
+.mission-route-readout i {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 226, 148, 0.18), rgba(255, 209, 92, 0.72));
+}
+
+.mission-route-readout strong {
+  color: #fff0c5;
+  font-size: 10px;
+}
+
+.mission-route-readout small {
+  color: rgba(255, 227, 151, 0.52);
+}
+
+.mission-mini-stats .mini-stat strong {
+  max-width: 32px;
+  font-size: 8px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 860px) {
+  .tracking-overlay {
+    padding: 0;
+    backdrop-filter: none;
+  }
+
+  .tracking-station {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .tracking-header,
+  .tracking-header-actions {
+    flex-direction: row;
+  }
+
+  .tracking-header {
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px 11px;
+  }
+
+  .tracking-heading strong {
+    font-size: 18px;
+  }
+
+  .tracking-route-summary {
+    max-width: calc(100vw - 132px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tracking-header-actions {
+    margin-left: auto;
+  }
+
+  .tracking-live-chip {
+    display: none;
+  }
+
+  .tracking-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 12px 0;
+  }
+
+  .tracking-focus-console {
+    order: -1;
+    min-height: 306px;
+  }
+
+  .tracking-starmap-viewport {
+    height: 286px;
+  }
+
+  .tracking-map-note {
+    display: none;
+  }
+
+  .tracking-route-bar {
+    gap: 10px;
+  }
+
+  .tracking-secondary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px 12px 22px;
+  }
+
+  .tracking-history-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tracking-history-card:nth-child(n) {
+    border-top-color: var(--focus-line);
+  }
+
+  .tracking-history-card:first-child {
+    border-top-color: transparent;
+  }
+
+  .focus-clock-block strong {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 430px) {
+  .tracking-heading .mission-kicker {
+    letter-spacing: 0.11em;
+  }
+
+  .tracking-close-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tracking-focus-console {
+    min-height: 292px;
+    padding: 12px;
+  }
+
+  .tracking-starmap-viewport {
+    height: 250px;
+  }
+
+  .tracking-route-bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tracking-route-meta {
+    display: none;
+  }
+
+  .solar-route-readout {
+    gap: 7px;
+  }
+
+  .focus-session.idle,
+  .focus-session.complete {
+    padding-top: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

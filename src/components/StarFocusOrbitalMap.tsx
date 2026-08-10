@@ -6,6 +6,7 @@ interface Props {
   variant: 'sidebar' | 'overlay'
   className?: string
   liveLabel: string
+  destinationLabel?: string
   missionHistory: StarFocusMissionRecord[]
   activeSession: StarFocusSession | null
   activeSnapshot: StarFocusSnapshot | null
@@ -929,6 +930,7 @@ export function StarFocusOrbitalMap({
   variant,
   className,
   liveLabel,
+  destinationLabel,
   missionHistory,
   activeSession,
   activeSnapshot,
@@ -961,11 +963,13 @@ export function StarFocusOrbitalMap({
   const phaseTheme = resolvePhaseTheme(className, fallbackPhaseTheme)
   const phaseClassName = `phase-${phaseTheme}`
   const phaseTuning = STARMAP_PHASE_TUNING[phaseTheme]
-  const topHud = hasLiveFlight
-    ? { label: 'Track', value: activeSnapshot?.isPaused ? 'Hold' : liveLabel }
-    : latestMission
-      ? { label: 'Latest', value: latestMission.vehicleCode }
-      : { label: 'Grid', value: 'Standby' }
+  const topHud = destinationLabel
+    ? { label: hasLiveFlight ? 'Destination' : 'Next stop', value: destinationLabel }
+    : hasLiveFlight
+      ? { label: 'Track', value: activeSnapshot?.isPaused ? 'Hold' : liveLabel }
+      : latestMission
+        ? { label: 'Latest', value: latestMission.vehicleCode }
+        : { label: 'Grid', value: 'Standby' }
   const bottomHud = hasLiveFlight && activeSnapshot
     ? { label: 'T-Remain', value: formatClock(activeSnapshot.remainingMs) }
     : missionHistory.length
