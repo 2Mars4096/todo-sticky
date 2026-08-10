@@ -39,12 +39,12 @@ Click **Test Connection** to verify, then **Save & Start**. Change settings late
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Status cycle** — Toggle task status: todo → done → partial → todo
-- **Push to tomorrow** — Move unfinished tasks to the next day
+- **Smart carry-forward** — Move unfinished past work directly to today; tasks on today or a future date move to their following day
 - **Date navigation** — Jump between days with prev/next arrows or calendar picker
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires LLM API)
 - **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)
-- **Star Focus Mission Control + Tracking Station** — Compact side rails open on demand; arm a task, launch a focus session, pause/resume it, recover restored live sessions in Tracking Station, and browse a native-local mission archive with a compressed solar-system map that stays quiet in the sidebar while Tracking Station now owns the true 3D orbital renderer with real camera orbit, layered planet materials, shader-driven front atmosphere haze, Earth/Venus cloud-shadow coupling under shader-driven cloud shells, alpha-aware solar shadow interaction for cloud shells and rings, color-separated atmosphere scattering, shadowed lighting, richer sun flare and solar scatter structure, inner-body phase rims, Earth dark-side lights, Earth ocean glint, Earth-Moon eclipse/transit cues, Moon Earthshine, Saturn ring-shadow detail, Saturn ring scattering, textured rings, layered starfield depth, nebula veils, dust-haze background depth, live mission pathing, and local archive views, while the sidebar stays on the lighter projected map with `6` / `12` / `24` retention presets
+- **Star Focus Mission Control + Focus Mode** — Arm a task, choose a focus burn, and travel one leg at a time through an Earth → Moon → Venus → Mars → Saturn route. The compact layout puts the task and timer first; wider windows pair those controls with the interactive 3D Tracking Station. Completed sessions become a native-local travel log with `6` / `12` / `24` retention presets, while the right rail stays lightweight and always shows the next destination.
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in the menu bar with a tray icon
 - **Lightweight** — Built with Tauri; ~5 MB installer (no bundled browser)
@@ -87,6 +87,6 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 |----------|--------|
 | **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
 | **Enter** | Add task / submit subtask or goal / commit edit |
-| **Escape** | Close Tracking Station or a compact side panel; cancel edit/subtask input |
+| **Escape** | Close Focus Mode or a compact side panel; cancel edit/subtask input |
 | **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
 | **Double-click** | Edit task text |

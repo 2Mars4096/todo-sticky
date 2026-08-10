@@ -115,5 +115,5 @@ Top-level plans omit a parent link. Sub-plans link back to their parent. Create 
 ## Project Notes
 
 - This repository is a Tauri desktop app with a React/Vite frontend and a Rust native layer.
-- There is no newer active implementation plan after `docs/plans/1-43-star-focus-3d-shadow-interaction-pass.md`; remaining follow-up questions live in `docs/todo.md` backlog.
+- There is no newer active implementation plan after `docs/plans/4-2-smart-task-carry-forward.md`; remaining follow-up questions live in `docs/todo.md` backlog.
 - The Star Focus design lock lives in `docs/plans/1-star-focus-integration-design.md`; implementation should stay consistent with those v1 decisions unless that plan is explicitly revised.

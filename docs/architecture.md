@@ -21,7 +21,8 @@
 - [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, and day-first view default.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
 - [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top and provide an instructional empty state.
-- [ ] `src/components/TaskItem.tsx`: keeps edit, focus, step, AI breakdown, delete, and move actions directly reachable; compact CSS wraps the action strip below task text.
+- [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
+- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and direct row actions reachable, including destination-aware carry-forward for tasks and subtasks; compact CSS wraps the action strip below task text.
 - [ ] `src-tauri/tauri.conf.json` and `src-tauri/capabilities/default.json`: define the `460x640` default, `340x440` minimum, and native resize-drag permission.
 - [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area and shows it from `RunEvent::Ready`, while later tray and shortcut toggles preserve user placement.
 
@@ -29,8 +30,9 @@
 
 - [ ] `src/App.tsx`: app-shell coordination for compact window widths, rail exclusivity, and Tracking Station auto-open behavior for restored sessions.
 - [ ] `src/hooks/useStarFocus.ts`: Star Focus state, pause/resume lifecycle, reload-safe active sessions, configurable local archive-retention presets, dev-only mission time-scale simulation, mission numbering, migration from legacy localStorage, and native-backed persistence saves.
-- [ ] `src/components/MissionControlSidebar.tsx`: right-sidebar Mission Control shell, shared orbital telemetry scene, session controls, mission-history UI, and maintenance controls.
-- [ ] `src/components/TrackingStationOverlay.tsx`: expanded in-window Star Focus surface with the larger orbital display, mirrored launch/live controls, recent/full archive browsing, archive-cap controls, maintenance actions, and a lazy-loaded true 3D Tracking Station map with projected-SVG fallback.
+- [ ] `src/starFocusJourney.ts`: deterministic Earth/Moon/Venus/Mars/Saturn route projection derived from retained mission orbit indexes without adding persisted state.
+- [ ] `src/components/MissionControlSidebar.tsx`: right-sidebar Mission Control shell, next-destination route readout, lightweight orbital telemetry, session controls, mission-history UI, and maintenance controls.
+- [ ] `src/components/TrackingStationOverlay.tsx`: expanded responsive Focus Mode with task-first controls, a dominant true 3D Tracking Station map, compact-first ordering, named route progress, travel-log browsing, archive-cap controls, and projected-SVG fallback.
 - [ ] `src/components/StarFocusOrbitalMap.tsx`: lighter SVG/CSS orbital-scene renderer retained for Mission Control and as the Tracking Station fallback, with projected celestial bodies, fine-grained surface textures and microtextures, scene-aware lighting, restrained body motion, moon/ring detail, layered atmosphere shells and scattering, phase-responsive material tuning, locked weather-layer motion, stronger spherical limb falloff, live trajectory, archive markers, telemetry HUD readouts, and local orbit-camera zoom/tilt controls.
 - [ ] `src/components/StarFocusOrbitalMap3D.tsx`: true WebGL/Three.js orbital scene for Tracking Station with real meshes, camera orbit controls, layered procedural surface/bump/roughness materials, shader-driven front atmosphere haze, Earth/Venus cloud-shadow coupling beneath shader-driven cloud shells, alpha-aware solar shadow interaction for cloud shells and rings, color-separated atmosphere scattering, shadow-enabled lighting, richer sun flare and solar scatter structure, inner-body phase rims, Earth dark-side lights, Earth ocean glint, Earth-Moon eclipse/transit cues, Moon Earthshine, Saturn ring-shadow detail, Saturn ring scattering, textured rings, layered starfield depth, nebula veils and dust-haze background depth, archive markers, and a live mission craft path.
 - [ ] `src/components/TaskList.tsx` and `src/components/TaskItem.tsx`: explicit task-to-Mission-Control handoff plus active-session selection locking.
@@ -62,6 +64,7 @@
 - Keep frameless resizing discoverable through generous edge/corner hit zones and a visible bottom-right grip.
 - Position and show the app only once during native launch readiness; do not snap it back after the user moves it and later toggles visibility.
 - Keep essential task actions keyboard reachable and visible at low emphasis; wrap them below task text at the minimum width rather than hiding them.
+- Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
 - Keep the first archive-retention control pass inside Tracking Station with a small preset range instead of adding another global settings surface.
 - Keep Star Focus map upgrades grounded in mission telemetry and accumulated-orbit feedback instead of drifting into descriptive filler or a separate vehicle-construction mechanic.
 - Keep the first true 3D/WebGL rollout overlay-first: Tracking Station can own the heavier renderer while Mission Control keeps the lighter projected camera model.
@@ -79,6 +82,8 @@
 - Let close-up planet detail fade and compress toward the limb so the bodies read as spheres, not flat decals with full edge contrast.
 - Keep the smallest planetary linework and microtextures quieter in Mission Control than in Tracking Station so detail improves inspection without making the sidebar busy.
 - Keep Star Focus debug controls dev-only, non-persistent, and compact enough to stay in the bottom debug tray instead of expanding the production settings/UI surface.
+- Treat completed focus sessions as Solar Route legs, but derive the route from existing mission orbit indexes so destination UI does not create another persistence source of truth.
+- At compact widths, show the task, timer, and primary focus action before the orbital scene; on wider surfaces, pair one dominant map with one focused control column.
 - Keep Moonshot Kimi as the default AI provider preset unless product direction changes; existing saved settings remain user-controlled and should not be silently overwritten by defaults.
 
 ## Star Focus V1 Integration
@@ -126,8 +131,9 @@
 - The latest 3D background-depth pass adds layered nebula sprites and broad dust veils behind and through the system plane so the scene feels more embedded in space instead of floating in empty black.
 - The latest 3D solar-scatter pass gives the sun a more structured flare read and adds a restrained illuminated scatter band through the inner system so the star feels more like a live light source.
 - The latest 3D shadow-interaction pass gives cloud shells and Saturn's rings masked shadow materials and tightens the main solar shadow-map settings so thin transparent geometry participates more believably in local shadowing.
+- The latest Solar Route layout pass reframes Tracking Station as Focus Mode, advances completed sessions through an Earth/Moon/Venus/Mars/Saturn loop, and puts task/timer controls ahead of the map on compact windows.
 - Local development now has a dev-only debug tray for seeding tasks, clearing the current day, reloading task state, and slowing/fast-forwarding the Star Focus mission track.
-- There is no newer active implementation slice after [1-43-star-focus-3d-shadow-interaction-pass](plans/1-43-star-focus-3d-shadow-interaction-pass.md); remaining questions are parked in backlog.
+- There is no newer active implementation slice after [1-44-star-focus-solar-route-layout-pass](plans/1-44-star-focus-solar-route-layout-pass.md); remaining questions are parked in backlog.
 
 ## Quality Checks
 

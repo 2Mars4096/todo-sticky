@@ -1,7 +1,18 @@
 # Changelog
 
+## 2026-08-10
+
+- [frontend] Make the task arrow carry work from any past date directly to local today, while today moves to tomorrow and future dates move one day forward.
+- [frontend] Give task and subtask arrows destination-aware tooltips, accessible names, and success feedback driven by the same centralized date rule.
+- [docs] Complete plan `4-2-smart-task-carry-forward` and update the core workflow documentation.
+
 ## 2026-08-02
 
+- [frontend] Rebuild the expanded Star Focus surface as responsive Focus Mode: one dominant orbital view, one task-first Flight Deck, compact controls before the map, and quieter travel-log/settings bands.
+- [frontend] Add a deterministic Solar Route from Earth through the Moon, Venus, Mars, and Saturn, with every completed focus session advancing one named travel leg without changing native persistence.
+- [frontend] Surface the next destination in the collapsed rail, expanded Mission Control, orbital HUD, completed-session summary, and travel log.
+- [frontend] Replace square Three.js star and dust points with radial alpha-masked sprites so close particles no longer render as white blocks.
+- [docs] Complete plan `1-44-star-focus-solar-route-layout-pass` and document the Focus Mode route and responsive hierarchy.
 - [native] Position fresh app launches at the top-right of the current display work area with a Retina-aware 16px margin, then show and focus the window from Tauri's ready event.
 - [native] Add focused placement tests for primary and left-side monitor coordinates, rebuild the macOS app-only bundle, seal it locally, replace the installed app, and relaunch it.
 - [docs] Complete plan `4-1-top-right-launch-placement` and document the new launch behavior and native lifecycle boundary.

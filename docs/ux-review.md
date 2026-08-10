@@ -12,7 +12,7 @@ Reviewed on 2026-08-02 against the frameless default window, the 340px minimum, 
 | Edit task | Click task text, edit, press Enter | Click task text, edit, press Enter | Already optimal |
 | Add a step | Zero-height hover target was effectively unreachable | Click `+ Step`, type, press Enter | Fixed and optimized |
 | AI breakdown | Click `✦`; failures were silent | Click `✦`; success updates steps and failure shows a visible settings prompt | Optimized within optional AI setup |
-| Move to tomorrow | Click arrow; failure could remove the optimistic row until reload | Click arrow; success confirms, failure restores the task and explains the result | Optimized |
+| Carry task forward | Click arrow; stale tasks moved only one stale day at a time | Click arrow; past work catches up to today, while current/future work advances one day; labels and feedback state the destination | Optimized |
 | Date navigation | Previous/next or calendar | Previous/next, calendar, or one-click `Go to today` when away from today | Optimized |
 | Day scope | `All` and `Today` competed with the date meaning of “Today” | `All` and `Day`, defaulting to the current day | Clearer default |
 | Plan the day | Bottom `Schedule` action could run with no tasks and fail silently | `Plan day` is disabled until tasks exist and reports success or provider errors | Optimized |

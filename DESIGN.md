@@ -162,6 +162,8 @@ The working note is tonally layered and mostly flat. Ambient shadow belongs to t
 ### Star Focus
 
 - The collapsed rail provides focus state and entry. Cinematic orbital visuals remain inside expanded Mission Control or Tracking Station so they reward intent instead of occupying the default workspace.
+- The expanded surface is titled Focus Mode and frames each completed session as one named Solar Route leg from Earth through the Moon, Venus, Mars, Saturn, and home again.
+- At compact widths, Flight Deck task/timer controls precede the orbital scene. Wider windows pair one dominant map with one focused control column; travel log and retention controls stay secondary.
 
 ## 6. Do's and Don'ts
 

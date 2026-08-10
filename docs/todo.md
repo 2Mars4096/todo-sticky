@@ -58,6 +58,7 @@
 - [x] [1-41-star-focus-3d-background-depth-pass](plans/1-41-star-focus-3d-background-depth-pass.md) - Add layered nebula and dust-haze depth behind the true 3D system so the scene feels less empty.
 - [x] [1-42-star-focus-3d-solar-scatter-pass](plans/1-42-star-focus-3d-solar-scatter-pass.md) - Add richer solar flare structure and a restrained sun-lit scatter band through the true 3D system.
 - [x] [1-43-star-focus-3d-shadow-interaction-pass](plans/1-43-star-focus-3d-shadow-interaction-pass.md) - Let cloud shells and rings participate more cleanly in the shared solar shadow path.
+- [x] [1-44-star-focus-solar-route-layout-pass](plans/1-44-star-focus-solar-route-layout-pass.md) - Reframe Focus Mode around a named solar route and a responsive task-first layout.
 
 ## Phase 3 - Developer Tools
 
@@ -72,6 +73,7 @@
 
 - [x] [4-ready-shell-and-ux-path-pass](plans/4-ready-shell-and-ux-path-pass.md) - Optimize the default layout, frameless-window resizing, and shortest paths through core workflows.
   - [x] [4-1-top-right-launch-placement](plans/4-1-top-right-launch-placement.md) - Open the installed app visibly in a predictable top-right launch position.
+  - [x] [4-2-smart-task-carry-forward](plans/4-2-smart-task-carry-forward.md) - Carry past tasks to today and current/future tasks to their next day.
 
 ## Backlog
 
