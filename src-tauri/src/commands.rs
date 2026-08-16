@@ -16,11 +16,15 @@ pub struct TasksResult {
 }
 
 #[tauri::command]
-pub fn get_tasks(date_str: String, app: AppHandle) -> Result<TasksResult, String> {
+pub async fn get_tasks(date_str: String, app: AppHandle) -> Result<TasksResult, String> {
     crate::refresh_watcher(&app)?;
     let kb = get_kb_path(&app);
     let todo_dir = PathBuf::from(&kb).join("content").join("to-do");
-    let (tasks, fp, ws) = file_sync::get_tasks(&todo_dir.to_string_lossy(), &date_str)?;
+    let (tasks, fp, ws) = tauri::async_runtime::spawn_blocking(move || {
+        file_sync::get_tasks(&todo_dir.to_string_lossy(), &date_str)
+    })
+    .await
+    .map_err(|error| format!("Task-loading worker failed: {error}"))??;
     Ok(TasksResult {
         tasks,
         file_path: fp,

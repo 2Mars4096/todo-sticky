@@ -7,6 +7,31 @@ use regex::Regex;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+#[cfg(target_os = "macos")]
+const TASK_ARCHIVE_CLOUD_ONLY: &str = "TASK_ARCHIVE_CLOUD_ONLY";
+#[cfg(any(target_os = "macos", test))]
+const MACOS_SF_DATALESS: u32 = 0x40000000;
+
+#[cfg(any(target_os = "macos", test))]
+fn macos_flags_are_dataless(flags: u32) -> bool {
+    flags & MACOS_SF_DATALESS != 0
+}
+
+fn read_local_file(path: &Path) -> Result<String, String> {
+    #[cfg(target_os = "macos")]
+    {
+        use std::os::macos::fs::MetadataExt;
+
+        let metadata = fs::metadata(path)
+            .map_err(|error| format!("Failed to inspect {}: {}", path.display(), error))?;
+        if macos_flags_are_dataless(metadata.st_flags()) {
+            return Err(TASK_ARCHIVE_CLOUD_ONLY.into());
+        }
+    }
+
+    fs::read_to_string(path).map_err(|error| format!("Failed to read {}: {}", path.display(), error))
+}
+
 pub fn list_weekly_files(todo_dir: &str) -> Result<Vec<String>, String> {
     let dir = Path::new(todo_dir);
     if !dir.exists() {
@@ -65,8 +90,7 @@ pub fn write_back_section(
     date_str: &str,
     new_section: &str,
 ) -> Result<(), String> {
-    let content = fs::read_to_string(file_path)
-        .map_err(|e| format!("Failed to read {}: {}", file_path, e))?;
+    let content = read_local_file(Path::new(file_path))?;
     let lines: Vec<&str> = content.lines().collect();
 
     let heading_re = Regex::new(&format!(r"^##\s+{}\s*$", regex::escape(date_str))).unwrap();
@@ -155,8 +179,7 @@ pub fn append_tasks_to_date(
     let task_lines = serialize_tasks(tasks, 0);
 
     if let Some(file_info) = find_weekly_file(todo_dir, date_str)? {
-        let content = fs::read_to_string(&file_info.file_path)
-            .map_err(|e| format!("Failed to read {}: {}", file_info.file_path, e))?;
+        let content = read_local_file(Path::new(&file_info.file_path))?;
         let lines: Vec<&str> = content.lines().collect();
         let heading_re = Regex::new(&format!(r"^##\s+{}\s*$", regex::escape(date_str))).unwrap();
         let mut section_end: Option<usize> = None;
@@ -201,12 +224,23 @@ pub fn get_tasks(
     let result = find_weekly_file(todo_dir, date_str)?;
     match result {
         Some(info) => {
-            let content = fs::read_to_string(&info.file_path)
-                .map_err(|e| format!("Failed to read {}: {}", info.file_path, e))?;
+            let content = read_local_file(Path::new(&info.file_path))?;
             let parsed = parse_weekly_file(&content);
             let aggregated = get_tasks_for_date(&parsed, date_str);
             Ok((aggregated, Some(info.file_path), Some(info.week_start)))
         }
         None => Ok((Vec::new(), None, None)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{macos_flags_are_dataless, MACOS_SF_DATALESS};
+
+    #[test]
+    fn identifies_macos_dataless_file_flag() {
+        assert!(macos_flags_are_dataless(MACOS_SF_DATALESS));
+        assert!(macos_flags_are_dataless(MACOS_SF_DATALESS | 0x20));
+        assert!(!macos_flags_are_dataless(0x20));
     }
 }
