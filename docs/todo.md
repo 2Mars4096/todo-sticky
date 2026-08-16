@@ -78,6 +78,11 @@
   - [x] [4-2-smart-task-carry-forward](plans/4-2-smart-task-carry-forward.md) - Carry past tasks to today and current/future tasks to their next day.
   - [x] [4-3-goals-rail-and-data-path-clarity](plans/4-3-goals-rail-and-data-path-clarity.md) - Align collapsed Goals metrics and clarify empty non-current dates.
   - [x] [4-4-stable-data-home-recovery](plans/4-4-stable-data-home-recovery.md) - Keep macOS task and app-state paths stable when a launcher overrides `HOME`.
+  - [x] [4-5-task-copy-paste-and-agent-handoff](plans/4-5-task-copy-paste-and-agent-handoff.md) - Copy or paste task structures and export individual items as execution-ready agent prompts.
+  - [x] [4-6-blank-launch-recovery](plans/4-6-blank-launch-recovery.md) - Prevent silent white-window launches and diagnose the installed frontend boot failure without touching task data.
+  - [x] [4-7-cloud-archive-availability-state](plans/4-7-cloud-archive-availability-state.md) - Replace indefinite task loading with a recoverable cloud-only archive state.
+  - [x] [4-8-stable-date-header-layout](plans/4-8-stable-date-header-layout.md) - Keep date navigation arrows fixed and the date label truly centered.
+  - [ ] [4-9-data-history-recovery-and-merge](plans/4-9-data-history-recovery-and-merge.md) - Recover prior task and app history into the configured local knowledge-base store.
 
 ## Backlog
 

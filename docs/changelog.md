@@ -1,7 +1,25 @@
 # Changelog
 
+## 2026-08-16
+
+- [data] Back up the 53-file local knowledge-base task archive, recover the missing `2026-02-23` weekly file with checksum verification, and keep the unresolved `2026-03-09` File Provider placeholder out of the merge until its contents are available.
+- [diagnostics] Confirm that normal and isolated Star Focus stores have no retained missions, legacy/current WebKit goal stores have no goal items, and the oldest local Time Machine snapshot contains only the same cloud-only March placeholder.
+- [frontend] Stabilize the date header with fixed arrow columns, a centered flexible date slot, and symmetrical chevron spacing so changing date lengths no longer shift navigation controls.
+- [release] Rebuild, install, and relaunch the macOS app; verify short, medium, and longest-formatted English date labels against the production styles.
+- [native] Detect macOS `SF_DATALESS` task archives before reads or read-before-write mutations, preventing File Provider placeholders from blocking indefinitely or being treated as empty data.
+- [frontend] Replace the endless cloud-download spinner with a concise Dropbox availability error, disabled task creation, and an explicit Retry action.
+- [native] Move initial markdown archive reads onto Tauri's blocking worker pool so a cloud-only File Provider placeholder cannot freeze native window painting.
+- [frontend] Show a dedicated archive-loading state and disable task creation until initial task data is available.
+- [native] Replace the unsupported transparent macOS window path with an explicit opaque sticky-paper window/WebView background.
+- [frontend] Add a visible boot surface, sanitized local boot-stage diagnostic, and React recovery boundary so startup failures cannot remain an unexplained white window.
+- [diagnostics] Confirm the existing task archive is intact but `dataless`, with Dropbox/File Provider reporting a requested yet incomplete download and a prior cancellation error.
+
 ## 2026-08-10
 
+- [frontend] Add per-task and per-step `Copy` actions that write portable Markdown checklists plus `Prompt` actions that create execution-ready agent briefs without calling an AI provider.
+- [frontend] Add a quiet `Paste` action beside New Task that reads plain text or copied checklists and recreates their hierarchy as unchecked work.
+- [native] Add Tauri's official clipboard manager with plain-text read/write permissions only.
+- [frontend] Widen the compact task-action wrap breakpoint so the default 460px shell preserves task text width after the new handoff controls are added.
 - [native] Fix missing-data launches on macOS by resolving task and app-state roots from the signed-in account instead of a caller-overridden `HOME` environment.
 - [native] Add account-home precedence and stable task/app-data path tests, rebuild and install the repaired bundle, and confirm the normal store is used while the isolated store remains untouched.
 - [frontend] Fit the collapsed Goals `REPEAT` metric with a slightly wider measure, tighter tracking, and centered non-wrapping label text.

@@ -20,7 +20,8 @@
 
 - [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, and compact action-bar AI provider switching.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
-- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, provide an instructional empty state for today, and route empty past/future dates directly back to today.
+- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, paste task hierarchies from the clipboard, expose per-item copy/prompt handoff actions, provide an instructional empty state for today, and route empty past/future dates directly back to today.
+- [ ] `src/taskTransfer.ts` and `src/clipboard.ts`: format and parse portable task checklists, generate local execution-agent prompts, and bridge plain-text clipboard reads/writes through the official Tauri plugin.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
 - [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between provider-specific profiles.
 - [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and direct row actions reachable, including destination-aware carry-forward for tasks and subtasks; compact CSS wraps the action strip below task text.
@@ -62,11 +63,17 @@
 - Default new left-goals and right-mission rails to collapsed so the sticky-note window keeps a usable center column before the user opts into the larger side surfaces.
 - In compact window widths, expanding one side rail should collapse the other and overlay the center instead of crushing the task column.
 - Keep task capture immediately below the date header; secondary actions such as AI day planning stay in the lower action bar.
+- Keep date navigation on a fixed three-column frame: equal-width arrow columns flank a flexible center slot, and decorative calendar affordances must not offset the date label's visual center.
 - Keep frameless resizing discoverable through generous edge/corner hit zones and a visible bottom-right grip.
+- Keep the macOS frameless window opaque with an explicit sticky-paper window/WebView background; transparent Tauri windows require private macOS APIs and can fail at the compositor even after WebKit reports a successful paint.
 - Position and show the app only once during native launch readiness; do not snap it back after the user moves it and later toggles visibility.
 - On macOS, resolve default task and bundle app-data roots from the signed-in account record; do not let an inherited `HOME` create a parallel empty store.
+- Run startup archive reads on Tauri's blocking worker pool so File Provider hydration cannot freeze native window painting; keep task creation disabled while the initial archive load is pending.
+- On macOS, reject `SF_DATALESS` task archives before every content read or read-before-write operation; surface cloud availability separately from an empty task list and require an explicit retry after Finder/Dropbox materializes the file.
 - Keep essential task actions keyboard reachable and visible at low emphasis; wrap them below task text at the minimum width rather than hiding them.
 - Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
+- Copy tasks as portable Markdown checklists, include only the selected task's current-day steps, and reset pasted items to unchecked status.
+- Keep agent-prompt export local and deterministic; copying a prompt must not invoke the configured AI provider.
 - Keep the first archive-retention control pass inside Tracking Station with a small preset range instead of adding another global settings surface.
 - Keep Star Focus map upgrades grounded in mission telemetry and accumulated-orbit feedback instead of drifting into descriptive filler or a separate vehicle-construction mechanic.
 - Keep the first true 3D/WebGL rollout overlay-first: Tracking Station can own the heavier renderer while Mission Control keeps the lighter projected camera model.
@@ -138,7 +145,8 @@
 - The latest Solar Route layout pass reframes Tracking Station as Focus Mode, advances completed sessions through an Earth/Moon/Venus/Mars/Saturn loop, and puts task/timer controls ahead of the map on compact windows.
 - Local development now has a dev-only debug tray for seeding tasks, clearing the current day, reloading task state, and slowing/fast-forwarding the Star Focus mission track.
 - The latest data-home recovery pass keeps macOS task and app-state paths anchored to the signed-in account even when an installer or launcher overrides `HOME`.
-- There is no newer active implementation slice after [4-4-stable-data-home-recovery](plans/4-4-stable-data-home-recovery.md); remaining questions are parked in backlog.
+- The task-handoff pass adds native clipboard copy/paste and local execution-prompt export while keeping the compact task list authoritative.
+- There is no newer active implementation slice after [4-5-task-copy-paste-and-agent-handoff](plans/4-5-task-copy-paste-and-agent-handoff.md); remaining questions are parked in backlog.
 
 ## Quality Checks
 
