@@ -29,12 +29,74 @@ body,
 }
 
 body {
-  background: transparent;
+  background: var(--sticky-bg);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
   font-size: 13px;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+}
+
+.boot-fallback {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 32px;
+  background: linear-gradient(180deg, #fffce8 0%, #fdf4ca 100%);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.boot-fallback-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent-hover);
+  font-size: 18px;
+}
+
+.boot-fallback h1 {
+  font-size: 17px;
+}
+
+.boot-fallback p {
+  max-width: 280px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.boot-fallback button {
+  justify-self: center;
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--sticky-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.task-loading-mark {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(168, 136, 46, 0.22);
+  border-top-color: var(--accent-hover);
+  border-radius: 999px;
+  animation: task-loading-spin 0.9s linear infinite;
+}
+
+@keyframes task-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-loading-mark { animation: none; }
 }
 
 .app-shell {

@@ -6,7 +6,47 @@
     <title>Sticky Todo</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main id="boot-surface" style="height:100%;display:grid;place-content:center;gap:12px;padding:32px;background:linear-gradient(180deg,#fffce8 0%,#fdf4ca 100%);color:#3d3520;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;text-align:center">
+        <span style="font-size:22px;color:#a8882e" aria-hidden="true">✓</span>
+        <span>Starting Sticky Todo…</span>
+      </main>
+    </div>
+    <script>
+      (function () {
+        var storageKey = 'todo-sticky-boot-diagnostic-v1'
+        var cleanMessage = function (value) {
+          var message = String(value || '')
+          return message.replace(/([A-Za-z]:)?[\\/][^\s:]+/g, '[path]').slice(0, 500)
+        }
+        var record = function (stage, value) {
+          try {
+            window.localStorage.setItem(storageKey, JSON.stringify({
+              stage: stage,
+              message: cleanMessage(value),
+              recordedAt: new Date().toISOString()
+            }))
+          } catch (_) {}
+        }
+        var showFailure = function (value) {
+          var root = document.getElementById('root')
+          if (!root) return
+          root.innerHTML = '<main style="height:100%;display:grid;place-content:center;gap:12px;padding:32px;background:linear-gradient(180deg,#fffce8 0%,#fdf4ca 100%);color:#3d3520;font:14px/1.45 -apple-system,BlinkMacSystemFont,sans-serif;text-align:center"><strong style="font-size:17px">Sticky Todo could not start</strong><span>Your task file was not changed.</span><button style="justify-self:center;padding:8px 14px;border:1px solid #c4a44a;border-radius:8px;background:#fff8dc;color:#3d3520;font:600 13px -apple-system,BlinkMacSystemFont,sans-serif" onclick="window.location.reload()">Reload app</button></main>'
+        }
+
+        window.__stickyTodoBoot = { record: record, showFailure: showFailure }
+        record('document-ready', '')
+        window.addEventListener('error', function (event) {
+          record('window-error', event.message)
+          showFailure(event.message)
+        })
+        window.addEventListener('unhandledrejection', function (event) {
+          var reason = event.reason && event.reason.message ? event.reason.message : event.reason
+          record('unhandled-rejection', reason)
+          showFailure(reason)
+        })
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
