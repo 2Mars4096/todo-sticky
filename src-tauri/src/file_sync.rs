@@ -17,7 +17,7 @@ fn macos_flags_are_dataless(flags: u32) -> bool {
     flags & MACOS_SF_DATALESS != 0
 }
 
-fn read_local_file(path: &Path) -> Result<String, String> {
+pub(crate) fn read_local_file(path: &Path) -> Result<String, String> {
     #[cfg(target_os = "macos")]
     {
         use std::os::macos::fs::MetadataExt;
@@ -29,7 +29,8 @@ fn read_local_file(path: &Path) -> Result<String, String> {
         }
     }
 
-    fs::read_to_string(path).map_err(|error| format!("Failed to read {}: {}", path.display(), error))
+    fs::read_to_string(path)
+        .map_err(|error| format!("Failed to read {}: {}", path.display(), error))
 }
 
 pub fn list_weekly_files(todo_dir: &str) -> Result<Vec<String>, String> {
@@ -50,6 +51,7 @@ pub fn list_weekly_files(todo_dir: &str) -> Result<Vec<String>, String> {
     Ok(dirs)
 }
 
+#[derive(Clone)]
 pub struct FileInfo {
     pub file_path: String,
     pub week_start: String,

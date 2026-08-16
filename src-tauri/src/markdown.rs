@@ -5,13 +5,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 static ID_COUNTER: AtomicU64 = AtomicU64::new(0);
 
-fn next_id() -> String {
-    let ts = SystemTime::now()
+pub fn new_task_id() -> String {
+    let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis();
-    let c = ID_COUNTER.fetch_add(1, Ordering::Relaxed);
-    format!("task_{}_{}", ts, c)
+    let counter = ID_COUNTER.fetch_add(1, Ordering::Relaxed);
+    format!("task_{}_{}", timestamp, counter)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -70,15 +70,16 @@ fn char_from_status(s: &str) -> char {
     }
 }
 
-fn parse_task_lines(lines: &[&str]) -> Vec<Task> {
+fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
     let checkbox_re = Regex::new(r"^(\s*)- \[(.)\]\s+(.*)$").unwrap();
     let bare_re = Regex::new(r"^(\s*)- (.*)$").unwrap();
+    let id_re = Regex::new(r"\s*<!--\s*sticky-todo:id=([A-Za-z0-9_-]+)\s*-->\s*$").unwrap();
 
     let mut root: Vec<Task> = Vec::new();
     let mut stack: Vec<(usize, usize)> = Vec::new(); // (indent, index into parent's subtasks or root)
 
     for line in lines {
-        let (indent, status, text) = if let Some(caps) = checkbox_re.captures(line) {
+        let (indent, status, raw_text) = if let Some(caps) = checkbox_re.captures(line) {
             let indent = caps.get(1).unwrap().as_str().len();
             let status_char = caps.get(2).unwrap().as_str().chars().next().unwrap_or(' ');
             let text = caps.get(3).unwrap().as_str().trim().to_string();
@@ -91,16 +92,28 @@ fn parse_task_lines(lines: &[&str]) -> Vec<Task> {
             continue;
         };
 
+        while !stack.is_empty() && stack.last().unwrap().0 >= indent {
+            stack.pop();
+        }
+
+        let explicit_id = id_re
+            .captures(&raw_text)
+            .and_then(|captures| captures.get(1))
+            .map(|value| value.as_str().to_string());
+        let text = id_re.replace(&raw_text, "").trim().to_string();
+        let next_index = if stack.is_empty() {
+            root.len()
+        } else {
+            get_task_mut(&mut root, &stack).subtasks.len()
+        };
+        let mut path: Vec<String> = stack.iter().map(|(_, index)| index.to_string()).collect();
+        path.push(next_index.to_string());
         let task = Task {
-            id: next_id(),
+            id: explicit_id.unwrap_or_else(|| format!("legacy_{}_{}", date, path.join("_"))),
             text,
             status,
             subtasks: Vec::new(),
         };
-
-        while !stack.is_empty() && stack.last().unwrap().0 >= indent {
-            stack.pop();
-        }
 
         if stack.is_empty() {
             root.push(task);
@@ -143,7 +156,7 @@ pub fn parse_weekly_file(content: &str) -> ParsedFile {
                 task_lines.push(lines[i]);
                 i += 1;
             }
-            let tasks = parse_task_lines(&task_lines);
+            let tasks = parse_task_lines(&task_lines, &date);
             sections.push(DateSection { date, tasks });
         } else {
             i += 1;
@@ -160,7 +173,10 @@ pub fn serialize_tasks(tasks: &[Task], indent: usize) -> String {
     let mut result = String::new();
     for task in tasks {
         let c = char_from_status(&task.status);
-        result.push_str(&format!("{}- [{}] {}\n", pad, c, task.text));
+        result.push_str(&format!(
+            "{}- [{}] {} <!-- sticky-todo:id={} -->\n",
+            pad, c, task.text, task.id
+        ));
         if !task.subtasks.is_empty() {
             result.push_str(&serialize_tasks(&task.subtasks, indent + 1));
         }
@@ -246,7 +262,7 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
 
 #[cfg(test)]
 mod tests {
-    use super::{get_tasks_for_date, parse_weekly_file};
+    use super::{get_tasks_for_date, parse_weekly_file, serialize_date_section};
 
     #[test]
     fn loads_current_tasks_from_a_multi_date_markdown_file() {
@@ -269,5 +285,33 @@ title: Weekly Report
         assert_eq!(tasks.len(), 2);
         assert_eq!(tasks[0].today_subtasks.len(), 1);
         assert_eq!(tasks[1].status, "partial");
+    }
+
+    #[test]
+    fn gives_legacy_tasks_deterministic_ids() {
+        let content = "## 2026-08-16\n- [ ] Parent\n  - [ ] Child\n";
+        let first = parse_weekly_file(content);
+        let second = parse_weekly_file(content);
+
+        assert_eq!(first.date_sections[0].tasks[0].id, "legacy_2026-08-16_0");
+        assert_eq!(
+            first.date_sections[0].tasks[0].subtasks[0].id,
+            "legacy_2026-08-16_0_0"
+        );
+        assert_eq!(
+            first.date_sections[0].tasks[0].id,
+            second.date_sections[0].tasks[0].id
+        );
+    }
+
+    #[test]
+    fn persists_ids_as_invisible_markdown_metadata() {
+        let parsed = parse_weekly_file("## 2026-08-16\n- [ ] Keep me\n");
+        let serialized = serialize_date_section("2026-08-16", &parsed.date_sections[0].tasks);
+        let reparsed = parse_weekly_file(&serialized);
+
+        assert!(serialized.contains("<!-- sticky-todo:id=legacy_2026-08-16_0 -->"));
+        assert_eq!(reparsed.date_sections[0].tasks[0].text, "Keep me");
+        assert_eq!(reparsed.date_sections[0].tasks[0].id, "legacy_2026-08-16_0");
     }
 }
