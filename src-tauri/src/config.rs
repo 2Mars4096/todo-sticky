@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
 const DEFAULT_STAR_FOCUS_ARCHIVE_RETENTION_LIMIT: u32 = 12;
+const APP_IDENTIFIER: &str = "com.todo-sticky.app";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -494,6 +495,38 @@ pub fn get_kb_path(app: &AppHandle) -> String {
     }
     let home = stable_home_dir().unwrap_or_default();
     default_kb_path(&home).to_string_lossy().into()
+}
+
+pub fn get_kb_path_for_cli(explicit_path: Option<PathBuf>) -> PathBuf {
+    if let Some(path) = explicit_path {
+        return path;
+    }
+    if let Ok(path) = env::var("STICKY_TODO_KB_PATH") {
+        if !path.trim().is_empty() {
+            return PathBuf::from(path);
+        }
+    }
+
+    let current_config = stable_home_dir().and_then(|home| {
+        #[cfg(target_os = "macos")]
+        let data_dir = macos_app_data_dir(&home, APP_IDENTIFIER);
+        #[cfg(not(target_os = "macos"))]
+        let data_dir = dirs_next::data_dir()?.join(APP_IDENTIFIER);
+        Some(data_dir.join("config.json"))
+    });
+    let settings = current_config
+        .as_deref()
+        .and_then(load_settings_file)
+        .or_else(load_legacy_settings)
+        .or_else(migrate_from_env);
+    if let Some(path) = settings
+        .map(|settings| settings.kb_path)
+        .filter(|path| !path.trim().is_empty())
+    {
+        return PathBuf::from(path);
+    }
+
+    default_kb_path(&stable_home_dir().unwrap_or_default())
 }
 
 #[cfg(test)]

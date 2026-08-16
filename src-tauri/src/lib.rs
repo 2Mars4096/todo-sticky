@@ -1,8 +1,10 @@
+pub mod cli;
 mod commands;
 mod config;
 mod file_sync;
 mod llm;
 mod markdown;
+pub mod task_api;
 
 use config::get_kb_path;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
@@ -388,6 +390,10 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_tasks,
+            commands::task_api_extract,
+            commands::task_api_create,
+            commands::task_api_update,
+            commands::task_api_delete,
             commands::save_tasks,
             commands::create_date_section,
             commands::append_tasks_to_date,

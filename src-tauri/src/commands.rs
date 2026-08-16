@@ -2,6 +2,10 @@ use crate::config::{self, get_kb_path, AppSettings, StarFocusState};
 use crate::file_sync;
 use crate::llm::{self, LLMConfig};
 use crate::markdown::{AggregatedTask, Task};
+use crate::task_api::{
+    CreateTaskRequest, DeleteTaskRequest, ExtractTasksRequest, ExtractTasksResponse,
+    TaskMutationResponse, UpdateTaskRequest,
+};
 use serde_json::Value;
 use std::path::PathBuf;
 use tauri::AppHandle;
@@ -30,6 +34,66 @@ pub async fn get_tasks(date_str: String, app: AppHandle) -> Result<TasksResult, 
         file_path: fp,
         week_start: ws,
     })
+}
+
+#[tauri::command]
+pub async fn task_api_extract(
+    request: ExtractTasksRequest,
+    app: AppHandle,
+) -> Result<ExtractTasksResponse, String> {
+    crate::refresh_watcher(&app)?;
+    let kb_path = PathBuf::from(get_kb_path(&app));
+    tauri::async_runtime::spawn_blocking(move || crate::task_api::extract_tasks(&kb_path, request))
+        .await
+        .map_err(|error| format!("Task API extraction worker failed: {error}"))?
+}
+
+#[tauri::command]
+pub async fn task_api_create(
+    request: CreateTaskRequest,
+    app: AppHandle,
+) -> Result<TaskMutationResponse, String> {
+    crate::mark_own_write(&app);
+    let kb_path = PathBuf::from(get_kb_path(&app));
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        crate::task_api::create_task(&kb_path, request)
+    })
+    .await
+    .map_err(|error| format!("Task API create worker failed: {error}"))??;
+    crate::refresh_watcher(&app)?;
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn task_api_update(
+    request: UpdateTaskRequest,
+    app: AppHandle,
+) -> Result<TaskMutationResponse, String> {
+    crate::mark_own_write(&app);
+    let kb_path = PathBuf::from(get_kb_path(&app));
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        crate::task_api::update_task(&kb_path, request)
+    })
+    .await
+    .map_err(|error| format!("Task API update worker failed: {error}"))??;
+    crate::refresh_watcher(&app)?;
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn task_api_delete(
+    request: DeleteTaskRequest,
+    app: AppHandle,
+) -> Result<TaskMutationResponse, String> {
+    crate::mark_own_write(&app);
+    let kb_path = PathBuf::from(get_kb_path(&app));
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        crate::task_api::delete_task(&kb_path, request)
+    })
+    .await
+    .map_err(|error| format!("Task API delete worker failed: {error}"))??;
+    crate::refresh_watcher(&app)?;
+    Ok(result)
 }
 
 #[tauri::command]
