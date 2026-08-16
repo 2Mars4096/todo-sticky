@@ -2,6 +2,10 @@
 
 ## 2026-08-16
 
+- [native] Add a shared task API for date/range extraction plus nested task creation, editing, and deletion, with persistent Markdown-backed IDs and optional stale-write revision checks.
+- [tooling] Add the `sticky-todo-api` JSON CLI and `npm run task-api --` entry point with saved knowledge-base path discovery for reusable Codex skills and other local agents.
+- [frontend] Expose the same task API through typed Tauri bridge calls without changing the existing task-list workflow.
+- [docs] Document the agent-facing CRUD contract, safe extract-before-mutate workflow, and completed plan `4-10-agent-task-api`.
 - [data] Back up the 53-file local knowledge-base task archive, recover the missing `2026-02-23` weekly file with checksum verification, and keep the unresolved `2026-03-09` File Provider placeholder out of the merge until its contents are available.
 - [diagnostics] Confirm that normal and isolated Star Focus stores have no retained missions, legacy/current WebKit goal stores have no goal items, and the oldest local Time Machine snapshot contains only the same cloud-only March placeholder.
 - [frontend] Stabilize the date header with fixed arrow columns, a centered flexible date slot, and symmetrical chevron spacing so changing date lengths no longer shift navigation controls.

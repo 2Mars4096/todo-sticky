@@ -42,6 +42,7 @@
 - [ ] `src/api.ts`: Tauri bridge for Star Focus load/save commands alongside the existing task and settings calls.
 - [ ] `src/components/SettingsPanel.tsx` and `src-tauri/src/llm.rs`: AI provider settings and native LLM calls, with Moonshot Kimi as the default, OpenRouter as a first-class OpenAI-compatible provider, OpenRouter attribution headers, editable routed-model slugs, and direct or routed Kimi requests using temperature `1.0`.
 - [ ] `src-tauri/src/config.rs` and `src-tauri/src/commands.rs`: native app-data persistence for Star Focus state plus general settings, including archive-cap sanitization, backward-compatible per-provider AI profiles, and macOS account-home resolution that keeps task/config roots independent of launcher-provided environment overrides.
+- [ ] `src-tauri/src/task_api.rs` and `src-tauri/src/bin/sticky-todo-api.rs`: shared Markdown-backed task extraction and CRUD, stable task IDs, optimistic revision checks, Tauri command reuse, and the cross-session JSON CLI.
 
 ## Conventions
 
@@ -55,6 +56,7 @@
 - Gate local debug affordances behind `import.meta.env.DEV` so they do not leak into production UX.
 - Start Star Focus with a frontend-only integration slice before adding Rust commands or markdown schema changes.
 - Keep task content as the existing markdown-backed source of truth even as Star Focus mission/session state moves into native local persistence.
+- Keep agent task automation behind the shared native task API; use extract-before-mutate revisions and persistent Markdown ID comments instead of UI automation or a second task store.
 - Keep Star Focus mission history native-local only; do not sync mission/session rewards into the markdown task files.
 - Keep the sidebar and fallback path lightweight, but Tracking Station can now use an on-demand true 3D/WebGL renderer where the realism gain is worth the heavier runtime.
 - Keep Star Focus copy terse; prefer labels, metrics, and direct actions over explanatory paragraphs.

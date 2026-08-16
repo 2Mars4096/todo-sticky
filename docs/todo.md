@@ -83,6 +83,7 @@
   - [x] [4-7-cloud-archive-availability-state](plans/4-7-cloud-archive-availability-state.md) - Replace indefinite task loading with a recoverable cloud-only archive state.
   - [x] [4-8-stable-date-header-layout](plans/4-8-stable-date-header-layout.md) - Keep date navigation arrows fixed and the date label truly centered.
   - [ ] [4-9-data-history-recovery-and-merge](plans/4-9-data-history-recovery-and-merge.md) - Recover prior task and app history into the configured local knowledge-base store.
+  - [x] [4-10-agent-task-api](plans/4-10-agent-task-api.md) - Expose task extraction and safe CRUD as a JSON API for reusable agent skills.
 
 ## Backlog
 

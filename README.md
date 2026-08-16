@@ -48,6 +48,7 @@ After configuring more than one provider, use the compact provider selector besi
 - **Smart carry-forward** — Move unfinished past work directly to today; tasks on today or a future date move to their following day
 - **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today
 - **Task handoff** — Copy any task or step as a Markdown checklist, paste copied structures back as unchecked work, or copy an execution-ready prompt for Codex and other agents
+- **Agent task API** — Extract, create, edit, and delete Markdown-backed tasks from reusable skills through a local JSON CLI, with revision checks for safe writes
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires LLM API)
 - **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)
@@ -73,7 +74,21 @@ In development builds, a `Dev` button appears in the bottom action bar so you ca
 | `npm run dev` | Start app (Vite + Tauri) |
 | `npm run dev:vite` | Vite-only (no native window) |
 | `npm run build` | Build distributable for current platform |
+| `npm run task-api -- --help` | Show the local JSON task API used by agent skills |
 | `npm run release` | Bump patch version, tag, and push (triggers CI) |
+
+## Agent Task API
+
+The repository includes a local command API that resolves the knowledge-base path from the app's saved settings and prints machine-readable JSON:
+
+```bash
+npm run task-api -- extract --date 2026-08-16
+npm run task-api -- create --date 2026-08-16 --text "Review notes" --subtask "Mark key claims"
+npm run task-api -- edit --date 2026-08-16 --id TASK_ID --status done --expected-revision REVISION
+npm run task-api -- delete --date 2026-08-16 --id TASK_ID --expected-revision REVISION
+```
+
+Use `--kb-path PATH` or `STICKY_TODO_KB_PATH` to override path discovery. See [docs/llm-api-guide.md](docs/llm-api-guide.md) for the JSON contract and skill-safe workflow.
 
 ## Releasing
 
