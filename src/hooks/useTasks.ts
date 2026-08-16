@@ -71,6 +71,7 @@ export function useTasks(dateStr: string) {
   const [tasks, setTasks] = useState<AggregatedTask[]>([])
   const [filePath, setFilePath] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState<'cloud-only' | 'failed' | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const filePathRef = useRef<string | null>(null)
   const dateRef = useRef(dateStr)
@@ -82,12 +83,14 @@ export function useTasks(dateStr: string) {
   const load = useCallback(async () => {
     if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
     setLoading(true)
+    setLoadError(null)
     try {
       const result = await api.getTasks(dateStr)
       setTasks(result.tasks)
       setFilePath(result.filePath || null)
     } catch (e) {
       console.error('Failed to load tasks:', e)
+      setLoadError(String(e).includes('TASK_ARCHIVE_CLOUD_ONLY') ? 'cloud-only' : 'failed')
     } finally {
       setLoading(false)
     }
@@ -343,8 +346,8 @@ export function useTasks(dateStr: string) {
   }, [persist])
 
   return {
-    tasks, loading, load,
-    addTask, toggleStatus, deleteTask, carryForward, carryForwardTarget,
+    tasks, loading, loadError, load,
+    addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,
   }

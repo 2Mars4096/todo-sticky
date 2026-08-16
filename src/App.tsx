@@ -362,8 +362,9 @@ export default function App() {
 
         <AddTask
           onAdd={tasks.addTask}
-          prominent={!tasks.tasks.length}
+          prominent={!tasks.loading && !tasks.tasks.length}
           autoFocus={!showSettings}
+          disabled={tasks.loading || Boolean(tasks.loadError)}
         />
 
         {aiLoading && (
@@ -375,6 +376,8 @@ export default function App() {
 
         <TaskList
           tasks={tasks.tasks}
+          loading={tasks.loading}
+          loadError={tasks.loadError}
           viewMode={viewMode}
           selectedTaskId={starFocus.selectedTaskId}
           focusLocked={Boolean(starFocus.activeSession)}

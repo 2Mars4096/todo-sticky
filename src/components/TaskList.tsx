@@ -1,8 +1,10 @@
-import type { AggregatedTask, ViewMode } from '../types'
+import type { AggregatedTask, Task, ViewMode } from '../types'
 import { TaskItem } from './TaskItem'
 
 interface Props {
   tasks: AggregatedTask[]
+  loading?: boolean
+  loadError?: 'cloud-only' | 'failed' | null
   viewMode: ViewMode
   selectedTaskId?: string | null
   focusLocked?: boolean
@@ -11,18 +13,51 @@ interface Props {
   onToggle: (taskId: string, subtaskId?: string) => void
   onDelete: (taskId: string, subtaskId?: string) => void
   onPush: (taskId: string, subtaskId?: string) => void
+  onCopy: (text: string, subtasks: Task[]) => void
+  onExportPrompt: (text: string, subtasks: Task[]) => void
   onTextChange: (taskId: string, text: string, subtaskId?: string) => void
   onAddSubtask: (taskId: string, text: string) => void
   onAIBreakdown: (taskId: string) => void
   onFocusTask: (taskId: string, text: string) => void
   onGoToday: () => void
+  onRetryLoad: () => void
 }
 
 export function TaskList({
-  tasks, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
-  onToggle, onDelete, onPush, onTextChange,
-  onAddSubtask, onAIBreakdown, onFocusTask, onGoToday,
+  tasks, loading, loadError, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
+  onToggle, onDelete, onPush, onCopy, onExportPrompt, onTextChange,
+  onAddSubtask, onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
+  if (loading && tasks.length === 0) {
+    return (
+      <div className="task-list empty" aria-live="polite">
+        <div className="task-empty-state">
+          <span className="task-loading-mark" aria-hidden="true" />
+          <strong>Loading your tasks…</strong>
+          <span>Waiting for the task archive to become available.</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (loadError && tasks.length === 0) {
+    const cloudOnly = loadError === 'cloud-only'
+    return (
+      <div className="task-list empty" role="alert">
+        <div className="task-empty-state task-load-error">
+          <span className="task-empty-mark" aria-hidden="true">↓</span>
+          <strong>{cloudOnly ? 'Tasks are waiting in Dropbox' : 'Tasks could not be loaded'}</strong>
+          <span>
+            {cloudOnly
+              ? 'Make index.md available offline in Finder, then try again.'
+              : 'Check the task folder and try again.'}
+          </span>
+          <button className="task-empty-today" onClick={onRetryLoad}>Retry</button>
+        </div>
+      </div>
+    )
+  }
+
   if (tasks.length === 0) {
     return (
       <div className="task-list empty">

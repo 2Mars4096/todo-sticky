@@ -4,9 +4,15 @@ interface Props {
   onAdd: (text: string) => void
   prominent?: boolean
   autoFocus?: boolean
+  disabled?: boolean
 }
 
-export function AddTask({ onAdd, prominent = false, autoFocus = false }: Props) {
+export function AddTask({
+  onAdd,
+  prominent = false,
+  autoFocus = false,
+  disabled = false,
+}: Props) {
   const [text, setText] = useState('')
 
   const handleSubmit = () => {
@@ -32,9 +38,10 @@ export function AddTask({ onAdd, prominent = false, autoFocus = false }: Props) 
           placeholder="What needs doing?"
           value={text}
           onChange={e => setText(e.target.value)}
-          autoFocus={autoFocus}
+          disabled={disabled}
+          autoFocus={autoFocus && !disabled}
         />
-        <button type="submit" disabled={!text.trim()} aria-label="Add task">
+        <button type="submit" disabled={disabled || !text.trim()} aria-label="Add task">
           Add
         </button>
       </div>
