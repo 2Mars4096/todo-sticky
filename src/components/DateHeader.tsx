@@ -57,15 +57,15 @@ export function DateHeader({
         <div className="window-drag-pill" />
       </div>
       <div className="date-nav">
-        <button onClick={onPrev} title="Previous day" aria-label="Previous day">‹</button>
-        <div style={{ position: 'relative' }} ref={calRef}>
+        <button className="date-step" onClick={onPrev} title="Previous day" aria-label="Previous day">‹</button>
+        <div className="date-title-slot" ref={calRef}>
           <button
             className="date-title"
             onClick={onToggleCalendar}
             aria-expanded={calendarOpen}
             aria-label={`${displayDate}. Open calendar`}
           >
-            {displayDate}
+            <span className="date-title-label">{displayDate}</span>
             <span className="cal-chevron">{calendarOpen ? '▴' : '▾'}</span>
           </button>
           {calendarOpen && (
@@ -74,7 +74,7 @@ export function DateHeader({
             </div>
           )}
         </div>
-        <button onClick={onNext} title="Next day" aria-label="Next day">›</button>
+        <button className="date-step" onClick={onNext} title="Next day" aria-label="Next day">›</button>
       </div>
       <div className="header-row">
         {isCurrentDay ? (

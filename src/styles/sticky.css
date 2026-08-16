@@ -2970,10 +2970,13 @@ select:focus-visible {
 }
 
 .date-nav {
-  display: flex;
+  width: 100%;
+  max-width: 330px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 28px minmax(11ch, 1fr) 28px;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  column-gap: 4px;
 }
 
 .date-nav button {
@@ -2992,22 +2995,51 @@ select:focus-visible {
   color: var(--text-primary);
 }
 
+.date-nav .date-step {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+}
+
 .date-title {
+  width: 100%;
+  min-width: 0;
+  min-height: 28px;
   font-size: 14px;
   font-weight: 650;
   color: var(--text-primary);
   cursor: pointer;
-  padding: 2px 8px;
+  padding: 2px 4px;
   border-radius: 4px;
   transition: background 0.15s;
   position: relative;
   background: none;
   border: none;
   font-family: inherit;
-  display: flex;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 10px;
   align-items: center;
-  gap: 4px;
+  column-gap: 3px;
   white-space: nowrap;
+}
+
+.date-title::before {
+  content: '';
+}
+
+.date-title-slot {
+  position: relative;
+  min-width: 0;
+}
+
+.date-title-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 .date-title:hover {
