@@ -17,6 +17,23 @@ export interface AggregatedTask {
   otherSubtasks: DatedTask[]
 }
 
+export interface ExtractedTaskDate {
+  date: string
+  tasks: Task[]
+  filePath: string
+  weekStart: string
+  revision: string
+}
+
+export interface TaskMutationResult {
+  ok: boolean
+  date: string
+  task: Task
+  filePath: string
+  weekStart: string
+  revision: string
+}
+
 export type ViewMode = 'all' | 'today'
 export type GoalCategory = 'targets' | 'recurring'
 

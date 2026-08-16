@@ -1,8 +1,41 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
-import type { AggregatedTask, Task, AppSettings, StarFocusState } from './types'
+import type {
+  AggregatedTask,
+  Task,
+  AppSettings,
+  StarFocusState,
+  ExtractedTaskDate,
+  TaskMutationResult,
+} from './types'
 
 export const api = {
+  extractTaskApi: (request: { date?: string; fromDate?: string; toDate?: string; all?: boolean }) =>
+    invoke<{ dates: ExtractedTaskDate[] }>('task_api_extract', { request }),
+
+  createTaskApi: (request: {
+    date: string
+    text: string
+    status?: Task['status']
+    subtasks?: { text: string; status?: Task['status'] }[]
+    parentId?: string
+    expectedRevision?: string
+  }) => invoke<TaskMutationResult>('task_api_create', { request }),
+
+  updateTaskApi: (request: {
+    date: string
+    id: string
+    text?: string
+    status?: Task['status']
+    expectedRevision?: string
+  }) => invoke<TaskMutationResult>('task_api_update', { request }),
+
+  deleteTaskApi: (request: {
+    date: string
+    id: string
+    expectedRevision?: string
+  }) => invoke<TaskMutationResult>('task_api_delete', { request }),
+
   getTasks: (dateStr: string) =>
     invoke<{ tasks: AggregatedTask[]; filePath?: string; weekStart?: string }>('get_tasks', { dateStr }),
 
