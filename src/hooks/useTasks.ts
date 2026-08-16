@@ -136,6 +136,21 @@ export function useTasks(dateStr: string) {
     })
   }, [persist])
 
+  const addTaskBundle = useCallback((text: string, subtaskTexts: string[]) => {
+    const task: AggregatedTask = {
+      id: newId(),
+      text,
+      status: 'todo',
+      todaySubtasks: subtaskTexts.map(subtaskText => buildTaskSubtask(subtaskText)),
+      otherSubtasks: [],
+    }
+    setTasks(prev => {
+      const next = [...prev, task]
+      persist(next)
+      return next
+    })
+  }, [persist])
+
   const addDebugTask = useCallback(() => {
     const task = buildDebugTask(nextDebugLabel('Debug task'), 'todo', [
       { text: 'Toggle status once', status: 'done' },

@@ -3475,6 +3475,22 @@ select:focus-visible {
   color: var(--text-secondary);
 }
 
+.task-actions button.transfer-link {
+  padding: 2px 5px;
+  font-size: 9px;
+  font-weight: 650;
+  color: var(--text-secondary);
+}
+
+.task-actions button.transfer-link:hover {
+  color: var(--accent-hover);
+  background: rgba(196, 164, 74, 0.12);
+}
+
+.task-actions button.prompt-link {
+  color: var(--accent-hover);
+}
+
 .task-actions button.subtask-link.active,
 .task-actions button.subtask-link:hover {
   color: var(--accent-hover);
@@ -3503,12 +3519,20 @@ select:focus-visible {
 
 .add-task label {
   display: block;
-  margin: 0 0 5px 2px;
+  margin: 0;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.add-task-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+  margin: 0 0 5px 2px;
 }
 
 .add-task-row {
@@ -3559,6 +3583,23 @@ select:focus-visible {
 .add-task button:disabled {
   opacity: 0.42;
   cursor: default;
+}
+
+.add-task .add-task-heading .paste-task {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 3px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.add-task .add-task-heading .paste-task:hover:not(:disabled) {
+  color: var(--accent-hover);
+  background: rgba(196, 164, 74, 0.12);
 }
 
 .add-task.prominent {
@@ -4297,7 +4338,7 @@ select:focus-visible {
   }
 }
 
-@media (max-width: 430px) {
+@media (max-width: 520px) {
   .sticky-header {
     padding-inline: 10px;
   }

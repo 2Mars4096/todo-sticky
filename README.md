@@ -46,7 +46,8 @@ After configuring more than one provider, use the compact provider selector besi
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Status cycle** — Toggle task status: todo → done → partial → todo
 - **Smart carry-forward** — Move unfinished past work directly to today; tasks on today or a future date move to their following day
-- **Date navigation** — Jump between days with prev/next arrows or the calendar; empty past/future dates offer a direct return to today
+- **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today
+- **Task handoff** — Copy any task or step as a Markdown checklist, paste copied structures back as unchecked work, or copy an execution-ready prompt for Codex and other agents
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires LLM API)
 - **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)

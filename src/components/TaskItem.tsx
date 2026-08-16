@@ -16,6 +16,8 @@ interface Props {
   onToggle: () => void
   onDelete: () => void
   onPush: () => void
+  onCopy?: (text: string, subtasks: Task[]) => void
+  onExportPrompt?: (text: string, subtasks: Task[]) => void
   onTextChange: (text: string) => void
   onFocusSelect?: () => void
   onAddSubtask?: (text: string) => void
@@ -32,6 +34,7 @@ export function TaskItem({
   id, text, status, isSubtask, isOtherDate, sourceDate, moveTargetLabel,
   isFocusSelected, isFocusLocked,
   viewMode, onToggle, onDelete, onPush, onTextChange,
+  onCopy, onExportPrompt,
   onFocusSelect,
   onAddSubtask, onAIBreakdown,
   todaySubtasks, otherSubtasks,
@@ -134,6 +137,28 @@ export function TaskItem({
           {!isSubtask && !isOtherDate && onAIBreakdown && (
             <button className="ai-btn" onClick={onAIBreakdown} title="Break into steps with AI" aria-label={`Break ${text} into steps with AI`}>✦</button>
           )}
+          {onCopy && (
+            <button
+              type="button"
+              className="transfer-link"
+              onClick={() => onCopy(text, isSubtask ? [] : todaySubtasks ?? [])}
+              title="Copy task and steps"
+              aria-label={`Copy ${text}`}
+            >
+              Copy
+            </button>
+          )}
+          {onExportPrompt && (
+            <button
+              type="button"
+              className="transfer-link prompt-link"
+              onClick={() => onExportPrompt(text, isSubtask ? [] : todaySubtasks ?? [])}
+              title="Copy an execution-ready agent prompt"
+              aria-label={`Copy agent prompt for ${text}`}
+            >
+              Prompt
+            </button>
+          )}
           {!isOtherDate && (
             <>
               <button className="delete" onClick={onDelete} title="Delete" aria-label={`Delete ${text}`}>✕</button>
@@ -162,6 +187,8 @@ export function TaskItem({
           onToggle={() => onToggleSubtask?.(sub.id)}
           onDelete={() => onDeleteSubtask?.(sub.id)}
           onPush={() => onPushSubtask?.(sub.id)}
+          onCopy={onCopy}
+          onExportPrompt={onExportPrompt}
           onTextChange={(t) => onSubtaskTextChange?.(sub.id, t)}
         />
       ))}
@@ -180,6 +207,8 @@ export function TaskItem({
           onToggle={() => {}}
           onDelete={() => {}}
           onPush={() => {}}
+          onCopy={onCopy}
+          onExportPrompt={onExportPrompt}
           onTextChange={() => {}}
         />
       ))}

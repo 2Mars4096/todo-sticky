@@ -13,13 +13,15 @@ import { useGoals } from './hooks/useGoals'
 import { STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS, useStarFocus } from './hooks/useStarFocus'
 import { useTasks } from './hooks/useTasks'
 import { api } from './api'
+import { copyText, pasteText } from './clipboard'
+import { formatAgentPrompt, formatTaskChecklist, parseTaskChecklist } from './taskTransfer'
 import {
   isProviderConfigured,
   PROVIDER_ORDER,
   PROVIDER_PRESETS,
   settingsForProvider,
 } from './llmProviders'
-import type { AppSettings, Provider, ViewMode } from './types'
+import type { AppSettings, Provider, Task, ViewMode } from './types'
 
 const READY_LAYOUT_MIGRATION_KEY = 'todo-sticky-ready-layout-v1'
 const COMPACT_LAYOUT_MAX_WIDTH = 760
@@ -289,6 +291,80 @@ export default function App() {
     }
   }, [tasks.carryForward, presentNotice])
 
+  const handleCopyTask = useCallback(async (text: string, subtasks: Task[]) => {
+    try {
+      await copyText(formatTaskChecklist({
+        text,
+        subtasks: subtasks.map(subtask => subtask.text),
+      }))
+      presentNotice({
+        kind: 'success',
+        title: 'Task copied',
+        message: subtasks.length
+          ? `Copied with ${subtasks.length} ${subtasks.length === 1 ? 'step' : 'steps'}.`
+          : 'Copied as a portable checklist item.',
+      })
+    } catch (error) {
+      console.error('Copy task failed:', error)
+      presentNotice({
+        kind: 'error',
+        title: 'Could not copy task',
+        message: 'Clipboard access was unavailable. Try again with the app active.',
+      })
+    }
+  }, [presentNotice])
+
+  const handleExportPrompt = useCallback(async (text: string, subtasks: Task[]) => {
+    try {
+      await copyText(formatAgentPrompt({
+        text,
+        subtasks: subtasks.map(subtask => subtask.text),
+      }))
+      presentNotice({
+        kind: 'success',
+        title: 'Agent prompt copied',
+        message: 'Paste it into Codex or another execution agent.',
+      })
+    } catch (error) {
+      console.error('Copy agent prompt failed:', error)
+      presentNotice({
+        kind: 'error',
+        title: 'Could not copy prompt',
+        message: 'Clipboard access was unavailable. Try again with the app active.',
+      })
+    }
+  }, [presentNotice])
+
+  const handlePasteTask = useCallback(async () => {
+    try {
+      const parsed = parseTaskChecklist(await pasteText())
+      if (!parsed) {
+        presentNotice({
+          kind: 'error',
+          title: 'Nothing to paste',
+          message: 'Copy a task or plain-text checklist, then try again.',
+        })
+        return
+      }
+
+      tasks.addTaskBundle(parsed.text, parsed.subtasks)
+      presentNotice({
+        kind: 'success',
+        title: 'Task pasted',
+        message: parsed.subtasks.length
+          ? `Added with ${parsed.subtasks.length} ${parsed.subtasks.length === 1 ? 'step' : 'steps'}.`
+          : 'Added as a new unchecked task.',
+      })
+    } catch (error) {
+      console.error('Paste task failed:', error)
+      presentNotice({
+        kind: 'error',
+        title: 'Could not paste task',
+        message: 'Clipboard access was unavailable. Try again with the app active.',
+      })
+    }
+  }, [tasks.addTaskBundle, presentNotice])
+
   const handleToggleGoalsSidebar = useCallback(() => {
     const willExpand = goals.sidebarCollapsed
 
@@ -362,6 +438,7 @@ export default function App() {
 
         <AddTask
           onAdd={tasks.addTask}
+          onPaste={handlePasteTask}
           prominent={!tasks.loading && !tasks.tasks.length}
           autoFocus={!showSettings}
           disabled={tasks.loading || Boolean(tasks.loadError)}
@@ -386,11 +463,14 @@ export default function App() {
           onToggle={tasks.toggleStatus}
           onDelete={tasks.deleteTask}
           onPush={handleCarryForward}
+          onCopy={handleCopyTask}
+          onExportPrompt={handleExportPrompt}
           onTextChange={tasks.updateTaskText}
           onAddSubtask={tasks.addSubtask}
           onAIBreakdown={handleAIBreakdown}
           onFocusTask={handleFocusTask}
           onGoToday={calendar.goToday}
+          onRetryLoad={tasks.load}
         />
 
         {isDevMode && showDevTools && (

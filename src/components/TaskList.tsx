@@ -96,6 +96,8 @@ export function TaskList({
           onToggle={() => onToggle(task.id)}
           onDelete={() => onDelete(task.id)}
           onPush={() => onPush(task.id)}
+          onCopy={onCopy}
+          onExportPrompt={onExportPrompt}
           onTextChange={(t) => onTextChange(task.id, t)}
           onFocusSelect={() => onFocusTask(task.id, task.text)}
           onAddSubtask={(t) => onAddSubtask(task.id, t)}
