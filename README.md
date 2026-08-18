@@ -41,7 +41,7 @@ After configuring more than one provider, use the compact provider selector besi
 
 ## Features
 
-- **Tasks & subtasks** — Add tasks, break them into subtasks manually or with AI
+- **Tasks & subtasks** — Use distinct add and branching controls for manual steps or AI-generated breakdowns; hover an icon to see its action label
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Status cycle** — Toggle task status: todo → done → partial → todo

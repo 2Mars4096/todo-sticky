@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-17
+
+- [frontend] Replace the similar step controls with distinct icon-only actions: a plus adds one manual step, while a branching hierarchy breaks a task into AI-generated steps; hover text and accessible names retain the full action labels.
+- [docs] Record the completed task-step action clarity follow-up in plan `4-11` and the user-facing feature summary.
+
 ## 2026-08-16
 
 - [native] Add a shared task API for date/range extraction plus nested task creation, editing, and deletion, with persistent Markdown-backed IDs and optional stale-write revision checks.

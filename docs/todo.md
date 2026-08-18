@@ -84,6 +84,7 @@
   - [x] [4-8-stable-date-header-layout](plans/4-8-stable-date-header-layout.md) - Keep date navigation arrows fixed and the date label truly centered.
   - [ ] [4-9-data-history-recovery-and-merge](plans/4-9-data-history-recovery-and-merge.md) - Recover prior task and app history into the configured local knowledge-base store.
   - [x] [4-10-agent-task-api](plans/4-10-agent-task-api.md) - Expose task extraction and safe CRUD as a JSON API for reusable agent skills.
+  - [x] [4-11-task-step-action-clarity](plans/4-11-task-step-action-clarity.md) - Distinguish manual step entry from AI task breakdown in every task row.
 
 ## Backlog
 
