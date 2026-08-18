@@ -2,6 +2,25 @@ import { useState, useRef, useEffect } from 'react'
 import { format } from 'date-fns'
 import type { Task, DatedTask, ViewMode } from '../types'
 
+function AddStepIcon() {
+  return (
+    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M8 3v10M3 8h10" />
+    </svg>
+  )
+}
+
+function BreakdownIcon() {
+  return (
+    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="3" cy="8" r="1.5" />
+      <circle cx="13" cy="4" r="1.5" />
+      <circle cx="13" cy="12" r="1.5" />
+      <path d="M4.5 8h3M7.5 4v8M7.5 4h4M7.5 12h4" />
+    </svg>
+  )
+}
+
 interface Props {
   id: string
   text: string
@@ -131,11 +150,18 @@ export function TaskItem({
               title="Add a step"
               aria-label={`Add a step to ${text}`}
             >
-              + Step
+              <AddStepIcon />
             </button>
           )}
           {!isSubtask && !isOtherDate && onAIBreakdown && (
-            <button className="ai-btn" onClick={onAIBreakdown} title="Break into steps with AI" aria-label={`Break ${text} into steps with AI`}>✦</button>
+            <button
+              className="ai-btn"
+              onClick={onAIBreakdown}
+              title="Break task into steps with AI"
+              aria-label={`Break ${text} into steps with AI`}
+            >
+              <BreakdownIcon />
+            </button>
           )}
           {onCopy && (
             <button
