@@ -23,6 +23,7 @@
 
 ## Notes
 
+- The visible Copy/Paste controls from this slice were later replaced by native focused-field shortcuts in [4-13-native-copy-paste-shortcuts](4-13-native-copy-paste-shortcuts.md); prompt export remains active.
 - The row already wraps its action strip at compact widths, so named actions can remain discoverable without squeezing task text.
 - Compact Playwright QA at `460x640` showed the old `430px` action-wrap threshold ignored the width consumed by collapsed rails; the structural breakpoint now wraps task actions at `520px`.
 - Verification: checklist round-trip and prompt-template smoke checks, `npm run build:frontend`, 13 passing native tests, compact Playwright task/subtask inspection, release app build, signature verification, exact installed-bundle comparison, and an unchanged task-archive checksum after relaunch.

@@ -70,6 +70,7 @@
 - [x] [3-kimi-moonshot-default-provider](plans/3-kimi-moonshot-default-provider.md) - Make Moonshot Kimi the default AI provider and use Kimi's recommended temperature.
   - [x] [3-1-openrouter-provider-adapter](plans/3-1-openrouter-provider-adapter.md) - Add first-class OpenRouter configuration and routed-model support.
   - [x] [3-2-quick-provider-switching](plans/3-2-quick-provider-switching.md) - Switch between saved provider profiles from the main action bar.
+  - [x] [3-3-codex-background-provider](plans/3-3-codex-background-provider.md) - Use the locally authenticated Codex CLI as a keyless background provider.
 
 ## Phase 5 - Ready-To-Use Frontend
 
@@ -85,6 +86,8 @@
   - [ ] [4-9-data-history-recovery-and-merge](plans/4-9-data-history-recovery-and-merge.md) - Recover prior task and app history into the configured local knowledge-base store.
   - [x] [4-10-agent-task-api](plans/4-10-agent-task-api.md) - Expose task extraction and safe CRUD as a JSON API for reusable agent skills.
   - [x] [4-11-task-step-action-clarity](plans/4-11-task-step-action-clarity.md) - Distinguish manual step entry from AI task breakdown in every task row.
+  - [x] [4-12-task-aware-album-recommendations](plans/4-12-task-aware-album-recommendations.md) - Generate an ephemeral work soundtrack from the current task list without expanding the sticky-note layout.
+  - [x] [4-13-native-copy-paste-shortcuts](plans/4-13-native-copy-paste-shortcuts.md) - Replace visible clipboard controls with standard Command-C and Command-V behavior.
 
 ## Backlog
 

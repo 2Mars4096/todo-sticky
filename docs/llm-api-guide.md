@@ -148,6 +148,22 @@ The frontend bridge in `src/api.ts` exposes the same operations:
 
 Tauri requests use camelCase fields: `fromDate`, `toDate`, `parentId`, and `expectedRevision`.
 
+### In-App LLM Commands
+
+These commands belong to the interactive desktop app and are not part of the deterministic `sticky-todo-api` CLI:
+
+- `llmBreakdown({ taskText, existingSubtasks })` → native `llm_breakdown`
+- `llmSchedule({ tasks, machines })` → native `llm_schedule`
+- `llmRecommendAlbums({ tasks })` → native `llm_recommend_albums`
+
+Album requests contain only the visible date's task text, status, and current-day steps. The response uses `summary` plus an `albums` array whose entries contain `title`, `artist`, optional `year`, `fit`, and `bestFor`. Results remain in frontend memory and are not written to the Markdown archive or app-state files.
+
+### Codex Background Provider
+
+The `codex` provider routes the same in-app LLM commands through `codex exec` instead of an HTTP API. It uses the existing local `codex login` authentication, so `apiKey` remains empty; `apiBase` stores `codex` or an explicit executable path, while `model` is optional.
+
+Each request is non-interactive and ephemeral. The native adapter creates an empty temporary working directory, disables approvals, applies the read-only sandbox, ignores user configuration and execution rules, closes stdin, omits web search, enforces a three-minute timeout, captures only the final stdout response, and removes the temporary directory. `Test Connection` calls `codex login status` without spending a model request.
+
 ## Skill Wrapper Guidance
 
 A reusable skill only needs a concise `SKILL.md` plus a deterministic script or command template that points to this repository or the release binary. Instruct the skill to:

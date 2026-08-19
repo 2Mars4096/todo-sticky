@@ -18,15 +18,16 @@
 
 ## Ready Shell Modules
 
-- [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, and compact action-bar AI provider switching.
+- [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, compact action-bar AI provider switching, and task-context handoff for album recommendations.
+- [ ] `src/components/AlbumRecommendations.tsx`: presents the configured AI provider's four-album work soundtrack in a dismissible paper-toned sheet above the action bar, with loading, regenerate, Escape, and compact-layout states.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
-- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, paste task hierarchies from the clipboard, expose per-item copy/prompt handoff actions, provide an instructional empty state for today, and route empty past/future dates directly back to today.
-- [ ] `src/taskTransfer.ts` and `src/clipboard.ts`: format and parse portable task checklists, generate local execution-agent prompts, and bridge plain-text clipboard reads/writes through the official Tauri plugin.
+- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, expose per-item prompt handoff, provide an instructional empty state for today, and route empty past/future dates directly back to today without adding clipboard buttons.
+- [ ] `src/taskTransfer.ts` and `src/clipboard.ts`: generate local execution-agent prompts and write them through the official Tauri clipboard plugin; ordinary text copy/paste stays with the native focused-field behavior.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
-- [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between provider-specific profiles.
+- [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between API-backed profiles and the keyless local Codex profile.
 - [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and direct row actions reachable, including destination-aware carry-forward for tasks and subtasks; compact CSS wraps the action strip below task text.
-- [ ] `src-tauri/tauri.conf.json` and `src-tauri/capabilities/default.json`: define the `460x640` default, `340x440` minimum, and native resize-drag permission.
-- [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area and shows it from `RunEvent::Ready`, while later tray and shortcut toggles preserve user placement.
+- [ ] `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and `src-tauri/capabilities/default.json`: define the `todo-sticky` default desktop target and bundle name, the `460x640` default, the `340x440` minimum, and native resize-drag permission so the sibling task API CLI cannot become the bundled executable.
+- [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area, shows it from `RunEvent::Ready`, preserves later user placement, and installs native macOS Copy/Paste menu responders for focused editable text.
 
 ## Star Focus Modules
 
@@ -39,8 +40,8 @@
 - [ ] `src/components/StarFocusOrbitalMap3D.tsx`: true WebGL/Three.js orbital scene for Tracking Station with real meshes, camera orbit controls, layered procedural surface/bump/roughness materials, shader-driven front atmosphere haze, Earth/Venus cloud-shadow coupling beneath shader-driven cloud shells, alpha-aware solar shadow interaction for cloud shells and rings, color-separated atmosphere scattering, shadow-enabled lighting, richer sun flare and solar scatter structure, inner-body phase rims, Earth dark-side lights, Earth ocean glint, Earth-Moon eclipse/transit cues, Moon Earthshine, Saturn ring-shadow detail, Saturn ring scattering, textured rings, layered starfield depth, nebula veils and dust-haze background depth, archive markers, and a live mission craft path.
 - [ ] `src/components/TaskList.tsx` and `src/components/TaskItem.tsx`: explicit task-to-Mission-Control handoff plus active-session selection locking.
 - [ ] `src/components/DevToolsPanel.tsx`: development-only debug tray for seeding tasks, reloading task state, clearing the current day, and changing Star Focus mission speed during local testing.
-- [ ] `src/api.ts`: Tauri bridge for Star Focus load/save commands alongside the existing task and settings calls.
-- [ ] `src/components/SettingsPanel.tsx` and `src-tauri/src/llm.rs`: AI provider settings and native LLM calls, with Moonshot Kimi as the default, OpenRouter as a first-class OpenAI-compatible provider, OpenRouter attribution headers, editable routed-model slugs, and direct or routed Kimi requests using temperature `1.0`.
+- [ ] `src/api.ts`: Tauri bridge for Star Focus load/save, task operations, and structured LLM requests including task-aware album recommendations.
+- [ ] `src/components/SettingsPanel.tsx` and `src-tauri/src/llm.rs`: AI provider settings and native LLM calls for task breakdown, scheduling, and task-aware album recommendations. API adapters include Moonshot Kimi, OpenRouter, OpenAI, Anthropic, Gemini, and custom OpenAI-compatible endpoints; the Codex adapter instead launches the locally authenticated CLI with provider-specific executable/model controls.
 - [ ] `src-tauri/src/config.rs` and `src-tauri/src/commands.rs`: native app-data persistence for Star Focus state plus general settings, including archive-cap sanitization, backward-compatible per-provider AI profiles, and macOS account-home resolution that keeps task/config roots independent of launcher-provided environment overrides.
 - [ ] `src-tauri/src/task_api.rs` and `src-tauri/src/bin/sticky-todo-api.rs`: shared Markdown-backed task extraction and CRUD, stable task IDs, optimistic revision checks, Tauri command reuse, and the cross-session JSON CLI.
 
@@ -74,7 +75,7 @@
 - On macOS, reject `SF_DATALESS` task archives before every content read or read-before-write operation; surface cloud availability separately from an empty task list and require an explicit retry after Finder/Dropbox materializes the file.
 - Keep essential task actions keyboard reachable and visible at low emphasis; wrap them below task text at the minimum width rather than hiding them.
 - Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
-- Copy tasks as portable Markdown checklists, include only the selected task's current-day steps, and reset pasted items to unchecked status.
+- Keep general copy/paste on the platform-standard focused-field path with no dedicated task-row or composer controls.
 - Keep agent-prompt export local and deterministic; copying a prompt must not invoke the configured AI provider.
 - Keep the first archive-retention control pass inside Tracking Station with a small preset range instead of adding another global settings surface.
 - Keep Star Focus map upgrades grounded in mission telemetry and accumulated-orbit feedback instead of drifting into descriptive filler or a separate vehicle-construction mechanic.
@@ -98,6 +99,10 @@
 - Keep Moonshot Kimi as the default AI provider preset unless product direction changes; existing saved settings remain user-controlled and should not be silently overwritten by defaults.
 - Route OpenRouter through the existing OpenAI-compatible adapter at `https://openrouter.ai/api/v1`; keep model slugs user-editable and add provider-specific behavior by provider or canonical base URL so legacy custom settings continue to work.
 - Keep each AI provider's API base, key, and model in its own local profile; quick switching may activate configured profiles directly, while unconfigured providers must open Settings before activation.
+- Treat Codex as a local execution provider, not an OpenAI-compatible endpoint: reuse `codex login`, never request or copy its credential, and keep the executable path in the existing provider profile's endpoint slot for backward-compatible settings persistence.
+- Isolate every Codex generation in a new empty temporary directory with an ephemeral session, ignored user configuration and execution rules, a read-only sandbox, approval policy `never`, closed stdin, no web-search flag, and a hard timeout; delete the temporary directory after completion.
+- Keep album recommendations ephemeral and task-adjacent: send only the visible date's task text, status, and current-day steps, then show the result above the action bar without creating another persisted workspace.
+- Keep Cargo `default-run` and Tauri `mainBinaryName` pinned to `todo-sticky`; this package also produces `sticky-todo-api`, and the desktop bundler must never infer or rename the CLI as the application executable.
 
 ## Star Focus V1 Integration
 
@@ -147,8 +152,8 @@
 - The latest Solar Route layout pass reframes Tracking Station as Focus Mode, advances completed sessions through an Earth/Moon/Venus/Mars/Saturn loop, and puts task/timer controls ahead of the map on compact windows.
 - Local development now has a dev-only debug tray for seeding tasks, clearing the current day, reloading task state, and slowing/fast-forwarding the Star Focus mission track.
 - The latest data-home recovery pass keeps macOS task and app-state paths anchored to the signed-in account even when an installer or launcher overrides `HOME`.
-- The task-handoff pass adds native clipboard copy/paste and local execution-prompt export while keeping the compact task list authoritative.
-- There is no newer active implementation slice after [4-5-task-copy-paste-and-agent-handoff](plans/4-5-task-copy-paste-and-agent-handoff.md); remaining questions are parked in backlog.
+- Task handoff keeps deterministic local execution-prompt export, while ordinary clipboard use follows native Command-C and Command-V behavior without visible controls.
+- The latest ready-shell utility adds task-aware album recommendations through the existing configured AI provider while keeping results ephemeral and visually attached to the action bar.
 
 ## Quality Checks
 

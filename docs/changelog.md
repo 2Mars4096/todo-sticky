@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-08-19
+
+- [frontend] Remove the visible task Copy and composer Paste controls so ordinary clipboard work does not add more chrome to the compact task layout.
+- [native] Add macOS Edit-menu Copy and Paste responders for standard Command-C and Command-V behavior, and drop general clipboard-read permission while retaining prompt export.
+- [release] Rebuild, signature-check, reinstall, and relaunch version 2.0.4; verify enabled native Copy/Paste commands and retain the previous app as a temporary rollback bundle.
+- [provider] Add Codex as a first-class background provider that reuses the local ChatGPT-authenticated CLI instead of requiring an OpenAI API key.
+- [native] Run Codex requests non-interactively in a fresh temporary directory with ephemeral sessions, read-only sandboxing, no approvals, ignored user/project execution rules, empty stdin, and a three-minute timeout.
+- [frontend] Give Codex a provider-specific settings state with executable-path auto-detection, an optional model override, no API-key field, login-status testing, and normal quick-provider switching.
+- [tests] Verify the installed Codex login through a live isolated probe, add executable-resolution and prompt-boundary coverage, and pass all 20 native tests plus the frontend production build.
+- [release] Rebuild and reinstall version 2.0.4, activate Codex with its default model, preserve the prior Moonshot profile and rollback copies, and confirm the installed GUI is running with the existing ChatGPT login.
+- [frontend] Add an `Albums` action beside day planning that turns the visible date's task text, status, and current-day steps into a four-album work soundtrack through the configured AI provider.
+- [frontend] Present album picks in a compact paper-toned sheet with task-mode cues, loading skeletons, regenerate, close, Escape dismissal, and responsive wrapping at the 460px baseline.
+- [native] Add the structured `llm_recommend_albums` Tauri command while keeping recommendation results ephemeral and out of the Markdown and app-state stores.
+- [build] Pin Cargo's default run target and Tauri's main bundle name to `todo-sticky` so the sibling `sticky-todo-api` CLI cannot be packaged or renamed as the macOS application executable.
+- [release] Build, ad-hoc seal, checksum-verify, reinstall, and relaunch the corrected macOS app bundle from `/Applications/Sticky Todo.app`, retaining the previous bundle in a temporary rollback backup.
+- [docs] Complete plan `4-12-task-aware-album-recommendations` and document the new UI, bridge contract, privacy boundary, and user-facing feature.
+
 ## 2026-08-17
 
 - [frontend] Replace the similar step controls with distinct icon-only actions: a plus adds one manual step, while a branching hierarchy breaks a task into AI-generated steps; hover text and accessible names retain the full action labels.

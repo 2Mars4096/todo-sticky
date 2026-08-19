@@ -16,10 +16,10 @@ On first launch the app opens an optional setup panel. Choose **Start without AI
 
 | Field | What to enter |
 |-------|---------------|
-| **Provider** | Default is **Moonshot (Kimi)**. You can also choose **OpenRouter**, **OpenAI**, **Anthropic (Claude)**, **Google Gemini**, or **Custom** (any OpenAI-compatible endpoint). Base URL and model suggestions auto-fill. |
-| **API Base URL** | Pre-filled for standard providers, including `https://openrouter.ai/api/v1`. Edit it if you use a proxy, Azure, or another compatible gateway. |
-| **Model** | Pick from suggestions or type any model name. OpenRouter accepts any catalog slug such as `moonshotai/kimi-k3`; the direct Moonshot default remains `kimi-k2.6`. |
-| **API Key** | Paste your key. Stored locally — never sent anywhere except your chosen API. |
+| **Provider** | Default is **Moonshot (Kimi)**. Choose **Codex (ChatGPT login)** to use the locally authenticated Codex CLI without an API key, or select OpenRouter, OpenAI, Anthropic, Gemini, or a custom OpenAI-compatible endpoint. |
+| **API Base URL / Codex Executable** | API providers receive their standard endpoint. Codex uses `codex` with common install paths auto-detected; enter a full executable path if needed. |
+| **Model** | Pick an API model, or leave the Codex model blank to use the CLI default. OpenRouter accepts catalog slugs such as `moonshotai/kimi-k3`; the direct Moonshot default remains `kimi-k2.6`. |
+| **API Key** | Required only for API providers. Codex reuses the existing local `codex login` session and does not store another credential in Sticky Todo. |
 | **KB Path** | Where task files live (`content/to-do/` inside this folder). Default: `~/Documents/Sticky Todo`. |
 | **Machines** | *(Optional)* Add servers/workstations for AI scheduling. |
 
@@ -47,11 +47,13 @@ After configuring more than one provider, use the compact provider selector besi
 - **Status cycle** — Toggle task status: todo → done → partial → todo
 - **Smart carry-forward** — Move unfinished past work directly to today; tasks on today or a future date move to their following day
 - **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today
-- **Task handoff** — Copy any task or step as a Markdown checklist, paste copied structures back as unchecked work, or copy an execution-ready prompt for Codex and other agents
+- **Native clipboard** — Use standard Command-C and Command-V in editable task text with no dedicated clipboard buttons; the Prompt action still copies an execution-ready brief for Codex and other agents
 - **Agent task API** — Extract, create, edit, and delete Markdown-backed tasks from reusable skills through a local JSON CLI, with revision checks for safe writes
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
-- **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires LLM API)
-- **AI schedule** — Generate a time-blocked schedule for the day (requires LLM API)
+- **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires a configured AI provider)
+- **AI schedule** — Generate a time-blocked schedule for the day (requires a configured AI provider)
+- **Codex background provider** — Run breakdowns, schedules, and album picks through the locally authenticated Codex CLI in an ephemeral read-only workspace, without adding an OpenAI API key
+- **Task-aware albums** — Turn the current task list into a four-album work soundtrack, with a concise fit and best-use cue for each pick (requires a configured AI provider)
 - **Star Focus Mission Control + Focus Mode** — Arm a task, choose a focus burn, and travel one leg at a time through an Earth → Moon → Venus → Mars → Saturn route. The compact layout puts the task and timer first; wider windows pair those controls with the interactive 3D Tracking Station. Completed sessions become a native-local travel log with `6` / `12` / `24` retention presets, while the right rail stays lightweight and always shows the next destination.
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in the menu bar with a tray icon

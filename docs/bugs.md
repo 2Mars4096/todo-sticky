@@ -10,6 +10,8 @@
 
 ## Failed Approaches
 
+- 2026-08-19: Passing `--ask-for-approval` after `codex exec` fails because that approval flag belongs to the global CLI argument set. Place `--ask-for-approval never` and `--sandbox read-only` before the `exec` subcommand; keep exec-specific isolation flags after it.
+- 2026-08-19: An app-only Tauri build inferred the sibling `sticky-todo-api` CLI as its source executable. Setting only `mainBinaryName` renamed that CLI to `todo-sticky`, so metadata and signature checks alone were insufficient; direct launch exposed the CLI usage text and the previous app was restored. Keep Cargo `default-run` and Tauri `mainBinaryName` set to `todo-sticky`, then verify bundle metadata, executable size/hash, and direct GUI launch before replacement.
 - 2026-08-10: macOS `screencapture` could enumerate the Sticky Todo window but could not capture either its window ID or exact rectangle in the current automation session. Use signed-bundle, process-environment, stable-store timestamp, and parser evidence when Screen Recording is unavailable.
 - 2026-08-10: The Computer Use `Sky` native pipe failed to start while inspecting the installed app, including after the required app-identifier fallback. Use storage, process, and parser evidence for diagnosis until the local bridge is available.
 - 2026-08-16: The Computer Use `Sky` native pipe still fails to start in the current environment, and targeted `screencapture` still cannot create an image from the enumerated Sticky Todo window. Use the local boot-stage diagnostic plus CoreGraphics window/process evidence until those inspection paths recover.
