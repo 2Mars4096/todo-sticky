@@ -53,6 +53,12 @@ export default function App() {
   const restoredOverlaySessionRef = useRef<string | null>(null)
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
+  const albumTaskContext = useMemo(() => tasks.tasks.map(task => ({
+    text: task.text,
+    status: task.status,
+    steps: task.todaySubtasks.map(step => ({ text: step.text, status: step.status })),
+  })), [tasks.tasks])
+  const albumTaskKey = useMemo(() => JSON.stringify(albumTaskContext), [albumTaskContext])
 
   const presentNotice = useCallback((notice: AppNotice) => {
     setAppNotice(notice)

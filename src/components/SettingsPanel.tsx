@@ -4,6 +4,7 @@ import { api } from '../api'
 import {
   PROVIDER_ORDER,
   PROVIDER_PRESETS,
+  isProviderConfigured,
   settingsForProvider,
   syncActiveProviderProfile,
 } from '../llmProviders'
@@ -106,6 +107,7 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
   }
 
   const preset = PROVIDER_PRESETS[settings.provider] || PROVIDER_PRESETS.custom
+  const isCodex = settings.provider === 'codex'
   const isOpenRouter = settings.provider === 'openrouter'
     || settings.apiBase.toLowerCase().includes('openrouter.ai')
 
@@ -116,7 +118,7 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
         <h3>{firstRun ? 'Welcome to Sticky Todo' : 'Settings'}</h3>
         {firstRun && (
           <p className="settings-subtitle">
-            AI is optional. Start without a key, or connect a provider for task breakdown and day planning.
+            AI is optional. Use your Codex login, connect an API provider, or start without AI.
           </p>
         )}
 
@@ -137,18 +139,18 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
               ))}
             </select>
 
-            <label>API Base URL</label>
+            <label>{isCodex ? 'Codex Executable' : 'API Base URL'}</label>
             <input
               value={settings.apiBase}
               onChange={e => update({ apiBase: e.target.value })}
-              placeholder={preset.apiBase || 'https://api.example.com/v1'}
+              placeholder={isCodex ? 'codex or full executable path' : preset.apiBase || 'https://api.example.com/v1'}
             />
 
-            <label>Model</label>
+            <label>{isCodex ? 'Model (Optional)' : 'Model'}</label>
             <input
               value={settings.model}
               onChange={e => update({ model: e.target.value })}
-              placeholder={preset.model || 'model-name'}
+              placeholder={isCodex ? 'Use Codex default' : preset.model || 'model-name'}
               list="model-suggestions"
             />
             {preset.models.length > 0 && (
@@ -157,33 +159,39 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
               </datalist>
             )}
             <p className="hint">
-              {isOpenRouter
+              {isCodex
+                ? <>Uses the existing Codex CLI login in a read-only, ephemeral background run. Leave the model blank to use the Codex default.</>
+                : isOpenRouter
                 ? <>Use any OpenRouter model slug, such as <code>moonshotai/kimi-k3</code>. AI features only run after you add an API key.</>
                 : <>Default model is <code>{preset.model || 'custom'}</code>. AI features only run after you add an API key.</>}
             </p>
 
-            <label>API Key</label>
-            <div className="input-row">
-              <input
-                type={showKey ? 'text' : 'password'}
-                value={settings.apiKey}
-                onChange={e => update({ apiKey: e.target.value })}
-                placeholder={isOpenRouter ? 'sk-or-v1-...' : 'sk-...'}
-              />
-              <button
-                className="input-row-btn"
-                onClick={() => setShowKey(!showKey)}
-                title={showKey ? 'Hide key' : 'Show key'}
-                aria-label={showKey ? 'Hide API key' : 'Show API key'}
-              >
-                {showKey ? '◉' : '○'}
-              </button>
-            </div>
+            {!isCodex && (
+              <>
+                <label>API Key</label>
+                <div className="input-row">
+                  <input
+                    type={showKey ? 'text' : 'password'}
+                    value={settings.apiKey}
+                    onChange={e => update({ apiKey: e.target.value })}
+                    placeholder={isOpenRouter ? 'sk-or-v1-...' : 'sk-...'}
+                  />
+                  <button
+                    className="input-row-btn"
+                    onClick={() => setShowKey(!showKey)}
+                    title={showKey ? 'Hide key' : 'Show key'}
+                    aria-label={showKey ? 'Hide API key' : 'Show API key'}
+                  >
+                    {showKey ? '◉' : '○'}
+                  </button>
+                </div>
+              </>
+            )}
 
             <div className="test-row">
               <button
                 onClick={handleTest}
-                disabled={testing || !settings.apiKey || !settings.apiBase}
+                disabled={testing || !settings.apiBase || (!isCodex && !settings.apiKey)}
               >
                 {testing ? 'Testing…' : 'Test Connection'}
               </button>
@@ -266,7 +274,11 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
         <div className="btn-row">
           {!firstRun && <button onClick={onClose}>Cancel</button>}
           <button className="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : firstRun ? settings.apiKey ? 'Save & Start' : 'Start without AI' : 'Save'}
+            {saving
+              ? 'Saving…'
+              : firstRun
+                ? isProviderConfigured(settings, settings.provider) ? 'Save & Start' : 'Start without AI'
+                : 'Save'}
           </button>
         </div>
       </div>

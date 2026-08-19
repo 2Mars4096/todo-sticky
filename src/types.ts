@@ -37,7 +37,7 @@ export interface TaskMutationResult {
 export type ViewMode = 'all' | 'today'
 export type GoalCategory = 'targets' | 'recurring'
 
-export type Provider = 'moonshot' | 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom'
+export type Provider = 'codex' | 'moonshot' | 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom'
 
 export interface ProviderProfile {
   apiBase: string
