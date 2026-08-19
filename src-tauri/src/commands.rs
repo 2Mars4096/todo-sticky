@@ -194,6 +194,11 @@ pub async fn llm_schedule(tasks: Value, app: AppHandle) -> Result<Value, String>
 }
 
 #[tauri::command]
+pub async fn llm_recommend_albums(tasks: Value, app: AppHandle) -> Result<Value, String> {
+    llm::recommend_albums(&app, &tasks).await
+}
+
+#[tauri::command]
 pub fn get_settings(app: AppHandle) -> Result<AppSettings, String> {
     Ok(config::load_settings(&app))
 }

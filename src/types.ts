@@ -55,6 +55,19 @@ export interface AppSettings {
   machines: { name: string; type: string; specs?: string; capabilities?: string[] }[]
 }
 
+export interface AlbumRecommendation {
+  title: string
+  artist: string
+  year?: number
+  fit: string
+  bestFor: string
+}
+
+export interface AlbumRecommendationResult {
+  summary: string
+  albums: AlbumRecommendation[]
+}
+
 export interface GoalItem {
   id: string
   text: string

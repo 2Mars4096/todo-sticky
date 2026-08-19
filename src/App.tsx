@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { DateHeader } from './components/DateHeader'
 import { TaskList } from './components/TaskList'
 import { AddTask } from './components/AddTask'
+import { AlbumRecommendations } from './components/AlbumRecommendations'
 import { DevToolsPanel } from './components/DevToolsPanel'
 import { GoalsSidebar } from './components/GoalsSidebar'
 import { MissionControlSidebar } from './components/MissionControlSidebar'
@@ -13,15 +14,21 @@ import { useGoals } from './hooks/useGoals'
 import { STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS, useStarFocus } from './hooks/useStarFocus'
 import { useTasks } from './hooks/useTasks'
 import { api } from './api'
-import { copyText, pasteText } from './clipboard'
-import { formatAgentPrompt, formatTaskChecklist, parseTaskChecklist } from './taskTransfer'
+import { copyText } from './clipboard'
+import { formatAgentPrompt } from './taskTransfer'
 import {
   isProviderConfigured,
   PROVIDER_ORDER,
   PROVIDER_PRESETS,
   settingsForProvider,
 } from './llmProviders'
-import type { AppSettings, Provider, Task, ViewMode } from './types'
+import type {
+  AlbumRecommendationResult,
+  AppSettings,
+  Provider,
+  Task,
+  ViewMode,
+} from './types'
 
 const READY_LAYOUT_MIGRATION_KEY = 'todo-sticky-ready-layout-v1'
 const COMPACT_LAYOUT_MAX_WIDTH = 760
@@ -46,6 +53,9 @@ export default function App() {
   const [aiLoading, setAiLoading] = useState<string | null>(null)
   const [aiSettings, setAiSettings] = useState<AppSettings | null>(null)
   const [providerSwitching, setProviderSwitching] = useState(false)
+  const [showAlbumRecommendations, setShowAlbumRecommendations] = useState(false)
+  const [albumRecommendations, setAlbumRecommendations] = useState<AlbumRecommendationResult | null>(null)
+  const [albumRecommendationTaskKey, setAlbumRecommendationTaskKey] = useState<string | null>(null)
   const [appNotice, setAppNotice] = useState<AppNotice | null>(null)
   const [windowWidth, setWindowWidth] = useState(() => (
     typeof window === 'undefined' ? 1024 : window.innerWidth
@@ -93,7 +103,9 @@ export default function App() {
       presentNotice({
         kind: 'success',
         title: `AI: ${PROVIDER_PRESETS[provider].shortLabel}`,
-        message: `Using ${nextSettings.model}.`,
+        message: provider === 'codex'
+          ? 'Using your local Codex login.'
+          : `Using ${nextSettings.model}.`,
       })
     } catch (error) {
       console.error('Provider switch failed', error)
@@ -162,6 +174,30 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [showTrackingStation])
+
+  useEffect(() => {
+    if (!showAlbumRecommendations) return undefined
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowAlbumRecommendations(false)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showAlbumRecommendations])
+
+  useEffect(() => {
+    setShowAlbumRecommendations(false)
+    setAlbumRecommendations(null)
+    setAlbumRecommendationTaskKey(null)
+  }, [calendar.dateStr])
+
+  useEffect(() => {
+    if (!albumRecommendationTaskKey || albumRecommendationTaskKey === albumTaskKey) return
+    setShowAlbumRecommendations(false)
+    setAlbumRecommendations(null)
+    setAlbumRecommendationTaskKey(null)
+  }, [albumRecommendationTaskKey, albumTaskKey])
 
   useEffect(() => {
     if (!isCompactWindow || (goals.sidebarCollapsed && starFocus.sidebarCollapsed)) return undefined
@@ -266,6 +302,39 @@ export default function App() {
     }
   }, [tasks, presentNotice])
 
+  const handleAlbumRecommendations = useCallback(async () => {
+    if (!albumTaskContext.length) return
+
+    setShowAlbumRecommendations(true)
+    setAiLoading('albums')
+    try {
+      const result = await api.llmRecommendAlbums({
+        tasks: albumTaskContext,
+      })
+      const albums = Array.isArray(result.albums)
+        ? result.albums.filter(album => album?.title && album?.artist).slice(0, 4)
+        : []
+
+      if (!albums.length) throw new Error('The AI provider returned no album recommendations')
+
+      setAlbumRecommendations({
+        summary: typeof result.summary === 'string' ? result.summary : '',
+        albums,
+      })
+      setAlbumRecommendationTaskKey(albumTaskKey)
+    } catch (error) {
+      console.error('Album recommendations failed:', error)
+      setShowAlbumRecommendations(false)
+      presentNotice({
+        kind: 'error',
+        title: 'Could not find albums',
+        message: 'Check the AI provider in Settings, then try again.',
+      })
+    } finally {
+      setAiLoading(null)
+    }
+  }, [albumTaskContext, albumTaskKey, presentNotice])
+
   const handleFocusTask = useCallback((taskId: string, taskText: string) => {
     starFocus.selectTask(taskId, taskText)
     if (starFocus.sidebarCollapsed) {
@@ -296,29 +365,6 @@ export default function App() {
       })
     }
   }, [tasks.carryForward, presentNotice])
-
-  const handleCopyTask = useCallback(async (text: string, subtasks: Task[]) => {
-    try {
-      await copyText(formatTaskChecklist({
-        text,
-        subtasks: subtasks.map(subtask => subtask.text),
-      }))
-      presentNotice({
-        kind: 'success',
-        title: 'Task copied',
-        message: subtasks.length
-          ? `Copied with ${subtasks.length} ${subtasks.length === 1 ? 'step' : 'steps'}.`
-          : 'Copied as a portable checklist item.',
-      })
-    } catch (error) {
-      console.error('Copy task failed:', error)
-      presentNotice({
-        kind: 'error',
-        title: 'Could not copy task',
-        message: 'Clipboard access was unavailable. Try again with the app active.',
-      })
-    }
-  }, [presentNotice])
 
   const handleExportPrompt = useCallback(async (text: string, subtasks: Task[]) => {
     try {
@@ -444,7 +490,6 @@ export default function App() {
 
         <AddTask
           onAdd={tasks.addTask}
-          onPaste={handlePasteTask}
           prominent={!tasks.loading && !tasks.tasks.length}
           autoFocus={!showSettings}
           disabled={tasks.loading || Boolean(tasks.loadError)}
@@ -453,7 +498,13 @@ export default function App() {
         {aiLoading && (
           <div className="ai-loading">
             <div className="spinner" />
-            <span>{aiLoading === 'schedule' ? 'Generating schedule...' : 'Breaking down task...'}</span>
+            <span>
+              {aiLoading === 'schedule'
+                ? 'Generating schedule...'
+                : aiLoading === 'albums'
+                  ? 'Finding albums...'
+                  : 'Breaking down task...'}
+            </span>
           </div>
         )}
 
@@ -469,7 +520,6 @@ export default function App() {
           onToggle={tasks.toggleStatus}
           onDelete={tasks.deleteTask}
           onPush={handleCarryForward}
-          onCopy={handleCopyTask}
           onExportPrompt={handleExportPrompt}
           onTextChange={tasks.updateTaskText}
           onAddSubtask={tasks.addSubtask}
@@ -493,6 +543,18 @@ export default function App() {
           />
         )}
 
+        {showAlbumRecommendations && (
+          <AlbumRecommendations
+            result={albumRecommendations}
+            loading={aiLoading === 'albums'}
+            providerLabel={aiSettings
+              ? PROVIDER_PRESETS[aiSettings.provider].shortLabel
+              : 'AI'}
+            onClose={() => setShowAlbumRecommendations(false)}
+            onRegenerate={handleAlbumRecommendations}
+          />
+        )}
+
         <div className="action-bar">
           {isDevMode && (
             <button
@@ -508,6 +570,25 @@ export default function App() {
             title={tasks.tasks.length ? 'Build a schedule with AI' : 'Add a task before planning the day'}
           >
             Plan day
+          </button>
+          <button
+            className={showAlbumRecommendations ? 'active' : ''}
+            onClick={() => {
+              if (showAlbumRecommendations) {
+                setShowAlbumRecommendations(false)
+              } else if (albumRecommendations && albumRecommendationTaskKey === albumTaskKey) {
+                setShowAlbumRecommendations(true)
+              } else {
+                handleAlbumRecommendations()
+              }
+            }}
+            disabled={!!aiLoading || !tasks.tasks.length}
+            aria-expanded={showAlbumRecommendations}
+            title={tasks.tasks.length
+              ? 'Recommend albums for the current tasks'
+              : 'Add a task before finding albums'}
+          >
+            Albums
           </button>
           <div className="spacer" />
           <div

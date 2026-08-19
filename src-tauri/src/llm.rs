@@ -453,10 +453,12 @@ fn extract_json(content: &str) -> Result<Value, String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        is_openrouter, openai_compatible_temperature, openai_request, LLMConfig,
+        codex_executable_candidates, codex_not_found_error, codex_prompt, is_openrouter,
+        openai_compatible_temperature, openai_request, LLMConfig, Message,
         DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE, KIMI_TEMPERATURE, OPENROUTER_APP_TITLE,
         OPENROUTER_APP_URL,
     };
+    use std::path::PathBuf;
 
     fn config(provider: &str, api_base: &str, model: &str) -> LLMConfig {
         LLMConfig {

@@ -401,6 +401,7 @@ pub fn run() {
             commands::list_weekly_files,
             commands::llm_breakdown,
             commands::llm_schedule,
+            commands::llm_recommend_albums,
             commands::get_settings,
             commands::save_settings,
             commands::get_star_focus_state,

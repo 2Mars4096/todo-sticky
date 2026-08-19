@@ -4,6 +4,7 @@ import type {
   AggregatedTask,
   Task,
   AppSettings,
+  AlbumRecommendationResult,
   StarFocusState,
   ExtractedTaskDate,
   TaskMutationResult,
@@ -59,6 +60,9 @@ export const api = {
 
   llmSchedule: (data: { tasks: any[]; machines: any[] }) =>
     invoke<{ plan: string; schedule: any[] }>('llm_schedule', data),
+
+  llmRecommendAlbums: (data: { tasks: any[] }) =>
+    invoke<AlbumRecommendationResult>('llm_recommend_albums', data),
 
   getSettings: () =>
     invoke<AppSettings>('get_settings'),
