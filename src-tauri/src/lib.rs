@@ -338,7 +338,14 @@ pub fn run() {
                     .separator()
                     .quit()
                     .build()?;
-                let app_menu = MenuBuilder::new(app).item(&app_submenu).build()?;
+                let edit_submenu = SubmenuBuilder::new(app, "Edit")
+                    .copy()
+                    .paste()
+                    .build()?;
+                let app_menu = MenuBuilder::new(app)
+                    .item(&app_submenu)
+                    .item(&edit_submenu)
+                    .build()?;
                 app_menu.set_as_app_menu()?;
             }
 

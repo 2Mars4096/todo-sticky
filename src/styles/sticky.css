@@ -3614,23 +3614,6 @@ select:focus-visible {
   cursor: default;
 }
 
-.add-task .add-task-heading .paste-task {
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  padding: 3px 5px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.add-task .add-task-heading .paste-task:hover:not(:disabled) {
-  color: var(--accent-hover);
-  background: rgba(196, 164, 74, 0.12);
-}
-
 .add-task.prominent {
   padding-top: 13px;
   padding-bottom: 13px;

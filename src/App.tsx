@@ -387,36 +387,6 @@ export default function App() {
     }
   }, [presentNotice])
 
-  const handlePasteTask = useCallback(async () => {
-    try {
-      const parsed = parseTaskChecklist(await pasteText())
-      if (!parsed) {
-        presentNotice({
-          kind: 'error',
-          title: 'Nothing to paste',
-          message: 'Copy a task or plain-text checklist, then try again.',
-        })
-        return
-      }
-
-      tasks.addTaskBundle(parsed.text, parsed.subtasks)
-      presentNotice({
-        kind: 'success',
-        title: 'Task pasted',
-        message: parsed.subtasks.length
-          ? `Added with ${parsed.subtasks.length} ${parsed.subtasks.length === 1 ? 'step' : 'steps'}.`
-          : 'Added as a new unchecked task.',
-      })
-    } catch (error) {
-      console.error('Paste task failed:', error)
-      presentNotice({
-        kind: 'error',
-        title: 'Could not paste task',
-        message: 'Clipboard access was unavailable. Try again with the app active.',
-      })
-    }
-  }, [tasks.addTaskBundle, presentNotice])
-
   const handleToggleGoalsSidebar = useCallback(() => {
     const willExpand = goals.sidebarCollapsed
 

@@ -3,49 +3,6 @@ export interface TransferTask {
   subtasks: string[]
 }
 
-const LIST_PREFIX = /^\s*(?:(?:[-*+])|(?:\d+[.)]))\s+(?:\[[ xX~?]\]\s*)?/
-const TASK_LABEL = /^\s*(?:task|objective)\s*:\s*/i
-const SECTION_LABEL = /^\s*(?:steps|subtasks|checklist)\s*:?\s*$/i
-
-function cleanTaskLine(line: string) {
-  return line
-    .replace(LIST_PREFIX, '')
-    .replace(TASK_LABEL, '')
-    .trim()
-}
-
-export function formatTaskChecklist(task: TransferTask) {
-  return [
-    `- [ ] ${task.text.trim()}`,
-    ...task.subtasks
-      .map(step => step.trim())
-      .filter(Boolean)
-      .map(step => `  - [ ] ${step}`),
-  ].join('\n')
-}
-
-export function parseTaskChecklist(raw: string): TransferTask | null {
-  const lines = raw
-    .replace(/\r\n?/g, '\n')
-    .split('\n')
-    .map(line => line.trimEnd())
-    .filter(line => line.trim())
-
-  const taskLineIndex = lines.findIndex(line => !SECTION_LABEL.test(line))
-  if (taskLineIndex < 0) return null
-
-  const text = cleanTaskLine(lines[taskLineIndex])
-  if (!text) return null
-
-  const subtasks = lines
-    .slice(taskLineIndex + 1)
-    .filter(line => !SECTION_LABEL.test(line))
-    .map(cleanTaskLine)
-    .filter(Boolean)
-
-  return { text, subtasks }
-}
-
 export function formatAgentPrompt(task: TransferTask) {
   const steps = task.subtasks
     .map(step => step.trim())

@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 interface Props {
   onAdd: (text: string) => void
-  onPaste: () => Promise<void>
   prominent?: boolean
   autoFocus?: boolean
   disabled?: boolean
@@ -10,13 +9,11 @@ interface Props {
 
 export function AddTask({
   onAdd,
-  onPaste,
   prominent = false,
   autoFocus = false,
   disabled = false,
 }: Props) {
   const [text, setText] = useState('')
-  const [pasting, setPasting] = useState(false)
 
   const handleSubmit = () => {
     const trimmed = text.trim()
@@ -36,22 +33,6 @@ export function AddTask({
     >
       <div className="add-task-heading">
         <label htmlFor="quick-add-task">New task</label>
-        <button
-          type="button"
-          className="paste-task"
-          onClick={async () => {
-            setPasting(true)
-            try {
-              await onPaste()
-            } finally {
-              setPasting(false)
-            }
-          }}
-          disabled={disabled || pasting}
-          aria-label="Paste task and steps from clipboard"
-        >
-          {pasting ? 'Pasting…' : 'Paste'}
-        </button>
       </div>
       <div className="add-task-row">
         <input

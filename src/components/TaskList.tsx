@@ -13,7 +13,6 @@ interface Props {
   onToggle: (taskId: string, subtaskId?: string) => void
   onDelete: (taskId: string, subtaskId?: string) => void
   onPush: (taskId: string, subtaskId?: string) => void
-  onCopy: (text: string, subtasks: Task[]) => void
   onExportPrompt: (text: string, subtasks: Task[]) => void
   onTextChange: (taskId: string, text: string, subtaskId?: string) => void
   onAddSubtask: (taskId: string, text: string) => void
@@ -25,7 +24,7 @@ interface Props {
 
 export function TaskList({
   tasks, loading, loadError, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
-  onToggle, onDelete, onPush, onCopy, onExportPrompt, onTextChange,
+  onToggle, onDelete, onPush, onExportPrompt, onTextChange,
   onAddSubtask, onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
   if (loading && tasks.length === 0) {
@@ -96,7 +95,6 @@ export function TaskList({
           onToggle={() => onToggle(task.id)}
           onDelete={() => onDelete(task.id)}
           onPush={() => onPush(task.id)}
-          onCopy={onCopy}
           onExportPrompt={onExportPrompt}
           onTextChange={(t) => onTextChange(task.id, t)}
           onFocusSelect={() => onFocusTask(task.id, task.text)}
