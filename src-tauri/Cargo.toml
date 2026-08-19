@@ -2,6 +2,7 @@
 name = "todo-sticky"
 version = "0.0.0"
 edition = "2021"
+default-run = "todo-sticky"
 
 [lib]
 name = "todo_sticky_lib"
