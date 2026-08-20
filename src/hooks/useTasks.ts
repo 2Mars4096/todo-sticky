@@ -12,6 +12,27 @@ function flattenToday(aggregated: AggregatedTask[]): Task[] {
   }))
 }
 
+export type ReorderPosition = 'before' | 'after'
+
+function reorderById<T extends { id: string }>(
+  items: T[],
+  sourceId: string,
+  targetId: string,
+  position: ReorderPosition,
+): T[] {
+  if (sourceId === targetId) return items
+
+  const sourceIndex = items.findIndex(item => item.id === sourceId)
+  const targetIndex = items.findIndex(item => item.id === targetId)
+  if (sourceIndex < 0 || targetIndex < 0) return items
+
+  const next = [...items]
+  const [moved] = next.splice(sourceIndex, 1)
+  const remainingTargetIndex = next.findIndex(item => item.id === targetId)
+  next.splice(remainingTargetIndex + (position === 'after' ? 1 : 0), 0, moved)
+  return next
+}
+
 let idCounter = 0
 function newId() {
   return `ui_${Date.now()}_${idCounter++}`
@@ -277,6 +298,36 @@ export function useTasks(dateStr: string) {
     })
   }, [persist])
 
+  const reorderTasks = useCallback((sourceId: string, targetId: string, position: ReorderPosition) => {
+    setTasks(prev => {
+      const next = reorderById(prev, sourceId, targetId, position)
+      if (next === prev) return prev
+      persist(next)
+      return next
+    })
+  }, [persist])
+
+  const reorderSubtasks = useCallback((
+    taskId: string,
+    sourceId: string,
+    targetId: string,
+    position: ReorderPosition,
+  ) => {
+    setTasks(prev => {
+      let changed = false
+      const next = prev.map(task => {
+        if (task.id !== taskId) return task
+        const todaySubtasks = reorderById(task.todaySubtasks, sourceId, targetId, position)
+        if (todaySubtasks === task.todaySubtasks) return task
+        changed = true
+        return { ...task, todaySubtasks }
+      })
+      if (!changed) return prev
+      persist(next)
+      return next
+    })
+  }, [persist])
+
   const updateTaskText = useCallback((taskId: string, text: string, subtaskId?: string) => {
     setTasks(prev => {
       const next = prev.map(t => {
@@ -363,7 +414,7 @@ export function useTasks(dateStr: string) {
   return {
     tasks, loading, loadError, load,
     addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
-    addSubtask, updateTaskText, addAISubtasks, applySchedule,
+    addSubtask, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,
   }
 }

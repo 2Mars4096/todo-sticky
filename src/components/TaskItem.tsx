@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type DragEvent, type KeyboardEvent } from 'react'
 import { format } from 'date-fns'
 import type { Task, DatedTask, ViewMode } from '../types'
 
@@ -19,6 +19,29 @@ function BreakdownIcon() {
       <path d="M4.5 8h3M7.5 4v8M7.5 4h4M7.5 12h4" />
     </svg>
   )
+}
+
+function DragHandleIcon() {
+  return (
+    <svg viewBox="0 0 10 14" aria-hidden="true">
+      <circle cx="3" cy="3" r="1" />
+      <circle cx="7" cy="3" r="1" />
+      <circle cx="3" cy="7" r="1" />
+      <circle cx="7" cy="7" r="1" />
+      <circle cx="3" cy="11" r="1" />
+      <circle cx="7" cy="11" r="1" />
+    </svg>
+  )
+}
+
+export interface SortableTaskProps {
+  state?: 'dragging' | 'drop-before' | 'drop-after'
+  label: string
+  onDragStart: (event: DragEvent<HTMLButtonElement>) => void
+  onDragOver: (event: DragEvent<HTMLDivElement>) => void
+  onDrop: (event: DragEvent<HTMLDivElement>) => void
+  onDragEnd: () => void
+  onMove: (direction: -1 | 1) => void
 }
 
 interface Props {
@@ -46,6 +69,8 @@ interface Props {
   onDeleteSubtask?: (subtaskId: string) => void
   onPushSubtask?: (subtaskId: string) => void
   onSubtaskTextChange?: (subtaskId: string, text: string) => void
+  sortable?: SortableTaskProps
+  getSubtaskSortable?: (subtaskId: string, subtaskText: string) => SortableTaskProps
 }
 
 export function TaskItem({
@@ -57,6 +82,7 @@ export function TaskItem({
   onAddSubtask, onAIBreakdown,
   todaySubtasks, otherSubtasks,
   onToggleSubtask, onDeleteSubtask, onPushSubtask, onSubtaskTextChange,
+  sortable, getSubtaskSortable,
 }: Props) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(text)
@@ -92,11 +118,36 @@ export function TaskItem({
     isSubtask ? 'subtask' : 'main-task',
     isOtherDate ? 'other-date' : '',
     isFocusSelected ? 'selected-for-focus' : '',
+    sortable?.state ?? '',
   ].filter(Boolean).join(' ')
+
+  const handleReorderKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
+    event.preventDefault()
+    sortable?.onMove(event.key === 'ArrowUp' ? -1 : 1)
+  }
 
   return (
     <>
-      <div className={cls}>
+      <div
+        className={cls}
+        onDragOver={sortable?.onDragOver}
+        onDrop={sortable?.onDrop}
+      >
+        {sortable && (
+          <button
+            type="button"
+            className="task-drag-handle"
+            draggable
+            onDragStart={sortable.onDragStart}
+            onDragEnd={sortable.onDragEnd}
+            onKeyDown={handleReorderKeyDown}
+            title="Drag to reorder. Use Arrow Up or Arrow Down from this handle."
+            aria-label={sortable.label}
+          >
+            <DragHandleIcon />
+          </button>
+        )}
         <button
           className={`task-checkbox ${status === 'done' ? 'done' : ''} ${status === 'partial' ? 'partial' : ''}`}
           onClick={onToggle}
@@ -203,6 +254,7 @@ export function TaskItem({
           onPush={() => onPushSubtask?.(sub.id)}
           onExportPrompt={onExportPrompt}
           onTextChange={(t) => onSubtaskTextChange?.(sub.id, t)}
+          sortable={getSubtaskSortable?.(sub.id, sub.text)}
         />
       ))}
 

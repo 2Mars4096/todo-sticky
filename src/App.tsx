@@ -493,6 +493,8 @@ export default function App() {
           onExportPrompt={handleExportPrompt}
           onTextChange={tasks.updateTaskText}
           onAddSubtask={tasks.addSubtask}
+          onReorderTask={tasks.reorderTasks}
+          onReorderSubtask={tasks.reorderSubtasks}
           onAIBreakdown={handleAIBreakdown}
           onFocusTask={handleFocusTask}
           onGoToday={calendar.goToday}

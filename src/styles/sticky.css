@@ -3319,6 +3319,69 @@ select:focus-visible {
   opacity: 0.6;
 }
 
+.task-item.dragging {
+  opacity: 0.42;
+}
+
+.task-item.drop-before::after,
+.task-item.drop-after::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.task-item.drop-before::after {
+  top: -1px;
+}
+
+.task-item.drop-after::after {
+  bottom: -1px;
+}
+
+.task-drag-handle {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 18px;
+  margin: 0 0 0 -4px;
+  padding: 2px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: grab;
+  opacity: 0.58;
+  touch-action: none;
+}
+
+.task-drag-handle:hover,
+.task-drag-handle:focus-visible {
+  color: var(--accent-hover);
+  background: rgba(196, 164, 74, 0.12);
+  opacity: 1;
+}
+
+.task-drag-handle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.task-drag-handle:active {
+  cursor: grabbing;
+}
+
+.task-drag-handle svg {
+  display: block;
+  width: 10px;
+  height: 14px;
+  fill: currentColor;
+}
+
 /* Checkbox */
 .task-checkbox {
   flex-shrink: 0;
