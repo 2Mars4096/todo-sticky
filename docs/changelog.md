@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-08-20
+
+- [frontend] Add compact drag handles for reordering top-level tasks and current-day subtasks, with scoped drop targets and precise insertion feedback.
+- [accessibility] Let keyboard users move the focused task or subtask handle with Arrow Up and Arrow Down.
+- [persistence] Save reordered arrays through the existing debounced Markdown path without changing the archive schema or native bridge.
+- [tests] Pass the frontend production build and isolated 460px browser verification for pointer drag, keyboard movement, and persisted order.
+- [release] Build, ad-hoc seal, checksum-verify, reinstall, and relaunch version 2.0.4; retain the previous app as a temporary rollback bundle.
+- [docs] Complete plan `4-14-task-and-subtask-reordering` and document the new core task interaction.
+
 ## 2026-08-19
 
 - [frontend] Remove the visible task Copy and composer Paste controls so ordinary clipboard work does not add more chrome to the compact task layout.

@@ -41,7 +41,7 @@ After configuring more than one provider, use the compact provider selector besi
 
 ## Features
 
-- **Tasks & subtasks** — Use distinct add and branching controls for manual steps or AI-generated breakdowns; hover an icon to see its action label
+- **Tasks & subtasks** — Use distinct add and branching controls for manual steps or AI-generated breakdowns; drag the six-dot handle to reorder tasks or steps within one task
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Status cycle** — Toggle task status: todo → done → partial → todo
@@ -112,5 +112,6 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 | **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
 | **Enter** | Add task / submit subtask or goal / commit edit |
 | **Escape** | Close Focus Mode or a compact side panel; cancel edit/subtask input |
+| **Arrow Up / Arrow Down** | Move a task or subtask when its six-dot reorder handle is focused |
 | **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
 | **Double-click** | Edit task text |
