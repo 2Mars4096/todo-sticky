@@ -21,6 +21,41 @@ function BreakdownIcon() {
   )
 }
 
+function CopyIcon() {
+  return (
+    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="5" y="5" width="8" height="8" rx="1.5" />
+      <path d="M3 11H2.5A1.5 1.5 0 0 1 1 9.5v-7A1.5 1.5 0 0 1 2.5 1h7A1.5 1.5 0 0 1 11 2.5V3" />
+    </svg>
+  )
+}
+
+function FocusIcon() {
+  return (
+    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="3.5" />
+      <circle cx="8" cy="8" r="1" className="task-action-icon-fill" />
+      <path d="M8 1v2M8 13v2M1 8h2M13 8h2" />
+    </svg>
+  )
+}
+
+function DeleteIcon() {
+  return (
+    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M3 4.5h10M6 2h4l.75 2.5M4.5 4.5l.6 9h5.8l.6-9M6.5 7v4M9.5 7v4" />
+    </svg>
+  )
+}
+
+function PushIcon() {
+  return (
+    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2 8h11M9 4l4 4-4 4" />
+    </svg>
+  )
+}
+
 function DragHandleIcon() {
   return (
     <svg viewBox="0 0 10 14" aria-hidden="true">
@@ -58,9 +93,10 @@ interface Props {
   onToggle: () => void
   onDelete: () => void
   onPush: () => void
-  onExportPrompt?: (text: string, subtasks: Task[]) => void
+  onCopyTask?: (text: string, subtasks: Task[]) => void
   onTextChange: (text: string) => void
   onFocusSelect?: () => void
+  onFocusSubtask?: (subtaskId: string, subtaskText: string) => void
   onAddSubtask?: (text: string) => void
   onAIBreakdown?: () => void
   todaySubtasks?: Task[]
@@ -71,18 +107,21 @@ interface Props {
   onSubtaskTextChange?: (subtaskId: string, text: string) => void
   sortable?: SortableTaskProps
   getSubtaskSortable?: (subtaskId: string, subtaskText: string) => SortableTaskProps
+  parentText?: string
+  selectedFocusId?: string | null
 }
 
 export function TaskItem({
   id, text, status, isSubtask, isOtherDate, sourceDate, moveTargetLabel,
   isFocusSelected, isFocusLocked,
   viewMode, onToggle, onDelete, onPush, onTextChange,
-  onExportPrompt,
-  onFocusSelect,
+  onCopyTask,
+  onFocusSelect, onFocusSubtask,
   onAddSubtask, onAIBreakdown,
   todaySubtasks, otherSubtasks,
   onToggleSubtask, onDeleteSubtask, onPushSubtask, onSubtaskTextChange,
   sortable, getSubtaskSortable,
+  parentText, selectedFocusId,
 }: Props) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(text)
@@ -107,6 +146,18 @@ export function TaskItem({
       onAddSubtask(trimmed)
       setSubInput('')
     }
+  }
+
+  const beginEditing = () => {
+    if (isOtherDate) return
+    setEditing(true)
+    setEditText(text)
+  }
+
+  const handleTaskTextKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault()
+    beginEditing()
   }
 
   const dateLabel = sourceDate
@@ -154,89 +205,92 @@ export function TaskItem({
           title={`Status: ${status}. Click to change`}
           aria-label={`${text}. Status ${status}. Change status`}
         />
-        {editing ? (
-          <input
-            ref={inputRef}
-            className="task-text-input"
-            value={editText}
-            onChange={e => setEditText(e.target.value)}
-            onBlur={commitEdit}
-            onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setEditText(text) } }}
-          />
-        ) : (
-          <button
-            type="button"
-            className={`task-text ${status === 'done' ? 'done' : ''}`}
-            onClick={() => { if (!isOtherDate) { setEditing(true); setEditText(text) } }}
-            disabled={isOtherDate}
-            title={isOtherDate ? undefined : 'Edit task'}
-          >
-            {text}
-          </button>
-        )}
-        {dateLabel && <span className="date-tag">{dateLabel}</span>}
-        <div className="task-actions">
-          {!isSubtask && !isOtherDate && onFocusSelect && (
-            <button
-              className={`focus-link ${isFocusSelected ? 'active' : ''}`}
-              onClick={onFocusSelect}
-              title={
-                isFocusSelected
-                  ? 'Task armed for Mission Control'
-                  : isFocusLocked
-                    ? 'Mission Control is locked to the active session'
-                    : 'Send to Mission Control'
-              }
-              disabled={Boolean(isFocusLocked && !isFocusSelected)}
-              aria-label={isFocusSelected ? `Focused task: ${text}` : `Focus on ${text}`}
+        <div className="task-content-flow">
+          {editing ? (
+            <input
+              ref={inputRef}
+              className="task-text-input task-inline-edit"
+              size={Math.max(1, editText.length + 1)}
+              value={editText}
+              onChange={e => setEditText(e.target.value)}
+              onBlur={commitEdit}
+              onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setEditText(text) } }}
+            />
+          ) : (
+            <span
+              className={`task-text ${status === 'done' ? 'done' : ''}`}
+              role={isOtherDate ? undefined : 'button'}
+              tabIndex={isOtherDate ? undefined : 0}
+              onClick={beginEditing}
+              onKeyDown={isOtherDate ? undefined : handleTaskTextKeyDown}
+              title={isOtherDate ? undefined : 'Edit task'}
             >
-              {isFocusSelected ? 'Armed' : 'Focus'}
-            </button>
+              {text}
+            </span>
           )}
-          {!isSubtask && !isOtherDate && onAddSubtask && (
-            <button
-              className={`subtask-link ${showSubInput ? 'active' : ''}`}
-              onClick={() => setShowSubInput(true)}
-              title="Add a step"
-              aria-label={`Add a step to ${text}`}
-            >
-              <AddStepIcon />
-            </button>
-          )}
-          {!isSubtask && !isOtherDate && onAIBreakdown && (
-            <button
-              className="ai-btn"
-              onClick={onAIBreakdown}
-              title="Break task into steps with AI"
-              aria-label={`Break ${text} into steps with AI`}
-            >
-              <BreakdownIcon />
-            </button>
-          )}
-          {onExportPrompt && (
-            <button
-              type="button"
-              className="transfer-link prompt-link"
-              onClick={() => onExportPrompt(text, isSubtask ? [] : todaySubtasks ?? [])}
-              title="Copy an execution-ready agent prompt"
-              aria-label={`Copy agent prompt for ${text}`}
-            >
-              Prompt
-            </button>
-          )}
-          {!isOtherDate && (
-            <>
-              <button className="delete" onClick={onDelete} title="Delete" aria-label={`Delete ${text}`}>✕</button>
+          {dateLabel && <span className="date-tag">{dateLabel}</span>}
+          {' '}
+          <span className="task-actions">
+            {!isSubtask && !isOtherDate && onAIBreakdown && (
               <button
-                className="push"
-                onClick={onPush}
-                title={`Move to ${moveTargetLabel}`}
-                aria-label={`Move ${text} to ${moveTargetLabel}`}
+                type="button"
+                className="task-action ai-btn"
+                onClick={onAIBreakdown}
+                title="Break task into steps with AI"
+                aria-label={`Break ${text} into steps with AI`}
               >
-                →
+                <BreakdownIcon />
               </button>
-            </>
-          )}
+            )}
+            {onCopyTask && (
+              <button
+                type="button"
+                className="task-action copy-link"
+                onClick={() => onCopyTask(
+                  isSubtask && parentText ? parentText : text,
+                  isSubtask ? [{ id, text, status, subtasks: [] }] : todaySubtasks ?? [],
+                )}
+                title={isSubtask ? 'Copy parent task with this step' : 'Copy task and steps'}
+                aria-label={isSubtask ? `Copy ${parentText ?? text} with step ${text}` : `Copy ${text} and its steps`}
+              >
+                <CopyIcon />
+              </button>
+            )}
+            {!isOtherDate && (
+              <>
+                <button type="button" className="task-action delete" onClick={onDelete} title="Delete" aria-label={`Delete ${text}`}>
+                  <DeleteIcon />
+                </button>
+                <button
+                  type="button"
+                  className="task-action push"
+                  onClick={onPush}
+                  title={`Move to ${moveTargetLabel}`}
+                  aria-label={`Move ${text} to ${moveTargetLabel}`}
+                >
+                  <PushIcon />
+                </button>
+              </>
+            )}
+            {!isOtherDate && onFocusSelect && (
+              <button
+                type="button"
+                className={`task-action focus-link ${isFocusSelected ? 'active' : ''}`}
+                onClick={onFocusSelect}
+                title={
+                  isFocusSelected
+                    ? 'Armed for Mission Control'
+                    : isFocusLocked
+                      ? 'Mission Control is locked to the active session'
+                      : 'Send to Mission Control'
+                }
+                disabled={Boolean(isFocusLocked && !isFocusSelected)}
+                aria-label={isFocusSelected ? `Focused task: ${text}` : `Focus on ${text}`}
+              >
+                <FocusIcon />
+              </button>
+            )}
+          </span>
         </div>
       </div>
 
@@ -252,11 +306,42 @@ export function TaskItem({
           onToggle={() => onToggleSubtask?.(sub.id)}
           onDelete={() => onDeleteSubtask?.(sub.id)}
           onPush={() => onPushSubtask?.(sub.id)}
-          onExportPrompt={onExportPrompt}
+          onCopyTask={onCopyTask}
           onTextChange={(t) => onSubtaskTextChange?.(sub.id, t)}
+          parentText={text}
+          selectedFocusId={selectedFocusId}
+          isFocusSelected={selectedFocusId === sub.id}
+          isFocusLocked={isFocusLocked}
+          onFocusSelect={() => onFocusSubtask?.(sub.id, sub.text)}
           sortable={getSubtaskSortable?.(sub.id, sub.text)}
         />
       ))}
+
+      {!isSubtask && !isOtherDate && onAddSubtask && (
+        <div className={`task-step-add-row ${showSubInput ? 'active' : ''}`}>
+          <span className="task-step-add-handle-space" aria-hidden="true" />
+          <button
+            type="button"
+            className="task-step-add-button"
+            onClick={() => setShowSubInput(true)}
+            title="Add a step"
+            aria-label={`Add a step to ${text}`}
+          >
+            <AddStepIcon />
+          </button>
+          {showSubInput && (
+            <input
+              className="task-text-input task-step-add-input"
+              placeholder="Add step..."
+              value={subInput}
+              onChange={e => setSubInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSubAdd(); if (e.key === 'Escape') setShowSubInput(false) }}
+              onBlur={() => { if (!subInput.trim()) setShowSubInput(false) }}
+              autoFocus
+            />
+          )}
+        </div>
+      )}
 
       {!isSubtask && viewMode === 'all' && otherSubtasks?.map(sub => (
         <TaskItem
@@ -272,25 +357,11 @@ export function TaskItem({
           onToggle={() => {}}
           onDelete={() => {}}
           onPush={() => {}}
-          onExportPrompt={onExportPrompt}
+          onCopyTask={onCopyTask}
           onTextChange={() => {}}
+          parentText={text}
         />
       ))}
-
-      {!isSubtask && !isOtherDate && showSubInput && (
-        <div className="task-item subtask">
-          <div style={{ width: 16 }} />
-          <input
-            className="task-text-input"
-            placeholder="Add subtask..."
-            value={subInput}
-            onChange={e => setSubInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleSubAdd(); if (e.key === 'Escape') setShowSubInput(false) }}
-            onBlur={() => { if (!subInput.trim()) setShowSubInput(false) }}
-            autoFocus
-          />
-        </div>
-      )}
 
     </>
   )

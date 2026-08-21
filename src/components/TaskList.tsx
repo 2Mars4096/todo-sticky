@@ -21,7 +21,7 @@ interface Props {
   onToggle: (taskId: string, subtaskId?: string) => void
   onDelete: (taskId: string, subtaskId?: string) => void
   onPush: (taskId: string, subtaskId?: string) => void
-  onExportPrompt: (text: string, subtasks: Task[]) => void
+  onCopyTask: (text: string, subtasks: Task[]) => void
   onTextChange: (taskId: string, text: string, subtaskId?: string) => void
   onAddSubtask: (taskId: string, text: string) => void
   onReorderTask: (sourceId: string, targetId: string, position: ReorderPosition) => void
@@ -34,7 +34,7 @@ interface Props {
 
 export function TaskList({
   tasks, loading, loadError, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
-  onToggle, onDelete, onPush, onExportPrompt, onTextChange,
+  onToggle, onDelete, onPush, onCopyTask, onTextChange,
   onAddSubtask, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
@@ -172,7 +172,7 @@ export function TaskList({
           onToggle={() => onToggle(task.id)}
           onDelete={() => onDelete(task.id)}
           onPush={() => onPush(task.id)}
-          onExportPrompt={onExportPrompt}
+          onCopyTask={onCopyTask}
           onTextChange={(t) => onTextChange(task.id, t)}
           sortable={{
             state: dragStateFor({ kind: 'task', id: task.id }),
@@ -193,6 +193,8 @@ export function TaskList({
             onMove: direction => moveSubtaskByKeyboard(task.id, subtaskId, direction),
           })}
           onFocusSelect={() => onFocusTask(task.id, task.text)}
+          onFocusSubtask={(subtaskId, subtaskText) => onFocusTask(subtaskId, subtaskText)}
+          selectedFocusId={selectedTaskId}
           onAddSubtask={(t) => onAddSubtask(task.id, t)}
           onAIBreakdown={() => onAIBreakdown(task.id)}
           onToggleSubtask={(sid) => onToggle(task.id, sid)}

@@ -366,7 +366,7 @@ export default function App() {
     }
   }, [tasks.carryForward, presentNotice])
 
-  const handleExportPrompt = useCallback(async (text: string, subtasks: Task[]) => {
+  const handleCopyTask = useCallback(async (text: string, subtasks: Task[]) => {
     try {
       await copyText(formatAgentPrompt({
         text,
@@ -374,7 +374,7 @@ export default function App() {
       }))
       presentNotice({
         kind: 'success',
-        title: 'Agent prompt copied',
+        title: 'Task copied',
         message: 'Paste it into Codex or another execution agent.',
       })
     } catch (error) {
@@ -490,7 +490,7 @@ export default function App() {
           onToggle={tasks.toggleStatus}
           onDelete={tasks.deleteTask}
           onPush={handleCarryForward}
-          onExportPrompt={handleExportPrompt}
+          onCopyTask={handleCopyTask}
           onTextChange={tasks.updateTaskText}
           onAddSubtask={tasks.addSubtask}
           onReorderTask={tasks.reorderTasks}
