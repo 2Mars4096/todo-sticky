@@ -1,7 +1,20 @@
 # Changelog
 
+## 2026-08-21
+
+- [frontend] Flow each task or subtask icon group into available space after the final text fragment, while keeping the group atomic and text-aligned when it must wrap.
+- [accessibility] Preserve click editing and add Enter/Space keyboard activation to the inline task label after replacing the old full-row text button.
+- [tests] Pass the frontend production build and real-browser layout checks at the `460px` default and `340px` minimum, including short, wrapped, very long, subtask, and keyboard-edit states.
+- [release] Build, ad-hoc seal, checksum-verify, reinstall, and relaunch version 2.0.4 with the inline action flow; retain the previous bundle as a temporary rollback copy.
+
 ## 2026-08-20
 
+- [frontend] Replace task-row text actions with compact Breakdown, Copy, Delete, Push, and terminal Focus icons; give subtasks the same Copy/Delete/Push/Focus vocabulary.
+- [frontend] Move manual step entry below each task group and keep the plus control aligned to the parent checkbox regardless of subtask count.
+- [behavior] Copy full tasks with all current steps, or copy one selected step while retaining its parent task as the execution objective.
+- [native] Carry individual subtasks forward beneath their parent task, merging later siblings into the existing destination parent instead of creating loose top-level tasks.
+- [tests] Add parent-merge regression coverage and verify the 460px action order, subtask Focus, structured copy, carry payload, and add-step alignment in an isolated browser session.
+- [release] Build, ad-hoc seal, checksum-verify, reinstall, and relaunch version 2.0.4 with the new icon actions and structured subtask carry-forward behavior.
 - [frontend] Add compact drag handles for reordering top-level tasks and current-day subtasks, with scoped drop targets and precise insertion feedback.
 - [accessibility] Let keyboard users move the focused task or subtask handle with Arrow Up and Arrow Down.
 - [persistence] Save reordered arrays through the existing debounced Markdown path without changing the archive schema or native bridge.

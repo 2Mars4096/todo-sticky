@@ -41,13 +41,14 @@ After configuring more than one provider, use the compact provider selector besi
 
 ## Features
 
-- **Tasks & subtasks** — Use distinct add and branching controls for manual steps or AI-generated breakdowns; drag the six-dot handle to reorder tasks or steps within one task
+- **Tasks & subtasks** — Add a step from the plus aligned below its parent checkbox, use the branching icon for AI breakdown, and drag the six-dot handle to reorder tasks or steps within one task
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Status cycle** — Toggle task status: todo → done → partial → todo
-- **Smart carry-forward** — Move unfinished past work directly to today; tasks on today or a future date move to their following day
+- **Space-aware task actions** — Keep each icon set together after the final task-text fragment when space permits, with a text-aligned fallback row for longer tasks
+- **Smart carry-forward** — Move unfinished past work directly to today; moving one subtask preserves its parent on the destination date and merges later sibling moves beneath it
 - **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today
-- **Native clipboard** — Use standard Command-C and Command-V in editable task text with no dedicated clipboard buttons; the Prompt action still copies an execution-ready brief for Codex and other agents
+- **Native clipboard** — Use standard Command-C and Command-V while editing; the row Copy icon exports a parent with all steps, or one selected subtask with its parent context, for Codex and other agents
 - **Agent task API** — Extract, create, edit, and delete Markdown-backed tasks from reusable skills through a local JSON CLI, with revision checks for safe writes
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires a configured AI provider)

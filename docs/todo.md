@@ -89,6 +89,8 @@
   - [x] [4-12-task-aware-album-recommendations](plans/4-12-task-aware-album-recommendations.md) - Generate an ephemeral work soundtrack from the current task list without expanding the sticky-note layout.
   - [x] [4-13-native-copy-paste-shortcuts](plans/4-13-native-copy-paste-shortcuts.md) - Replace visible clipboard controls with standard Command-C and Command-V behavior.
   - [x] [4-14-task-and-subtask-reordering](plans/4-14-task-and-subtask-reordering.md) - Drag tasks into a new order or rearrange current-day subtasks within their parent task.
+  - [x] [4-15-task-action-icons-and-structured-step-flow](plans/4-15-task-action-icons-and-structured-step-flow.md) - Unify task action icons and preserve parent context when copying, focusing, or carrying steps forward.
+  - [x] [4-16-inline-task-action-flow](plans/4-16-inline-task-action-flow.md) - Pack the action group after the final task-text line instead of reserving a wasteful full-width row.
 
 ## Backlog
 

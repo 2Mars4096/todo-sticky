@@ -21,11 +21,12 @@
 - [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, compact action-bar AI provider switching, and task-context handoff for album recommendations.
 - [ ] `src/components/AlbumRecommendations.tsx`: presents the configured AI provider's four-album work soundtrack in a dismissible paper-toned sheet above the action bar, with loading, regenerate, Escape, and compact-layout states.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
-- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, expose per-item prompt handoff, provide an instructional empty state for today, route empty past/future dates directly back to today, and scope drag-reordering to top-level tasks or subtasks within one parent.
+- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, expose hierarchy-aware copy and task/subtask Focus handoff, provide an instructional empty state for today, route empty past/future dates directly back to today, and scope drag-reordering to top-level tasks or subtasks within one parent.
 - [ ] `src/taskTransfer.ts` and `src/clipboard.ts`: generate local execution-agent prompts and write them through the official Tauri clipboard plugin; ordinary text copy/paste stays with the native focused-field behavior.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
 - [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between API-backed profiles and the keyless local Codex profile.
-- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and direct row actions reachable, including destination-aware carry-forward and Markdown-persisted pointer/keyboard reordering; compact CSS wraps the action strip below task text.
+- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and icon-only row actions reachable, including final-line action packing, destination-aware carry-forward, parent-preserving subtask moves, aligned step entry, and Markdown-persisted pointer/keyboard reordering.
+- [ ] `src-tauri/src/commands.rs` and `src-tauri/src/file_sync.rs`: persist task changes and merge individually carried subtasks under a normalized matching parent in the destination date section.
 - [ ] `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and `src-tauri/capabilities/default.json`: define the `todo-sticky` default desktop target and bundle name, the `460x640` default, the `340x440` minimum, and native resize-drag permission so the sibling task API CLI cannot become the bundled executable.
 - [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area, shows it from `RunEvent::Ready`, preserves later user placement, and installs native macOS Copy/Paste menu responders for focused editable text.
 
@@ -73,9 +74,10 @@
 - On macOS, resolve default task and bundle app-data roots from the signed-in account record; do not let an inherited `HOME` create a parallel empty store.
 - Run startup archive reads on Tauri's blocking worker pool so File Provider hydration cannot freeze native window painting; keep task creation disabled while the initial archive load is pending.
 - On macOS, reject `SF_DATALESS` task archives before every content read or read-before-write operation; surface cloud availability separately from an empty task list and require an explicit retry after Finder/Dropbox materializes the file.
-- Keep essential task actions keyboard reachable and visible at low emphasis; wrap them below task text at the minimum width rather than hiding them.
+- Keep essential task actions keyboard reachable and visible at low emphasis; flow the atomic icon group into spare space after the final task-text fragment, then wrap the whole group to the text column only when it cannot fit.
 - Treat task-array order as the reorder source of truth: top-level moves carry their subtask group, while subtask moves stay inside the current parent and exclude read-only other-date steps.
 - Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
+- Preserve hierarchy when carrying one subtask: create its parent on the destination date when absent, then merge later sibling moves into that same parent without duplicate steps.
 - Keep general copy/paste on the platform-standard focused-field path with no dedicated task-row or composer controls.
 - Keep agent-prompt export local and deterministic; copying a prompt must not invoke the configured AI provider.
 - Keep the first archive-retention control pass inside Tracking Station with a small preset range instead of adding another global settings surface.
