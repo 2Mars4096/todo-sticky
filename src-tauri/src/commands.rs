@@ -142,6 +142,7 @@ pub fn push_task(
     to_date: String,
     task_text: String,
     subtask_texts: Vec<String>,
+    parent_task_text: Option<String>,
     app: AppHandle,
 ) -> Result<Value, String> {
     crate::mark_own_write(&app);
@@ -151,22 +152,38 @@ pub fn push_task(
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis();
-    let task = Task {
-        id: format!("push_{}", now),
-        text: task_text,
-        status: "todo".into(),
-        subtasks: subtask_texts
-            .iter()
-            .enumerate()
-            .map(|(i, t)| Task {
-                id: format!("push_sub_{}_{}", now, i),
-                text: t.clone(),
-                status: "todo".into(),
-                subtasks: Vec::new(),
-            })
-            .collect(),
+    let info = if let Some(parent_text) = parent_task_text {
+        let parent = Task {
+            id: format!("push_parent_{}", now),
+            text: parent_text,
+            status: "todo".into(),
+            subtasks: Vec::new(),
+        };
+        let subtask = Task {
+            id: format!("push_sub_{}", now),
+            text: task_text,
+            status: "todo".into(),
+            subtasks: Vec::new(),
+        };
+        file_sync::append_subtask_to_parent(&todo_dir.to_string_lossy(), &to_date, parent, subtask)?
+    } else {
+        let task = Task {
+            id: format!("push_{}", now),
+            text: task_text,
+            status: "todo".into(),
+            subtasks: subtask_texts
+                .iter()
+                .enumerate()
+                .map(|(i, t)| Task {
+                    id: format!("push_sub_{}_{}", now, i),
+                    text: t.clone(),
+                    status: "todo".into(),
+                    subtasks: Vec::new(),
+                })
+                .collect(),
+        };
+        file_sync::append_tasks_to_date(&todo_dir.to_string_lossy(), &to_date, &[task])?
     };
-    let info = file_sync::append_tasks_to_date(&todo_dir.to_string_lossy(), &to_date, &[task])?;
     crate::refresh_watcher(&app)?;
     Ok(serde_json::json!({"ok": true, "filePath": info.file_path}))
 }

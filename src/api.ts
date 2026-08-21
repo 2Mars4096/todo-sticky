@@ -49,7 +49,13 @@ export const api = {
   appendTasksToDate: (data: { dateStr: string; tasks: Task[] }) =>
     invoke<{ filePath: string; weekStart: string }>('append_tasks_to_date', data),
 
-  pushTask: (data: { fromDate: string; toDate: string; taskText: string; subtaskTexts: string[] }) =>
+  pushTask: (data: {
+    fromDate: string
+    toDate: string
+    taskText: string
+    subtaskTexts: string[]
+    parentTaskText?: string
+  }) =>
     invoke<{ ok: boolean; filePath: string }>('push_task', data),
 
   listWeeklyFiles: () =>

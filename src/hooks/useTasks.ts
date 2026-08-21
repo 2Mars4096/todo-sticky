@@ -239,11 +239,15 @@ export function useTasks(dateStr: string) {
     const currentTasks = tasks
     let taskText = ''
     let subtaskTexts: string[] = []
+    let parentTaskText: string | undefined
 
     if (subtaskId) {
       const parent = currentTasks.find(t => t.id === taskId)
       const sub = parent?.todaySubtasks.find(s => s.id === subtaskId)
-      if (sub) taskText = sub.text
+      if (parent && sub) {
+        taskText = sub.text
+        parentTaskText = parent.text
+      }
     } else {
       const found = currentTasks.find(t => t.id === taskId)
       if (found) {
@@ -267,7 +271,13 @@ export function useTasks(dateStr: string) {
       if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
 
       // Append to the resolved current or future section.
-      await api.pushTask({ fromDate: dateStr, toDate: target.dateStr, taskText, subtaskTexts })
+      await api.pushTask({
+        fromDate: dateStr,
+        toDate: target.dateStr,
+        taskText,
+        subtaskTexts,
+        parentTaskText,
+      })
 
       // Save the source date section after removing the carried task.
       setTasks(prev => {

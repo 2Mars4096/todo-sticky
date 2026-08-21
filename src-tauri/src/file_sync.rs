@@ -219,6 +219,57 @@ pub fn append_tasks_to_date(
     ensure_date_section(todo_dir, date_str, tasks)
 }
 
+fn normalized_task_text(text: &str) -> String {
+    text.to_lowercase()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn merge_subtask_under_parent(tasks: &mut Vec<Task>, mut parent: Task, subtask: Task) {
+    let parent_key = normalized_task_text(&parent.text);
+    if let Some(existing_parent) = tasks
+        .iter_mut()
+        .find(|task| normalized_task_text(&task.text) == parent_key)
+    {
+        let subtask_key = normalized_task_text(&subtask.text);
+        if !existing_parent
+            .subtasks
+            .iter()
+            .any(|existing| normalized_task_text(&existing.text) == subtask_key)
+        {
+            existing_parent.subtasks.push(subtask);
+        }
+        return;
+    }
+
+    parent.subtasks.push(subtask);
+    tasks.push(parent);
+}
+
+pub fn append_subtask_to_parent(
+    todo_dir: &str,
+    date_str: &str,
+    parent: Task,
+    subtask: Task,
+) -> Result<FileInfo, String> {
+    let mut tasks = if let Some(file_info) = find_weekly_file(todo_dir, date_str)? {
+        let content = read_local_file(Path::new(&file_info.file_path))?;
+        let parsed = parse_weekly_file(&content);
+        parsed
+            .date_sections
+            .into_iter()
+            .find(|section| section.date == date_str)
+            .map(|section| section.tasks)
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    merge_subtask_under_parent(&mut tasks, parent, subtask);
+    ensure_date_section(todo_dir, date_str, &tasks)
+}
+
 pub fn get_tasks(
     todo_dir: &str,
     date_str: &str,
@@ -237,12 +288,48 @@ pub fn get_tasks(
 
 #[cfg(test)]
 mod tests {
-    use super::{macos_flags_are_dataless, MACOS_SF_DATALESS};
+    use super::{macos_flags_are_dataless, merge_subtask_under_parent, MACOS_SF_DATALESS};
+    use crate::markdown::Task;
+
+    fn task(id: &str, text: &str) -> Task {
+        Task {
+            id: id.into(),
+            text: text.into(),
+            status: "todo".into(),
+            subtasks: Vec::new(),
+        }
+    }
 
     #[test]
     fn identifies_macos_dataless_file_flag() {
         assert!(macos_flags_are_dataless(MACOS_SF_DATALESS));
         assert!(macos_flags_are_dataless(MACOS_SF_DATALESS | 0x20));
         assert!(!macos_flags_are_dataless(0x20));
+    }
+
+    #[test]
+    fn carried_subtasks_merge_under_one_destination_parent() {
+        let mut tasks = Vec::new();
+        merge_subtask_under_parent(
+            &mut tasks,
+            task("parent-1", "Task 1"),
+            task("sub-1", "Task 1.1"),
+        );
+        merge_subtask_under_parent(
+            &mut tasks,
+            task("parent-2", " task   1 "),
+            task("sub-2", "Task 1.2"),
+        );
+        merge_subtask_under_parent(
+            &mut tasks,
+            task("parent-3", "Task 1"),
+            task("sub-3", " task 1.1 "),
+        );
+
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].text, "Task 1");
+        assert_eq!(tasks[0].subtasks.len(), 2);
+        assert_eq!(tasks[0].subtasks[0].text, "Task 1.1");
+        assert_eq!(tasks[0].subtasks[1].text, "Task 1.2");
     }
 }
