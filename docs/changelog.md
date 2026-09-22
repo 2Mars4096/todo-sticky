@@ -2,6 +2,8 @@
 
 ## 2026-09-22
 
+- [delivery] Push automatic parent completion commit `7184669` to `origin/main` after destination-specific user approval.
+
 - [tests] Pass nine task completion/persistence regression scenarios and the frontend/native production builds.
 - [release] Signature-check, checksum-verify, reinstall, and relaunch version 2.0.4 with automatic parent completion; preserve the prior bundle as a temporary rollback copy.
 
