@@ -10,6 +10,8 @@
 
 ## Failed Approaches
 
+- 2026-09-22: App rebuild could not start because rustup had no default toolchain and only Rust 1.72.1 installed. Use a temporary `RUSTUP_HOME` with a current stable minimal toolchain and an explicit `RUSTUP_TOOLCHAIN=stable`; keep the user’s global Rust configuration unchanged.
+
 - 2026-08-19: Passing `--ask-for-approval` after `codex exec` fails because that approval flag belongs to the global CLI argument set. Place `--ask-for-approval never` and `--sandbox read-only` before the `exec` subcommand; keep exec-specific isolation flags after it.
 - 2026-08-19: An app-only Tauri build inferred the sibling `sticky-todo-api` CLI as its source executable. Setting only `mainBinaryName` renamed that CLI to `todo-sticky`, so metadata and signature checks alone were insufficient; direct launch exposed the CLI usage text and the previous app was restored. Keep Cargo `default-run` and Tauri `mainBinaryName` set to `todo-sticky`, then verify bundle metadata, executable size/hash, and direct GUI launch before replacement.
 - 2026-08-10: macOS `screencapture` could enumerate the Sticky Todo window but could not capture either its window ID or exact rectangle in the current automation session. Use signed-bundle, process-environment, stable-store timestamp, and parser evidence when Screen Recording is unavailable.

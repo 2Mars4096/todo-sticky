@@ -44,6 +44,7 @@ After configuring more than one provider, use the compact provider selector besi
 - **Tasks & subtasks** — Add a step from the plus aligned below its parent checkbox, use the branching icon for AI breakdown, and drag the six-dot handle to reorder tasks or steps within one task
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
+- **Automatic parent completion** — Mark the last unfinished subtask done to complete its parent for that day; steps from other dates do not block completion
 - **Status cycle** — Toggle task status: todo → done → partial → todo
 - **Space-aware task actions** — Keep each icon set together after the final task-text fragment when space permits, with a text-aligned fallback row for longer tasks
 - **Smart carry-forward** — Move unfinished past work directly to today; moving one subtask preserves its parent on the destination date and merges later sibling moves beneath it

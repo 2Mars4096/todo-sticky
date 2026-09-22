@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-22
+
+- [tests] Pass nine task completion/persistence regression scenarios and the frontend/native production builds.
+- [release] Signature-check, checksum-verify, reinstall, and relaunch version 2.0.4 with automatic parent completion; preserve the prior bundle as a temporary rollback copy.
+
+- [behavior] Automatically complete a parent when its final unfinished current-day subtask is marked done, saving both statuses together. Historical steps do not block completion; manual status cycling remains available.
+
+
 ## 2026-08-21
 
 - [frontend] Flow each task or subtask icon group into available space after the final text fragment, while keeping the group atomic and text-aligned when it must wrap.

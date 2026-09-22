@@ -200,11 +200,16 @@ export function useTasks(dateStr: string) {
       const next = prev.map(t => {
         if (subtaskId) {
           if (t.id !== taskId) return t
+          const todaySubtasks = t.todaySubtasks.map(s =>
+            s.id === subtaskId ? { ...s, status: nextStatus(s.status) } : s
+          )
+          const completedSubtask = todaySubtasks.find(s => s.id === subtaskId)
+          const allDone = completedSubtask?.status === 'done'
+            && todaySubtasks.every(s => s.status === 'done')
           return {
             ...t,
-            todaySubtasks: t.todaySubtasks.map(s =>
-              s.id === subtaskId ? { ...s, status: nextStatus(s.status) } : s
-            ),
+            status: allDone ? 'done' : t.status,
+            todaySubtasks,
           }
         }
         if (t.id === taskId) return { ...t, status: nextStatus(t.status) }
