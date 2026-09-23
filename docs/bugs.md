@@ -8,7 +8,13 @@
 - 2026-08-10: `npm install` reports five dependency advisories (`1` low, `4` high). This clipboard slice does not run `npm audit fix` because automatic dependency rewrites are outside its scope; audit and upgrade the affected dependency chains separately.
 - 2026-08-10: Repository-wide `tsc --noEmit` reports pre-existing type errors in the Star Focus orbital renderers and archive-limit typing even though the documented Vite frontend build succeeds. Use focused type checks for unrelated slices until those errors are resolved.
 
+## Resolved Issues
+
+- 2026-09-23: An idle window could keep labeling yesterday as Today because `isToday` was only evaluated during incidental renders. The calendar now updates a local-date state on a midnight/minute timer and focus/visibility/page restoration; regression coverage verifies the selected date stays intact and Go to today targets the current date.
+
 ## Failed Approaches
+
+- 2026-09-23: The launcher-isolated Cargo home stalled on a crates.io index update. Reuse `/Users/lizhi/.cargo` with `CARGO_NET_OFFLINE=true` and the existing temporary Rust toolchain for this reinstall.
 
 - 2026-09-22: App rebuild could not start because rustup had no default toolchain and only Rust 1.72.1 installed. Use a temporary `RUSTUP_HOME` with a current stable minimal toolchain and an explicit `RUSTUP_TOOLCHAIN=stable`; keep the user’s global Rust configuration unchanged.
 

@@ -48,7 +48,7 @@ After configuring more than one provider, use the compact provider selector besi
 - **Status cycle** — Toggle task status: todo → done → partial → todo
 - **Space-aware task actions** — Keep each icon set together after the final task-text fragment when space permits, with a text-aligned fallback row for longer tasks
 - **Smart carry-forward** — Move unfinished past work directly to today; moving one subtask preserves its parent on the destination date and merges later sibling moves beneath it
-- **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today
+- **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today. The Today marker refreshes at midnight and when you return to the app, preserving the selected day
 - **Native clipboard** — Use standard Command-C and Command-V while editing; the row Copy icon exports a parent with all steps, or one selected subtask with its parent context, for Codex and other agents
 - **Agent task API** — Extract, create, edit, and delete Markdown-backed tasks from reusable skills through a local JSON CLI, with revision checks for safe writes
 - **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks

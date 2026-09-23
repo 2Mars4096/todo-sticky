@@ -18,6 +18,8 @@
 
 ## Ready Shell Modules
 
+- [ ] `src/hooks/useCalendar.ts`: keeps selected-date navigation separate from a live local-today key; refreshes at local midnight, within one minute of clock changes while timers run, and on focus/visibility/page restoration, with effect cleanup.
+
 - [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, compact action-bar AI provider switching, and task-context handoff for album recommendations.
 - [ ] `src/components/AlbumRecommendations.tsx`: presents the configured AI provider's four-album work soundtrack in a dismissible paper-toned sheet above the action bar, with loading, regenerate, Escape, and compact-layout states.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-23
+
+- [release] Rebuild, signature-check, checksum-verify, reinstall, and relaunch version 2.0.4 with the live Today refresh; preserve the previous app as a temporary rollback bundle.
+
+- [fix] Refresh local today at midnight and on window focus, visible-page return, and page restoration; preserve the selected date and show Go to today after rollover. Recheck at least every minute while timers run for clock/timezone changes.
+- [tests] Pass calendar rollover/resume/navigation/cleanup regression checks and the frontend production build.
+
+
 ## 2026-09-22
 
 - [delivery] Push automatic parent completion commit `7184669` to `origin/main` after destination-specific user approval.

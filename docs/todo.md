@@ -92,6 +92,7 @@
   - [x] [4-15-task-action-icons-and-structured-step-flow](plans/4-15-task-action-icons-and-structured-step-flow.md) - Unify task action icons and preserve parent context when copying, focusing, or carrying steps forward.
   - [x] [4-16-inline-task-action-flow](plans/4-16-inline-task-action-flow.md) - Pack the action group after the final task-text line instead of reserving a wasteful full-width row.
   - [x] [4-17-automatic-parent-completion](plans/4-17-automatic-parent-completion.md) - Complete the parent when its last unfinished current-day subtask is marked done.
+  - [x] [4-18-live-today-refresh](plans/4-18-live-today-refresh.md) - Refresh the Today marker at midnight and when the app resumes.
 
 ## Backlog
 
