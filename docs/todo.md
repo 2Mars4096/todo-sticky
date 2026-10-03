@@ -98,7 +98,7 @@
 
   - [x] [4-18-live-today-refresh](plans/4-18-live-today-refresh.md) - Refresh the Today marker at midnight and when the app resumes.
 
-  - [ ] [4-19-github-in-app-updates](plans/4-19-github-in-app-updates.md) - Check, install, and restart into signed GitHub releases from Settings.
+  - [ ] [4-19-github-in-app-updates](plans/4-19-github-in-app-updates.md) - Updater installed and code pushed; first public release awaits publication approval.
 
 ## Maintenance
 

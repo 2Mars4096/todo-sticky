@@ -9,7 +9,7 @@
 - [x] 2. Add compact Settings controls for checking, availability, progress, errors, and restart.
 - [x] 3. Wait for pending task/state writes and require saved settings before installation.
 - [x] 4. Configure a persistent signing key and GitHub release artifacts plus latest.json.
-- [ ] 5. Verify update lifecycle and release configuration; build and install the initial updater-enabled version.
+- [x] 5. Verify update lifecycle and release configuration; build and install the initial updater-enabled version.
 - [ ] 6. Publish and verify the first signed release after GitHub authentication is restored.
 
 ## Decisions
@@ -29,3 +29,5 @@
 - Local checks pass: updater lifecycle, pending-write flush/retry, release manifest validation, task completion, calendar rollover, frontend build, native check, and signed macOS packaging. The real archive signature verifies; a one-byte alteration is rejected.
 
 - Browser verification at 340px and 460px passes for check/install/restart controls, progress, busy form locking, unsaved-settings/focus guards, and horizontal containment.
+
+- Installed and relaunched updater-enabled version 2.1.0. Signature and signed-build checksum match; rollback is `/private/tmp/Sticky Todo.before-2.1.0.app`. Code is pushed as `a89605a`; public release-tag approval is pending.

@@ -2,6 +2,8 @@
 
 ## 2026-10-03
 
+- [delivery] Install and relaunch updater-enabled version 2.1.0, verify signature and executable checksum, and push feature commit `a89605a`. The signing secret is configured; public release-tag approval is pending.
+
 - [updates] Add on-demand signed GitHub update checks, download/install progress, and restart controls in Settings. Drain pending task/native writes before installation, and block it while settings are unsaved or a focus session is active.
 - [release] Prepare version 2.1.0 with a persistent updater trust key and a cross-platform signed-release workflow that publishes after complete manifest validation.
 - [checks] Updater lifecycle and persistence checks, existing calendar/task checks, frontend build, native check, and signed macOS packaging pass. Repository-wide TypeScript checking still reports the documented pre-existing Star Focus errors.
