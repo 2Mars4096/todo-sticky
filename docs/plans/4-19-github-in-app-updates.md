@@ -1,7 +1,7 @@
 # 4-19: GitHub In-App Updates
 
 **Parent:** [4-ready-shell-and-ux-path-pass](4-ready-shell-and-ux-path-pass.md)
-**Status:** in-progress
+**Status:** completed
 **Goal:** Let users check for, install, and restart into signed GitHub releases from Settings.
 
 ## Tasks
@@ -10,7 +10,7 @@
 - [x] 3. Wait for pending task/state writes and require saved settings before installation.
 - [x] 4. Configure a persistent signing key and GitHub release artifacts plus latest.json.
 - [x] 5. Verify update lifecycle and release configuration; build and install the initial updater-enabled version.
-- [ ] 6. Publish and verify the first signed release.
+- [x] 6. Publish and verify the first signed release.
 
 ## Decisions
 - Updates are checked on demand in Settings; installation and restart are explicitly initiated by the user.
@@ -36,3 +36,6 @@
 - The direct companion-CLI build first generates frontend assets required by the native context; failed jobs now retain dependency caches for retries.
 
 - Public download verification caught GitHub changing spaces in asset names to dots. The manifest was repaired using actual GitHub asset URLs; future releases normalize names and verify uploaded URLs before publication.
+
+- Published [v2.1.0](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.0); [retry run 37101963767](https://github.com/2Mars4096/todo-sticky/actions/runs/37101963767) passed all three builds and publication.
+- Verified the public manifest and every platform archive against the app trust key; altered archives were rejected. The native Tauri updater downloaded and verified the 9,892,545-byte Mac archive. Both Mac executables contain Intel and Apple Silicon slices, and the bundle passes strict signature verification.
