@@ -18,6 +18,12 @@
 - [behavior] Automatically complete a parent when its final unfinished current-day subtask is marked done, saving both statuses together. Historical steps do not block completion; manual status cycling remains available.
 
 
+## 2026-09-15
+
+- [configuration] Switch the installed app’s active OpenRouter model and saved profile to `deepseek/deepseek-v4.1-flash` using the existing key; verify a minimal live response (`OK`) and relaunch the app. No source or default-provider change.
+
+- [maintenance] Remove user-approved Rust debug and release build output, reducing the repository from approximately 8.9 GiB to 214 MiB. Preserve rollback bundles, dependencies, task recovery material, and the installed app; verify both build directories are absent.
+
 ## 2026-08-21
 
 - [frontend] Flow each task or subtask icon group into available space after the final text fragment, while keeping the group atomic and text-aligned when it must wrap.

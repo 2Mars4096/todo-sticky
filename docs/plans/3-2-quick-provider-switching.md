@@ -25,3 +25,5 @@
 - The selector changes providers, not individual models. Each provider resumes its last saved model.
 - A green status dot means the active provider is ready; an amber dot and `Set up` label identify a provider that still needs configuration.
 - Verification: `npm run build:frontend`, `cargo test --manifest-path src-tauri/Cargo.toml` (9 passing tests), and 8 focused TypeScript profile-switch assertions.
+
+- 2026-09-15: Set the installed app’s active OpenRouter model and saved profile to `deepseek/deepseek-v4.1-flash`, retaining the existing key; a minimal API probe returned `OK`.

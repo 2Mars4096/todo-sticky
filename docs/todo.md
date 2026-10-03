@@ -94,6 +94,12 @@
   - [x] [4-17-automatic-parent-completion](plans/4-17-automatic-parent-completion.md) - Complete the parent when its last unfinished current-day subtask is marked done.
   - [x] [4-18-live-today-refresh](plans/4-18-live-today-refresh.md) - Refresh the Today marker at midnight and when the app resumes.
 
+## Maintenance
+
+- [x] Configure the installed app’s OpenRouter profile for `deepseek/deepseek-v4.1-flash` and verify a minimal API response.
+
+- [x] [5-build-artifact-cleanup](plans/5-build-artifact-cleanup.md) - Remove debug/release build output and recover approximately 8.7 GiB.
+
 ## Backlog
 
 - [ ] Revisit whether Star Focus archive retention needs a wider preset range or a dedicated settings-panel home beyond the first local-only `6` / `12` / `24` control pass.
