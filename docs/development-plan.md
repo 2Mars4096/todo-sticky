@@ -2,6 +2,8 @@
 
 ## Current Goal
 
+- [ ] Deliver signed GitHub releases and an in-app update flow through [4-19](plans/4-19-github-in-app-updates.md).
+
 - [ ] Decide whether the new local archive-retention controls should stay as small Tracking Station presets or expand into a broader settings surface later.
 
 ## Near-Term Milestones

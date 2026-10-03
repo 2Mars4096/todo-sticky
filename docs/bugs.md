@@ -16,6 +16,9 @@
 
 ## Failed Approaches
 
+- 2026-10-03: Adding the newest updater packages pulled the JavaScript core API to 2.12 while native Tauri remained 2.10, causing bundling to reject the mismatch. Keep the root API at `~2.10.1` and native updater/process at `~2.12.0` / `~2.3.1` to avoid an unrelated runtime upgrade.
+- 2026-10-03: GitHub CLI in the isolated shell could not locate the refreshed credential through its default keychain. Use the explicit login keychain and decode the standard go-keyring prefix into a subprocess environment; never print or persist the token. The authenticated API then succeeds.
+
 - 2026-10-03: Native verification of the album prompt revision could not start: rustup has no default Cargo toolchain in the current environment. Resolved for reinstall by installing stable Rust under `/private/tmp/sticky-todo-rustup` and reusing `/Users/lizhi/.cargo` offline.
 
 - 2026-09-23: The launcher-isolated Cargo home stalled on a crates.io index update. Reuse `/Users/lizhi/.cargo` with `CARGO_NET_OFFLINE=true` and the existing temporary Rust toolchain for this reinstall.

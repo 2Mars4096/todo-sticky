@@ -98,6 +98,8 @@
 
   - [x] [4-18-live-today-refresh](plans/4-18-live-today-refresh.md) - Refresh the Today marker at midnight and when the app resumes.
 
+  - [ ] [4-19-github-in-app-updates](plans/4-19-github-in-app-updates.md) - Check, install, and restart into signed GitHub releases from Settings.
+
 ## Maintenance
 
 - [x] Rebuild and reinstall the 2026-10-03 editing and album changes; verify signature, checksum, and GUI launch.

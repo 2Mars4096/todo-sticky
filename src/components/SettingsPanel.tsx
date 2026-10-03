@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings, Provider } from '../types'
 import { api } from '../api'
+import { AppUpdates } from './AppUpdates'
+import { updateIsBusy } from '../appUpdates'
+import type { useAppUpdates } from '../hooks/useAppUpdates'
 import {
   PROVIDER_ORDER,
   PROVIDER_PRESETS,
@@ -20,19 +23,22 @@ const EMPTY_SETTINGS: AppSettings = {
 }
 
 interface Props {
+  appUpdates: ReturnType<typeof useAppUpdates>
+  updateBlockedReason?: string
   onClose: () => void
   onSaved?: (settings: AppSettings) => void
   firstRun?: boolean
   initialProvider?: Provider
 }
 
-export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: Props) {
+export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, appUpdates, updateBlockedReason }: Props) {
   const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS)
   const [showKey, setShowKey] = useState(false)
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
   const [dirty, setDirty] = useState(false)
+  const updating = updateIsBusy(appUpdates.state.phase)
 
   useEffect(() => {
     api.getSettings().then(s => {
@@ -112,7 +118,7 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
     || settings.apiBase.toLowerCase().includes('openrouter.ai')
 
   return (
-    <div className="settings-overlay" onClick={firstRun ? undefined : onClose}>
+    <div className="settings-overlay" onClick={firstRun || updating ? undefined : onClose}>
       <div className="settings-panel settings-wide" onClick={e => e.stopPropagation()}>
 
         <h3>{firstRun ? 'Welcome to Sticky Todo' : 'Settings'}</h3>
@@ -123,6 +129,17 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
         )}
 
         <div className="settings-scroll">
+          {!firstRun && (
+            <AppUpdates
+              currentVersion={appUpdates.currentVersion}
+              state={appUpdates.state}
+              blockedReason={dirty ? 'Save your settings before updating.' : saving || testing ? 'Wait for the current operation to finish.' : updateBlockedReason}
+              onCheck={appUpdates.check}
+              onInstall={appUpdates.install}
+              onRestart={appUpdates.restart}
+            />
+          )}
+          <fieldset className="settings-fields" disabled={updating}>
           {/* --- AI Provider --- */}
           <div className="settings-section">
             <div className="section-title">AI Provider</div>
@@ -268,12 +285,13 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider }: P
 
             <button className="add-machine" onClick={addMachine}>+ Add Machine</button>
           </div>
+          </fieldset>
         </div>
 
         {/* --- Footer --- */}
         <div className="btn-row">
-          {!firstRun && <button onClick={onClose}>Cancel</button>}
-          <button className="primary" onClick={handleSave} disabled={saving}>
+          {!firstRun && <button onClick={onClose} disabled={updating}>Cancel</button>}
+          <button className="primary" onClick={handleSave} disabled={saving || updating}>
             {saving
               ? 'Saving…'
               : firstRun

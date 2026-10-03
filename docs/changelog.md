@@ -2,6 +2,10 @@
 
 ## 2026-10-03
 
+- [updates] Add on-demand signed GitHub update checks, download/install progress, and restart controls in Settings. Drain pending task/native writes before installation, and block it while settings are unsaved or a focus session is active.
+- [release] Prepare version 2.1.0 with a persistent updater trust key and a cross-platform signed-release workflow that publishes after complete manifest validation.
+- [checks] Updater lifecycle and persistence checks, existing calendar/task checks, frontend build, native check, and signed macOS packaging pass. Repository-wide TypeScript checking still reports the documented pre-existing Star Focus errors.
+
 - [release] Frontend/native builds and diff checks pass for the album sheet trim; reinstall, signature-check, checksum-verify, and relaunch version 2.0.4. Rollback: `/private/tmp/Sticky Todo.before-20261003-album-trim.app`.
 - [albums] Remove the duplicate Work soundtrack heading and introductory description; show Albums for working followed directly by the album list.
 

@@ -173,3 +173,7 @@ A reusable skill only needs a concise `SKILL.md` plus a deterministic script or 
 - always pass `expectedRevision` for edit and delete;
 - show the intended target before destructive deletion when the user's request is ambiguous;
 - re-extract and ask for direction on a stale revision when the correct target is no longer clear.
+
+### App Updates
+
+Settings uses the official Tauri updater `check`, `download`, and `install` operations plus process `relaunch`. These are desktop-only operations, separate from the task CLI. `useTasks.flushPendingSave()` and `waitForPendingWrites()` must complete before install/relaunch. Updater metadata and signatures come from the public release endpoint; no GitHub token is sent by the app.

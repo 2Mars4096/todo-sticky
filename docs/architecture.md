@@ -168,3 +168,11 @@
 - [ ] Default local app run command: `npm run dev`
 - [ ] Native-side sanity check when touching Rust: `cargo check --manifest-path src-tauri/Cargo.toml`
 - [ ] CI/release flow exists under `.github/workflows/release.yml`; there is no separate lint/test standard documented yet.
+
+## In-App Updates
+
+- `src/appUpdates.ts` owns the check/download/install/restart lifecycle and native resource cleanup. `src/hooks/useAppUpdates.ts` keeps it alive across Settings openings.
+- `src/components/AppUpdates.tsx` adds on-demand update controls inside Settings. Unsaved settings and active focus sessions block installation; busy updates lock the Settings form.
+- `useTasks.flushPendingSave()` drains queued task edits, and `waitForPendingWrites()` in `src/api.ts` waits for native writes before installation or restart.
+- Official Tauri updater/process plugins verify signed packages from the public GitHub release `latest.json`. The app carries the public key only; the private key lives outside the repo and in an approved Actions secret.
+- Tagged releases build platform artifacts independently, then `scripts/prepare-update-release.cjs` creates one complete manifest. Publication follows `scripts/validate-update-manifest.cjs` checks. Universal macOS archives serve both Mac architectures.

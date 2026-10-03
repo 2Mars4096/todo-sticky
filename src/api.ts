@@ -10,6 +10,21 @@ import type {
   TaskMutationResult,
 } from './types'
 
+const pendingWrites = new Set<Promise<unknown>>()
+
+function persist<T>(request: Promise<T>): Promise<T> {
+  pendingWrites.add(request)
+  void request.then(
+    () => pendingWrites.delete(request),
+    () => pendingWrites.delete(request),
+  )
+  return request
+}
+
+export async function waitForPendingWrites(): Promise<void> {
+  while (pendingWrites.size) await Promise.all([...pendingWrites])
+}
+
 export const api = {
   extractTaskApi: (request: { date?: string; fromDate?: string; toDate?: string; all?: boolean }) =>
     invoke<{ dates: ExtractedTaskDate[] }>('task_api_extract', { request }),
@@ -41,13 +56,13 @@ export const api = {
     invoke<{ tasks: AggregatedTask[]; filePath?: string; weekStart?: string }>('get_tasks', { dateStr }),
 
   saveTasks: (data: { filePath: string; dateStr: string; tasks: Task[] }) =>
-    invoke<{ ok: boolean }>('save_tasks', data),
+    persist(invoke<{ ok: boolean }>('save_tasks', data)),
 
   createDateSection: (data: { dateStr: string; tasks: Task[] }) =>
-    invoke<{ filePath: string; weekStart: string }>('create_date_section', data),
+    persist(invoke<{ filePath: string; weekStart: string }>('create_date_section', data)),
 
   appendTasksToDate: (data: { dateStr: string; tasks: Task[] }) =>
-    invoke<{ filePath: string; weekStart: string }>('append_tasks_to_date', data),
+    persist(invoke<{ filePath: string; weekStart: string }>('append_tasks_to_date', data)),
 
   pushTask: (data: {
     fromDate: string
@@ -56,7 +71,7 @@ export const api = {
     subtaskTexts: string[]
     parentTaskText?: string
   }) =>
-    invoke<{ ok: boolean; filePath: string }>('push_task', data),
+    persist(invoke<{ ok: boolean; filePath: string }>('push_task', data)),
 
   listWeeklyFiles: () =>
     invoke<string[]>('list_weekly_files'),
@@ -74,13 +89,13 @@ export const api = {
     invoke<AppSettings>('get_settings'),
 
   saveSettings: (settings: AppSettings) =>
-    invoke<{ ok: boolean }>('save_settings', { settings }),
+    persist(invoke<{ ok: boolean }>('save_settings', { settings })),
 
   getStarFocusState: () =>
     invoke<StarFocusState | null>('get_star_focus_state'),
 
   saveStarFocusState: (state: StarFocusState) =>
-    invoke<{ ok: boolean }>('save_star_focus_state', { state }),
+    persist(invoke<{ ok: boolean }>('save_star_focus_state', { state })),
 
   testConnection: (settings: { provider: string; apiBase: string; apiKey: string; model: string }) =>
     invoke<{ ok: boolean; message: string }>('test_connection', { settings }),

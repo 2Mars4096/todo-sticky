@@ -1,6 +1,6 @@
 {
   "name": "todo-sticky",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "Cross-platform sticky note todo planner with AI task breakdown",
   "scripts": {
     "dev": "npx tauri dev",
@@ -14,10 +14,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/api": "~2.10.1",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-global-shortcut": "^2.3.1",
+    "@tauri-apps/plugin-process": "~2.3.1",
+    "@tauri-apps/plugin-updater": "~2.12.0",
     "date-fns": "^4.1.0",
     "react": "^18.3.1",
     "react-day-picker": "^9.6.0",

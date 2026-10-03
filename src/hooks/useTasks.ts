@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { AggregatedTask, Task } from '../types'
-import { api } from '../api'
+import { api, waitForPendingWrites } from '../api'
 import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
 function flattenToday(aggregated: AggregatedTask[]): Task[] {
@@ -94,6 +94,7 @@ export function useTasks(dateStr: string) {
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<'cloud-only' | 'failed' | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSave = useRef<(() => Promise<void>) | null>(null)
   const filePathRef = useRef<string | null>(null)
   const dateRef = useRef(dateStr)
   const carryForwardTarget = resolveTaskCarryForwardTarget(dateStr)
@@ -102,7 +103,7 @@ export function useTasks(dateStr: string) {
   useEffect(() => { filePathRef.current = filePath }, [filePath])
 
   const load = useCallback(async () => {
-    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
+    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; pendingSave.current = null }
     setLoading(true)
     setLoadError(null)
     try {
@@ -127,19 +128,34 @@ export function useTasks(dateStr: string) {
     const snapshotDate = dateRef.current
     const snapshotPath = filePathRef.current
     if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(async () => {
+    const save = async () => {
       const flat = flattenToday(updatedTasks)
-      try {
-        if (snapshotPath) {
-          await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
-        } else {
-          const result = await api.createDateSection({ dateStr: snapshotDate, tasks: flat })
-          if (dateRef.current === snapshotDate) setFilePath(result.filePath)
+      if (snapshotPath) {
+        await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
+      } else {
+        const result = await api.createDateSection({ dateStr: snapshotDate, tasks: flat })
+        if (dateRef.current === snapshotDate) {
+          filePathRef.current = result.filePath
+          setFilePath(result.filePath)
         }
-      } catch (e) {
-        console.error('Failed to save tasks:', e)
       }
+      if (pendingSave.current === save) pendingSave.current = null
+    }
+    pendingSave.current = save
+    saveTimer.current = setTimeout(async () => {
+      saveTimer.current = null
+      try { await save() }
+      catch (error) { console.error('Failed to save tasks:', error) }
     }, 300)
+  }, [])
+
+  const flushPendingSave = useCallback(async () => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current)
+      saveTimer.current = null
+    }
+    await waitForPendingWrites()
+    await pendingSave.current?.()
   }, [])
 
   const addTask = useCallback((text: string) => {
@@ -273,7 +289,7 @@ export function useTasks(dateStr: string) {
     }
 
     try {
-      if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
+      if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; pendingSave.current = null }
 
       // Append to the resolved current or future section.
       await api.pushTask({
@@ -427,6 +443,7 @@ export function useTasks(dateStr: string) {
   }, [persist])
 
   return {
+    flushPendingSave,
     tasks, loading, loadError, load,
     addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,

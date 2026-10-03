@@ -13,7 +13,8 @@ import { useCalendar } from './hooks/useCalendar'
 import { useGoals } from './hooks/useGoals'
 import { STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS, useStarFocus } from './hooks/useStarFocus'
 import { useTasks } from './hooks/useTasks'
-import { api } from './api'
+import { api, waitForPendingWrites } from './api'
+import { useAppUpdates } from './hooks/useAppUpdates'
 import { copyText } from './clipboard'
 import { formatAgentPrompt } from './taskTransfer'
 import {
@@ -63,6 +64,16 @@ export default function App() {
   const restoredOverlaySessionRef = useRef<string | null>(null)
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
+  const updateBlockedReason = starFocus.activeSession
+    ? 'Finish the focus session before updating.'
+    : aiLoading || providerSwitching || tasks.loading
+      ? 'Wait for the current operation to finish.'
+      : undefined
+  const appUpdates = useAppUpdates(async () => {
+    if (updateBlockedReason) throw new Error(updateBlockedReason)
+    await tasks.flushPendingSave()
+    await waitForPendingWrites()
+  })
   const albumTaskContext = useMemo(() => tasks.tasks.map(task => ({
     text: task.text,
     status: task.status,
@@ -623,6 +634,8 @@ export default function App() {
         )}
         {showSettings && (
           <SettingsPanel
+            appUpdates={appUpdates}
+            updateBlockedReason={updateBlockedReason}
             onClose={() => {
               setShowSettings(false)
               setFirstRun(false)

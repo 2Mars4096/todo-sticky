@@ -5642,3 +5642,12 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* In-app release updates */
+.settings-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.app-updates .test-row { flex-wrap: wrap; }
+.app-updates progress { width: 100%; accent-color: var(--accent); margin-top: 8px; }
+.app-updates details { margin-top: 8px; font-size: 11px; }
+.app-updates summary { cursor: pointer; }
+.update-notes { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 150px; overflow-y: auto; margin-top: 6px; }
+.update-error { color: var(--danger); font-size: 11px; overflow-wrap: anywhere; margin-top: 6px; }
