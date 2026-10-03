@@ -26,7 +26,7 @@ export function AlbumRecommendations({
       <header className="album-recommendations-header">
         <div>
           <span className="album-recommendations-kicker">Work soundtrack</span>
-          <h2 id="album-recommendations-title">Albums for this list</h2>
+          <h2 id="album-recommendations-title">Albums for working</h2>
         </div>
         <button
           className="album-recommendations-close"

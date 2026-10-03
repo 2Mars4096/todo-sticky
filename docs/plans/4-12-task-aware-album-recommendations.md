@@ -14,6 +14,8 @@
 - [x] 6. Update user, architecture, API, todo, and changelog documentation.
 - [x] 7. Build, verify, install, and relaunch the macOS application bundle.
 
+- [x] 8. Select by listening atmosphere and attention demands; describe musical qualities and mood instead of echoing task wording.
+
 ## Decisions
 
 - Keep recommendations ephemeral in frontend memory; do not add a music-history store or mutate task Markdown.
@@ -22,6 +24,9 @@
 - Recommend full, real albums and show text-only rows with a small record motif, avoiding remote artwork, links, and extra network requests.
 - Pin Cargo's default run target and the Tauri desktop bundle name to `todo-sticky` because this package also exposes the separate `sticky-todo-api` binary.
 
+- Infer work needs before selecting music; exclude keyword, title, lyrical-topic, or geographic matching. Offer alternatives for the overall atmosphere rather than assigning an album to each task.
+- Keep the JSON shape stable; `bestFor` now describes listening mood or energy, and `fit` explains audible qualities.
+
 ## Notes
 
 - Visual QA used representative long task, album, and artist names at the app's 460px baseline width.
@@ -29,3 +34,5 @@
 - The first app-only bundle selected `sticky-todo-api`; setting only `mainBinaryName` then renamed the CLI without changing its behavior. The previous app was restored, and the final bundle must report `CFBundleExecutable = todo-sticky`, retain the desktop binary profile, and survive direct GUI launch before replacement.
 - Final installation verification: the clean bundle points to the 8 MB `todo-sticky` GUI executable, survives direct launch, passes strict deep signature validation, matches the installed executable checksum, and runs from `/Applications/Sticky Todo.app` as version `2.0.4`.
 - The previous working bundle remains recoverable at `/private/tmp/Sticky Todo.previous-album-recommendations.app` for this session; no task, settings, or app-state stores were moved or replaced.
+
+- 2026-10-03: Updated curator instructions and sheet heading; frontend build and diff checks pass. The initial native check found no default Rust toolchain; the requested reinstall uses isolated stable Rust and the existing offline Cargo cache. Live provider output has not been evaluated.

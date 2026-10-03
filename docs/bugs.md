@@ -16,6 +16,7 @@
 
 ## Failed Approaches
 
+- 2026-10-03: Native verification of the album prompt revision could not start: rustup has no default Cargo toolchain in the current environment. Resolved for reinstall by installing stable Rust under `/private/tmp/sticky-todo-rustup` and reusing `/Users/lizhi/.cargo` offline.
 
 - 2026-09-23: The launcher-isolated Cargo home stalled on a crates.io index update. Reuse `/Users/lizhi/.cargo` with `CARGO_NET_OFFLINE=true` and the existing temporary Rust toolchain for this reinstall.
 

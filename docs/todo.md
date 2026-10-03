@@ -87,6 +87,7 @@
   - [x] [4-10-agent-task-api](plans/4-10-agent-task-api.md) - Expose task extraction and safe CRUD as a JSON API for reusable agent skills.
   - [x] [4-11-task-step-action-clarity](plans/4-11-task-step-action-clarity.md) - Distinguish manual step entry from AI task breakdown in every task row.
   - [x] [4-12-task-aware-album-recommendations](plans/4-12-task-aware-album-recommendations.md) - Generate an ephemeral work soundtrack from the current task list without expanding the sticky-note layout.
+    - [x] Recommend by working atmosphere and musical qualities, with listening-mood labels.
   - [x] [4-13-native-copy-paste-shortcuts](plans/4-13-native-copy-paste-shortcuts.md) - Replace visible clipboard controls with standard Command-C and Command-V behavior.
   - [x] [4-14-task-and-subtask-reordering](plans/4-14-task-and-subtask-reordering.md) - Drag tasks into a new order or rearrange current-day subtasks within their parent task.
   - [x] [4-15-task-action-icons-and-structured-step-flow](plans/4-15-task-action-icons-and-structured-step-flow.md) - Unify task action icons and preserve parent context when copying, focusing, or carrying steps forward.

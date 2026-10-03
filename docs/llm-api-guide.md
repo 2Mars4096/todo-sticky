@@ -156,7 +156,7 @@ These commands belong to the interactive desktop app and are not part of the det
 - `llmSchedule({ tasks, machines })` → native `llm_schedule`
 - `llmRecommendAlbums({ tasks })` → native `llm_recommend_albums`
 
-Album requests contain only the visible date's task text, status, and current-day steps. The response uses `summary` plus an `albums` array whose entries contain `title`, `artist`, optional `year`, `fit`, and `bestFor`. Results remain in frontend memory and are not written to the Markdown archive or app-state files.
+Album requests contain only the visible date's task text, status, and current-day steps. The response uses `summary` plus an `albums` array whose entries contain `title`, `artist`, optional `year`, `fit`, and `bestFor`. `summary` describes the working atmosphere, `fit` explains audible qualities and listening suitability, and `bestFor` is a short listening-mood or energy cue. Selection uses inferred attention needs rather than keyword or topic matching. Results remain in frontend memory and are not written to the Markdown archive or app-state files.
 
 ### Codex Background Provider
 

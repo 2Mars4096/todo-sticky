@@ -107,6 +107,7 @@
 - Keep each AI provider's API base, key, and model in its own local profile; quick switching may activate configured profiles directly, while unconfigured providers must open Settings before activation.
 - Treat Codex as a local execution provider, not an OpenAI-compatible endpoint: reuse `codex login`, never request or copy its credential, and keep the executable path in the existing provider profile's endpoint slot for backward-compatible settings persistence.
 - Isolate every Codex generation in a new empty temporary directory with an ephemeral session, ignored user configuration and execution rules, a read-only sandbox, approval policy `never`, closed stdin, no web-search flag, and a hard timeout; delete the temporary directory after completion.
+- Album selection infers attention and atmosphere needs from tasks, then selects by audible musical qualities; explanations and mood labels avoid task-word matching.
 - Keep album recommendations ephemeral and task-adjacent: send only the visible date's task text, status, and current-day steps, then show the result above the action bar without creating another persisted workspace.
 - Keep Cargo `default-run` and Tauri `mainBinaryName` pinned to `todo-sticky`; this package also produces `sticky-todo-api`, and the desktop bundler must never infer or rename the CLI as the application executable.
 

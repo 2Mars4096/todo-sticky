@@ -2,6 +2,8 @@
 
 ## 2026-10-03
 
+- [checks] Album revision passes the frontend build and diff checks; the initial native check required an isolated Rust toolchain because no default was configured. Live model output has not been evaluated.
+- [albums] Guide recommendations by concentration, energy, and listening atmosphere. Require musical explanations and mood cues, exclude task-word/topic matching, and label the sheet Albums for working.
 
 - [checks] Frontend build, diff checks, and isolated component browser checks at 340px/460px pass for expanded editing, action isolation, wrapping, and read-only rows.
 

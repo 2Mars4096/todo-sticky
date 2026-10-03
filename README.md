@@ -57,7 +57,7 @@ Click a task title or the empty space to its right to edit it. The editor extend
 - **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires a configured AI provider)
 - **AI schedule** — Generate a time-blocked schedule for the day (requires a configured AI provider)
 - **Codex background provider** — Run breakdowns, schedules, and album picks through the locally authenticated Codex CLI in an ephemeral read-only workspace, without adding an OpenAI API key
-- **Task-aware albums** — Turn the current task list into a four-album work soundtrack, with a concise fit and best-use cue for each pick (requires a configured AI provider)
+- **Task-aware albums** — Find four albums suited to the concentration, energy, and atmosphere of the work, with musical reasons and listening-mood cues (requires a configured AI provider)
 - **Star Focus Mission Control + Focus Mode** — Arm a task, choose a focus burn, and travel one leg at a time through an Earth → Moon → Venus → Mars → Saturn route. The compact layout puts the task and timer first; wider windows pair those controls with the interactive 3D Tracking Station. Completed sessions become a native-local travel log with `6` / `12` / `24` retention presets, while the right rail stays lightweight and always shows the next destination.
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in the menu bar with a tray icon
