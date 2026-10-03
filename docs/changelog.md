@@ -2,6 +2,9 @@
 
 ## 2026-10-03
 
+- [release] Build, ad-hoc sign, signature-check, checksum-verify, reinstall, and relaunch version 2.0.4 with expanded task editing and atmosphere-based album recommendations. Preserve the previous app at `/private/tmp/Sticky Todo.before-20261003.app`.
+- [checks] Native and frontend release builds pass, along with calendar rollover and nine task completion/persistence scenarios. Installed GUI remains running from `/Applications/Sticky Todo.app`.
+
 - [checks] Album revision passes the frontend build and diff checks; the initial native check required an isolated Rust toolchain because no default was configured. Live model output has not been evaluated.
 - [albums] Guide recommendations by concentration, energy, and listening atmosphere. Require musical explanations and mood cues, exclude task-word/topic matching, and label the sheet Albums for working.
 

@@ -17,6 +17,8 @@
 
 - [x] 9. Extend blank-space click-to-edit through the text cell and stretch the editor to the right-side action group.
 
+- [x] 10. Rebuild, verify, reinstall, and relaunch the expanded editing fix.
+
 ## Decisions
 
 - The drag handle and checkbox remain fixed flex columns; only the text/action cell uses inline flow.
@@ -32,4 +34,4 @@
 - Follow-up browser measurements at `460px` and `340px` confirm every action group is flush with the content cell's right edge, remains contained, and follows the final text line without splitting; edit mode remains intact.
 - Rebuilt, signature-verified, checksum-matched, installed, and relaunched version `2.0.4`; the pre-follow-up bundle remains at `/private/tmp/Sticky Todo.previous-before-right-aligned-actions.app`.
 
-- 2026-10-03: Frontend build and diff checks pass. Isolated real-component browser checks at 340px and 460px verify task/subtask blank-space clicks, editor/button boundaries, Enter/Escape, independent action clicks, wrapped titles, and read-only rows. Source change only; installed native app was not rebuilt in this pass.
+- 2026-10-03: Frontend build and diff checks pass. Isolated real-component browser checks at 340px and 460px verify task/subtask blank-space clicks, editor/button boundaries, Enter/Escape, independent action clicks, wrapped titles, and read-only rows. The follow-up native release build passed; version 2.0.4 was signature-checked, checksum-verified, installed, and relaunched on 2026-10-03. Rollback: `/private/tmp/Sticky Todo.before-20261003.app`.
