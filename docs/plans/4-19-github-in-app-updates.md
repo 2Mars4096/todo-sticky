@@ -30,4 +30,6 @@
 
 - Browser verification at 340px and 460px passes for check/install/restart controls, progress, busy form locking, unsaved-settings/focus guards, and horizontal containment.
 
-- Installed and relaunched updater-enabled version 2.1.0. Signature and signed-build checksum match; rollback is `/private/tmp/Sticky Todo.before-2.1.0.app`. Code is pushed as `a89605a`; public release-tag approval is pending.
+- Installed and relaunched updater-enabled version 2.1.0. Signature and signed-build checksum match; rollback is `/private/tmp/Sticky Todo.before-2.1.0.app`. Code is pushed as `a89605a`; the user approved publication and tag `v2.1.0` was pushed.
+
+- Initial release run `37101371972`: Linux and Windows passed; universal Mac packaging failed because the companion CLI had no universal binary. The workflow now builds it with `lipo` and supports retrying the unchanged release tag.

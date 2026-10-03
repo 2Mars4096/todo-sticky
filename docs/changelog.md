@@ -2,6 +2,8 @@
 
 ## 2026-10-03
 
+- [build] Build the companion task API for both Mac architectures before universal bundling. Add a manual workflow retry using the existing version tag so failed releases can be rebuilt without moving tags.
+
 - [delivery] Install and relaunch updater-enabled version 2.1.0, verify signature and executable checksum, and push feature commit `a89605a`. The signing secret is configured; public release-tag approval is pending.
 
 - [updates] Add on-demand signed GitHub update checks, download/install progress, and restart controls in Settings. Drain pending task/native writes before installation, and block it while settings are unsaved or a focus session is active.

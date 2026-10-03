@@ -16,6 +16,8 @@
 
 ## Failed Approaches
 
+- 2026-10-03: The first universal Mac release compiled the GUI but bundling could not find `target/universal-apple-darwin/release/sticky-todo-api`. Build the companion CLI for both Mac targets and combine it with `lipo` before Tauri packages the app. Linux and Windows builds passed.
+
 - 2026-10-03: Adding the newest updater packages pulled the JavaScript core API to 2.12 while native Tauri remained 2.10, causing bundling to reject the mismatch. Keep the root API at `~2.10.1` and native updater/process at `~2.12.0` / `~2.3.1` to avoid an unrelated runtime upgrade.
 - 2026-10-03: GitHub CLI in the isolated shell could not locate the refreshed credential through its default keychain. Use the explicit login keychain and decode the standard go-keyring prefix into a subprocess environment; never print or persist the token. The authenticated API then succeeds.
 
