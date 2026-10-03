@@ -13,23 +13,25 @@ function files(dir) {
   })
 }
 const platforms = {}
+// Use upload-safe names so GitHub does not rename assets after URLs are built.
+const assetName = file => path.basename(file).replace(/[^A-Za-z0-9._-]/g, '.')
 for (const [runner, suffix, targets] of [
   ['macos-latest', '.app.tar.gz', ['darwin-aarch64', 'darwin-x86_64']],
   ['ubuntu-22.04', '.AppImage', ['linux-x86_64']],
   ['windows-latest', '.exe', ['windows-x86_64']],
 ]) {
-  const assets = files(path.join(root, runner)).filter(file => /\.(sig|tar\.gz|dmg|exe|msi|AppImage|deb|rpm)$/.test(file))
+  const assets = files(path.join(root, runner)).filter(file => /\.(app\.tar\.gz|dmg|exe|msi|AppImage|deb|rpm)(\.sig)?$/.test(file))
   const updates = assets.filter(file => file.endsWith(suffix) && fs.existsSync(`${file}.sig`))
   assert.equal(updates.length, 1, `Expected one signed updater archive for ${runner}`)
   for (const file of assets) {
-    const dest = path.join(output, path.basename(file))
+    const dest = path.join(output, assetName(file))
     if (fs.existsSync(dest)) assert.ok(fs.readFileSync(dest).equals(fs.readFileSync(file)), `Conflicting asset name: ${dest}`)
     else fs.copyFileSync(file, dest)
   }
   const update = updates[0]
   const entry = {
     signature: fs.readFileSync(`${update}.sig`, 'utf8').trim(),
-    url: `https://github.com/2Mars4096/todo-sticky/releases/download/v${version}/${encodeURIComponent(path.basename(update))}`,
+    url: `https://github.com/2Mars4096/todo-sticky/releases/download/v${version}/${assetName(update)}`,
   }
   for (const target of targets) platforms[target] = entry
 }

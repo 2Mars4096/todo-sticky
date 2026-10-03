@@ -9,13 +9,21 @@ try {
     const dir=path.join(root,'in',runner,'release','bundle');fs.mkdirSync(dir,{recursive:true})
     fs.writeFileSync(path.join(dir,name),'fixture');fs.writeFileSync(path.join(dir,name+'.sig'),'signature-fixture')
   }
+  fs.writeFileSync(path.join(root,'in','ubuntu-22.04','release','bundle','control.tar.gz'),'internal Debian file')
   let result=spawnSync(process.execPath,['scripts/prepare-update-release.cjs',path.join(root,'in'),path.join(root,'out')],{encoding:'utf8'})
   assert.equal(result.status,0,result.stderr)
   result=spawnSync(process.execPath,['scripts/validate-update-manifest.cjs',path.join(root,'out','latest.json')],{encoding:'utf8'})
   assert.equal(result.status,0,result.stderr)
   const manifest=JSON.parse(fs.readFileSync(path.join(root,'out','latest.json')))
   assert.equal(manifest.platforms['darwin-aarch64'].url,manifest.platforms['darwin-x86_64'].url)
-  assert.ok(manifest.platforms['darwin-aarch64'].url.includes('Sticky%20Todo.app.tar.gz'))
+  assert.ok(manifest.platforms['darwin-aarch64'].url.endsWith('/Sticky.Todo.app.tar.gz'))
+  assert.ok(!fs.existsSync(path.join(root,'out','control.tar.gz')))
+  for (const entry of Object.values(manifest.platforms)) {
+    const name = new URL(entry.url).pathname.split('/').pop()
+    assert.match(name, /^[A-Za-z0-9._-]+$/)
+    assert.ok(fs.existsSync(path.join(root,'out',name)))
+    assert.ok(fs.existsSync(path.join(root,'out',name+'.sig')))
+  }
   fs.unlinkSync(path.join(root,'in','windows-latest','release','bundle','Sticky Todo_2.1.0_x64-setup.exe.sig'))
   result=spawnSync(process.execPath,['scripts/prepare-update-release.cjs',path.join(root,'in'),path.join(root,'bad')],{encoding:'utf8'})
   assert.notEqual(result.status,0)
@@ -23,5 +31,5 @@ try {
   fs.writeFileSync(path.join(root,'out','latest.json'),JSON.stringify(manifest))
   result=spawnSync(process.execPath,['scripts/validate-update-manifest.cjs',path.join(root,'out','latest.json')],{encoding:'utf8'})
   assert.notEqual(result.status,0)
-  console.log('Passed release manifest checks: platform coverage, universal Mac mapping, URL encoding, missing signatures, and foreign URL rejection')
+  console.log('Passed release manifest checks: platform coverage, universal Mac mapping, upload-safe asset names, package-internal exclusion, missing signatures, and foreign URL rejection')
 } finally { fs.rmSync(root,{recursive:true,force:true}) }

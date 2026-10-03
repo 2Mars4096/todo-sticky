@@ -10,7 +10,7 @@
 - [x] 3. Wait for pending task/state writes and require saved settings before installation.
 - [x] 4. Configure a persistent signing key and GitHub release artifacts plus latest.json.
 - [x] 5. Verify update lifecycle and release configuration; build and install the initial updater-enabled version.
-- [ ] 6. Publish and verify the first signed release after GitHub authentication is restored.
+- [ ] 6. Publish and verify the first signed release.
 
 ## Decisions
 - Updates are checked on demand in Settings; installation and restart are explicitly initiated by the user.
@@ -20,8 +20,7 @@
 - Preserve tasks and settings; block installation while settings are unsaved or a focus session is active.
 
 ## Notes
-- Existing release workflow builds installers on version tags but lacks updater signatures and manifests.
-- GitHub SSH pushes work; the GitHub CLI API login currently returns 401. User login is needed for secret setup and release administration.
+- The release workflow now signs updater archives and generates a complete manifest before publication.
 
 - The signing key is `/Users/lizhi/.tauri/todo-sticky-updater.key` (outside the repo). The user explicitly approved upload to the Actions secret; upload was verified.
 - GitHub API access is restored using the explicit user login keychain. The repository is public.
@@ -35,3 +34,5 @@
 - Initial release run `37101371972`: Linux and Windows passed; universal Mac packaging failed because the companion CLI had no universal binary. The workflow now builds it with `lipo` and supports retrying the unchanged release tag.
 
 - The direct companion-CLI build first generates frontend assets required by the native context; failed jobs now retain dependency caches for retries.
+
+- Public download verification caught GitHub changing spaces in asset names to dots. The manifest was repaired using actual GitHub asset URLs; future releases normalize names and verify uploaded URLs before publication.

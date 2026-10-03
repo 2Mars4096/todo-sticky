@@ -2,9 +2,11 @@
 
 ## 2026-10-03
 
+- [release] Normalize upload filenames before generating updater URLs, exclude internal Debian tarballs, and require every manifest URL to match a GitHub asset before publishing. Repair the first release manifest after the public download check caught GitHub’s filename normalization.
+
 - [build] Build frontend assets and the companion task API for both Mac architectures before universal bundling; preserve dependency caches on failed builds. Add a manual workflow retry using the existing version tag so failed releases can be rebuilt without moving tags.
 
-- [delivery] Install and relaunch updater-enabled version 2.1.0, verify signature and executable checksum, and push feature commit `a89605a`. The signing secret is configured; public release-tag approval is pending.
+- [delivery] Install and relaunch updater-enabled version 2.1.0, verify signature and executable checksum, and push feature commit `a89605a`. The signing secret is configured; publication was subsequently approved and tag `v2.1.0` pushed.
 
 - [updates] Add on-demand signed GitHub update checks, download/install progress, and restart controls in Settings. Drain pending task/native writes before installation, and block it while settings are unsaved or a focus session is active.
 - [release] Prepare version 2.1.0 with a persistent updater trust key and a cross-platform signed-release workflow that publishes after complete manifest validation.

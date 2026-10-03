@@ -16,6 +16,8 @@
 
 ## Failed Approaches
 
+- 2026-10-03: GitHub changed spaces in uploaded release asset names to dots, so locally encoded manifest URLs returned 404. Normalize asset names before copying and generating URLs, then compare every updater URL against GitHub’s uploaded asset list before publication. Limit release files to installers and signatures; generic tarball matching also captured Debian package internals.
+
 - 2026-10-03: The first universal Mac release compiled the GUI but bundling could not find `target/universal-apple-darwin/release/sticky-todo-api`. Build the companion CLI for both Mac targets and combine it with `lipo` before Tauri packages the app. Linux and Windows builds passed.
 
 - 2026-10-03: Adding the newest updater packages pulled the JavaScript core API to 2.12 while native Tauri remained 2.10, causing bundling to reject the mismatch. Keep the root API at `~2.10.1` and native updater/process at `~2.12.0` / `~2.3.1` to avoid an unrelated runtime upgrade.
