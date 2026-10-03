@@ -46,6 +46,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+          cache-on-failure: true
       - name: Install Linux dependencies
         if: matrix.platform == 'ubuntu-22.04'
         run: |
@@ -71,6 +72,7 @@ jobs:
       - name: Build universal task API
         if: matrix.platform == 'macos-latest'
         run: |
+          npm run build:frontend
           cargo build --manifest-path src-tauri/Cargo.toml --release --locked --target aarch64-apple-darwin --bin sticky-todo-api
           cargo build --manifest-path src-tauri/Cargo.toml --release --locked --target x86_64-apple-darwin --bin sticky-todo-api
           mkdir -p src-tauri/target/universal-apple-darwin/release

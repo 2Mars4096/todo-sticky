@@ -33,3 +33,5 @@
 - Installed and relaunched updater-enabled version 2.1.0. Signature and signed-build checksum match; rollback is `/private/tmp/Sticky Todo.before-2.1.0.app`. Code is pushed as `a89605a`; the user approved publication and tag `v2.1.0` was pushed.
 
 - Initial release run `37101371972`: Linux and Windows passed; universal Mac packaging failed because the companion CLI had no universal binary. The workflow now builds it with `lipo` and supports retrying the unchanged release tag.
+
+- The direct companion-CLI build first generates frontend assets required by the native context; failed jobs now retain dependency caches for retries.

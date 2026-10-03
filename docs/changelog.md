@@ -2,7 +2,7 @@
 
 ## 2026-10-03
 
-- [build] Build the companion task API for both Mac architectures before universal bundling. Add a manual workflow retry using the existing version tag so failed releases can be rebuilt without moving tags.
+- [build] Build frontend assets and the companion task API for both Mac architectures before universal bundling; preserve dependency caches on failed builds. Add a manual workflow retry using the existing version tag so failed releases can be rebuilt without moving tags.
 
 - [delivery] Install and relaunch updater-enabled version 2.1.0, verify signature and executable checksum, and push feature commit `a89605a`. The signing secret is configured; public release-tag approval is pending.
 
