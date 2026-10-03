@@ -24,10 +24,7 @@ export function AlbumRecommendations({
       aria-busy={loading}
     >
       <header className="album-recommendations-header">
-        <div>
-          <span className="album-recommendations-kicker">Work soundtrack</span>
-          <h2 id="album-recommendations-title">Albums for working</h2>
-        </div>
+        <h2 id="album-recommendations-title">Albums for working</h2>
         <button
           className="album-recommendations-close"
           onClick={onClose}
@@ -53,7 +50,6 @@ export function AlbumRecommendations({
           </div>
         ) : (
           <>
-            {result?.summary && <p className="album-recommendations-summary">{result.summary}</p>}
             <ol className="album-list">
               {albums.map((album, index) => (
                 <li className="album-row" key={`${album.artist}-${album.title}-${index}`}>

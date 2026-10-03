@@ -18,6 +18,8 @@
 
 - [x] 9. Rebuild, verify, reinstall, and relaunch the atmosphere-based recommendation revision.
 
+- [x] 10. Keep one album heading and remove the introductory summary from the sheet.
+
 ## Decisions
 
 - Keep recommendations ephemeral in frontend memory; do not add a music-history store or mutate task Markdown.
@@ -40,3 +42,5 @@
 - 2026-10-03: Updated curator instructions and sheet heading; frontend build and diff checks pass. The initial native check found no default Rust toolchain; the requested reinstall uses isolated stable Rust and the existing offline Cargo cache. Live provider output has not been evaluated.
 
 - 2026-10-03: Native release build passed with isolated Rust 1.99.0 and the offline Cargo cache. Installed version 2.0.4 passes strict deep signature verification, matches the signed build checksum, and runs from `/Applications/Sticky Todo.app`. Rollback: `/private/tmp/Sticky Todo.before-20261003.app`.
+
+- 2026-10-03: Removed the duplicate heading and summary presentation plus unused CSS. Frontend/native builds and diff checks pass; signed, checksum-verified, reinstalled, and relaunched version 2.0.4. Rollback: `/private/tmp/Sticky Todo.before-20261003-album-trim.app`.

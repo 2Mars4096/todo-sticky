@@ -2,6 +2,9 @@
 
 ## 2026-10-03
 
+- [release] Frontend/native builds and diff checks pass for the album sheet trim; reinstall, signature-check, checksum-verify, and relaunch version 2.0.4. Rollback: `/private/tmp/Sticky Todo.before-20261003-album-trim.app`.
+- [albums] Remove the duplicate Work soundtrack heading and introductory description; show Albums for working followed directly by the album list.
+
 - [release] Build, ad-hoc sign, signature-check, checksum-verify, reinstall, and relaunch version 2.0.4 with expanded task editing and atmosphere-based album recommendations. Preserve the previous app at `/private/tmp/Sticky Todo.before-20261003.app`.
 - [checks] Native and frontend release builds pass, along with calendar rollover and nine task completion/persistence scenarios. Installed GUI remains running from `/Applications/Sticky Todo.app`.
 
