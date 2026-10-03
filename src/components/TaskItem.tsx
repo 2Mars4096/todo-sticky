@@ -205,12 +205,18 @@ export function TaskItem({
           title={`Status: ${status}. Click to change`}
           aria-label={`${text}. Status ${status}. Change status`}
         />
-        <div className="task-content-flow">
+        <div
+          className={`task-content-flow${isOtherDate ? '' : ' editable'}${editing ? ' editing' : ''}`}
+          onClick={event => {
+            if (event.target !== event.currentTarget) return
+            if (editing) inputRef.current?.focus()
+            else beginEditing()
+          }}
+        >
           {editing ? (
             <input
               ref={inputRef}
               className="task-text-input task-inline-edit"
-              size={Math.max(1, editText.length + 1)}
               value={editText}
               onChange={e => setEditText(e.target.value)}
               onBlur={commitEdit}
@@ -229,7 +235,6 @@ export function TaskItem({
             </span>
           )}
           {dateLabel && <span className="date-tag">{dateLabel}</span>}
-          {' '}
           <span className="task-actions">
             {!isSubtask && !isOtherDate && onAIBreakdown && (
               <button

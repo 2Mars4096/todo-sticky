@@ -1,12 +1,18 @@
 # Changelog
 
+## 2026-10-03
+
+
+- [checks] Frontend build, diff checks, and isolated component browser checks at 340px/460px pass for expanded editing, action isolation, wrapping, and read-only rows.
+
+- [fix] Clicking the empty space after a task or subtask title now opens its editor. The input fills the available width up to the right-aligned action buttons; action clicks and historical read-only rows remain separate.
+
 ## 2026-09-23
 
 - [release] Rebuild, signature-check, checksum-verify, reinstall, and relaunch version 2.0.4 with the live Today refresh; preserve the previous app as a temporary rollback bundle.
 
 - [fix] Refresh local today at midnight and on window focus, visible-page return, and page restoration; preserve the selected date and show Go to today after rollover. Recheck at least every minute while timers run for clock/timezone changes.
 - [tests] Pass calendar rollover/resume/navigation/cleanup regression checks and the frontend production build.
-
 
 ## 2026-09-22
 
@@ -17,12 +23,17 @@
 
 - [behavior] Automatically complete a parent when its final unfinished current-day subtask is marked done, saving both statuses together. Historical steps do not block completion; manual status cycling remains available.
 
-
 ## 2026-09-15
 
 - [configuration] Switch the installed app’s active OpenRouter model and saved profile to `deepseek/deepseek-v4.1-flash` using the existing key; verify a minimal live response (`OK`) and relaunch the app. No source or default-provider change.
 
 - [maintenance] Remove user-approved Rust debug and release build output, reducing the repository from approximately 8.9 GiB to 214 MiB. Preserve rollback bundles, dependencies, task recovery material, and the installed app; verify both build directories are absent.
+
+## 2026-08-22
+
+- [frontend] Pin every atomic task and subtask action group to the right edge while retaining final-line packing and whole-group fallback wrapping.
+- [tests] Verify exact right-edge alignment, containment, short and long text, subtasks, fallback rows, and edit mode in real-browser checks at `460px` and `340px`.
+- [release] Build, ad-hoc seal, checksum-verify, reinstall, and relaunch version 2.0.4 with right-aligned task actions; retain the prior bundle as a temporary rollback copy.
 
 ## 2026-08-21
 

@@ -27,7 +27,7 @@
 - [ ] `src/taskTransfer.ts` and `src/clipboard.ts`: generate local execution-agent prompts and write them through the official Tauri clipboard plugin; ordinary text copy/paste stays with the native focused-field behavior.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
 - [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between API-backed profiles and the keyless local Codex profile.
-- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and icon-only row actions reachable, including final-line action packing, destination-aware carry-forward, parent-preserving subtask moves, aligned step entry, and Markdown-persisted pointer/keyboard reordering.
+- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and icon-only row actions reachable, including right-aligned final-line action packing, destination-aware carry-forward, parent-preserving subtask moves, aligned step entry, and Markdown-persisted pointer/keyboard reordering.
 - [ ] `src-tauri/src/commands.rs` and `src-tauri/src/file_sync.rs`: persist task changes and merge individually carried subtasks under a normalized matching parent in the destination date section.
 - [ ] `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and `src-tauri/capabilities/default.json`: define the `todo-sticky` default desktop target and bundle name, the `460x640` default, the `340x440` minimum, and native resize-drag permission so the sibling task API CLI cannot become the bundled executable.
 - [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area, shows it from `RunEvent::Ready`, preserves later user placement, and installs native macOS Copy/Paste menu responders for focused editable text.
@@ -76,7 +76,8 @@
 - On macOS, resolve default task and bundle app-data roots from the signed-in account record; do not let an inherited `HOME` create a parallel empty store.
 - Run startup archive reads on Tauri's blocking worker pool so File Provider hydration cannot freeze native window painting; keep task creation disabled while the initial archive load is pending.
 - On macOS, reject `SF_DATALESS` task archives before every content read or read-before-write operation; surface cloud availability separately from an empty task list and require an explicit retry after Finder/Dropbox materializes the file.
-- Keep essential task actions keyboard reachable and visible at low emphasis; flow the atomic icon group into spare space after the final task-text fragment, then wrap the whole group to the text column only when it cannot fit.
+- Task-content whitespace activates title editing; edit mode uses a flexible input ending beside the fixed-width action group. Display mode retains final-line inline flow.
+- Keep essential task actions keyboard reachable and visible at low emphasis; flow the atomic icon group into spare space after the final task-text fragment, pin it to the right edge, then wrap the whole right-aligned group only when it cannot fit.
 - Treat task-array order as the reorder source of truth: top-level moves carry their subtask group, while subtask moves stay inside the current parent and exclude read-only other-date steps.
 - Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
 - Preserve hierarchy when carrying one subtask: create its parent on the destination date when absent, then merge later sibling moves into that same parent without duplicate steps.

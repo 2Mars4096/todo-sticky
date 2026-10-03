@@ -3429,9 +3429,26 @@ select:focus-visible {
 
 /* Task text */
 .task-content-flow {
+  display: flow-root;
   flex: 1;
   min-width: 0;
   line-height: 1.4;
+}
+
+.task-content-flow.editable {
+  cursor: text;
+}
+
+.task-content-flow.editing {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.task-content-flow.editing .task-actions {
+  float: none;
+  flex: none;
+  margin-left: 0;
 }
 
 .task-text {
@@ -3478,11 +3495,9 @@ select:focus-visible {
 }
 
 .task-inline-edit {
-  display: inline-block;
-  flex: none;
-  width: auto;
-  max-width: 100%;
-  min-width: 2ch;
+  flex: 1;
+  width: 0;
+  min-width: 0;
   border-bottom: 1px solid var(--accent);
   vertical-align: baseline;
 }
@@ -3501,9 +3516,12 @@ select:focus-visible {
 
 /* Hover actions */
 .task-actions {
+  cursor: default;
+  float: right;
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  margin-left: 6px;
   white-space: nowrap;
   vertical-align: middle;
   opacity: 0.54;

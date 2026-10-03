@@ -41,12 +41,14 @@ After configuring more than one provider, use the compact provider selector besi
 
 ## Features
 
+Click a task title or the empty space to its right to edit it. The editor extends up to the action buttons. Press Enter to save or Escape to cancel.
+
 - **Tasks & subtasks** — Add a step from the plus aligned below its parent checkbox, use the branching icon for AI breakdown, and drag the six-dot handle to reorder tasks or steps within one task
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Automatic parent completion** — Mark the last unfinished subtask done to complete its parent for that day; steps from other dates do not block completion
 - **Status cycle** — Toggle task status: todo → done → partial → todo
-- **Space-aware task actions** — Keep each icon set together after the final task-text fragment when space permits, with a text-aligned fallback row for longer tasks
+- **Space-aware task actions** — Keep each icon set together and right-aligned after the final task-text fragment when space permits, with a right-aligned fallback row for longer tasks
 - **Smart carry-forward** — Move unfinished past work directly to today; moving one subtask preserves its parent on the destination date and merges later sibling moves beneath it
 - **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today. The Today marker refreshes at midnight and when you return to the app, preserving the selected day
 - **Native clipboard** — Use standard Command-C and Command-V while editing; the row Copy icon exports a parent with all steps, or one selected subtask with its parent context, for Codex and other agents
