@@ -37,7 +37,7 @@ const COMPACT_LAYOUT_MAX_WIDTH = 760
 interface AppNotice {
   kind: 'success' | 'error'
   title: string
-  message: string
+  message?: string
 }
 
 export default function App() {
@@ -361,11 +361,6 @@ export default function App() {
       presentNotice({
         kind: 'success',
         title: `Moved to ${target.actionLabel}`,
-        message: target.kind === 'today'
-          ? 'The task has caught up to today.'
-          : target.kind === 'tomorrow'
-            ? 'The task is ready tomorrow.'
-            : 'The task moved one day forward.',
       })
     } catch (error) {
       console.error('Carry task forward failed:', error)
@@ -629,7 +624,7 @@ export default function App() {
             role="status"
           >
             <strong>{appNotice.title}</strong>
-            <p>{appNotice.message}</p>
+            {appNotice.message && <p>{appNotice.message}</p>}
           </div>
         )}
         {showSettings && (

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-04
+
+- [ui] Show only “Moved to tomorrow” (or the resolved destination) after moving a task or subtask. Omit the redundant description and empty paragraph. Frontend build and diff checks pass.
+
 ## 2026-10-03
 
 - [delivery] Publish [v2.1.0](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.0) after all platform builds pass. Verify every public updater archive against the installed trust key and reject altered copies. Native Tauri download/signature verification passes; both Mac executables contain Intel and Apple Silicon slices and the bundle passes strict signature verification.

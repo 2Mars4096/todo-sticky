@@ -10,6 +10,7 @@
 - [x] 2. Centralize carry-forward target resolution so the action label and native move use the same rule.
 - [x] 3. Update task and subtask arrow labels plus success/error feedback.
 - [x] 4. Run frontend and type verification, then sync tracking and user-facing docs.
+- [x] 5. Keep move confirmations to a single destination line, without a repeated description.
 
 ## Decisions
 
