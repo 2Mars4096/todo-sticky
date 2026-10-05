@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-06
+
+- [release] Publish [v2.1.4](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.4) with hover/focus-revealed top-level task entry. All platform builds and publication pass; the public updater manifest, uploaded assets, and download URLs verify.
+
 ## 2026-10-05
 
 - [release] Prepare 2.1.4 with hover-revealed top-level task entry. Frontend build and all six release regression suites pass.

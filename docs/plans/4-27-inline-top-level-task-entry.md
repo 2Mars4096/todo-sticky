@@ -17,4 +17,4 @@
 
 ## Notes
 - Frontend production build passes. Full TypeScript checking reports existing errors in Star Focus modules; no errors reference the changed components.
-- Desktop visual and interaction checks have not been run. This change has not been published or installed.
+- Desktop visual and interaction checks have not been run. Published in v2.1.4; the installed app can update through Settings.

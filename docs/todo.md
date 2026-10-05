@@ -116,7 +116,7 @@
 
 - [x] [4-27-inline-top-level-task-entry](plans/4-27-inline-top-level-task-entry.md) - Add a matching top-level task box below the list.
 
-- [ ] [4-28-publish-2-1-4](plans/4-28-publish-2-1-4.md) - Publish hover-revealed top-level task entry.
+- [x] [4-28-publish-2-1-4](plans/4-28-publish-2-1-4.md) - Publish hover-revealed top-level task entry.
 
 ## Maintenance
 
