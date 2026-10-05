@@ -19,4 +19,4 @@
 ## Notes
 - Controller and hook checks cover launch, cadence, resume, online throttling, clock rollback, concurrent checks, quiet errors, resource cleanup, and manual checks.
 - Browser checks verify install/restart indicators and no dot when current.
-- Frontend build and existing updater persistence checks pass. Not yet released.
+- Frontend build and existing updater persistence checks pass. Published in v2.1.3.

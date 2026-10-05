@@ -16,4 +16,4 @@
 - Keep text visible while focused or while a draft exists, so pointer movement does not hide work.
 
 ## Notes
-- Real browser interaction checks and frontend build pass. Not yet released.
+- Real browser interaction checks and frontend build pass. Published in v2.1.3.
