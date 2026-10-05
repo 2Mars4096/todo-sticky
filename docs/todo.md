@@ -107,7 +107,7 @@
 
   - [x] [4-22-publish-2-1-1](plans/4-22-publish-2-1-1.md) - Publish and verify the signed patch release.
 
-  - [ ] [4-23-publish-2-1-2](plans/4-23-publish-2-1-2.md) - Publish the integrated input-background patch.
+  - [x] [4-23-publish-2-1-2](plans/4-23-publish-2-1-2.md) - Publish the integrated input-background patch.
 
 ## Maintenance
 

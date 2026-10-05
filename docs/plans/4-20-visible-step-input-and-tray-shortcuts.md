@@ -22,4 +22,4 @@
 - `npm run build:frontend`, offline `cargo check`, and `git diff --check` pass.
 - Isolated browser checks at 340px and 460px verify visible step entry, Enter submission, and Escape cancellation. Native menu appearance and live desktop interactions have not been visually verified. Published in v2.1.1; the installed app can update through Settings.
 
-- Follow-up after 2.1.1: step inputs now have transparent backgrounds, preserving the underlying paper shading. Frontend build and diff checks pass; this styling follow-up is not yet released.
+- Follow-up after 2.1.1: step inputs now have transparent backgrounds, preserving the underlying paper shading. Frontend build and diff checks pass; this styling follow-up is published in v2.1.2.

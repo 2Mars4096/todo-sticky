@@ -2,9 +2,11 @@
 
 ## 2026-10-05
 
+- [release] Publish [v2.1.2](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.2) with the integrated step-input background. All platform builds and automatic publication pass. Public latest.json and all download links verify; the public Mac updater archive matches its uploaded digest, passes signature verification, and rejects tampering.
+
 - [release] Prepare 2.1.2 for the user-authorized background-fix release.
 
-- [ui] Remove the lighter Add step field fill; retain the thin border over the existing paper background. Frontend build and diff checks pass. This post-2.1.1 styling follow-up is unreleased.
+- [ui] Remove the lighter Add step field fill; retain the thin border over the existing paper background. Frontend build and diff checks pass. Published in v2.1.2.
 
 - [checks] Public latest.json serves 2.1.1; all updater download URLs return HTTP 200. Public macOS archive signature verifies. Windows/Linux artifact signatures and uploaded digests match.
 - [release] Publish [v2.1.1](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.1) after all platform builds pass. Verify uploaded updater digests and signatures, final asset URLs, universal Mac architecture, bundle version, and strict Mac code signature.
