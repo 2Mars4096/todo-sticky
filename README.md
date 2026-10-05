@@ -121,13 +121,17 @@ git push --follow-tags
 
 The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**, then uploads them as a **draft** GitHub Release. Go to [Releases](https://github.com/2Mars4096/todo-sticky/releases) to review and publish.
 
+Step entry stays visible beneath each editable task. Type in **Add step...** and press **Enter** or click **+**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
+
 ## Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
 | **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
+| **⌘Q** / **Ctrl+Q** | Quit (app/menu shortcut) |
 | **Enter** | Add task / submit subtask or goal / commit edit |
 | **Escape** | Close Focus Mode or a compact side panel; cancel edit/subtask input |
-| **Arrow Up / Arrow Down** | Move a task or subtask when its six-dot reorder handle is focused |
+| **Drag the six-dot handle** | Reorder a task with its steps, or a step within its parent; Escape cancels the drag |
+| **Arrow Up / Arrow Down** | Move a task or subtask after clicking or tabbing to its six-dot handle |
 | **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
 | **Double-click** | Edit task text |

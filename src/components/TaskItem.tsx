@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type DragEvent, type KeyboardEvent } from 'react'
+import { useState, useRef, useEffect, type PointerEvent, type KeyboardEvent } from 'react'
 import { format } from 'date-fns'
 import type { Task, DatedTask, ViewMode } from '../types'
 
@@ -72,10 +72,10 @@ function DragHandleIcon() {
 export interface SortableTaskProps {
   state?: 'dragging' | 'drop-before' | 'drop-after'
   label: string
-  onDragStart: (event: DragEvent<HTMLButtonElement>) => void
-  onDragOver: (event: DragEvent<HTMLDivElement>) => void
-  onDrop: (event: DragEvent<HTMLDivElement>) => void
-  onDragEnd: () => void
+  onPointerDown: (event: PointerEvent<HTMLButtonElement>) => void
+  onPointerMove: (event: PointerEvent<HTMLButtonElement>) => void
+  onPointerUp: (event: PointerEvent<HTMLButtonElement>) => void
+  onCancel: () => void
   onMove: (direction: -1 | 1) => void
 }
 
@@ -126,7 +126,7 @@ export function TaskItem({
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(text)
   const [subInput, setSubInput] = useState('')
-  const [showSubInput, setShowSubInput] = useState(false)
+  const subInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -173,6 +173,7 @@ export function TaskItem({
   ].filter(Boolean).join(' ')
 
   const handleReorderKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Escape') { sortable?.onCancel(); return }
     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
     event.preventDefault()
     sortable?.onMove(event.key === 'ArrowUp' ? -1 : 1)
@@ -182,16 +183,18 @@ export function TaskItem({
     <>
       <div
         className={cls}
-        onDragOver={sortable?.onDragOver}
-        onDrop={sortable?.onDrop}
+        data-reorder-id={sortable ? id : undefined}
       >
         {sortable && (
           <button
             type="button"
             className="task-drag-handle"
-            draggable
-            onDragStart={sortable.onDragStart}
-            onDragEnd={sortable.onDragEnd}
+            onPointerDown={sortable.onPointerDown}
+            onPointerMove={sortable.onPointerMove}
+            onPointerUp={sortable.onPointerUp}
+            onPointerCancel={sortable.onCancel}
+            onLostPointerCapture={sortable.onCancel}
+            onDragStart={event => event.preventDefault()}
             onKeyDown={handleReorderKeyDown}
             title="Drag to reorder. Use Arrow Up or Arrow Down from this handle."
             aria-label={sortable.label}
@@ -323,28 +326,30 @@ export function TaskItem({
       ))}
 
       {!isSubtask && !isOtherDate && onAddSubtask && (
-        <div className={`task-step-add-row ${showSubInput ? 'active' : ''}`}>
+        <div className="task-step-add-row">
           <span className="task-step-add-handle-space" aria-hidden="true" />
           <button
             type="button"
             className="task-step-add-button"
-            onClick={() => setShowSubInput(true)}
+            onClick={() => { handleSubAdd(); subInputRef.current?.focus() }}
             title="Add a step"
             aria-label={`Add a step to ${text}`}
           >
             <AddStepIcon />
           </button>
-          {showSubInput && (
-            <input
-              className="task-text-input task-step-add-input"
-              placeholder="Add step..."
-              value={subInput}
-              onChange={e => setSubInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleSubAdd(); if (e.key === 'Escape') setShowSubInput(false) }}
-              onBlur={() => { if (!subInput.trim()) setShowSubInput(false) }}
-              autoFocus
-            />
-          )}
+          <input
+            ref={subInputRef}
+            className="task-text-input task-step-add-input"
+            placeholder="Add step..."
+            aria-label={`New step for ${text}`}
+            value={subInput}
+            onChange={e => setSubInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.nativeEvent.isComposing) return
+              if (e.key === 'Enter') { e.preventDefault(); handleSubAdd() }
+              if (e.key === 'Escape') { e.stopPropagation(); setSubInput(''); e.currentTarget.blur() }
+            }}
+          />
         </div>
       )}
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-05
+
+- [checks] Release regression scripts and all 21 native library tests pass for 2.1.1.
+- [release] Prepare 2.1.1 for user-authorized publication through the signed GitHub updater workflow.
+
+- [fix] Replace task handle HTML drag-and-drop with captured pointer gestures; explicitly focus clicked handles for keyboard movement, preserve parent groups, and cancel pending moves on Escape or lost capture.
+- [checks] Real mouse and keyboard browser checks at 340px/460px verify task/step movement and saved payload order. Installed desktop behavior remains unverified; these changes are not published.
+- [ui] Rename the tray and macOS menu action to “Toggle / Hide” as requested, retaining the visible platform shortcut.
+
+- [ui] Keep a bordered Add step field visible beneath each editable task; Enter or plus submits, Escape clears, and the field stays ready for continued entry.
+- [native] Show the platform toggle shortcut in tray and macOS app menus; give tray Quit a native Command-Q / Ctrl-Q accelerator.
+- [checks] Frontend build, offline native check, and diff hygiene pass. Desktop visual verification and installed-app replacement remain unperformed.
+
 ## 2026-10-04
 
 - [ui] Show only “Moved to tomorrow” (or the resolved destination) after moving a task or subtask. Omit the redundant description and empty paragraph. Frontend build and diff checks pass.

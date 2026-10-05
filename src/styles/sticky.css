@@ -3345,6 +3345,8 @@ select:focus-visible {
 }
 
 .task-drag-handle {
+  user-select: none;
+  -webkit-user-select: none;
   flex: 0 0 14px;
   width: 14px;
   height: 18px;
@@ -3649,7 +3651,7 @@ select:focus-visible {
 
 .task-step-add-button:hover,
 .task-step-add-button:focus-visible,
-.task-step-add-row.active .task-step-add-button {
+.task-step-add-row:focus-within .task-step-add-button {
   color: var(--accent-hover);
   border-color: rgba(196, 164, 74, 0.28);
   background: rgba(196, 164, 74, 0.1);
@@ -3663,8 +3665,20 @@ select:focus-visible {
 
 .task-step-add-input {
   min-width: 0;
-  padding: 1px 2px;
-  border-bottom: 1px solid var(--sticky-border);
+  padding: 3px 6px;
+  border: 1px solid var(--sticky-border);
+  border-radius: 4px;
+  background: oklch(1 0 0 / 0.3);
+}
+
+.task-step-add-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.task-step-add-input:focus {
+  border-color: var(--accent-hover);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* Add task */

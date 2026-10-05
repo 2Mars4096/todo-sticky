@@ -328,8 +328,13 @@ pub fn run() {
 
             #[cfg(target_os = "macos")]
             {
-                let show_hide_menu =
-                    MenuItem::with_id(app, "show_hide", "Show / Hide", true, None::<&str>)?;
+                let show_hide_menu = MenuItem::with_id(
+                    app,
+                    "show_hide",
+                    format!("Toggle / Hide    {}", shortcut_label()),
+                    true,
+                    None::<&str>,
+                )?;
                 let app_submenu = SubmenuBuilder::new(app, "Sticky Todo")
                     .about(None)
                     .separator()
@@ -373,8 +378,16 @@ pub fn run() {
                 }
             });
 
-            let show_hide = MenuItemBuilder::with_id("toggle", "Show / Hide").build(app)?;
-            let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
+            // The global shortcut owns toggling. A second menu accelerator can
+            // process the same keystroke twice, so show its label without rebinding.
+            let show_hide = MenuItemBuilder::with_id(
+                "toggle",
+                format!("Toggle / Hide    {}", shortcut_label()),
+            )
+            .build(app)?;
+            let quit = MenuItemBuilder::with_id("quit", "Quit")
+                .accelerator("CmdOrCtrl+Q")
+                .build(app)?;
             let tray_menu = MenuBuilder::new(app).items(&[&show_hide, &quit]).build()?;
 
             let tray = app

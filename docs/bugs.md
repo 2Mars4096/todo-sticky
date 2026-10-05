@@ -2,6 +2,8 @@
 
 ## Active Issues
 
+- 2026-10-05: User reports installed task reorder handles do not work despite earlier browser checks. Source now uses captured pointer gestures instead of HTML drag-and-drop and explicitly focuses handles. Browser pointer/keyboard/persistence checks pass; the exact native cause and rebuilt desktop behavior remain unverified.
+
 - 2026-08-16: The prior default-store `2026-03-09/index.md` remains a 2,648-byte `SF_DATALESS` placeholder. Resetting its request and restarting Dropbox under the correct account profile did not materialize it because the File Provider fetch job stayed detached from its invalidated extension service; the oldest local Time Machine snapshot contains the same placeholder. Recover through a signed-in Dropbox web session or another remote copy before merging this week.
 - 2026-08-16: Dropbox/File Provider can report a Markdown archive as downloading indefinitely while it remains `SF_DATALESS`. The app now fails fast with a recoverable cloud-only state, but Dropbox or Finder must still materialize the remote contents before previous tasks can be read.
 - 2026-08-16: The installed app could reach WebKit's completed paint state while presenting a blank white native surface. Its task archive was a zero-block `dataless` File Provider placeholder, and synchronous task loading blocked Tauri's UI thread while the provider tried to materialize it. Startup reads now run on the blocking worker pool; the unsupported transparent-window configuration was also replaced with an explicit opaque background, and a boot fallback keeps future failures visible.
@@ -9,6 +11,8 @@
 - 2026-08-10: Repository-wide `tsc --noEmit` reports pre-existing type errors in the Star Focus orbital renderers and archive-limit typing even though the documented Vite frontend build succeeds. Use focused type checks for unrelated slices until those errors are resolved.
 
 ## Resolved Issues
+
+- 2026-10-05: Manual step capture showed only a plus icon until clicked, leaving the expected input area blank. The labeled, bordered field is now always visible on editable parents. Tray shortcuts were undiscoverable; menu labels now expose the toggle binding and Quit accelerator.
 
 - 2026-10-03: Task editing was limited to the rendered title and a text-sized input. The content cell now handles blank-space clicks and the editor fills the space before the action group.
 

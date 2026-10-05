@@ -1,4 +1,4 @@
-import { useState, type DragEvent } from 'react'
+import { useRef, useState, type PointerEvent } from 'react'
 import type { AggregatedTask, Task, ViewMode } from '../types'
 import type { ReorderPosition } from '../hooks/useTasks'
 import { TaskItem } from './TaskItem'
@@ -41,46 +41,86 @@ export function TaskList({
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
 
-  const sameScope = (source: DraggedItem, target: DraggedItem) => (
-    source.kind === target.kind
-    && (source.kind === 'task' || source.parentId === (target as Extract<DraggedItem, { kind: 'subtask' }>).parentId)
-  )
-
-  const startDrag = (event: DragEvent<HTMLButtonElement>, item: DraggedItem) => {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/plain', item.id)
-    setDraggedItem(item)
-    setDropTarget(null)
-  }
-
-  const dragOver = (event: DragEvent<HTMLDivElement>, target: DraggedItem) => {
-    if (!draggedItem || !sameScope(draggedItem, target) || draggedItem.id === target.id) return
-    event.preventDefault()
-    event.dataTransfer.dropEffect = 'move'
-    const bounds = event.currentTarget.getBoundingClientRect()
-    const position: ReorderPosition = event.clientY < bounds.top + bounds.height / 2 ? 'before' : 'after'
-    setDropTarget({ ...target, position } as DropTarget)
-  }
+  const listRef = useRef<HTMLDivElement>(null)
+  const gesture = useRef<{
+    item: DraggedItem; pointerId: number; x: number; y: number; active: boolean
+  } | null>(null)
+  const targetRef = useRef<DropTarget | null>(null)
 
   const finishDrag = () => {
+    gesture.current = null
+    targetRef.current = null
     setDraggedItem(null)
     setDropTarget(null)
   }
 
-  const drop = (event: DragEvent<HTMLDivElement>, target: DraggedItem) => {
+  const startDrag = (event: PointerEvent<HTMLButtonElement>, item: DraggedItem) => {
+    if (event.button !== 0 || !event.isPrimary) return
     event.preventDefault()
-    if (!draggedItem || !sameScope(draggedItem, target) || draggedItem.id === target.id) {
-      finishDrag()
-      return
+    event.currentTarget.focus()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    gesture.current = {
+      item, pointerId: event.pointerId, x: event.clientX, y: event.clientY, active: false,
     }
+  }
 
-    const position = dropTarget?.id === target.id ? dropTarget.position : 'before'
-    if (draggedItem.kind === 'task' && target.kind === 'task') {
-      onReorderTask(draggedItem.id, target.id, position)
-    } else if (draggedItem.kind === 'subtask' && target.kind === 'subtask') {
-      onReorderSubtask(draggedItem.parentId, draggedItem.id, target.id, position)
+  const moveDrag = (event: PointerEvent<HTMLButtonElement>) => {
+    const current = gesture.current
+    const list = listRef.current
+    if (!current || current.pointerId !== event.pointerId || !list) return
+    if (!current.active && Math.hypot(event.clientX - current.x, event.clientY - current.y) < 4) return
+    current.active = true
+    setDraggedItem(current.item)
+    const bounds = list.getBoundingClientRect()
+    let next: DropTarget | null = null
+    if (event.clientX >= bounds.left && event.clientX <= bounds.right
+      && event.clientY >= bounds.top && event.clientY <= bounds.bottom) {
+      if (event.clientY < bounds.top + 24) list.scrollTop -= 12
+      if (event.clientY > bounds.bottom - 24) list.scrollTop += 12
+      const source = current.item
+      const ids = source.kind === 'task'
+        ? tasks.map(task => task.id)
+        : tasks.find(task => task.id === source.parentId)?.todaySubtasks.map(task => task.id) ?? []
+      const rows = Array.from(list.querySelectorAll<HTMLElement>('[data-reorder-id]'))
+        .filter(row => ids.includes(row.dataset.reorderId!))
+      // Parent drags span their whole group; step drags stay inside their parent.
+      const withinScope = source.kind === 'task' || (rows.length > 0
+        && event.clientY >= rows[0].getBoundingClientRect().top - 6
+        && event.clientY <= rows[rows.length - 1].getBoundingClientRect().bottom + 6)
+      if (withinScope) {
+        let distance = Infinity
+        for (const row of rows) {
+          const rect = row.getBoundingClientRect()
+          const center = rect.top + rect.height / 2
+          const delta = Math.abs(event.clientY - center)
+          if (delta >= distance) continue
+          distance = delta
+          next = row.dataset.reorderId === source.id ? null : {
+            ...source, id: row.dataset.reorderId!, position: event.clientY < center ? 'before' : 'after',
+          }
+        }
+      }
+    }
+    targetRef.current = next
+    setDropTarget(next)
+  }
+
+  const drop = (event: PointerEvent<HTMLButtonElement>) => {
+    const current = gesture.current
+    if (!current || current.pointerId !== event.pointerId) return
+    moveDrag(event)
+    const target = targetRef.current
+    if (current.active && target) {
+      if (current.item.kind === 'task') {
+        onReorderTask(current.item.id, target.id, target.position)
+      } else {
+        onReorderSubtask(current.item.parentId, current.item.id, target.id, target.position)
+      }
     }
     finishDrag()
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
   }
 
   const dragStateFor = (item: DraggedItem) => {
@@ -156,7 +196,7 @@ export function TaskList({
   }
 
   return (
-    <div className="task-list">
+    <div className="task-list" ref={listRef}>
       {tasks.map(task => (
         <TaskItem
           key={task.id}
@@ -177,19 +217,19 @@ export function TaskList({
           sortable={{
             state: dragStateFor({ kind: 'task', id: task.id }),
             label: `Reorder ${task.text}`,
-            onDragStart: event => startDrag(event, { kind: 'task', id: task.id }),
-            onDragOver: event => dragOver(event, { kind: 'task', id: task.id }),
-            onDrop: event => drop(event, { kind: 'task', id: task.id }),
-            onDragEnd: finishDrag,
+            onPointerDown: event => startDrag(event, { kind: 'task', id: task.id }),
+            onPointerMove: moveDrag,
+            onPointerUp: drop,
+            onCancel: finishDrag,
             onMove: direction => moveTaskByKeyboard(task.id, direction),
           }}
           getSubtaskSortable={(subtaskId, subtaskText) => ({
             state: dragStateFor({ kind: 'subtask', id: subtaskId, parentId: task.id }),
             label: `Reorder ${subtaskText} within ${task.text}`,
-            onDragStart: event => startDrag(event, { kind: 'subtask', id: subtaskId, parentId: task.id }),
-            onDragOver: event => dragOver(event, { kind: 'subtask', id: subtaskId, parentId: task.id }),
-            onDrop: event => drop(event, { kind: 'subtask', id: subtaskId, parentId: task.id }),
-            onDragEnd: finishDrag,
+            onPointerDown: event => startDrag(event, { kind: 'subtask', id: subtaskId, parentId: task.id }),
+            onPointerMove: moveDrag,
+            onPointerUp: drop,
+            onCancel: finishDrag,
             onMove: direction => moveSubtaskByKeyboard(task.id, subtaskId, direction),
           })}
           onFocusSelect={() => onFocusTask(task.id, task.text)}
