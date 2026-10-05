@@ -2,6 +2,11 @@
 
 ## 2026-10-05
 
+- [release] Prepare 2.1.4 with hover-revealed top-level task entry. Frontend build and all six release regression suites pass.
+
+- [ui] Add a hover/focus-revealed Add task box below nonempty task lists, matching the transparent step-entry styling. Enter or plus creates a top-level task; Escape clears the draft.
+- [checks] Frontend build passes. Full TypeScript checking remains blocked by existing Star Focus errors; this change is not yet published or installed.
+
 - [release] Publish [v2.1.3](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.3) with automatic update checks, Settings/action dots, and hover step entry. All platform builds and publication pass. Public updater manifest and download URLs verify; the Mac archive matches its uploaded digest, passes signature verification, and rejects tampering.
 
 - [release] Prepare 2.1.3 for user-authorized publication of automatic update checks, notification dots, and hover step entry.

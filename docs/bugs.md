@@ -1,5 +1,10 @@
 # Bugs And Failed Approaches
 
+## 2026-10-05: Existing Full TypeScript Check Failures
+
+- `npx tsc --noEmit` reports errors in `StarFocusOrbitalMap.tsx`, `StarFocusOrbitalMap3D.tsx`, and `useStarFocus.ts`: optional ring narrowing, ES2020 array `.at`, an argument-count mismatch, missing Three.js types and dependent typing errors, and retention-cap typing.
+- These modules are unchanged by the inline task-entry update. The frontend Vite build succeeds; full type checking remains unresolved.
+
 ## Active Issues
 
 - 2026-10-05: User reports installed task reorder handles do not work despite earlier browser checks. Source now uses captured pointer gestures instead of HTML drag-and-drop and explicitly focuses handles. Browser pointer/keyboard/persistence checks pass; the exact native cause and rebuilt desktop behavior remain unverified.

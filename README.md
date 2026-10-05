@@ -123,6 +123,8 @@ git push --follow-tags
 
 The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**, then uploads them as a draft GitHub Release. After all platform builds and manifest/asset checks pass, the workflow publishes it as the latest release. Users can install it through **Settings → Updates**.
 
+Use the **Add task...** box below the task list to create another top-level task. Press **Enter** or click **+** to add it; **Escape** clears the draft. The empty box appears on hover or focus, matching step entry; drafts and touch-device fields stay visible.
+
 On desktop, step-entry text and its border appear when you hover over the add-step row, focus its field, or click **+**. A nonempty draft stays visible; touch devices keep the field visible. Type in **Add step...** and press **Enter** or click **+**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
 
 ## Shortcuts

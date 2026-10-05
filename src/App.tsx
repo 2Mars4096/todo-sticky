@@ -499,6 +499,7 @@ export default function App() {
           onCopyTask={handleCopyTask}
           onTextChange={tasks.updateTaskText}
           onAddSubtask={tasks.addSubtask}
+          onAddTask={tasks.addTask}
           onReorderTask={tasks.reorderTasks}
           onReorderSubtask={tasks.reorderSubtasks}
           onAIBreakdown={handleAIBreakdown}

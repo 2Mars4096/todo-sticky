@@ -3689,6 +3689,16 @@ select:focus-visible {
   .task-step-add-row.has-draft .task-step-add-input { opacity: 1; }
 }
 
+.task-add-row {
+  margin-top: 8px;
+  padding-bottom: 8px;
+}
+
+.task-add-row .task-step-add-button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
 /* Add task */
 .add-task {
   padding: 10px 12px;

@@ -2,6 +2,7 @@ import { useRef, useState, type PointerEvent } from 'react'
 import type { AggregatedTask, Task, ViewMode } from '../types'
 import type { ReorderPosition } from '../hooks/useTasks'
 import { TaskItem } from './TaskItem'
+import { AddTask } from './AddTask'
 
 type DraggedItem =
   | { kind: 'task'; id: string }
@@ -24,6 +25,7 @@ interface Props {
   onCopyTask: (text: string, subtasks: Task[]) => void
   onTextChange: (taskId: string, text: string, subtaskId?: string) => void
   onAddSubtask: (taskId: string, text: string) => void
+  onAddTask: (text: string) => void
   onReorderTask: (sourceId: string, targetId: string, position: ReorderPosition) => void
   onReorderSubtask: (taskId: string, sourceId: string, targetId: string, position: ReorderPosition) => void
   onAIBreakdown: (taskId: string) => void
@@ -35,7 +37,7 @@ interface Props {
 export function TaskList({
   tasks, loading, loadError, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
   onToggle, onDelete, onPush, onCopyTask, onTextChange,
-  onAddSubtask, onReorderTask, onReorderSubtask,
+  onAddSubtask, onAddTask, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null)
@@ -243,6 +245,7 @@ export function TaskList({
           onSubtaskTextChange={(sid, t) => onTextChange(task.id, t, sid)}
         />
       ))}
+      <AddTask inline onAdd={onAddTask} disabled={loading || Boolean(loadError)} />
     </div>
   )
 }

@@ -114,6 +114,10 @@
 
   - [x] [4-26-publish-2-1-3](plans/4-26-publish-2-1-3.md) - Publish update indicators and hover step entry.
 
+- [x] [4-27-inline-top-level-task-entry](plans/4-27-inline-top-level-task-entry.md) - Add a matching top-level task box below the list.
+
+- [ ] [4-28-publish-2-1-4](plans/4-28-publish-2-1-4.md) - Publish hover-revealed top-level task entry.
+
 ## Maintenance
 
 - [x] Rebuild and reinstall the 2026-10-03 editing and album changes; verify signature, checksum, and GUI launch.
