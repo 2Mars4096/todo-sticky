@@ -129,6 +129,8 @@ jobs:
             gh release create "$RELEASE_TAG" --verify-tag --draft --title "$RELEASE_TAG" --generate-notes
           fi
           gh release upload "$RELEASE_TAG" release-upload/* --clobber
-          gh release view "$RELEASE_TAG" --json assets > uploaded-assets.json
-          node -e 'const assets = new Set(require("./uploaded-assets.json").assets.map(asset => asset.url)); for (const entry of Object.values(require("./release-upload/latest.json").platforms)) { if (!assets.has(entry.url)) throw new Error("Updater URL does not match an uploaded asset: " + entry.url); }'
+          gh release view "$RELEASE_TAG" --json tagName,isDraft,assets > uploaded-assets.json
+          node scripts/validate-release-assets.cjs release-upload/latest.json uploaded-assets.json
           gh release edit "$RELEASE_TAG" --draft=false --latest
+          gh release view "$RELEASE_TAG" --json tagName,isDraft,assets > published-assets.json
+          node scripts/validate-release-assets.cjs release-upload/latest.json published-assets.json

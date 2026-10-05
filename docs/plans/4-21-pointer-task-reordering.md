@@ -21,4 +21,4 @@
 - User reports the installed HTML drag handles do not work. The exact macOS runtime cause remains unconfirmed; code presence and earlier browser tests were insufficient evidence of installed behavior.
 - Isolated Playwright checks exercise real mouse movement, click then Arrow Up, step dragging, saved parent/step order, preserved children, cross-parent rejection, and Escape cancellation at both widths. Real task files are untouched.
 - Frontend build and native check pass. Full TypeScript checking still reports the previously documented Star Focus errors, with no errors in the changed task components.
-- Changes are source-only and unpublished. Installed macOS pointer behavior still requires a rebuilt app and desktop verification.
+- Published in v2.1.1. Pointer behavior in the installed macOS app still requires desktop verification after updating.

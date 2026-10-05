@@ -20,6 +20,8 @@
 
 ## Failed Approaches
 
+- 2026-10-05: GitHub draft release asset URLs use a temporary `untagged-*` path even when `tagName` is correct. Comparing those URLs to final manifest URLs blocked 2.1.1 publication after all builds passed. Validate draft uploaded asset names against canonical final URLs, then compare actual URLs after publication. Regression coverage accepts draft URLs and rejects incorrect published URLs or renamed assets.
+
 - 2026-10-03: GitHub changed spaces in uploaded release asset names to dots, so locally encoded manifest URLs returned 404. Normalize asset names before copying and generating URLs, then compare every updater URL against GitHub’s uploaded asset list before publication. Limit release files to installers and signatures; generic tarball matching also captured Debian package internals.
 
 - 2026-10-03: The first universal Mac release compiled the GUI but bundling could not find `target/universal-apple-darwin/release/sticky-todo-api`. Build the companion CLI for both Mac targets and combine it with `lipo` before Tauri packages the app. Linux and Windows builds passed.

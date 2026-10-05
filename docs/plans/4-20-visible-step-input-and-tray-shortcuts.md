@@ -18,4 +18,4 @@
 
 ## Notes
 - `npm run build:frontend`, offline `cargo check`, and `git diff --check` pass.
-- Isolated browser checks at 340px and 460px verify visible step entry, Enter submission, and Escape cancellation. Native menu appearance and live desktop interactions have not been visually verified. Changes are in source; the installed app has not been rebuilt or replaced.
+- Isolated browser checks at 340px and 460px verify visible step entry, Enter submission, and Escape cancellation. Native menu appearance and live desktop interactions have not been visually verified. Published in v2.1.1; the installed app can update through Settings.

@@ -24,6 +24,23 @@ try {
     assert.ok(fs.existsSync(path.join(root,'out',name)))
     assert.ok(fs.existsSync(path.join(root,'out',name+'.sig')))
   }
+  const release = { tagName: `v${manifest.version}`, isDraft: true, assets: [] }
+  for (const url of new Set(Object.values(manifest.platforms).map(entry => entry.url))) {
+    const name = new URL(url).pathname.split('/').pop()
+    release.assets.push({ name, url: url.replace(`/v${manifest.version}/`, '/untagged-draft/'), state: 'uploaded', size: 100 })
+    release.assets.push({ name: name + '.sig', state: 'uploaded', size: 50 })
+  }
+  const checkAssets = () => {
+    fs.writeFileSync(path.join(root, 'assets.json'), JSON.stringify(release))
+    return spawnSync(process.execPath, ['scripts/validate-release-assets.cjs', path.join(root, 'out', 'latest.json'), path.join(root, 'assets.json')], { encoding: 'utf8' })
+  }
+  assert.equal(checkAssets().status, 0, 'Draft temporary URLs must be accepted after asset-name validation')
+  release.isDraft = false
+  assert.notEqual(checkAssets().status, 0, 'Published temporary URLs must be rejected')
+  for (const asset of release.assets) if (asset.url) asset.url = asset.url.replace('/untagged-draft/', `/v${manifest.version}/`)
+  assert.equal(checkAssets().status, 0, 'Published URLs must match')
+  release.assets[0].name = 'renamed.archive'
+  assert.notEqual(checkAssets().status, 0, 'Renamed assets must be rejected')
   fs.unlinkSync(path.join(root,'in','windows-latest','release','bundle','Sticky Todo_2.1.0_x64-setup.exe.sig'))
   result=spawnSync(process.execPath,['scripts/prepare-update-release.cjs',path.join(root,'in'),path.join(root,'bad')],{encoding:'utf8'})
   assert.notEqual(result.status,0)

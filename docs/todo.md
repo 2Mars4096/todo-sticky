@@ -104,7 +104,7 @@
 
   - [x] [4-21-pointer-task-reordering](plans/4-21-pointer-task-reordering.md) - Replace HTML dragging with captured pointer gestures and explicit handle focus.
 
-  - [ ] [4-22-publish-2-1-1](plans/4-22-publish-2-1-1.md) - Publish and verify the signed patch release.
+  - [x] [4-22-publish-2-1-1](plans/4-22-publish-2-1-1.md) - Publish and verify the signed patch release.
 
 ## Maintenance
 

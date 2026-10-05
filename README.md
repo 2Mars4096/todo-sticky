@@ -119,7 +119,7 @@ npm version minor      # 2.0.0 → 2.1.0
 git push --follow-tags
 ```
 
-The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**, then uploads them as a **draft** GitHub Release. Go to [Releases](https://github.com/2Mars4096/todo-sticky/releases) to review and publish.
+The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**, then uploads them as a draft GitHub Release. After all platform builds and manifest/asset checks pass, the workflow publishes it as the latest release. Users can install it through **Settings → Updates**.
 
 Step entry stays visible beneath each editable task. Type in **Add step...** and press **Enter** or click **+**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
 
