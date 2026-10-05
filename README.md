@@ -35,7 +35,9 @@ After configuring more than one provider, use the compact provider selector besi
 
 ## Update
 
-Open **Settings → Updates → Check for updates**. When a newer release is available, choose **Download and install**, then **Restart now**. Windows restarts through its installer. Save changed settings and finish any focus session first. Tasks and settings stay in their existing storage.
+The app checks for updates at launch and every two hours, including overdue checks when you return. A dot on **Settings** marks an available update, and another dot marks **Download and install** or **Restart now** inside Settings. Checks run quietly; installation and restart stay manual.
+
+You can also open **Settings → Updates → Check for updates**. When a newer release is available, choose **Download and install**, then **Restart now**. Windows restarts through its installer. Save changed settings and finish any focus session first. Tasks and settings stay in their existing storage.
 
 Version 2.1.0 introduces in-app updates. Older installations need one manual upgrade to this version; later published GitHub releases can be installed from the app.
 
@@ -121,7 +123,7 @@ git push --follow-tags
 
 The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**, then uploads them as a draft GitHub Release. After all platform builds and manifest/asset checks pass, the workflow publishes it as the latest release. Users can install it through **Settings → Updates**.
 
-Step entry stays visible beneath each editable task. Type in **Add step...** and press **Enter** or click **+**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
+On desktop, step-entry text and its border appear when you hover over the add-step row, focus its field, or click **+**. A nonempty draft stays visible; touch devices keep the field visible. Type in **Add step...** and press **Enter** or click **+**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
 
 ## Shortcuts
 

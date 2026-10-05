@@ -326,7 +326,7 @@ export function TaskItem({
       ))}
 
       {!isSubtask && !isOtherDate && onAddSubtask && (
-        <div className="task-step-add-row">
+        <div className={`task-step-add-row${subInput ? ' has-draft' : ''}`}>
           <span className="task-step-add-handle-space" aria-hidden="true" />
           <button
             type="button"

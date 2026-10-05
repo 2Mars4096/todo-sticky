@@ -18,6 +18,12 @@ export interface UpdateState {
   error?: string
 }
 
+export const UPDATE_CHECK_INTERVAL_MS = 2 * 60 * 60 * 1000
+
+export function updateNeedsAttention(phase: UpdatePhase) {
+  return phase === 'available' || phase === 'installed'
+}
+
 export function updateIsBusy(phase: UpdatePhase) {
   return ['checking', 'downloading', 'installing', 'restarting'].includes(phase)
 }
@@ -29,10 +35,14 @@ export function createAppUpdater(deps: {
   beforeInstall: () => Promise<void>
   relaunch: () => Promise<void>
   onChange: (state: UpdateState) => void
+  now?: () => number
 }) {
   let state: UpdateState = { phase: 'idle' }
   let update: AppUpdate | null = null
   let disposed = false
+  let checking = false
+  let lastCheckAt: number | null = null
+  const now = deps.now ?? Date.now
   const publish = (next: UpdateState) => {
     state = next
     if (!disposed) deps.onChange(next)
@@ -42,9 +52,14 @@ export function createAppUpdater(deps: {
   }
 
   return {
-    async check() {
-      if (disposed || updateIsBusy(state.phase) || state.phase === 'installed') return
-      publish({ phase: 'checking' })
+    async check({ background = false }: { background?: boolean } = {}) {
+      if (disposed || checking || updateIsBusy(state.phase) || state.phase === 'installed') return
+      const time = now()
+      if (background && (state.phase === 'available'
+        || (lastCheckAt !== null && time >= lastCheckAt && time - lastCheckAt < UPDATE_CHECK_INTERVAL_MS))) return
+      checking = true
+      lastCheckAt = time
+      if (!background) publish({ phase: 'checking' })
       await close(update)
       update = null
       try {
@@ -55,7 +70,10 @@ export function createAppUpdater(deps: {
           ? { phase: 'available', version: found.version, notes: found.body }
           : { phase: 'current' })
       } catch (error) {
-        publish({ phase: 'error', error: String(error) })
+        // Automatic checks stay quiet when offline; manual checks report errors.
+        if (!background) publish({ phase: 'error', error: String(error) })
+      } finally {
+        checking = false
       }
     },
     async install() {

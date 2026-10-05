@@ -109,6 +109,11 @@
 
   - [x] [4-23-publish-2-1-2](plans/4-23-publish-2-1-2.md) - Publish the integrated input-background patch.
 
+  - [x] [4-24-automatic-update-indicators](plans/4-24-automatic-update-indicators.md) - Check for updates quietly and show Settings/action dots.
+  - [x] [4-25-hover-step-entry](plans/4-25-hover-step-entry.md) - Reveal idle step entry on hover, focus, or plus activation.
+
+  - [ ] [4-26-publish-2-1-3](plans/4-26-publish-2-1-3.md) - Publish update indicators and hover step entry.
+
 ## Maintenance
 
 - [x] Rebuild and reinstall the 2026-10-03 editing and album changes; verify signature, checksum, and GUI launch.

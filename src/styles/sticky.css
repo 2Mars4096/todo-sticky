@@ -3681,6 +3681,14 @@ select:focus-visible {
   outline-offset: 1px;
 }
 
+/* Retain a full input hit area and keyboard access while idle. */
+@media (hover: hover) and (pointer: fine) {
+  .task-step-add-input { opacity: 0; }
+  .task-step-add-row:hover .task-step-add-input,
+  .task-step-add-row:focus-within .task-step-add-input,
+  .task-step-add-row.has-draft .task-step-add-input { opacity: 1; }
+}
+
 /* Add task */
 .add-task {
   padding: 10px 12px;
@@ -5665,3 +5673,16 @@ select:focus-visible {
 .app-updates summary { cursor: pointer; }
 .update-notes { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 150px; overflow-y: auto; margin-top: 6px; }
 .update-error { color: var(--danger); font-size: 11px; overflow-wrap: anywhere; margin-top: 6px; }
+
+/* Updates use a quiet, persistent marker rather than an interrupting dialog. */
+.update-dot {
+  display: inline-block;
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-hover);
+}
+.settings-update-button { position: relative; }
+.settings-update-dot { position: absolute; top: 2px; right: 2px; }
+.app-updates .update-action { display: inline-flex; align-items: center; gap: 6px; }

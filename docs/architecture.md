@@ -171,8 +171,8 @@
 
 ## In-App Updates
 
-- `src/appUpdates.ts` owns the check/download/install/restart lifecycle and native resource cleanup. `src/hooks/useAppUpdates.ts` keeps it alive across Settings openings.
-- `src/components/AppUpdates.tsx` adds on-demand update controls inside Settings. Unsaved settings and active focus sessions block installation; busy updates lock the Settings form.
+- `src/appUpdates.ts` owns the check/download/install/restart lifecycle and native resource cleanup. `src/hooks/useAppUpdates.ts` keeps it alive across Settings openings and schedules native-only startup/two-hour checks plus throttled focus, visibility, and online catch-up. The controller prevents overlapping checks, preserves available update resources, and suppresses background errors.
+- `src/components/AppUpdates.tsx` adds manual update controls and an action dot inside Settings; the main Settings button shares the same available/installed attention state. Unsaved settings and active focus sessions block installation; busy updates lock the Settings form.
 - `useTasks.flushPendingSave()` drains queued task edits, and `waitForPendingWrites()` in `src/api.ts` waits for native writes before installation or restart.
 - Official Tauri updater/process plugins verify signed packages from the public GitHub release `latest.json`. The app carries the public key only; the private key lives outside the repo and in an approved Actions secret.
 - Tagged releases build platform artifacts independently, then `scripts/prepare-update-release.cjs` creates one complete manifest. `scripts/validate-release-assets.cjs` checks uploaded names while the release is a draft (temporary URLs), and exact public URLs after publication. Upload names are normalized before manifest generation; publication follows `scripts/validate-update-manifest.cjs` checks and exact URL matching against GitHub’s uploaded assets. Universal macOS archives serve both Mac architectures.

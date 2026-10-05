@@ -2,6 +2,12 @@
 
 ## 2026-10-05
 
+- [release] Prepare 2.1.3 for user-authorized publication of automatic update checks, notification dots, and hover step entry.
+
+- [updates] Check automatically on startup and every two hours, with throttled resume/online checks and silent background failures. Show a Settings dot and an install/restart action dot; installation remains manual.
+- [ui] Reveal the empty Add step text and border only on hover or focus on fine-pointer devices. Preserve visible drafts, keyboard/plus entry, touch-device access, and the paper background.
+- [checks] Automatic-update scheduling/lifecycle tests, updater persistence checks, frontend build, and compact browser interaction checks pass. These changes are not yet released.
+
 - [release] Publish [v2.1.2](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.2) with the integrated step-input background. All platform builds and automatic publication pass. Public latest.json and all download links verify; the public Mac updater archive matches its uploaded digest, passes signature verification, and rejects tampering.
 
 - [release] Prepare 2.1.2 for the user-authorized background-fix release.

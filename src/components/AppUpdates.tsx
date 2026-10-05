@@ -26,9 +26,9 @@ export function AppUpdates({ currentVersion, state, blockedReason, onCheck, onIn
       <p className="hint">Sticky Todo {currentVersion || '…'}</p>
       <div className="test-row">
         {state.phase === 'available' ? (
-          <button onClick={onInstall} disabled={Boolean(blockedReason)}>Download and install</button>
+          <button className="update-action" onClick={onInstall} disabled={Boolean(blockedReason)}><span className="update-dot" aria-hidden="true" />Download and install</button>
         ) : state.phase === 'installed' ? (
-          <button onClick={onRestart} disabled={Boolean(blockedReason)}>Restart now</button>
+          <button className="update-action" onClick={onRestart} disabled={Boolean(blockedReason)}><span className="update-dot" aria-hidden="true" />Restart now</button>
         ) : (
           <button onClick={onCheck} disabled={busy}>{busy ? 'Please wait…' : 'Check for updates'}</button>
         )}

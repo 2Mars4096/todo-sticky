@@ -608,12 +608,13 @@ export default function App() {
             </select>
           </div>
           <button
-            className="gear"
+            className="gear settings-update-button"
             onClick={() => openSettingsForProvider(aiSettings?.provider)}
-            title="Settings"
-            aria-label="Settings"
+            title={appUpdates.needsAttention ? "Settings · Update ready" : "Settings"}
+            aria-label={appUpdates.needsAttention ? "Settings, update ready" : "Settings"}
           >
             ⚙
+            {appUpdates.needsAttention && <span className="update-dot settings-update-dot" aria-hidden="true" />}
           </button>
         </div>
 

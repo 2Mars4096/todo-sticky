@@ -6,7 +6,7 @@ const exportsObject = {}
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/appUpdates.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
 }).outputText, { exports: exportsObject })
-const { createAppUpdater } = exportsObject
+const { createAppUpdater, UPDATE_CHECK_INTERVAL_MS, updateNeedsAttention } = exportsObject
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a;reject=b}); return {promise,resolve,reject} }
 function fixture(overrides = {}) {
   const calls=[], states=[]
@@ -47,5 +47,28 @@ function fixture(overrides = {}) {
   await f.controller.check();const install=f.controller.install();await f.controller.install();f.controller.dispose();pending.resolve();await install
   assert.ok(!f.calls.includes('install'));assert.equal(f.calls.filter(c=>c==='close').length,1)
   f=fixture({deps:{check:async()=>{throw Error('Offline')}}});await f.controller.check();assert.equal(f.last().phase,'error')
+  let time=0, count=0
+  f=fixture({deps:{now:()=>time,check:async()=>{count++;return null}}})
+  await f.controller.check({background:true});assert.equal(count,1);assert.equal(f.last().phase,'current')
+  await f.controller.check({background:true});assert.equal(count,1)
+  time=UPDATE_CHECK_INTERVAL_MS-1;await f.controller.check({background:true});assert.equal(count,1)
+  time++;await f.controller.check({background:true});assert.equal(count,2)
+  await f.controller.check();assert.equal(count,3,'Manual checks bypass schedule')
+  time+=100;await f.controller.check({background:true});assert.equal(count,3)
+  time=-1;await f.controller.check({background:true});assert.equal(count,4,'Clock rollback recovers')
+  f=fixture({deps:{check:async()=>{throw Error('Offline')}}})
+  await f.controller.check({background:true});assert.equal(f.states.length,0,'Background errors are silent')
+  await f.controller.check();assert.equal(f.last().phase,'error','Manual errors stay visible')
+  pending=deferred();count=0;f=fixture({deps:{check:()=>{count++;return pending.promise}}})
+  const background=f.controller.check({background:true});await Promise.resolve()
+  await f.controller.check();assert.equal(count,1,'Background and manual checks cannot overlap')
+  f.controller.dispose();pending.resolve(f.resource);await background
+  assert.equal(f.calls.filter(c=>c==='close').length,1);assert.equal(f.states.length,0)
+  time=0;f=fixture({deps:{now:()=>time}});await f.controller.check({background:true})
+  time=UPDATE_CHECK_INTERVAL_MS;await f.controller.check({background:true})
+  assert.equal(f.calls.filter(c=>c==='check').length,1,'Preserve the available update resource')
+  assert.equal(f.last().phase,'available');assert.ok(!f.calls.includes('download'))
+  for(const phase of ['idle','checking','current','downloading','installing','restarting','error']) assert.equal(updateNeedsAttention(phase),false)
+  assert.equal(updateNeedsAttention('available'),true);assert.equal(updateNeedsAttention('installed'),true)
   console.log('Passed updater lifecycle, save gating, signature/download failure, restart retry, concurrency, and resource cleanup checks')
 })().catch(e=>{console.error(e);process.exitCode=1})
