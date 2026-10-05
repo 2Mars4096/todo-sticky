@@ -101,10 +101,13 @@
   - [x] [4-19-github-in-app-updates](plans/4-19-github-in-app-updates.md) - Updater installed; v2.1.0 published with verified downloads and signatures on all platforms.
 
   - [x] [4-20-visible-step-input-and-tray-shortcuts](plans/4-20-visible-step-input-and-tray-shortcuts.md) - Keep step capture visible and show tray shortcuts.
+    - [x] Match the step-input background to the note using a transparent fill and thin border.
 
   - [x] [4-21-pointer-task-reordering](plans/4-21-pointer-task-reordering.md) - Replace HTML dragging with captured pointer gestures and explicit handle focus.
 
   - [x] [4-22-publish-2-1-1](plans/4-22-publish-2-1-1.md) - Publish and verify the signed patch release.
+
+  - [ ] [4-23-publish-2-1-2](plans/4-23-publish-2-1-2.md) - Publish the integrated input-background patch.
 
 ## Maintenance
 

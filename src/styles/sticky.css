@@ -3668,7 +3668,7 @@ select:focus-visible {
   padding: 3px 6px;
   border: 1px solid var(--sticky-border);
   border-radius: 4px;
-  background: oklch(1 0 0 / 0.3);
+  background: transparent;
 }
 
 .task-step-add-input::placeholder {

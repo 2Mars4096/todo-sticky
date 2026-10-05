@@ -2,6 +2,10 @@
 
 ## 2026-10-05
 
+- [release] Prepare 2.1.2 for the user-authorized background-fix release.
+
+- [ui] Remove the lighter Add step field fill; retain the thin border over the existing paper background. Frontend build and diff checks pass. This post-2.1.1 styling follow-up is unreleased.
+
 - [checks] Public latest.json serves 2.1.1; all updater download URLs return HTTP 200. Public macOS archive signature verifies. Windows/Linux artifact signatures and uploaded digests match.
 - [release] Publish [v2.1.1](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.1) after all platform builds pass. Verify uploaded updater digests and signatures, final asset URLs, universal Mac architecture, bundle version, and strict Mac code signature.
 - [fix] Repair release validation to account for temporary draft asset URLs; validate canonical asset names before publication and actual URLs afterward, with regression coverage.
