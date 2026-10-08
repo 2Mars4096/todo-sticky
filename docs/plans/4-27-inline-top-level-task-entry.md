@@ -20,4 +20,4 @@
 - Frontend production build passes. Full TypeScript checking reports existing errors in Star Focus modules; no errors reference the changed components.
 - Desktop visual and interaction checks have not been run. Published in v2.1.4; the installed app can update through Settings.
 
-- 2026-10-08 alignment correction: frontend build and diff checks pass; not yet published.
+- 2026-10-08 alignment correction: frontend build and diff checks pass; published in v2.1.5.

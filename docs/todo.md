@@ -118,7 +118,7 @@
 
 - [x] [4-28-publish-2-1-4](plans/4-28-publish-2-1-4.md) - Publish hover-revealed top-level task entry.
 
-- [ ] [4-29-publish-2-1-5](plans/4-29-publish-2-1-5.md) - Publish root-aligned entry without a plus button.
+- [x] [4-29-publish-2-1-5](plans/4-29-publish-2-1-5.md) - Publish root-aligned entry without a plus button.
 
 ## Maintenance
 
