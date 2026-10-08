@@ -120,7 +120,7 @@
 
 - [x] [4-29-publish-2-1-5](plans/4-29-publish-2-1-5.md) - Publish root-aligned entry without a plus button.
 
-- [ ] [4-30-publish-2-1-6](plans/4-30-publish-2-1-6.md) - Publish 15-minute automatic update checks.
+- [x] [4-30-publish-2-1-6](plans/4-30-publish-2-1-6.md) - Publish 15-minute automatic update checks.
 
 ## Maintenance
 

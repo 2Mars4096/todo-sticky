@@ -21,4 +21,4 @@
 - Browser checks verify install/restart indicators and no dot when current.
 - Frontend build and existing updater persistence checks pass. Published in v2.1.3.
 
-- 2026-10-08: Shorten the periodic interval and shared resume/online throttle to 15 minutes. Updated scheduling regression, updater lifecycle/persistence checks, and frontend build pass. Cadence change is not yet published.
+- 2026-10-08: Shorten the periodic interval and shared resume/online throttle to 15 minutes. Updated scheduling regression, updater lifecycle/persistence checks, and frontend build pass. Cadence change published in v2.1.6.
