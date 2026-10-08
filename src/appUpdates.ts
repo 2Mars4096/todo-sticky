@@ -18,7 +18,7 @@ export interface UpdateState {
   error?: string
 }
 
-export const UPDATE_CHECK_INTERVAL_MS = 2 * 60 * 60 * 1000
+export const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000
 
 export function updateNeedsAttention(phase: UpdatePhase) {
   return phase === 'available' || phase === 'installed'

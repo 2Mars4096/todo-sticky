@@ -35,7 +35,7 @@ After configuring more than one provider, use the compact provider selector besi
 
 ## Update
 
-The app checks for updates at launch and every two hours, including overdue checks when you return. A dot on **Settings** marks an available update, and another dot marks **Download and install** or **Restart now** inside Settings. Checks run quietly; installation and restart stay manual.
+The app checks for updates at launch and every 15 minutes, including overdue checks when you return. A dot on **Settings** marks an available update, and another dot marks **Download and install** or **Restart now** inside Settings. Checks run quietly; installation and restart stay manual.
 
 You can also open **Settings → Updates → Check for updates**. When a newer release is available, choose **Download and install**, then **Restart now**. Windows restarts through its installer. Save changed settings and finish any focus session first. Tasks and settings stay in their existing storage.
 

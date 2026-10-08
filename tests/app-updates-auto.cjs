@@ -26,7 +26,7 @@ async function mount(native=true) {
 }
 ;(async()=>{
   let f=await mount();assert.equal(f.checks(),1,'Check on launch')
-  assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,2*60*60*1000)
+  assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,15*60*1000)
   f.listeners.get('focus')();f.listeners.get('online')();await f.flush();assert.equal(f.checks(),1)
   f.time(f.interval);f.document.visibilityState='hidden';f.docListeners.get('visibilitychange')();await f.flush();assert.equal(f.checks(),1)
   f.document.visibilityState='visible';f.docListeners.get('visibilitychange')();await f.flush();assert.equal(f.checks(),2,'Check overdue after resume')
@@ -34,5 +34,5 @@ async function mount(native=true) {
   f.api.check();await f.flush();assert.equal(f.checks(),4,'Manual check remains available')
   f.cleanup();assert.equal(f.timers.size,0);assert.equal(f.listeners.size,0);assert.equal(f.docListeners.size,0)
   f=await mount(false);assert.equal(f.checks(),0);assert.equal(f.timers.size,0);f.cleanup()
-  console.log('Passed automatic update startup, two-hour cadence, resume/online throttling, manual checks, cleanup, and browser-only gating')
+  console.log('Passed automatic update startup, 15-minute cadence, resume/online throttling, manual checks, cleanup, and browser-only gating')
 })().catch(e=>{console.error(e);process.exitCode=1})

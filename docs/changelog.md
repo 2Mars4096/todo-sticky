@@ -2,6 +2,10 @@
 
 ## 2026-10-08
 
+- [release] Prepare 2.1.6 with 15-minute automatic update checks. Frontend build and six release suites pass.
+
+- [updates] Shorten automatic checks and resume/online throttling from two hours to 15 minutes. Updated scheduling, lifecycle, persistence checks, and frontend build pass. Not yet published.
+
 - [release] Publish [v2.1.5](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.5) with root-aligned task entry and no leading plus button. All platform builds and publication pass; public updater manifest, asset matching, and download URLs verify.
 
 - [release] Prepare 2.1.5 with root-aligned task entry and no leading plus button; all six release regression suites pass.
