@@ -114,9 +114,11 @@
 
   - [x] [4-26-publish-2-1-3](plans/4-26-publish-2-1-3.md) - Publish update indicators and hover step entry.
 
-- [x] [4-27-inline-top-level-task-entry](plans/4-27-inline-top-level-task-entry.md) - Add a matching top-level task box below the list.
+- [x] [4-27-inline-top-level-task-entry](plans/4-27-inline-top-level-task-entry.md) - Add a hover-revealed root-aligned task box below the list, without a plus button.
 
 - [x] [4-28-publish-2-1-4](plans/4-28-publish-2-1-4.md) - Publish hover-revealed top-level task entry.
+
+- [ ] [4-29-publish-2-1-5](plans/4-29-publish-2-1-5.md) - Publish root-aligned entry without a plus button.
 
 ## Maintenance
 

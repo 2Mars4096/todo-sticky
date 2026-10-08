@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface Props {
   onAdd: (text: string) => void
@@ -16,7 +16,6 @@ export function AddTask({
   inline = false,
 }: Props) {
   const [text, setText] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = () => {
     const trimmed = text.trim()
@@ -30,20 +29,7 @@ export function AddTask({
     return (
       <div className={`task-step-add-row task-add-row${text ? ' has-draft' : ''}`}>
         <span className="task-step-add-handle-space" aria-hidden="true" />
-        <button
-          type="button"
-          className="task-step-add-button"
-          aria-label="Add a new task"
-          title="Add a new task"
-          disabled={disabled}
-          onClick={() => { handleSubmit(); inputRef.current?.focus() }}
-        >
-          <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M8 3v10M3 8h10" />
-          </svg>
-        </button>
         <input
-          ref={inputRef}
           className="task-text-input task-step-add-input"
           placeholder="Add task..."
           aria-label="New top-level task"

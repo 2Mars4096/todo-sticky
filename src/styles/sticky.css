@@ -3694,11 +3694,6 @@ select:focus-visible {
   padding-bottom: 8px;
 }
 
-.task-add-row .task-step-add-button:disabled {
-  cursor: default;
-  opacity: 0.4;
-}
-
 /* Add task */
 .add-task {
   padding: 10px 12px;

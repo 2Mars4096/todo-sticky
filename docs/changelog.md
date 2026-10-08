@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-08
+
+- [release] Prepare 2.1.5 with root-aligned task entry and no leading plus button; all six release regression suites pass.
+
+- [ui] Remove the inline root-task composer’s plus button and align its box with the root checkbox column. Retain hover/focus reveal, visible drafts, and Enter submission. Frontend build and diff checks pass; not yet published.
+
 ## 2026-10-06
 
 - [release] Publish [v2.1.4](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.4) with hover/focus-revealed top-level task entry. All platform builds and publication pass; the public updater manifest, uploaded assets, and download URLs verify.
