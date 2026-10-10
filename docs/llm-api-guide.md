@@ -177,3 +177,9 @@ A reusable skill only needs a concise `SKILL.md` plus a deterministic script or 
 ### App Updates
 
 Settings uses the official Tauri updater `check`, `download`, and `install` operations plus process `relaunch`. These are desktop-only operations, separate from the task CLI. `useTasks.flushPendingSave()` and `waitForPendingWrites()` must complete before install/relaunch. Updater metadata and signatures come from the public release endpoint; no GitHub token is sent by the app.
+
+## Diane dispatch contract
+
+Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
+
+Never treat network failure as run failure, Stop submission as stop completion, or a completed agent run as a completed todo. Open uses the linked desktop session. Approvals, clarification, and further work belong in Diane.

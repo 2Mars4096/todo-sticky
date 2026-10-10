@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-10
+
+- [feat] Add immutable task dispatch to Diane, project/default inheritance, persistent session links, colored/shape status glyphs, result details, acknowledged Stop, and native Open in Diane. Follow-up remains in Diane; todo completion stays manual.
+- [test] Frontend build, native check, synthetic browser lifecycle checks, and companion protocol tests pass. Add a separate development identifier/data directory. Source-only: installed apps and running sessions unchanged.
+
 ## 2026-10-08
 
 - [release] Publish [v2.1.6](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.6) with 15-minute automatic update checks. All platform builds and publication pass; public updater manifest, uploaded assets, and download URLs verify.

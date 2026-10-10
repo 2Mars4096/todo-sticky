@@ -1,5 +1,10 @@
 # Todo
 
+## Diane Integration
+
+- [x] Implement and test [6-diane-handoff](plans/6-diane-handoff.md) in isolated Todo/Diane worktrees.
+- [ ] Integrate both changes and perform installed-app acceptance when Diane is idle.
+
 ## Phase 0 - Documentation Scaffold
 
 - [x] Add `AGENTS.md` and the `docs/` tracking scaffold.

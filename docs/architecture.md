@@ -1,5 +1,12 @@
 # Architecture
 
+## Diane Handoff
+
+- `src/diane.ts` defines the companion protocol; `src/components/DianeAction.tsx` owns one app-level receipt store, polling, icon controls and portalled details. WebView-local receipts retain immutable request UUIDs keyed by knowledge-base/date/task identity before network writes.
+- `src-tauri/src/diane.rs` exposes only projects/dispatch/status/stop/open through a fixed loopback endpoint, with no proxying, redirects, credentials, or arbitrary URLs.
+- Diane owns durable sessions, project roots, execution profiles and runtime state; the companion API and desktop open route are required. Native credentials never enter Todo.
+- Debug-only `STICKY_TODO_DEV_DATA_DIR` bypasses legacy settings and forces task/state storage below an absolute test root. Pair with `src-tauri/tauri.diane-dev.conf.json` to isolate WebView storage too.
+
 ## Tech Stack
 
 - [ ] Languages: TypeScript/TSX for the frontend, Rust for the Tauri native layer, Markdown for task storage.

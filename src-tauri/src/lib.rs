@@ -1,5 +1,6 @@
 pub mod cli;
 mod commands;
+mod diane;
 mod config;
 mod file_sync;
 mod llm;
@@ -411,6 +412,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            diane::diane_request,
             commands::get_tasks,
             commands::task_api_extract,
             commands::task_api_create,

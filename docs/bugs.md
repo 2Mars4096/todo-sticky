@@ -1,5 +1,13 @@
 # Bugs And Failed Approaches
 
+## 2026-10-10: Diane Integration Validation
+
+- Diane currently keeps project/profile selections in renderer storage. Calling its raw run endpoint would bypass those defaults; the companion bridge publishes the existing composer payload instead.
+- Worktree dependency symlinks initially sent Vite/TypeScript caches into the source checkout. Use a worktree-local node_modules directory with dependency links and local caches. Diane requires Node 22 here.
+- Playwright CLI was unavailable offline; the installed Python Playwright package provided isolated Chrome checks.
+- Default cargo lacked a selected toolchain; validation used the existing `/private/tmp/sticky-todo-rustup` toolchain.
+- Installed desktop round-trip and authenticated model acceptance remain pending. No existing app was restarted.
+
 ## 2026-10-05: Existing Full TypeScript Check Failures
 
 - `npx tsc --noEmit` reports errors in `StarFocusOrbitalMap.tsx`, `StarFocusOrbitalMap3D.tsx`, and `useStarFocus.ts`: optional ring narrowing, ES2020 array `.at`, an argument-count mismatch, missing Three.js types and dependent typing errors, and retention-cap typing.
