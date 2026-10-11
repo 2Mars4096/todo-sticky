@@ -5717,3 +5717,6 @@ select:focus-visible {
 .task-actions:has(.diane-action) > button { opacity: 0.54; }
 .task-item:hover .task-actions:has(.diane-action) > button,
 .task-item:focus-within .task-actions:has(.diane-action) > button { opacity: 1; }
+
+.diane-action:disabled { cursor: not-allowed; background: transparent; }
+.diane-action:disabled .diane-dot { color: oklch(0.68 0.008 85); opacity: 0.65; }

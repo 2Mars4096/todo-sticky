@@ -4,6 +4,7 @@
 **Goal:** Dispatch a todo once into Diane's existing project/session structure and keep follow-up in that session.
 
 ## Tasks
+- [x] Add an opt-in local Diane connection setting, explicit destination/project details, hidden controls when off, and grey unavailable dispatch.
 - [x] Lock standalone Todo operation and test core task controls with absent, stalled, malformed and corrupt Diane data.
 - [x] Inspect both products and isolate work in separate Git worktrees.
 - [x] Publish Diane project identities, absolute folders, and the existing composer execution payload without credentials.
@@ -25,6 +26,7 @@
 - First version targets the local Dear Diane desktop server on loopback port 45173. Remote hosts and browser-only Diane are outside this slice.
 
 ## Verification
+- 2026-10-11: opt-in change passes production frontend build, all 24 native tests, and browser lifecycle/core-task checks including disabled mode with no Diane controls or requests.
 - 2026-10-11: capture/edit/complete/delete/reload browser controls pass across absent, stalled, malformed and corrupt Diane cases using fixture task persistence. Native task storage is unchanged. Malformed responses cannot enter rendering; unreadable receipts are retained without polling writes. Frontend build passes; only existing Star Focus type errors remain.
 - Todo Vite production build and native `cargo check --offline` pass.
 - Full Todo TypeScript checking still reports only existing Star Focus errors, recorded in `docs/bugs.md`.

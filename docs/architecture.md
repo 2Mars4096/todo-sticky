@@ -2,6 +2,8 @@
 
 ## Diane Handoff
 
+- `connectDiane` is a native-persisted, default-off handoff preference. The provider mounts only when enabled; disabling retains stored receipts and hides controls. Settings identifies local Dear Diane and its selected project/folder. File-backed credential preference is separate.
+
 - Standalone operation is invariant: core task/UI/storage paths do not await Diane readiness. Missing credentials affect only the AI operation that needs them. Response validation and receipt parsing contain malformed integration data; failed parsing preserves the original localStorage value and suspends integration polling.
 
 - `src/diane.ts` defines the companion protocol; `src/components/DianeAction.tsx` owns one app-level receipt store, polling, icon controls and portalled details. WebView-local receipts retain immutable request UUIDs keyed by knowledge-base/date/task identity before network writes.

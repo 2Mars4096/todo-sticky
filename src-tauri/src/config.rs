@@ -62,6 +62,8 @@ pub struct AppSettings {
     pub model: String,
     #[serde(rename = "providerProfiles")]
     pub provider_profiles: HashMap<String, LLMProviderProfile>,
+    #[serde(rename = "connectDiane")]
+    pub connect_diane: bool,
     #[serde(rename = "preferDianeCredentials")]
     pub prefer_diane_credentials: bool,
     #[serde(rename = "kbPath")]
@@ -77,6 +79,7 @@ impl Default for AppSettings {
             api_key: String::new(),
             model: "kimi-k2.6".into(),
             provider_profiles: HashMap::new(),
+            connect_diane: false,
             prefer_diane_credentials: true,
             kb_path: String::new(),
             machines: Vec::new(),

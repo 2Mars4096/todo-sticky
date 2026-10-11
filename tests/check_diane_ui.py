@@ -35,11 +35,14 @@ with sync_playwright() as p:
     page.screenshot(path='/private/tmp/diane-disconnected.png')
     assert not errors, errors
     print(json.dumps({'checks':['all six indicators','reduced motion','session open','keyboard Escape','double-click idempotency','reload without redispatch','stop acknowledgement','disconnect preserves run'], 'page_errors':errors}))
-    for failure in ['offline', 'pending', 'malformed', 'corrupt']:
+    for failure in ['offline', 'pending', 'malformed', 'corrupt', 'disabled']:
         isolated = browser.new_context(viewport={'width':460, 'height':640})
         check = isolated.new_page()
         check.on('pageerror', lambda error: errors.append(str(error)))
         check.goto(os.environ.get('TODO_TEST_URL', 'http://127.0.0.1:15173') + '/tests/diane-ui.html?failure=' + failure)
+        if failure == 'disabled':
+            assert check.locator('.diane-action').count() == 0
+            assert check.evaluate('calls.length') == 0
         capture = check.get_by_role('textbox', name='New top-level task')
         capture.fill('Independent task')
         capture.press('Enter')

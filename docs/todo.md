@@ -1,10 +1,14 @@
 # Todo
 
+- [ ] [4-32-publish-2-1-8](plans/4-32-publish-2-1-8.md) — publish the optional local Diane connection setting.
+
 - [x] [4-31-publish-2-1-7](plans/4-31-publish-2-1-7.md) — publish standalone-safe Todo with optional Diane integration.
 
 - [x] [3-4-diane-credential-fallback](plans/3-4-diane-credential-fallback.md) — use Diane file-backed keys by default, then Todo’s own keys; preserve .env and Keychain. Source implemented; installed-app acceptance pending.
 
 ## Diane Integration
+
+- [x] Add Settings → Diane opt-in, identify the local Dear Diane/project destination, and hide task controls when off.
 
 - [x] Preserve standalone Todo operation; contain invalid Diane responses and corrupt links, with disconnected core-control regression checks.
 

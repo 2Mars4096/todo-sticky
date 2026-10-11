@@ -15,7 +15,11 @@ interface Context {
 }
 const DianeContext = createContext<Context | null>(null)
 
-export function DianeProvider({ children, date, kbPath }: { children: ReactNode; date: string; kbPath: string }) {
+export function DianeProvider({ enabled = false, children, date, kbPath }: { enabled?: boolean; children: ReactNode; date: string; kbPath: string }) {
+  return enabled ? <ConnectedDianeProvider date={date} kbPath={kbPath}>{children}</ConnectedDianeProvider> : <DianeContext.Provider value={null}>{children}</DianeContext.Provider>
+}
+
+function ConnectedDianeProvider({ children, date, kbPath }: { children: ReactNode; date: string; kbPath: string }) {
   const [entries, setEntries] = useState<Entries>({})
   const saved = useRef<Entries>({})
   const [storageError, setStorageError] = useState('Loading Diane links')
@@ -113,8 +117,8 @@ export function DianeAction({ id, text, parent = '', steps = [] }: { id: string;
   const unavailable = Boolean(receipt?.error)
   const state = unavailable ? 'unavailable' : result?.status || (receipt ? 'queued' : 'new')
   const label = unavailable ? 'Status unavailable' : result?.stopping ? 'Stopping' : result ? statusLabels[result.status] : receipt ? 'Sending to Diane' : 'Run in Diane'
-  const title = receipt ? `${label}. Open details for ${text}` : context.storageError || (context.project?.root ? `Run in Diane · ${context.project.name}` : 'Open Diane and select a project folder')
-  return <span ref={root} className="diane-action-wrap" onKeyDown={event => { if (event.key === 'Escape') { setExpanded(false); root.current?.querySelector('button')?.focus() } }}>
+  const title = receipt ? `${label}. Open details for ${text}` : context.storageError || (context.project?.root ? `Run in Diane · ${context.project.name}` : 'Diane unavailable · Open Dear Diane on this computer and select a project folder')
+  return <span ref={root} className="diane-action-wrap" title={title} onKeyDown={event => { if (event.key === 'Escape') { setExpanded(false); root.current?.querySelector('button')?.focus() } }}>
     <button type="button" className="task-action diane-action" title={title} aria-label={title}
       aria-expanded={receipt ? expanded : undefined} disabled={!receipt && (busy || Boolean(context.storageError) || !context.project?.root)}
       onClick={() => { if (receipt) { const rect = root.current!.getBoundingClientRect(); setPosition({ top: Math.max(12, Math.min(rect.bottom + 6, window.innerHeight - 260)), left: Math.max(12, Math.min(rect.right - 280, window.innerWidth - 292)) }); setExpanded(value => !value) } else void context.run(key, text, parent, steps) }}>

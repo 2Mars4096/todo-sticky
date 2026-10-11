@@ -33,7 +33,7 @@ function Fixture() {
  const [tasks, setTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem('fixture-tasks') || 'null') || ['new', ...statuses].map(id => ({ id, text:id === 'new' ? 'Inspect this project' : id, status:'todo', subtasks:[] })))
  useEffect(() => { localStorage.setItem('fixture-tasks', JSON.stringify(tasks)) }, [tasks])
  const edit = (id: string, patch: Partial<Task>) => setTasks(rows => rows.map(row => row.id === id ? { ...row, ...patch } : row))
- return <div style={{width:440,padding:12}}><DianeProvider date="2026-10-10" kbPath="test">
+ return <div style={{width:440,padding:12}}><DianeProvider enabled={failure !== 'disabled'} date="2026-10-10" kbPath="test">
   <AddTask inline onAdd={text => setTasks(rows => [...rows, { id:crypto.randomUUID(), text, status:'todo', subtasks:[] }])}/>
   {tasks.map(task => <TaskItem key={task.id} id={task.id} text={task.text} status={task.status} viewMode="today" moveTargetLabel="tomorrow"
    onToggle={() => edit(task.id, {status:task.status === 'done' ? 'todo' : 'done'})}

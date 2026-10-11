@@ -51,6 +51,7 @@ export interface AppSettings {
   apiKey: string
   model: string
   providerProfiles: Partial<Record<Provider, ProviderProfile>>
+  connectDiane?: boolean
   preferDianeCredentials?: boolean
   dianeProviders?: Provider[]
   kbPath: string

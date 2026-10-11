@@ -485,7 +485,7 @@ export default function App() {
           </div>
         )}
 
-        <DianeProvider date={calendar.dateStr} kbPath={aiSettings?.kbPath || "default"}>
+        <DianeProvider enabled={aiSettings?.connectDiane === true} date={calendar.dateStr} kbPath={aiSettings?.kbPath || "default"}>
           <TaskList
             tasks={tasks.tasks}
             loading={tasks.loading}

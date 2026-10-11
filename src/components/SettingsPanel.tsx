@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings, Provider } from '../types'
 import { api } from '../api'
+import { dianeRequest, type DianeProjects } from '../diane'
 import { AppUpdates } from './AppUpdates'
 import { updateIsBusy } from '../appUpdates'
 import type { useAppUpdates } from '../hooks/useAppUpdates'
@@ -33,6 +34,7 @@ interface Props {
 
 export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, appUpdates, updateBlockedReason }: Props) {
   const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS)
+  const [dianeDestination, setDianeDestination] = useState('')
   const [dianeAvailable, setDianeAvailable] = useState(false)
   const [showKey, setShowKey] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -58,6 +60,17 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, app
     window.addEventListener('focus', refresh)
     return () => { disposed = true; window.removeEventListener('focus', refresh) }
   }, [settings.provider, settings.apiBase])
+
+  useEffect(() => {
+    if (!settings.connectDiane) return
+    let disposed = false
+    setDianeDestination('Checking Dear Diane on this computer…')
+    void dianeRequest<DianeProjects>('projects').then(data => {
+      const project = data.projects.find(item => item.id === data.active_project_id)
+      if (!disposed) setDianeDestination(project?.root ? `Project: ${project.name} · ${project.root}` : 'Connected. Select a project folder in Dear Diane.')
+    }).catch(() => { if (!disposed) setDianeDestination('Not connected. Open Dear Diane on this computer.') })
+    return () => { disposed = true }
+  }, [settings.connectDiane])
 
   const update = (patch: Partial<AppSettings>) => {
     setSettings(prev => ({ ...prev, ...patch }))
@@ -144,6 +157,11 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, app
         )}
 
         <div className="settings-scroll">
+          <div className="settings-section">
+            <div className="section-title">Diane</div>
+            <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} disabled={saving || updating} onChange={e => update({ connectDiane: e.target.checked })} /> Connect to Dear Diane on this computer</label>
+            <p className="hint">{settings.connectDiane ? dianeDestination : 'Off. Diane task controls are hidden.'}</p>
+          </div>
           {!firstRun && (
             <AppUpdates
               currentVersion={appUpdates.currentVersion}
