@@ -4,6 +4,7 @@
 **Goal:** Dispatch a todo once into Diane's existing project/session structure and keep follow-up in that session.
 
 ## Tasks
+- [x] Lock standalone Todo operation and test core task controls with absent, stalled, malformed and corrupt Diane data.
 - [x] Inspect both products and isolate work in separate Git worktrees.
 - [x] Publish Diane project identities, absolute folders, and the existing composer execution payload without credentials.
 - [x] Persist immutable dispatch IDs and task snapshots; reconnect without duplicate execution.
@@ -13,6 +14,7 @@
 - [ ] Integrate companion changes and validate an authenticated run in installed apps during an idle maintenance window.
 
 ## Decisions
+- Diane is optional. Startup, task creation/editing/completion/deletion, storage, dates, goals and focus must work independently. A missing integration affects dispatch/status only; independently configured AI providers must not require Diane.
 - Todo uses the most recently focused Diane window's selected project; its name appears on the Run tooltip. No project/model/agent picker in Todo.
 - Missing project/folder disables dispatch or returns a specific error. Do not guess a filesystem destination.
 - A dispatch snapshots text, parent context, current-date steps, and project ID. Completed steps are identified as context.
@@ -22,6 +24,7 @@
 - First version targets the local Dear Diane desktop server on loopback port 45173. Remote hosts and browser-only Diane are outside this slice.
 
 ## Verification
+- 2026-10-11: capture/edit/complete/delete/reload browser controls pass across absent, stalled, malformed and corrupt Diane cases using fixture task persistence. Native task storage is unchanged. Malformed responses cannot enter rendering; unreadable receipts are retained without polling writes. Frontend build passes; only existing Star Focus type errors remain.
 - Todo Vite production build and native `cargo check --offline` pass.
 - Full Todo TypeScript checking still reports only existing Star Focus errors, recorded in `docs/bugs.md`.
 - Playwright synthetic UI check passes for six states, reduced motion, session-open action, Escape, double-click, reload, stop-pending, and disconnected state, with no page errors.

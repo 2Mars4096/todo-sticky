@@ -35,4 +35,29 @@ with sync_playwright() as p:
     page.screenshot(path='/private/tmp/diane-disconnected.png')
     assert not errors, errors
     print(json.dumps({'checks':['all six indicators','reduced motion','session open','keyboard Escape','double-click idempotency','reload without redispatch','stop acknowledgement','disconnect preserves run'], 'page_errors':errors}))
+    for failure in ['offline', 'pending', 'malformed', 'corrupt']:
+        isolated = browser.new_context(viewport={'width':460, 'height':640})
+        check = isolated.new_page()
+        check.on('pageerror', lambda error: errors.append(str(error)))
+        check.goto(os.environ.get('TODO_TEST_URL', 'http://127.0.0.1:15173') + '/tests/diane-ui.html?failure=' + failure)
+        capture = check.get_by_role('textbox', name='New top-level task')
+        capture.fill('Independent task')
+        capture.press('Enter')
+        check.get_by_role('button', name='Independent task', exact=True).click()
+        editor = check.locator('.task-inline-edit')
+        editor.fill('Edited without Diane')
+        editor.press('Enter')
+        check.get_by_role('button', name='Edited without Diane. Status todo. Change status', exact=True).click()
+        check.get_by_role('button', name='Edited without Diane. Status done. Change status', exact=True).wait_for()
+        check.reload()
+        check.get_by_role('button', name='Edited without Diane. Status done. Change status', exact=True).wait_for()
+        check.get_by_role('button', name='Delete Edited without Diane', exact=True).click()
+        assert check.get_by_role('button', name='Edited without Diane', exact=True).count() == 0
+        assert check.evaluate('calls.filter(c=>c.action==="dispatch").length') == 0
+        if failure == 'corrupt':
+            assert check.evaluate('localStorage.getItem("sticky-todo-diane-v1")') == '{broken'
+            assert check.evaluate('calls.length') == 0
+        isolated.close()
+    assert not errors, errors
+    print('Independent capture/edit/complete/delete/reload controls passed with absent, stalled, malformed, and corrupt Diane data (fixture task persistence).')
     browser.close()

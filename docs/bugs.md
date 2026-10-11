@@ -1,5 +1,10 @@
 # Bugs And Failed Approaches
 
+## 2026-10-11: Optional Integration Failure Containment
+
+- Fixed unchecked Diane payloads reaching project/artifact rendering and potentially taking down task controls. Validate protocol data and persisted receipts before using them.
+- Fixed failed polling overwriting unreadable saved links with an empty receipt store. Stop integration polling after parse failure and leave original bytes intact for recovery.
+
 ## 2026-10-10: Diane Integration Validation
 
 - Diane currently keeps project/profile selections in renderer storage. Calling its raw run endpoint would bypass those defaults; the companion bridge publishes the existing composer payload instead.

@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { dianeRequest, statusLabels, type DianeDispatch, type DianeProjects, type DianeReceipt, type DianeResult } from '../diane'
+import { dianeRequest, readDianeReceipts, statusLabels, type DianeDispatch, type DianeProjects, type DianeReceipt, type DianeResult } from '../diane'
 
 const STORAGE = 'sticky-todo-diane-v1'
 type Entries = Record<string, DianeReceipt>
@@ -33,10 +33,12 @@ export function DianeProvider({ children, date, kbPath }: { children: ReactNode;
   useEffect(() => {
     let disposed = false
     try {
-      const parsed = JSON.parse(localStorage.getItem(STORAGE) || '{}') as Entries
-      if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object' || Object.values(parsed).some(value => !value?.request?.request_id || !value.request.task_key)) throw Error('Invalid links')
+      const parsed = readDianeReceipts(localStorage.getItem(STORAGE))
       saved.current = parsed; setEntries(parsed); setStorageError('')
-    } catch { setStorageError('Saved Diane links could not be read. Open Diane to continue existing sessions.') }
+    } catch {
+      setStorageError('Saved Diane links could not be read. Todo remains available; open Diane for existing sessions.')
+      return // Preserve unreadable receipts; never replace them with an empty poll result.
+    }
     const poll = async () => {
       try { const data = await dianeRequest<DianeProjects>('projects'); if (!disposed) setProjects(data) }
       catch (error) {

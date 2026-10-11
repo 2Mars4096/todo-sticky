@@ -2,6 +2,8 @@
 
 ## Diane Handoff
 
+- Standalone operation is invariant: core task/UI/storage paths do not await Diane readiness. Missing credentials affect only the AI operation that needs them. Response validation and receipt parsing contain malformed integration data; failed parsing preserves the original localStorage value and suspends integration polling.
+
 - `src/diane.ts` defines the companion protocol; `src/components/DianeAction.tsx` owns one app-level receipt store, polling, icon controls and portalled details. WebView-local receipts retain immutable request UUIDs keyed by knowledge-base/date/task identity before network writes.
 - `src-tauri/src/diane.rs` exposes only projects/dispatch/status/stop/open through a fixed loopback endpoint, with no proxying, redirects, credentials, or arbitrary URLs.
 - Diane owns durable sessions, project roots, execution profiles and runtime state; the companion API and desktop open route are required. Native credentials never enter Todo.

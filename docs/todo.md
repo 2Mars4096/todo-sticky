@@ -2,6 +2,8 @@
 
 ## Diane Integration
 
+- [x] Preserve standalone Todo operation; contain invalid Diane responses and corrupt links, with disconnected core-control regression checks.
+
 - [x] Implement and test [6-diane-handoff](plans/6-diane-handoff.md) in isolated Todo/Diane worktrees.
 - [ ] Integrate both changes and perform installed-app acceptance when Diane is idle.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-11
+
+- [fix] Enforce optional Diane integration: validate project/status responses and saved links before rendering; preserve unreadable links rather than overwriting them during failed polling.
+- [test] Browser capture/edit/complete/delete/reload controls pass with absent, stalled, malformed and corrupt Diane data using fixture task persistence. Frontend build passes; native task storage unchanged. Existing Star Focus type errors remain.
+
 ## 2026-10-10
 
 - [feat] Add immutable task dispatch to Diane, project/default inheritance, persistent session links, colored/shape status glyphs, result details, acknowledged Stop, and native Open in Diane. Follow-up remains in Diane; todo completion stays manual.
