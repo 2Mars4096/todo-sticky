@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type PointerEvent, type KeyboardEvent } from 'react'
 import { format } from 'date-fns'
+import { DianeAction } from './DianeAction'
 import type { Task, DatedTask, ViewMode } from '../types'
 
 function AddStepIcon() {
@@ -239,6 +240,7 @@ export function TaskItem({
           )}
           {dateLabel && <span className="date-tag">{dateLabel}</span>}
           <span className="task-actions">
+            {!isOtherDate && <DianeAction id={id} text={text} parent={parentText} steps={todaySubtasks?.map(step => `${step.status === 'done' ? '[completed] ' : ''}${step.text}`)} />}
             {!isSubtask && !isOtherDate && onAIBreakdown && (
               <button
                 type="button"

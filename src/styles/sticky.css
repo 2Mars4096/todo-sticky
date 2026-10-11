@@ -5694,3 +5694,26 @@ select:focus-visible {
 
 .settings-panel .diane-credentials-choice { display:flex; align-items:center; gap:6px; }
 .settings-panel .diane-credentials-choice input { width:auto; margin:0; padding:0; }
+/* Diane keeps execution out of the note: one status glyph and optional details. */
+.diane-action-wrap { position: relative; display: inline-flex; vertical-align: middle; }
+.diane-action { opacity: 1; }
+.diane-dot { width: 16px; height: 16px; fill: currentColor; stroke: currentColor; stroke-width: 1.5; }
+.diane-new, .diane-queued, .diane-unavailable { fill: none; }
+.diane-new, .diane-queued, .diane-stopped, .diane-unavailable { color: oklch(0.48 0.025 85); }
+.diane-running { color: oklch(0.48 0.10 245); animation: diane-pulse 1.6s ease-in-out infinite; }
+.diane-attention { color: oklch(0.52 0.12 70); }
+.diane-ready { color: oklch(0.46 0.10 145); }
+.diane-failed { color: oklch(0.48 0.16 28); }
+.diane-mark { fill: none; stroke: oklch(0.98 0.02 95); stroke-linecap: round; stroke-linejoin: round; }
+.diane-details { position: fixed; z-index: 100; max-height: calc(100vh - 24px); overflow: auto; width: min(280px, 70vw); display: flex; flex-direction: column; gap: 6px; padding: 10px; white-space: normal; overflow-wrap: anywhere; background: var(--bg, #fff8dc); color: var(--text, #3d3520); border: 1px solid #9c9169; border-radius: 6px; box-shadow: 0 4px 16px #3d352025; font-size: 12px; line-height: 1.4; }
+.diane-details > span { max-height: 180px; overflow: auto; }
+.diane-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.diane-detail-actions button { font: inherit; padding: 4px 6px; border: 1px solid #9c9169; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
+.diane-action:focus-visible, .diane-detail-actions button:focus-visible { outline: 2px solid #a8882e; outline-offset: 2px; }
+@keyframes diane-pulse { 50% { opacity: 0.45; transform: scale(0.8); } }
+@media (prefers-reduced-motion: reduce) { .diane-running { animation: none; } }
+
+.task-actions:has(.diane-action) { opacity: 1; }
+.task-actions:has(.diane-action) > button { opacity: 0.54; }
+.task-item:hover .task-actions:has(.diane-action) > button,
+.task-item:focus-within .task-actions:has(.diane-action) > button { opacity: 1; }

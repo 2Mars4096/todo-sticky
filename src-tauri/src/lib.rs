@@ -1,6 +1,7 @@
 mod diane_credentials;
 pub mod cli;
 mod commands;
+mod diane;
 mod config;
 mod file_sync;
 mod llm;
@@ -413,6 +414,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             diane_credentials::diane_credential_status,
+            diane::diane_request,
             commands::get_tasks,
             commands::task_api_extract,
             commands::task_api_create,

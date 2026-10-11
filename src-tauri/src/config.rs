@@ -221,7 +221,17 @@ fn macos_app_data_dir(home: &Path, identifier: &str) -> PathBuf {
         .join(identifier)
 }
 
+pub fn development_data_dir() -> Option<PathBuf> {
+    #[cfg(debug_assertions)]
+    if let Some(path) = env::var_os("STICKY_TODO_DEV_DATA_DIR").map(PathBuf::from) {
+        assert!(path.is_absolute(), "STICKY_TODO_DEV_DATA_DIR must be absolute; refusing to use real task storage");
+        return Some(path);
+    }
+    None
+}
+
 fn stable_app_data_dir(app: &AppHandle) -> PathBuf {
+    if let Some(path) = development_data_dir() { return path; }
     #[cfg(target_os = "macos")]
     if let Some(home) = stable_home_dir() {
         return macos_app_data_dir(&home, &app.config().identifier);
@@ -243,7 +253,7 @@ fn star_focus_path(app: &AppHandle) -> PathBuf {
 }
 
 pub fn has_saved_config(app: &AppHandle) -> bool {
-    config_path(app).exists() || load_legacy_settings().is_some() || migrate_from_env().is_some()
+    config_path(app).exists() || (development_data_dir().is_none() && (load_legacy_settings().is_some() || migrate_from_env().is_some()))
 }
 
 fn load_settings_file(path: &Path) -> Option<AppSettings> {
@@ -454,6 +464,8 @@ pub fn load_settings(app: &AppHandle) -> AppSettings {
         return normalize_provider_profiles(settings);
     }
 
+    if development_data_dir().is_some() { return AppSettings::default(); }
+
     if let Some(settings) = load_legacy_settings() {
         return normalize_provider_profiles(settings);
     }
@@ -492,6 +504,7 @@ pub fn save_star_focus_state(app: &AppHandle, state: &StarFocusState) -> Result<
 }
 
 pub fn get_kb_path(app: &AppHandle) -> String {
+    if let Some(path) = development_data_dir() { return path.join("tasks").to_string_lossy().into(); }
     let settings = load_settings(app);
     if !settings.kb_path.is_empty() {
         return settings.kb_path;

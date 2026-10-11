@@ -2,6 +2,14 @@
 
 - [x] [3-4-diane-credential-fallback](plans/3-4-diane-credential-fallback.md) — use Diane file-backed keys by default, then Todo’s own keys; preserve .env and Keychain. Source implemented; installed-app acceptance pending.
 
+## Diane Integration
+
+- [x] Preserve standalone Todo operation; contain invalid Diane responses and corrupt links, with disconnected core-control regression checks.
+
+- [x] Implement and test [6-diane-handoff](plans/6-diane-handoff.md) in isolated Todo/Diane worktrees.
+- [x] Reconcile Todo integration with credential fallback, preserve existing work, and verify standalone operation for merge into main.
+- [ ] Deploy both apps and perform installed-app acceptance when Diane is idle.
+
 ## Phase 0 - Documentation Scaffold
 
 - [x] Add `AGENTS.md` and the `docs/` tracking scaffold.

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { DateHeader } from './components/DateHeader'
 import { TaskList } from './components/TaskList'
+import { DianeProvider } from './components/DianeAction'
 import { AddTask } from './components/AddTask'
 import { AlbumRecommendations } from './components/AlbumRecommendations'
 import { DevToolsPanel } from './components/DevToolsPanel'
@@ -484,29 +485,31 @@ export default function App() {
           </div>
         )}
 
-        <TaskList
-          tasks={tasks.tasks}
-          loading={tasks.loading}
-          loadError={tasks.loadError}
-          viewMode={viewMode}
-          selectedTaskId={starFocus.selectedTaskId}
-          focusLocked={Boolean(starFocus.activeSession)}
-          isCurrentDay={calendar.isCurrentDay}
-          moveTargetLabel={tasks.carryForwardTarget.actionLabel}
-          onToggle={tasks.toggleStatus}
-          onDelete={tasks.deleteTask}
-          onPush={handleCarryForward}
-          onCopyTask={handleCopyTask}
-          onTextChange={tasks.updateTaskText}
-          onAddSubtask={tasks.addSubtask}
-          onAddTask={tasks.addTask}
-          onReorderTask={tasks.reorderTasks}
-          onReorderSubtask={tasks.reorderSubtasks}
-          onAIBreakdown={handleAIBreakdown}
-          onFocusTask={handleFocusTask}
-          onGoToday={calendar.goToday}
-          onRetryLoad={tasks.load}
-        />
+        <DianeProvider date={calendar.dateStr} kbPath={aiSettings?.kbPath || "default"}>
+          <TaskList
+            tasks={tasks.tasks}
+            loading={tasks.loading}
+            loadError={tasks.loadError}
+            viewMode={viewMode}
+            selectedTaskId={starFocus.selectedTaskId}
+            focusLocked={Boolean(starFocus.activeSession)}
+            isCurrentDay={calendar.isCurrentDay}
+            moveTargetLabel={tasks.carryForwardTarget.actionLabel}
+            onToggle={tasks.toggleStatus}
+            onDelete={tasks.deleteTask}
+            onPush={handleCarryForward}
+            onCopyTask={handleCopyTask}
+            onTextChange={tasks.updateTaskText}
+            onAddSubtask={tasks.addSubtask}
+            onAddTask={tasks.addTask}
+            onReorderTask={tasks.reorderTasks}
+            onReorderSubtask={tasks.reorderSubtasks}
+            onAIBreakdown={handleAIBreakdown}
+            onFocusTask={handleFocusTask}
+            onGoToday={calendar.goToday}
+            onRetryLoad={tasks.load}
+          />
+        </DianeProvider>
 
         {isDevMode && showDevTools && (
           <DevToolsPanel

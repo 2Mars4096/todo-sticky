@@ -185,3 +185,9 @@ Settings uses the official Tauri updater `check`, `download`, and `install` oper
 - Native `diane_credential_status({ provider, endpoint })` returns a boolean for the exact provider/standard-endpoint pair. It performs no writes and does not need Diane running.
 - `test_connection` accepts optional `preferDianeCredentials` (default true), matching normal native LLM calls. When enabled, a matching file-backed Diane key takes precedence over Todo's submitted/saved key; missing/unreadable sources fall back to Todo. API authentication failures do not trigger a second-account retry.
 - This preference does not change task API schemas, model choices, environment files or Keychain.
+
+## Diane dispatch contract
+
+Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
+
+Never treat network failure as run failure, Stop submission as stop completion, or a completed agent run as a completed todo. Open uses the linked desktop session. Approvals, clarification, and further work belong in Diane.

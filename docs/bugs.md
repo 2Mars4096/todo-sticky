@@ -1,6 +1,21 @@
 # Bugs And Failed Approaches
 
+## 2026-10-11: Optional Integration Failure Containment
+
+- Merge verification initially used a Cargo cache without `dotenvy`. The existing app-account cache contains it; native tests use that cache with the isolated Rust toolchain. Both native commands and independent CSS additions are retained when resolving the credential-fallback/handoff conflicts.
+
+- Fixed unchecked Diane payloads reaching project/artifact rendering and potentially taking down task controls. Validate protocol data and persisted receipts before using them.
+- Fixed failed polling overwriting unreadable saved links with an empty receipt store. Stop integration polling after parse failure and leave original bytes intact for recovery.
+
+## 2026-10-10: Diane Integration Validation
+
 - 2026-10-10: Discarded Keychain-sharing prototype before applying it to this repository at user request; no existing credentials migrated. Native test compilation initially used an unimported `json!` macro; qualify `serde_json::json!`. Use isolated `/private/tmp/sticky-todo-rustup` toolchain because the default Rust environment is unconfigured.
+
+- Diane currently keeps project/profile selections in renderer storage. Calling its raw run endpoint would bypass those defaults; the companion bridge publishes the existing composer payload instead.
+- Worktree dependency symlinks initially sent Vite/TypeScript caches into the source checkout. Use a worktree-local node_modules directory with dependency links and local caches. Diane requires Node 22 here.
+- Playwright CLI was unavailable offline; the installed Python Playwright package provided isolated Chrome checks.
+- Default cargo lacked a selected toolchain; validation used the existing `/private/tmp/sticky-todo-rustup` toolchain.
+- Installed desktop round-trip and authenticated model acceptance remain pending. No existing app was restarted.
 
 ## 2026-10-05: Existing Full TypeScript Check Failures
 

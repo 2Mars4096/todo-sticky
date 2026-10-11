@@ -117,3 +117,6 @@ Top-level plans omit a parent link. Sub-plans link back to their parent. Create 
 - This repository is a Tauri desktop app with a React/Vite frontend and a Rust native layer.
 - The active recovery plan is `docs/plans/4-9-data-history-recovery-and-merge.md`; remaining follow-up questions live in `docs/todo.md` backlog.
 - The Star Focus design lock lives in `docs/plans/1-star-focus-integration-design.md`; implementation should stay consistent with those v1 decisions unless that plan is explicitly revised.
+
+- The Diane integration implementation and pending paired deployment are tracked in `docs/plans/6-diane-handoff.md`. Keep dispatch/status in Todo and all follow-up/approvals in the linked Diane session.
+- Todo must remain independently usable when Diane is missing, disconnected, unresponsive, or incompatible. Core startup, task CRUD/storage, dates, goals and focus must never await or require the integration. Keep integration errors local to its controls; independently configured AI providers remain usable.

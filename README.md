@@ -141,3 +141,19 @@ On desktop, step-entry text and its border appear when you hover over the add-st
 | **Arrow Up / Arrow Down** | Move a task or subtask after clicking or tabbing to its six-dot handle |
 | **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
 | **Double-click** | Edit task text |
+
+## Run in Diane (companion update required)
+
+Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and focus without it. If Diane is disconnected or unavailable, only its dispatch/status controls are affected. Independently configured AI providers continue to use their own configuration.
+
+Open Dear Diane and select the project/folder you want to use. In Todo, hover the small Run triangle to see the target project, then click once. Diane inherits its current execution settings and credentials. Todo shows only a status glyph; click it for the brief result, Open in Diane, or Stop. All questions and follow-up stay in the same Diane session. Mark the todo done yourself.
+
+Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. This local desktop integration requires both companion changes and is not active in the currently installed release.
+
+For an isolated native development launch:
+
+```sh
+STICKY_TODO_DEV_DATA_DIR=/private/tmp/sticky-todo-diane-data npm run tauri -- dev --config src-tauri/tauri.diane-dev.conf.json
+```
+
+Browser controls can be checked without native data or an agent: run Vite on port 15173, then `python tests/check_diane_ui.py` with Python Playwright installed. `CHROME_EXECUTABLE` and `TODO_TEST_URL` override the test browser and preview URL.

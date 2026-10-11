@@ -1,5 +1,9 @@
 # Development Plan
 
+## Current Integration Slice
+
+- [6-diane-handoff](plans/6-diane-handoff.md): Todo captures and dispatches one-off tasks; Diane owns execution, decisions, and follow-up. Todo handoff and credential fallback are reconciled and tested together for main; paired deployment and live acceptance remain pending.
+
 ## Current Goal
 
 - [x] Add quiet automatic update discovery and Settings/action indicators through [4-24](plans/4-24-automatic-update-indicators.md); keep installation manual.

@@ -1,8 +1,20 @@
 # Changelog
 
+## 2026-10-11
+
+- [merge] Reconcile the optional Diane task handoff and standalone hardening with the pre-existing credential fallback for Todo main. Preserve existing work in a checkpoint commit and safety snapshot; keep both native commands and style additions.
+- [test] Combined production frontend build, all 24 native tests (including task CRUD/storage and credential-source fallback), and disconnected/malformed/stalled browser controls pass. Full TypeScript checking retains the same 16 known Star Focus errors. No app installation, restart, credential write, or user task-data migration.
+
+- [fix] Enforce optional Diane integration: validate project/status responses and saved links before rendering; preserve unreadable links rather than overwriting them during failed polling.
+- [test] Browser capture/edit/complete/delete/reload controls pass with absent, stalled, malformed and corrupt Diane data using fixture task persistence. Frontend build passes; native task storage unchanged. Existing Star Focus type errors remain.
+
 ## 2026-10-10
+
 - [feat] Resolve Diane credentials natively before Todo fallback for matching standard OpenRouter/OpenAI/Moonshot endpoints. Add default-on preference, source status and connection-test support. Keep all existing keys, environment files, models and task data unchanged. No Keychain or Diane background service.
 - [test] Add fixture-only source preservation, missing/corrupt source and endpoint isolation tests; frontend production build and 24 native tests pass. Full TypeScript check reports 16 pre-existing Star Focus errors, identical to the unchanged repository.
+
+- [feat] Add immutable task dispatch to Diane, project/default inheritance, persistent session links, colored/shape status glyphs, result details, acknowledged Stop, and native Open in Diane. Follow-up remains in Diane; todo completion stays manual.
+- [test] Frontend build, native check, synthetic browser lifecycle checks, and companion protocol tests pass. Add a separate development identifier/data directory. Source-only: installed apps and running sessions unchanged.
 
 ## 2026-10-08
 
