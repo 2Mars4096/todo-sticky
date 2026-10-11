@@ -1,6 +1,6 @@
 # Todo
 
-- [ ] [4-31-publish-2-1-7](plans/4-31-publish-2-1-7.md) — publish standalone-safe Todo with optional Diane integration.
+- [x] [4-31-publish-2-1-7](plans/4-31-publish-2-1-7.md) — publish standalone-safe Todo with optional Diane integration.
 
 - [x] [3-4-diane-credential-fallback](plans/3-4-diane-credential-fallback.md) — use Diane file-backed keys by default, then Todo’s own keys; preserve .env and Keychain. Source implemented; installed-app acceptance pending.
 

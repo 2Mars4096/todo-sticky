@@ -2,6 +2,8 @@
 
 ## 2026-10-11
 
+- [release] Publish [v2.1.7](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.7) with standalone-safe optional Diane integration. All platform builds and publication pass; public updater manifest, asset matching, and download URLs verify. Diane companion deployment remains separate.
+
 - [release] Prepare 2.1.7 with optional Diane handoff and credential fallback while retaining standalone Todo operation. Frontend build and all six release suites pass. Separate Diane companion deployment remains pending.
 
 - [merge] Reconcile the optional Diane task handoff and standalone hardening with the pre-existing credential fallback for Todo main. Preserve existing work in a checkpoint commit and safety snapshot; keep both native commands and style additions.
