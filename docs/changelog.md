@@ -2,6 +2,8 @@
 
 ## 2026-10-11
 
+- [release] Prepare 2.1.7 with optional Diane handoff and credential fallback while retaining standalone Todo operation. Frontend build and all six release suites pass. Separate Diane companion deployment remains pending.
+
 - [merge] Reconcile the optional Diane task handoff and standalone hardening with the pre-existing credential fallback for Todo main. Preserve existing work in a checkpoint commit and safety snapshot; keep both native commands and style additions.
 - [test] Combined production frontend build, all 24 native tests (including task CRUD/storage and credential-source fallback), and disconnected/malformed/stalled browser controls pass. Full TypeScript checking retains the same 16 known Star Focus errors. No app installation, restart, credential write, or user task-data migration.
 

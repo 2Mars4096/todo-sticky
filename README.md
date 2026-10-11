@@ -148,7 +148,7 @@ Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and f
 
 Open Dear Diane and select the project/folder you want to use. In Todo, hover the small Run triangle to see the target project, then click once. Diane inherits its current execution settings and credentials. Todo shows only a status glyph; click it for the brief result, Open in Diane, or Stop. All questions and follow-up stay in the same Diane session. Mark the todo done yourself.
 
-Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. This local desktop integration requires both companion changes and is not active in the currently installed release.
+Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. Todo 2.1.7 includes the Todo side of this integration; running tasks requires the separate Diane companion update.
 
 For an isolated native development launch:
 
