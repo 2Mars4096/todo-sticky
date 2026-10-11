@@ -2,9 +2,11 @@
 
 ## 2026-10-11
 
+- [release] Publish [v2.1.8](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.8) with the default-off local Diane connection setting and grey unavailable controls. All platform builds and publication pass; public updater manifest, assets, and download URLs verify.
+
 - [release] Prepare 2.1.8 with the default-off local Diane connection setting and grey unavailable controls.
 
-- [ui] Add default-off “Connect to Dear Diane on this computer” in Settings with project/folder confirmation. Off hides task controls and stops handoff polling while preserving saved links; unavailable dispatch is grey. Credential-source preference remains separate. Frontend build, 24 native tests, and browser lifecycle/disabled-mode checks pass. Not yet published.
+- [ui] Add default-off “Connect to Dear Diane on this computer” in Settings with project/folder confirmation. Off hides task controls and stops handoff polling while preserving saved links; unavailable dispatch is grey. Credential-source preference remains separate. Frontend build, 24 native tests, and browser lifecycle/disabled-mode checks pass. Published in v2.1.8.
 
 - [release] Publish [v2.1.7](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.7) with standalone-safe optional Diane integration. All platform builds and publication pass; public updater manifest, asset matching, and download URLs verify. Diane companion deployment remains separate.
 

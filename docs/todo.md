@@ -1,6 +1,6 @@
 # Todo
 
-- [ ] [4-32-publish-2-1-8](plans/4-32-publish-2-1-8.md) — publish the optional local Diane connection setting.
+- [x] [4-32-publish-2-1-8](plans/4-32-publish-2-1-8.md) — publish the optional local Diane connection setting.
 
 - [x] [4-31-publish-2-1-7](plans/4-31-publish-2-1-7.md) — publish standalone-safe Todo with optional Diane integration.
 
