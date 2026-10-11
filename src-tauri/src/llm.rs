@@ -11,15 +11,19 @@ use tauri::AppHandle;
 use tokio::process::Command;
 use tokio::time::timeout;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct LLMConfig {
     pub provider: String,
     #[serde(rename = "apiBase")]
     pub api_base: String,
     #[serde(rename = "apiKey")]
     pub api_key: String,
+    #[serde(default = "prefer_diane_default", rename = "preferDianeCredentials")]
+    pub prefer_diane_credentials: bool,
     pub model: String,
 }
+
+fn prefer_diane_default() -> bool { true }
 
 struct Message {
     role: String,
@@ -327,6 +331,13 @@ async fn chat_completion(config: &LLMConfig, messages: &[Message]) -> Result<Str
     if config.provider.eq_ignore_ascii_case("codex") {
         return codex_completion(config, messages).await;
     }
+    let mut resolved = config.clone();
+    if config.prefer_diane_credentials {
+        if let Some(key) = crate::diane_credentials::resolve(&config.provider, &config.api_base) {
+            resolved.api_key = key;
+        }
+    }
+    let config = &resolved;
     if config.api_key.is_empty() {
         return Err("API key not configured. Open Settings to add your key.".into());
     }
@@ -339,7 +350,7 @@ async fn chat_completion(config: &LLMConfig, messages: &[Message]) -> Result<Str
 
 fn get_config(app: &AppHandle) -> LLMConfig {
     let s = load_settings(app);
-    LLMConfig { provider: s.provider, api_base: s.api_base, api_key: s.api_key, model: s.model }
+    LLMConfig { provider: s.provider, api_base: s.api_base, api_key: s.api_key, model: s.model, prefer_diane_credentials: s.prefer_diane_credentials }
 }
 
 pub async fn test_connection(config: &LLMConfig) -> Result<Value, String> {
@@ -474,6 +485,7 @@ mod tests {
             provider: provider.into(),
             api_base: api_base.into(),
             api_key: "test-key".into(),
+            prefer_diane_credentials: false,
             model: model.into(),
         }
     }

@@ -176,3 +176,9 @@
 - `useTasks.flushPendingSave()` drains queued task edits, and `waitForPendingWrites()` in `src/api.ts` waits for native writes before installation or restart.
 - Official Tauri updater/process plugins verify signed packages from the public GitHub release `latest.json`. The app carries the public key only; the private key lives outside the repo and in an approved Actions secret.
 - Tagged releases build platform artifacts independently, then `scripts/prepare-update-release.cjs` creates one complete manifest. `scripts/validate-release-assets.cjs` checks uploaded names while the release is a draft (temporary URLs), and exact public URLs after publication. Upload names are normalized before manifest generation; publication follows `scripts/validate-update-manifest.cjs` checks and exact URL matching against GitHub’s uploaded assets. Universal macOS archives serve both Mac architectures.
+
+## Linked Diane credentials
+
+- `src-tauri/src/diane_credentials.rs` reads `~/.dan/linked-credentials.json` (absolute saved-key/.env paths only), or the existing `~/.dan/graphs_dir` marker for older Diane installs. No writes or Keychain APIs. Reads are bounded and re-evaluated per request.
+- `preferDianeCredentials` defaults to true in existing/new settings; only matching standard provider endpoints may use Diane keys. Todo’s stored keys remain the fallback. Keys never enter the new status command; it returns only availability. Process-only Diane environment credentials are not shared.
+- `dotenvy` parses file-backed credentials without modifying Todo’s environment. `tempfile` is test-only.

@@ -97,8 +97,11 @@ export const api = {
   saveStarFocusState: (state: StarFocusState) =>
     persist(invoke<{ ok: boolean }>('save_star_focus_state', { state })),
 
-  testConnection: (settings: { provider: string; apiBase: string; apiKey: string; model: string }) =>
+  testConnection: (settings: { provider: string; apiBase: string; apiKey: string; model: string; preferDianeCredentials?: boolean }) =>
     invoke<{ ok: boolean; message: string }>('test_connection', { settings }),
+
+  dianeCredentialStatus: (provider: string, endpoint: string) =>
+    invoke<boolean>('diane_credential_status', { provider, endpoint }),
 
   checkFirstRun: () =>
     invoke<boolean>('check_first_run'),

@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [3-4-diane-credential-fallback](plans/3-4-diane-credential-fallback.md) — use Diane file-backed keys by default, then Todo’s own keys; preserve .env and Keychain. Source implemented; installed-app acceptance pending.
+
 ## Phase 0 - Documentation Scaffold
 
 - [x] Add `AGENTS.md` and the `docs/` tracking scaffold.

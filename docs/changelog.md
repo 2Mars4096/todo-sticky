@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-10
+- [feat] Resolve Diane credentials natively before Todo fallback for matching standard OpenRouter/OpenAI/Moonshot endpoints. Add default-on preference, source status and connection-test support. Keep all existing keys, environment files, models and task data unchanged. No Keychain or Diane background service.
+- [test] Add fixture-only source preservation, missing/corrupt source and endpoint isolation tests; frontend production build and 24 native tests pass. Full TypeScript check reports 16 pre-existing Star Focus errors, identical to the unchanged repository.
+
 ## 2026-10-08
 
 - [release] Publish [v2.1.6](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.6) with 15-minute automatic update checks. All platform builds and publication pass; public updater manifest, uploaded assets, and download URLs verify.

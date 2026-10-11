@@ -1,5 +1,7 @@
 # Bugs And Failed Approaches
 
+- 2026-10-10: Discarded Keychain-sharing prototype before applying it to this repository at user request; no existing credentials migrated. Native test compilation initially used an unimported `json!` macro; qualify `serde_json::json!`. Use isolated `/private/tmp/sticky-todo-rustup` toolchain because the default Rust environment is unconfigured.
+
 ## 2026-10-05: Existing Full TypeScript Check Failures
 
 - `npx tsc --noEmit` reports errors in `StarFocusOrbitalMap.tsx`, `StarFocusOrbitalMap3D.tsx`, and `useStarFocus.ts`: optional ring narrowing, ES2020 array `.at`, an argument-count mismatch, missing Three.js types and dependent typing errors, and retention-cap typing.
@@ -53,3 +55,5 @@
 - 2026-08-02: Showing the configured hidden window inside Tauri's `.setup(...)` callback is too early and can leave the fresh process running without a visible window. Position and show it from `RunEvent::Ready` instead.
 - 2026-04-20: An over-eager Star Focus prototype was started before the design was locked. The prototype was reverted. Keep design/planning ahead of implementation for this feature track.
 - 2026-04-20: Deriving Star Focus mission numbering from the retained archive length causes duplicate `vehicleCode` and `orbitIndex` values once the local archive reaches its cap. Future mission numbering should derive from the highest retained orbit index instead.
+
+- 2026-10-10: Full `tsc --noEmit` has 16 pre-existing errors in StarFocusOrbitalMap, StarFocusOrbitalMap3D and useStarFocus. Verified identical output in the unchanged repo and credential-fallback staging tree; production Vite build passes.

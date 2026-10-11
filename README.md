@@ -29,6 +29,8 @@ If macOS or Dropbox has offloaded the Markdown archive, Sticky Todo reports **Ta
 
 Click **Test Connection** to verify, then **Save & Start**. Change settings later via ⚙.
 
+By default, Todo uses Diane’s existing OpenRouter, OpenAI or Moonshot key on the same computer when the provider URL matches, then falls back to Todo’s own key. Diane does not need to be open. Turn off **Use Diane credentials when available** in Settings to use Todo’s key exclusively. Existing `.env` files, keys and model choices are preserved; there is no Keychain access or cross-device sync. Launch an updated Diane once to advertise its file locations; older installs can use the existing `~/.dan/graphs_dir` marker.
+
 After configuring more than one provider, use the compact provider selector beside ⚙ to switch in one action. Each provider keeps its own API URL, key, and last-used model. Choosing an unconfigured provider opens Settings directly on that provider.
 
 > macOS Gatekeeper may warn about an unsigned app. Right-click → **Open** to bypass.

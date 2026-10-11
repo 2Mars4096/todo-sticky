@@ -62,6 +62,8 @@ pub struct AppSettings {
     pub model: String,
     #[serde(rename = "providerProfiles")]
     pub provider_profiles: HashMap<String, LLMProviderProfile>,
+    #[serde(rename = "preferDianeCredentials")]
+    pub prefer_diane_credentials: bool,
     #[serde(rename = "kbPath")]
     pub kb_path: String,
     pub machines: Vec<Machine>,
@@ -75,6 +77,7 @@ impl Default for AppSettings {
             api_key: String::new(),
             model: "kimi-k2.6".into(),
             provider_profiles: HashMap::new(),
+            prefer_diane_credentials: true,
             kb_path: String::new(),
             machines: Vec::new(),
         }
@@ -202,7 +205,7 @@ fn macos_account_home_dir() -> Option<PathBuf> {
     }
 }
 
-fn stable_home_dir() -> Option<PathBuf> {
+pub(crate) fn stable_home_dir() -> Option<PathBuf> {
     #[cfg(target_os = "macos")]
     let account_home = macos_account_home_dir();
     #[cfg(not(target_os = "macos"))]

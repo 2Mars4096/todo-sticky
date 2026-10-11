@@ -216,8 +216,18 @@ pub async fn llm_recommend_albums(tasks: Value, app: AppHandle) -> Result<Value,
 }
 
 #[tauri::command]
-pub fn get_settings(app: AppHandle) -> Result<AppSettings, String> {
-    Ok(config::load_settings(&app))
+pub fn get_settings(app: AppHandle) -> Result<Value, String> {
+    let settings = config::load_settings(&app);
+    let available: Vec<&str> = ["openrouter", "openai", "moonshot"].into_iter().filter(|provider| {
+        let endpoint = if *provider == settings.provider { settings.api_base.as_str() }
+            else { settings.provider_profiles.get(*provider).map(|p| p.api_base.as_str()).unwrap_or(match *provider {
+                "openrouter" => "https://openrouter.ai/api/v1", "openai" => "https://api.openai.com/v1", _ => "https://api.moonshot.ai/v1",
+            }) };
+        crate::diane_credentials::resolve(provider, endpoint).is_some()
+    }).collect();
+    let mut result = serde_json::to_value(settings).map_err(|_| "Could not read settings")?;
+    result["dianeProviders"] = serde_json::json!(available);
+    Ok(result)
 }
 
 #[tauri::command]

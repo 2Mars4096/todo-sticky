@@ -177,3 +177,11 @@ A reusable skill only needs a concise `SKILL.md` plus a deterministic script or 
 ### App Updates
 
 Settings uses the official Tauri updater `check`, `download`, and `install` operations plus process `relaunch`. These are desktop-only operations, separate from the task CLI. `useTasks.flushPendingSave()` and `waitForPendingWrites()` must complete before install/relaunch. Updater metadata and signatures come from the public release endpoint; no GitHub token is sent by the app.
+
+## Diane credential fallback
+
+- `AppSettings.preferDianeCredentials` is optional for callers and defaults to `true` when absent. Set `false` to use Todo's own configured key exclusively.
+- `get_settings` adds `dianeProviders`, a transient array of provider IDs with a discoverable matching Diane key. It never returns Diane key values; this array is not persisted.
+- Native `diane_credential_status({ provider, endpoint })` returns a boolean for the exact provider/standard-endpoint pair. It performs no writes and does not need Diane running.
+- `test_connection` accepts optional `preferDianeCredentials` (default true), matching normal native LLM calls. When enabled, a matching file-backed Diane key takes precedence over Todo's submitted/saved key; missing/unreadable sources fall back to Todo. API authentication failures do not trigger a second-account retry.
+- This preference does not change task API schemas, model choices, environment files or Keychain.

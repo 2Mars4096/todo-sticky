@@ -33,6 +33,7 @@ interface Props {
 
 export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, appUpdates, updateBlockedReason }: Props) {
   const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS)
+  const [dianeAvailable, setDianeAvailable] = useState(false)
   const [showKey, setShowKey] = useState(false)
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
@@ -46,6 +47,17 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, app
       setSettings(initialProvider ? settingsForProvider(s, initialProvider) : s)
     })
   }, [initialProvider])
+
+  useEffect(() => {
+    let disposed = false
+    const refresh = () => api.dianeCredentialStatus(settings.provider, settings.apiBase)
+      .then(available => { if (!disposed) setDianeAvailable(available) })
+      .catch(() => { if (!disposed) setDianeAvailable(false) })
+    setDianeAvailable(false)
+    void refresh()
+    window.addEventListener('focus', refresh)
+    return () => { disposed = true; window.removeEventListener('focus', refresh) }
+  }, [settings.provider, settings.apiBase])
 
   const update = (patch: Partial<AppSettings>) => {
     setSettings(prev => ({ ...prev, ...patch }))
@@ -68,6 +80,8 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, app
       setDirty(false)
       onSaved?.(settingsToSave)
       onClose()
+    } catch {
+      setTestResult({ ok: false, message: "Could not save settings. Try again." })
     } finally {
       setSaving(false)
     }
@@ -82,6 +96,7 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, app
         apiBase: settings.apiBase,
         apiKey: settings.apiKey,
         model: settings.model,
+        preferDianeCredentials: settings.preferDianeCredentials !== false,
       })
       setTestResult(result)
     } catch (e: any) {
@@ -185,7 +200,9 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, app
 
             {!isCodex && (
               <>
-                <label>API Key</label>
+                <label className="diane-credentials-choice"><input type="checkbox" checked={settings.preferDianeCredentials !== false} onChange={e => update({ preferDianeCredentials: e.target.checked })} /> Use Diane credentials when available</label>
+                <p className="hint">{settings.preferDianeCredentials === false ? 'Using Todo’s own key.' : dianeAvailable ? 'Diane key available on this computer. Diane does not need to be open.' : 'No matching Diane key found. Todo will use its own key.'}</p>
+                <label>Todo API key (fallback)</label>
                 <div className="input-row">
                   <input
                     type={showKey ? 'text' : 'password'}
@@ -208,7 +225,7 @@ export function SettingsPanel({ onClose, onSaved, firstRun, initialProvider, app
             <div className="test-row">
               <button
                 onClick={handleTest}
-                disabled={testing || !settings.apiBase || (!isCodex && !settings.apiKey)}
+                disabled={testing || !settings.apiBase || (!isCodex && !settings.apiKey && !(settings.preferDianeCredentials !== false && dianeAvailable))}
               >
                 {testing ? 'Testing…' : 'Test Connection'}
               </button>

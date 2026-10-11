@@ -120,7 +120,7 @@ export function isProviderConfigured(settings: AppSettings, provider: Provider) 
 
   return Boolean(
     profile?.apiBase.trim()
-    && profile.apiKey.trim()
+    && (profile.apiKey.trim() || (settings.preferDianeCredentials !== false && settings.dianeProviders?.includes(provider)))
     && profile.model.trim(),
   )
 }
