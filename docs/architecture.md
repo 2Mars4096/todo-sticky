@@ -30,9 +30,9 @@
 ## Task Completion And Daily Rollover
 
 - `src/taskRollover.ts` completes task trees and projects unfinished archived roots into Today with composite UI IDs and original date/ID metadata. Markdown remains authoritative; no daily copies or migration are created.
-- `useTasks` loads the selected date plus earlier raw sections only for Today. Saves merge visible carried rows into their original sections while preserving hidden completed tasks; today-only rows remain in the selected date. Saves are serialized and flushed before reload, and stale load results are discarded.
-- Native range extraction accepts optional `skipUnavailable` and reports `unavailableFiles`; default agent/CLI extraction remains strict. The UI surfaces a retry notice while showing readable tasks.
-- TaskList uses one flat horizontal disclosure bar, with ordinary TaskItem rows at identical indentation. Reordering stays within each original date; Diane receipt keys retain the original date and task ID.
+- `useTasks` renders the selected date first, then loads earlier sections in the background only for Today, preserving edits during the scan. Reads time out after eight seconds; archive retries share a pending native request. Saves merge visible carried rows into their original sections while preserving hidden completed tasks; today-only rows remain in the selected date. Saves are serialized and flushed before reload, and stale load results are discarded.
+- Native range extraction accepts optional `skipUnavailable` and reports `unavailableFiles`; optional `canonicalDates` retains only the first date section from the file selected by calendar navigation (newest existing week on/before the date, or earliest existing week). Unreadable owners do not revive stale copies from other files. Default agent/CLI extraction remains raw and strict. The UI surfaces a retry notice while showing readable tasks.
+- TaskList uses one flat horizontal disclosure bar, with ordinary TaskItem rows at identical indentation. It initially renders 40 carried roots and offers Show more in batches of 40. Reordering stays within each original date; Diane receipt keys retain the original date and task ID.
 - The calendar follows midnight/resume when viewing Today, preserving an explicitly browsed historical/future date.
 
 ## Ready Shell Modules

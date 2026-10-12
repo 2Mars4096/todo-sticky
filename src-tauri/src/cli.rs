@@ -89,6 +89,7 @@ where
                 to_date: take_option(&mut args, "--to")?,
                 all: take_flag(&mut args, "--all"),
                 skip_unavailable: false,
+                canonical_dates: false,
             };
             reject_unknown(&args)?;
             print_json(&task_api::extract_tasks(&kb_path, request)?)

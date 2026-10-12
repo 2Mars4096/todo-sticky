@@ -14,6 +14,7 @@ interface Props {
   tasks: AggregatedTask[]
   loading?: boolean
   rolloverError?: boolean
+  rolloverLoading?: boolean
   loadError?: 'cloud-only' | 'failed' | null
   viewMode: ViewMode
   selectedTaskId?: string | null
@@ -36,13 +37,14 @@ interface Props {
 }
 
 export function TaskList({
-  tasks, loading, loadError, rolloverError, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
+  tasks, loading, loadError, rolloverError, rolloverLoading, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
   onToggle, onDelete, onPush, onCopyTask, onTextChange,
   onAddSubtask, onAddTask, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
   const [carriedOpen, setCarriedOpen] = useState(true)
-  const orderedTasks = [...tasks.filter(task => !task.sourceDate), ...tasks.filter(task => task.sourceDate)]
+  const [carriedLimit, setCarriedLimit] = useState(40)
+  const orderedTasks = [...tasks.filter(task => !task.sourceDate), ...tasks.filter(task => task.sourceDate).slice(0, carriedLimit)]
   const firstCarriedId = orderedTasks.find(task => task.sourceDate)?.id
   const carriedCount = tasks.filter(task => task.sourceDate).length
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null)
@@ -182,7 +184,7 @@ export function TaskList({
     )
   }
 
-  if (tasks.length === 0 && !rolloverError) {
+  if (tasks.length === 0 && !rolloverError && !rolloverLoading) {
     return (
       <div className="task-list empty">
         <div className="task-empty-state">
@@ -205,8 +207,9 @@ export function TaskList({
 
   return (
     <div className="task-list" ref={listRef}>
+      {rolloverLoading && <div className="rollover-error" role="status">Loading carried tasks…</div>}
       {rolloverError && <div className="rollover-error" role="alert">
-        Earlier tasks could not be loaded. <button onClick={onRetryLoad}>Retry</button>
+        Some earlier tasks could not be loaded. <button onClick={onRetryLoad}>Retry</button>
       </div>}
       {orderedTasks.map(task => (
         <Fragment key={task.id}>
@@ -263,6 +266,9 @@ export function TaskList({
           />}
         </Fragment>
       ))}
+      {carriedOpen && carriedCount > carriedLimit && <button
+        className="carried-toggle" type="button" onClick={() => setCarriedLimit(limit => limit + 40)}
+      >Show more carried tasks ({carriedCount - carriedLimit} remaining)</button>}
       <AddTask inline onAdd={onAddTask} disabled={loading || Boolean(loadError)} />
     </div>
   )

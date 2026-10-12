@@ -1,5 +1,11 @@
 # Bugs And Failed Approaches
 
+## 2026-10-12: Rollover Loading Regression In 2.1.9
+
+- The first rollover implementation awaited the full archive before displaying Today and rendered every unfinished root at once. Repeated historical date sections across weekly files inflated the user's list to 10,264 roots and created duplicate UI IDs.
+- Read-only measurements: 54 files, approximately 1.7 MB; raw scan under one second but 4,400 sections across only 130 dates. Calendar source-file ownership reduces the carried list to 297 roots.
+- Fix: background history with independent timeout/retry, canonical source selection, and 40-root rendering batches. Initial small browser fixtures missed this; large/delayed/stalled fixtures now cover the regression.
+
 ## 2026-10-12: Completion And Cumulative Daily Work
 
 - Parent completion previously changed only its own checkbox; it now recursively completes editable steps. Adding/reopening unfinished steps changes a completed parent to partial.

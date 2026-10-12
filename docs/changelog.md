@@ -2,6 +2,10 @@
 
 ## 2026-10-12
 
+- [release] Prepare 2.1.10 to replace 2.1.9 as latest, allowing installed clients to receive the loading fix.
+- [fix] Show Today before history finishes, preserve edits during scans, bound stalled reads to eight seconds, and reuse pending scans on retry. Select canonical date sections using calendar source-file ownership instead of rendering repeated history from every weekly archive. Render carried work in batches of 40.
+- [test] Frontend build, task-loading/persistence/calendar suites, 26 native tests, and browser delayed/stalled/10,000-task fixtures pass. Existing Star Focus type-check diagnostics remain. Read-only archive measurements confirmed repeated history was expanding the list from 297 canonical unfinished roots to 10,264 rows.
+
 - [release] Publish [v2.1.9](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.9) with parent completion cascade and cumulative daily rollover. All three platform builds and publication pass; latest updater manifest, asset matching, download URLs, and matching signature files verify for all four targets.
 
 - [release] Prepare 2.1.9 with completion cascade, cumulative daily rollover, and the aligned collapsible carried-task section. Add rollover regression coverage to release CI.

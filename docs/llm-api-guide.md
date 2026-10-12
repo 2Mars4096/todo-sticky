@@ -46,7 +46,7 @@ npm run task-api -- extract --from 2026-08-10 --to 2026-08-16
 npm run task-api -- extract --all
 ```
 
-`list` is an alias for `extract`. Responses also include `unavailableFiles` (empty for successful CLI extraction). The desktop Tauri range-extraction request can set `skipUnavailable: true` to return readable sections and report unreadable file paths; CLI/default extraction remains strict. Today displays earlier unfinished tasks as projections, so agents must continue to mutate their original saved dates and IDs. A response contains raw tasks for each saved date, including nested `subtasks`:
+`list` is an alias for `extract`. Responses also include `unavailableFiles` (empty for successful CLI extraction). The desktop Tauri range-extraction request can set `skipUnavailable: true` to return readable sections and report unreadable file paths; CLI/default extraction remains strict. Desktop range extraction also accepts `canonicalDates: true` to return the first section for each date from the same weekly file calendar navigation would choose. An unreadable canonical file is reported without substituting stale copies from other weeks. Today displays earlier unfinished tasks as projections, so agents must continue to mutate their original saved dates and IDs. A response contains raw tasks for each saved date, including nested `subtasks`:
 
 ```json
 {

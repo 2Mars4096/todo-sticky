@@ -26,7 +26,7 @@ export async function waitForPendingWrites(): Promise<void> {
 }
 
 export const api = {
-  extractTaskApi: (request: { date?: string; fromDate?: string; toDate?: string; all?: boolean; skipUnavailable?: boolean }) =>
+  extractTaskApi: (request: { date?: string; fromDate?: string; toDate?: string; all?: boolean; skipUnavailable?: boolean; canonicalDates?: boolean }) =>
     invoke<{ dates: ExtractedTaskDate[]; unavailableFiles?: string[] }>('task_api_extract', { request }),
 
   createTaskApi: (request: {

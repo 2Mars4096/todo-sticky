@@ -14,6 +14,7 @@ pub struct ExtractTasksRequest {
     pub to_date: Option<String>,
     pub all: bool,
     pub skip_unavailable: bool,
+    pub canonical_dates: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -231,16 +232,19 @@ pub fn extract_tasks(
             }
         }
     } else {
+        let mut source_files = Vec::new();
         for week_start in file_sync::list_weekly_files(&todo_dir.to_string_lossy())? {
             let file_path = todo_dir.join(&week_start).join("index.md");
             if !file_path.exists() {
                 continue;
             }
+            let info = FileInfo {
+                file_path: file_path.to_string_lossy().into(),
+                week_start,
+            };
+            source_files.push(info.clone());
             let extracted = extract_file(
-                FileInfo {
-                    file_path: file_path.to_string_lossy().into(),
-                    week_start,
-                },
+                info,
                 request.from_date.as_deref(),
                 request.to_date.as_deref(),
             );
@@ -249,6 +253,19 @@ pub fn extract_tasks(
                 Err(_) if request.skip_unavailable => unavailable_files.push(file_path.to_string_lossy().into()),
                 Err(error) => return Err(error),
             }
+        }
+        if request.canonical_dates {
+            // Match calendar navigation: newest existing week <= date, or the
+            // earliest existing week for dates before the archive starts.
+            // Keep unreadable owners in this index; never revive stale copies.
+            let mut seen = std::collections::HashSet::new();
+            dates.retain(|section| {
+                let owner = source_files.iter()
+                    .find(|info| info.week_start <= section.date)
+                    .or_else(|| source_files.last());
+                owner.map(|info| info.file_path == section.file_path).unwrap_or(false)
+                    && seen.insert(section.date.clone())
+            });
         }
     }
     dates.sort_by(|left, right| left.date.cmp(&right.date));
@@ -446,6 +463,32 @@ mod tests {
             std::env::temp_dir().join(format!("sticky-todo-task-api-test-{}", new_task_id()));
         fs::create_dir_all(&path).expect("test knowledge base should be created");
         path
+    }
+
+    #[test]
+    fn canonical_history_matches_calendar_ownership_without_reviving_copies() {
+        let kb = tempfile::tempdir().unwrap();
+        let todo = kb.path().join("content/to-do");
+        for week in ["2026-10-05", "2026-10-12", "2026-10-19"] {
+            fs::create_dir_all(todo.join(week)).unwrap();
+        }
+        fs::write(todo.join("2026-10-05/index.md"),
+            "## 2026-10-06\n- [x] Original completed\n## 2026-10-06\n- [ ] Duplicate heading\n## 2026-10-12\n- [ ] Stale fallback\n").unwrap();
+        fs::write(todo.join("2026-10-12/index.md"), [0xff]).unwrap();
+        fs::write(todo.join("2026-10-19/index.md"),
+            "## 2026-10-06\n- [ ] Copied old task\n## 2026-10-19\n- [ ] New task\n").unwrap();
+        let result = extract_tasks(kb.path(), ExtractTasksRequest {
+            all: true, skip_unavailable: true, canonical_dates: true, ..Default::default()
+        }).unwrap();
+        assert_eq!(result.dates.len(), 2);
+        assert_eq!(result.dates[0].tasks[0].text, "Original completed");
+        assert_eq!(result.dates[0].tasks[0].status, "done");
+        assert_eq!(result.dates[1].date, "2026-10-19");
+        assert_eq!(result.unavailable_files.len(), 1);
+        let raw = extract_tasks(kb.path(), ExtractTasksRequest {
+            all: true, skip_unavailable: true, ..Default::default()
+        }).unwrap();
+        assert_eq!(raw.dates.len(), 5);
     }
 
     #[test]

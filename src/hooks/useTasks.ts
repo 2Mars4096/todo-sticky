@@ -5,6 +5,14 @@ import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
 import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection } from '../taskRollover'
 
+// A stalled archive must not leave the entire task surface waiting forever.
+function readWithTimeout<T>(request: Promise<T>, milliseconds = 8000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('TASK_LOAD_TIMEOUT')), milliseconds)
+    request.then(value => { clearTimeout(timer); resolve(value) }, error => { clearTimeout(timer); reject(error) })
+  })
+}
+
 export type ReorderPosition = 'before' | 'after'
 
 function reorderById<T extends { id: string }>(
@@ -86,6 +94,8 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   const [filePath, setFilePath] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<'cloud-only' | 'failed' | null>(null)
+  const [rolloverLoading, setRolloverLoading] = useState(false)
+  const archiveRead = useRef<{ date: string; request: ReturnType<typeof api.extractTaskApi> } | null>(null)
   const [rolloverError, setRolloverError] = useState(false)
   const archive = useRef<ExtractedTaskDate[]>([])
   const carriedIds = useRef(new Set<string>())
@@ -166,35 +176,49 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     setLoading(true)
     setLoadError(null)
     setRolloverError(false)
+    setRolloverLoading(false)
     try {
-      await flushPendingSave()
-      const result = await api.getTasks(dateStr)
-      let dates: ExtractedTaskDate[] = []
-      if (isCurrentDay) {
-        try {
-          const extracted = await api.extractTaskApi({ toDate: dateStr, skipUnavailable: true })
-          dates = extracted.dates
-          if (generation === loadGeneration.current) setRolloverError(Boolean(extracted.unavailableFiles?.length))
-        }
-        catch (error) {
-          console.error('Failed to load carried tasks:', error)
-          if (generation === loadGeneration.current) setRolloverError(true)
-        }
-      }
+      await readWithTimeout(flushPendingSave())
+      const result = await readWithTimeout(api.getTasks(dateStr))
       if (generation !== loadGeneration.current) return
-      dates = dates.filter(section => section.date < dateStr)
-      const carried = carriedTasks(dates, dateStr)
-      archive.current = dates
-      carriedIds.current = new Set(carried.map(task => task.id))
-      setTasks([...result.tasks, ...carried])
+      archive.current = []
+      carriedIds.current = new Set()
       filePathRef.current = result.filePath || null
       setFilePath(result.filePath || null)
+      setTasks(result.tasks)
+      setLoading(false)
     } catch (e) {
       if (generation !== loadGeneration.current) return
       console.error('Failed to load tasks:', e)
       setLoadError(String(e).includes('TASK_ARCHIVE_CLOUD_ONLY') ? 'cloud-only' : 'failed')
+      setLoading(false)
+      return
+    }
+
+    if (!isCurrentDay || generation !== loadGeneration.current) return
+    setRolloverLoading(true)
+    try {
+      // Reuse a still-running scan on retry instead of accumulating native workers.
+      if (archiveRead.current?.date !== dateStr) {
+        const request = api.extractTaskApi({ toDate: dateStr, skipUnavailable: true, canonicalDates: true })
+        archiveRead.current = { date: dateStr, request }
+        const clear = () => { if (archiveRead.current?.request === request) archiveRead.current = null }
+        void request.then(clear, clear)
+      }
+      const extracted = await readWithTimeout(archiveRead.current!.request)
+      if (generation !== loadGeneration.current) return
+      const dates = extracted.dates.filter(section => section.date < dateStr)
+      const carried = carriedTasks(dates, dateStr)
+      archive.current = dates
+      carriedIds.current = new Set(carried.map(task => task.id))
+      // Preserve edits made while history was loading.
+      setTasks(current => [...current.filter(task => !task.sourceDate), ...carried])
+      setRolloverError(Boolean(extracted.unavailableFiles?.length))
+    } catch (error) {
+      console.error('Failed to load carried tasks:', error)
+      if (generation === loadGeneration.current) setRolloverError(true)
     } finally {
-      if (generation === loadGeneration.current) setLoading(false)
+      if (generation === loadGeneration.current) setRolloverLoading(false)
     }
   }, [dateStr, isCurrentDay, flushPendingSave])
 
@@ -489,7 +513,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
 
   return {
     flushPendingSave,
-    tasks, loading, loadError, rolloverError, load,
+    tasks, loading, loadError, rolloverLoading, rolloverError, load,
     addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,

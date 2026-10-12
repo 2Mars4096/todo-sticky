@@ -487,6 +487,7 @@ export default function App() {
 
         <DianeProvider enabled={aiSettings?.connectDiane === true} date={calendar.dateStr} kbPath={aiSettings?.kbPath || "default"}>
           <TaskList
+            rolloverLoading={tasks.rolloverLoading}
             rolloverError={tasks.rolloverError}
             tasks={tasks.tasks}
             loading={tasks.loading}
