@@ -2,6 +2,8 @@
 
 ## 2026-10-12
 
+- [release] Publish [v2.1.9](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.9) with parent completion cascade and cumulative daily rollover. All three platform builds and publication pass; latest updater manifest, asset matching, download URLs, and matching signature files verify for all four targets.
+
 - [release] Prepare 2.1.9 with completion cascade, cumulative daily rollover, and the aligned collapsible carried-task section. Add rollover regression coverage to release CI.
 
 - [fix] Completing a parent recursively completes its editable subtasks. Reopening a step or adding unfinished steps reopens a completed parent.
