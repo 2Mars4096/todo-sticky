@@ -43,7 +43,7 @@ interface AppNotice {
 
 export default function App() {
   const calendar = useCalendar()
-  const tasks = useTasks(calendar.dateStr)
+  const tasks = useTasks(calendar.dateStr, calendar.isCurrentDay)
   const goals = useGoals()
   const starFocus = useStarFocus(tasks.tasks)
   const [viewMode, setViewMode] = useState<ViewMode>('today')
@@ -487,6 +487,7 @@ export default function App() {
 
         <DianeProvider enabled={aiSettings?.connectDiane === true} date={calendar.dateStr} kbPath={aiSettings?.kbPath || "default"}>
           <TaskList
+            rolloverError={tasks.rolloverError}
             tasks={tasks.tasks}
             loading={tasks.loading}
             loadError={tasks.loadError}

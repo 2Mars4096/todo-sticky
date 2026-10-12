@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from 'react'
+import { Fragment, useRef, useState, type PointerEvent } from 'react'
 import type { AggregatedTask, Task, ViewMode } from '../types'
 import type { ReorderPosition } from '../hooks/useTasks'
 import { TaskItem } from './TaskItem'
@@ -13,6 +13,7 @@ type DropTarget = DraggedItem & { position: ReorderPosition }
 interface Props {
   tasks: AggregatedTask[]
   loading?: boolean
+  rolloverError?: boolean
   loadError?: 'cloud-only' | 'failed' | null
   viewMode: ViewMode
   selectedTaskId?: string | null
@@ -35,11 +36,15 @@ interface Props {
 }
 
 export function TaskList({
-  tasks, loading, loadError, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
+  tasks, loading, loadError, rolloverError, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
   onToggle, onDelete, onPush, onCopyTask, onTextChange,
   onAddSubtask, onAddTask, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
+  const [carriedOpen, setCarriedOpen] = useState(true)
+  const orderedTasks = [...tasks.filter(task => !task.sourceDate), ...tasks.filter(task => task.sourceDate)]
+  const firstCarriedId = orderedTasks.find(task => task.sourceDate)?.id
+  const carriedCount = tasks.filter(task => task.sourceDate).length
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
 
@@ -81,7 +86,7 @@ export function TaskList({
       if (event.clientY > bounds.bottom - 24) list.scrollTop += 12
       const source = current.item
       const ids = source.kind === 'task'
-        ? tasks.map(task => task.id)
+        ? tasks.filter(task => task.sourceDate === tasks.find(item => item.id === source.id)?.sourceDate).map(task => task.id)
         : tasks.find(task => task.id === source.parentId)?.todaySubtasks.map(task => task.id) ?? []
       const rows = Array.from(list.querySelectorAll<HTMLElement>('[data-reorder-id]'))
         .filter(row => ids.includes(row.dataset.reorderId!))
@@ -132,8 +137,9 @@ export function TaskList({
   }
 
   const moveTaskByKeyboard = (taskId: string, direction: -1 | 1) => {
-    const index = tasks.findIndex(task => task.id === taskId)
-    const target = tasks[index + direction]
+    const siblings = tasks.filter(task => task.sourceDate === tasks.find(item => item.id === taskId)?.sourceDate)
+    const index = siblings.findIndex(task => task.id === taskId)
+    const target = siblings[index + direction]
     if (index < 0 || !target) return
     onReorderTask(taskId, target.id, direction < 0 ? 'before' : 'after')
   }
@@ -146,7 +152,7 @@ export function TaskList({
     onReorderSubtask(taskId, subtaskId, target.id, direction < 0 ? 'before' : 'after')
   }
 
-  if (loading && tasks.length === 0) {
+  if (loading) {
     return (
       <div className="task-list empty" aria-live="polite">
         <div className="task-empty-state">
@@ -158,7 +164,7 @@ export function TaskList({
     )
   }
 
-  if (loadError && tasks.length === 0) {
+  if (loadError) {
     const cloudOnly = loadError === 'cloud-only'
     return (
       <div className="task-list empty" role="alert">
@@ -176,7 +182,7 @@ export function TaskList({
     )
   }
 
-  if (tasks.length === 0) {
+  if (tasks.length === 0 && !rolloverError) {
     return (
       <div className="task-list empty">
         <div className="task-empty-state">
@@ -199,51 +205,63 @@ export function TaskList({
 
   return (
     <div className="task-list" ref={listRef}>
-      {tasks.map(task => (
-        <TaskItem
-          key={task.id}
-          id={task.id}
-          text={task.text}
-          status={task.status}
-          isFocusSelected={selectedTaskId === task.id}
-          isFocusLocked={focusLocked}
-          moveTargetLabel={moveTargetLabel}
-          viewMode={viewMode}
-          todaySubtasks={task.todaySubtasks}
-          otherSubtasks={task.otherSubtasks}
-          onToggle={() => onToggle(task.id)}
-          onDelete={() => onDelete(task.id)}
-          onPush={() => onPush(task.id)}
-          onCopyTask={onCopyTask}
-          onTextChange={(t) => onTextChange(task.id, t)}
-          sortable={{
-            state: dragStateFor({ kind: 'task', id: task.id }),
-            label: `Reorder ${task.text}`,
-            onPointerDown: event => startDrag(event, { kind: 'task', id: task.id }),
-            onPointerMove: moveDrag,
-            onPointerUp: drop,
-            onCancel: finishDrag,
-            onMove: direction => moveTaskByKeyboard(task.id, direction),
-          }}
-          getSubtaskSortable={(subtaskId, subtaskText) => ({
-            state: dragStateFor({ kind: 'subtask', id: subtaskId, parentId: task.id }),
-            label: `Reorder ${subtaskText} within ${task.text}`,
-            onPointerDown: event => startDrag(event, { kind: 'subtask', id: subtaskId, parentId: task.id }),
-            onPointerMove: moveDrag,
-            onPointerUp: drop,
-            onCancel: finishDrag,
-            onMove: direction => moveSubtaskByKeyboard(task.id, subtaskId, direction),
-          })}
-          onFocusSelect={() => onFocusTask(task.id, task.text)}
-          onFocusSubtask={(subtaskId, subtaskText) => onFocusTask(subtaskId, subtaskText)}
-          selectedFocusId={selectedTaskId}
-          onAddSubtask={(t) => onAddSubtask(task.id, t)}
-          onAIBreakdown={() => onAIBreakdown(task.id)}
-          onToggleSubtask={(sid) => onToggle(task.id, sid)}
-          onDeleteSubtask={(sid) => onDelete(task.id, sid)}
-          onPushSubtask={(sid) => onPush(task.id, sid)}
-          onSubtaskTextChange={(sid, t) => onTextChange(task.id, t, sid)}
-        />
+      {rolloverError && <div className="rollover-error" role="alert">
+        Earlier tasks could not be loaded. <button onClick={onRetryLoad}>Retry</button>
+      </div>}
+      {orderedTasks.map(task => (
+        <Fragment key={task.id}>
+          {task.id === firstCarriedId && <button
+            type="button" className="carried-toggle" aria-expanded={carriedOpen}
+            onClick={() => setCarriedOpen(open => !open)}
+          >
+            <span aria-hidden="true">{carriedOpen ? '▾' : '▸'}</span>
+            <span>Carried over</span><span className="carried-rule" /><span>{carriedCount}</span>
+          </button>}
+          {(!task.sourceDate || carriedOpen) && <TaskItem
+            id={task.id}
+            sourceDate={task.sourceDate}
+            text={task.text}
+            status={task.status}
+            isFocusSelected={selectedTaskId === task.id}
+            isFocusLocked={focusLocked}
+            moveTargetLabel={moveTargetLabel}
+            viewMode={viewMode}
+            todaySubtasks={task.todaySubtasks}
+            otherSubtasks={task.otherSubtasks}
+            onToggle={() => onToggle(task.id)}
+            onDelete={() => onDelete(task.id)}
+            onPush={() => onPush(task.id)}
+            onCopyTask={onCopyTask}
+            onTextChange={(t) => onTextChange(task.id, t)}
+            sortable={{
+              state: dragStateFor({ kind: 'task', id: task.id }),
+              label: `Reorder ${task.text}`,
+              onPointerDown: event => startDrag(event, { kind: 'task', id: task.id }),
+              onPointerMove: moveDrag,
+              onPointerUp: drop,
+              onCancel: finishDrag,
+              onMove: direction => moveTaskByKeyboard(task.id, direction),
+            }}
+            getSubtaskSortable={(subtaskId, subtaskText) => ({
+              state: dragStateFor({ kind: 'subtask', id: subtaskId, parentId: task.id }),
+              label: `Reorder ${subtaskText} within ${task.text}`,
+              onPointerDown: event => startDrag(event, { kind: 'subtask', id: subtaskId, parentId: task.id }),
+              onPointerMove: moveDrag,
+              onPointerUp: drop,
+              onCancel: finishDrag,
+              onMove: direction => moveSubtaskByKeyboard(task.id, subtaskId, direction),
+            })}
+            onFocusSelect={() => onFocusTask(task.id, task.text)}
+            onFocusSubtask={(subtaskId, subtaskText) => onFocusTask(subtaskId, subtaskText)}
+            selectedFocusId={selectedTaskId}
+            onAddSubtask={(t) => onAddSubtask(task.id, t)}
+            onAIBreakdown={() => onAIBreakdown(task.id)}
+            onToggleSubtask={(sid) => onToggle(task.id, sid)}
+            onDeleteSubtask={(sid) => onDelete(task.id, sid)}
+            onPushSubtask={(sid) => onPush(task.id, sid)}
+            onSubtaskTextChange={(sid, t) => onTextChange(task.id, t, sid)}
+          />}
+        </Fragment>
       ))}
       <AddTask inline onAdd={onAddTask} disabled={loading || Boolean(loadError)} />
     </div>

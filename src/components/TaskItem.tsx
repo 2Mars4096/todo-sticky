@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type PointerEvent, type KeyboardEvent } from 'react'
-import { format } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import { DianeAction } from './DianeAction'
 import type { Task, DatedTask, ViewMode } from '../types'
 
@@ -89,6 +89,7 @@ interface Props {
   isFocusSelected?: boolean
   isFocusLocked?: boolean
   sourceDate?: string
+  dianeSourceDate?: string
   moveTargetLabel: string
   viewMode: ViewMode
   onToggle: () => void
@@ -113,7 +114,7 @@ interface Props {
 }
 
 export function TaskItem({
-  id, text, status, isSubtask, isOtherDate, sourceDate, moveTargetLabel,
+  id, text, status, isSubtask, isOtherDate, sourceDate, dianeSourceDate, moveTargetLabel,
   isFocusSelected, isFocusLocked,
   viewMode, onToggle, onDelete, onPush, onTextChange,
   onCopyTask,
@@ -162,7 +163,8 @@ export function TaskItem({
   }
 
   const dateLabel = sourceDate
-    ? format(new Date(sourceDate + 'T00:00:00'), 'MMMd')
+    ? (isOtherDate ? format(new Date(sourceDate + 'T00:00:00'), 'MMMd')
+      : `From ${sourceDate === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'yesterday' : sourceDate}`)
     : undefined
 
   const cls = [
@@ -240,7 +242,7 @@ export function TaskItem({
           )}
           {dateLabel && <span className="date-tag">{dateLabel}</span>}
           <span className="task-actions">
-            {!isOtherDate && <DianeAction id={id} text={text} parent={parentText} steps={todaySubtasks?.map(step => `${step.status === 'done' ? '[completed] ' : ''}${step.text}`)} />}
+            {!isOtherDate && <DianeAction sourceDate={dianeSourceDate ?? sourceDate} id={sourceDate && !isOtherDate ? id.replace(`${sourceDate}:`, '') : id} text={text} parent={parentText} steps={todaySubtasks?.map(step => `${step.status === 'done' ? '[completed] ' : ''}${step.text}`)} />}
             {!isSubtask && !isOtherDate && onAIBreakdown && (
               <button
                 type="button"
@@ -308,6 +310,7 @@ export function TaskItem({
         <TaskItem
           key={sub.id}
           id={sub.id}
+          dianeSourceDate={dianeSourceDate ?? sourceDate}
           text={sub.text}
           status={sub.status}
           isSubtask

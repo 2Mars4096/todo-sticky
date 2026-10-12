@@ -1,5 +1,11 @@
 # Bugs And Failed Approaches
 
+## 2026-10-12: Completion And Cumulative Daily Work
+
+- Parent completion previously changed only its own checkbox; it now recursively completes editable steps. Adding/reopening unfinished steps changes a completed parent to partial.
+- Date loading previously discarded debounced saves. Reload/date navigation now drains pending writes and rejects stale load responses.
+- Missing or cloud-only archive files must not hide all readable backlog tasks. Today opts into partial native range extraction and shows a retry notice; ordinary agent extraction remains strict.
+
 ## 2026-10-11: Optional Integration Failure Containment
 
 - Merge verification initially used a Cargo cache without `dotenvy`. The existing app-account cache contains it; native tests use that cache with the isolated Rust toolchain. Both native commands and independent CSS additions are retained when resolving the credential-fallback/handoff conflicts.

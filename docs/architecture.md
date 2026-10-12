@@ -27,9 +27,17 @@
 - [ ] Other top-level directories: `demo/` for assets, `scripts/` for build/demo utilities, `dist/` for built frontend assets.
 - [ ] `PRODUCT.md` and `DESIGN.md`: strategic product context and the reusable visual-system contract for future frontend work.
 
+## Task Completion And Daily Rollover
+
+- `src/taskRollover.ts` completes task trees and projects unfinished archived roots into Today with composite UI IDs and original date/ID metadata. Markdown remains authoritative; no daily copies or migration are created.
+- `useTasks` loads the selected date plus earlier raw sections only for Today. Saves merge visible carried rows into their original sections while preserving hidden completed tasks; today-only rows remain in the selected date. Saves are serialized and flushed before reload, and stale load results are discarded.
+- Native range extraction accepts optional `skipUnavailable` and reports `unavailableFiles`; default agent/CLI extraction remains strict. The UI surfaces a retry notice while showing readable tasks.
+- TaskList uses one flat horizontal disclosure bar, with ordinary TaskItem rows at identical indentation. Reordering stays within each original date; Diane receipt keys retain the original date and task ID.
+- The calendar follows midnight/resume when viewing Today, preserving an explicitly browsed historical/future date.
+
 ## Ready Shell Modules
 
-- [ ] `src/hooks/useCalendar.ts`: keeps selected-date navigation separate from a live local-today key; refreshes at local midnight, within one minute of clock changes while timers run, and on focus/visibility/page restoration, with effect cleanup.
+- [ ] `src/hooks/useCalendar.ts`: keeps selected-date navigation separate from a live local-today key; refreshes at local midnight, within one minute of clock changes while timers run, and on focus/visibility/page restoration, with effect cleanup and automatic advance when the selected date was Today.
 
 - [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, compact action-bar AI provider switching, and task-context handoff for album recommendations.
 - [ ] `src/components/AlbumRecommendations.tsx`: presents the configured AI provider's four-album work soundtrack in a dismissible paper-toned sheet above the action bar, with loading, regenerate, Escape, and compact-layout states.

@@ -9,7 +9,7 @@ interface Context {
   project?: DianeProjects['projects'][number]
   storageError: string
   busy: Set<string>
-  keyFor: (id: string) => string
+  keyFor: (id: string, sourceDate?: string) => string
   run: (key: string, text: string, parent: string, steps: string[]) => Promise<void>
   action: (key: string, action: 'open' | 'stop' | 'retry') => Promise<void>
 }
@@ -96,10 +96,10 @@ function ConnectedDianeProvider({ children, date, kbPath }: { children: ReactNod
     const result = await dianeRequest<DianeResult>(action, receipt.request.request_id)
     if (action === 'stop') update(key, { ...receipt, result, error: undefined, checkedAt: new Date().toISOString() })
   })
-  return <DianeContext.Provider value={{ entries, project, storageError, busy, keyFor: id => `${kbPath}|${date}|${id}`, run, action }}>{children}</DianeContext.Provider>
+  return <DianeContext.Provider value={{ entries, project, storageError, busy, keyFor: (id, sourceDate) => `${kbPath}|${sourceDate ?? date}|${id}`, run, action }}>{children}</DianeContext.Provider>
 }
 
-export function DianeAction({ id, text, parent = '', steps = [] }: { id: string; text: string; parent?: string; steps?: string[] }) {
+export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: { id: string; sourceDate?: string; text: string; parent?: string; steps?: string[] }) {
   const context = useContext(DianeContext)
   const [expanded, setExpanded] = useState(false)
   const root = useRef<HTMLSpanElement>(null)
@@ -112,7 +112,7 @@ export function DianeAction({ id, text, parent = '', steps = [] }: { id: string;
     return () => document.removeEventListener('pointerdown', dismiss)
   }, [expanded])
   if (!context) return null
-  const key = context.keyFor(id), receipt = context.entries[key], busy = context.busy.has(key)
+  const key = context.keyFor(id, sourceDate), receipt = context.entries[key], busy = context.busy.has(key)
   const result = receipt?.result
   const unavailable = Boolean(receipt?.error)
   const state = unavailable ? 'unavailable' : result?.status || (receipt ? 'queued' : 'new')

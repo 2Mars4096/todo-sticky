@@ -25,6 +25,11 @@ vm.runInNewContext(source, {
       createDateSection: async payload => { saved = payload; return { filePath: 'test.md' } },
     } }
     if (name === '../taskCarryForward') return { resolveTaskCarryForwardTarget: () => ({ dateStr: '2026-09-23' }) }
+    if (name === '../taskRollover') {
+      const out = {}
+      vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/taskRollover.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: out })
+      return out
+    }
     throw new Error(`Unexpected import: ${name}`)
   },
 })
@@ -51,7 +56,14 @@ async function toggle(initial, subtaskId) {
   assert.equal((await toggle(parent(['todo', 'question']), 'step0')).status, 'todo')
   assert.equal((await toggle(parent([]), 'missing')).status, 'todo')
   assert.equal((await toggle(parent(['done']), 'missing')).status, 'todo')
-  assert.equal((await toggle(parent(['done'], 'done'), 'step0')).status, 'done')
+  assert.equal((await toggle(parent(['done'], 'done'), 'step0')).status, 'partial')
   assert.equal((await toggle(parent(['done'], 'done'))).status, 'partial')
-  console.log('Passed 9 task completion and persistence scenarios')
+  const nested = parent(['todo', 'partial'])
+  nested.todaySubtasks[0].subtasks = [task('grandchild')]
+  const completed = await toggle(nested)
+  assert.equal(completed.status, 'done')
+  assert.ok(completed.todaySubtasks.every(s => s.status === 'done'))
+  assert.equal(completed.todaySubtasks[0].subtasks[0].status, 'done')
+  assert.equal(completed.otherSubtasks[0].status, 'todo')
+  console.log('Passed 10 task completion and persistence scenarios')
 })().catch(error => { console.error(error); process.exitCode = 1 })

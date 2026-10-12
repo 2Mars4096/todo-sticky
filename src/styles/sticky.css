@@ -5720,3 +5720,22 @@ select:focus-visible {
 
 .diane-action:disabled { cursor: not-allowed; background: transparent; }
 .diane-action:disabled .diane-dot { color: oklch(0.68 0.008 85); opacity: 0.65; }
+
+.carried-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary, #7A6F50);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+}
+.carried-rule { flex: 1; border-top: 1px solid var(--border, #E8D9A0); }
+.carried-toggle:hover { background: rgba(196, 164, 74, 0.08); }
+.carried-toggle:focus-visible { outline: 2px solid #C4A44A; outline-offset: -2px; }
+.rollover-error { padding: 8px 10px; font-size: 12px; }

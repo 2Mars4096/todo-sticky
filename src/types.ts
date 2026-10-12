@@ -10,6 +10,8 @@ export interface DatedTask extends Task {
 }
 
 export interface AggregatedTask {
+  sourceDate?: string
+  originalId?: string
   id: string
   text: string
   status: 'todo' | 'done' | 'partial' | 'question'

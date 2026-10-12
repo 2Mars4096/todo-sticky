@@ -21,6 +21,11 @@ function fixture() {
       if(name==='react')return {useRef:current=>({current}),useEffect:()=>{},useCallback:fn=>fn,useState:initial=>[initial,update=>{if(typeof update==='function')taskState=update(taskState)}]}
       if(name==='../api')return apiExports
       if(name==='../taskCarryForward')return {resolveTaskCarryForwardTarget:()=>({dateStr:'2026-10-04'})}
+    if (name === '../taskRollover') {
+      const out = {}
+      vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/taskRollover.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: out })
+      return out
+    }
       throw Error(name)
     },
   })

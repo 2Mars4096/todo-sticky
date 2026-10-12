@@ -1,5 +1,9 @@
 # Todo
 
+- [ ] [4-34-publish-2-1-9](plans/4-34-publish-2-1-9.md) — publish completion cascade and cumulative daily rollover.
+
+- [x] [4-33-completion-and-cumulative-rollover](plans/4-33-completion-and-cumulative-rollover.md) — cascade parent completion and show unfinished past work under an aligned collapsible bar on Today. Source verified; not yet released.
+
 - [x] [4-32-publish-2-1-8](plans/4-32-publish-2-1-8.md) — publish the optional local Diane connection setting.
 
 - [x] [4-31-publish-2-1-7](plans/4-31-publish-2-1-7.md) — publish standalone-safe Todo with optional Diane integration.

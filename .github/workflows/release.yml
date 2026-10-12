@@ -66,6 +66,7 @@ jobs:
           node tests/app-updates-auto.cjs
           node tests/update-persistence.cjs
           node tests/update-manifest.cjs
+          node tests/task-rollover.cjs
           node tests/task-completion.cjs
           node tests/calendar-rollover.cjs
       # Tauri combines the GUI executable for universal macOS, but the sibling

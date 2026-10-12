@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-12
+
+- [release] Prepare 2.1.9 with completion cascade, cumulative daily rollover, and the aligned collapsible carried-task section. Add rollover regression coverage to release CI.
+
+- [fix] Completing a parent recursively completes its editable subtasks. Reopening a step or adding unfinished steps reopens a completed parent.
+- [feat] Today accumulates unfinished work from earlier saved dates under one horizontal, keyboard-accessible “Carried over” bar. Rows stay aligned with today's tasks and display “From yesterday” or the original ISO date. Edits preserve the original Markdown date, IDs, completed archive entries, and Diane receipt identity.
+- [fix] An open Today view follows local midnight/resume; explicitly browsed dates remain selected. Flush pending edits before reload/date changes and ignore superseded loads. Partial archive reads report unavailable files while retaining readable work.
+- [test] Completion, cumulative rollover, calendar boundaries/resume, save flushing, narrow-window browser interactions/persistence, and 25 native tests pass. Frontend production build passes; full TypeScript checking retains the 16 documented Star Focus errors. Source only, not released or installed.
+
 ## 2026-10-11
 
 - [release] Publish [v2.1.8](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.8) with the default-off local Diane connection setting and grey unavailable controls. All platform builds and publication pass; public updater manifest, assets, and download URLs verify.

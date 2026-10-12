@@ -1,16 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { AggregatedTask, Task } from '../types'
+import type { AggregatedTask, ExtractedTaskDate, Task } from '../types'
 import { api, waitForPendingWrites } from '../api'
 import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
-function flattenToday(aggregated: AggregatedTask[]): Task[] {
-  return aggregated.map(a => ({
-    id: a.id,
-    text: a.text,
-    status: a.status,
-    subtasks: a.todaySubtasks,
-  }))
-}
+import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection } from '../taskRollover'
 
 export type ReorderPosition = 'before' | 'after'
 
@@ -88,12 +81,17 @@ function buildDebugTaskPack() {
   ]
 }
 
-export function useTasks(dateStr: string) {
+export function useTasks(dateStr: string, isCurrentDay = false) {
   const [tasks, setTasks] = useState<AggregatedTask[]>([])
   const [filePath, setFilePath] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<'cloud-only' | 'failed' | null>(null)
+  const [rolloverError, setRolloverError] = useState(false)
+  const archive = useRef<ExtractedTaskDate[]>([])
+  const carriedIds = useRef(new Set<string>())
+  const loadGeneration = useRef(0)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activeSave = useRef<Promise<void> | null>(null)
   const pendingSave = useRef<(() => Promise<void>) | null>(null)
   const filePathRef = useRef<string | null>(null)
   const dateRef = useRef(dateStr)
@@ -102,34 +100,21 @@ export function useTasks(dateStr: string) {
   useEffect(() => { dateRef.current = dateStr }, [dateStr])
   useEffect(() => { filePathRef.current = filePath }, [filePath])
 
-  const load = useCallback(async () => {
-    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; pendingSave.current = null }
-    setLoading(true)
-    setLoadError(null)
-    try {
-      const result = await api.getTasks(dateStr)
-      setTasks(result.tasks)
-      setFilePath(result.filePath || null)
-    } catch (e) {
-      console.error('Failed to load tasks:', e)
-      setLoadError(String(e).includes('TASK_ARCHIVE_CLOUD_ONLY') ? 'cloud-only' : 'failed')
-    } finally {
-      setLoading(false)
-    }
-  }, [dateStr])
-
-  useEffect(() => { load() }, [load])
-
-  useEffect(() => {
-    return api.onFileChanged(() => { load() })
-  }, [load])
-
   const persist = useCallback((updatedTasks: AggregatedTask[]) => {
     const snapshotDate = dateRef.current
     const snapshotPath = filePathRef.current
     if (saveTimer.current) clearTimeout(saveTimer.current)
-    const save = async () => {
-      const flat = flattenToday(updatedTasks)
+    const snapshotArchive = archive.current
+    const snapshotIds = carriedIds.current
+    let inFlight: Promise<void> | null = null
+    const write = async () => {
+      for (const section of snapshotArchive) {
+        const merged = mergeCarriedSection(section, snapshotIds, updatedTasks)
+        if (JSON.stringify(merged) === JSON.stringify(section.tasks)) continue
+        await api.saveTasks({ filePath: section.filePath, dateStr: section.date, tasks: merged })
+        section.tasks = merged
+      }
+      const flat = flattenTasks(updatedTasks.filter(task => !task.sourceDate))
       if (snapshotPath) {
         await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
       } else {
@@ -140,6 +125,23 @@ export function useTasks(dateStr: string) {
         }
       }
       if (pendingSave.current === save) pendingSave.current = null
+    }
+    const save = (): Promise<void> => {
+      if (inFlight) return inFlight
+      const previous = activeSave.current
+      inFlight = (async () => {
+        if (previous) await previous
+        await write()
+      })()
+      activeSave.current = inFlight
+      void inFlight.then(() => {
+        if (activeSave.current === inFlight) activeSave.current = null
+        inFlight = null
+      }, () => {
+        if (activeSave.current === inFlight) activeSave.current = null
+        inFlight = null
+      })
+      return inFlight
     }
     pendingSave.current = save
     saveTimer.current = setTimeout(async () => {
@@ -154,9 +156,50 @@ export function useTasks(dateStr: string) {
       clearTimeout(saveTimer.current)
       saveTimer.current = null
     }
+    await activeSave.current
     await waitForPendingWrites()
     await pendingSave.current?.()
   }, [])
+
+  const load = useCallback(async () => {
+    const generation = ++loadGeneration.current
+    setLoading(true)
+    setLoadError(null)
+    setRolloverError(false)
+    try {
+      await flushPendingSave()
+      const result = await api.getTasks(dateStr)
+      let dates: ExtractedTaskDate[] = []
+      if (isCurrentDay) {
+        try {
+          const extracted = await api.extractTaskApi({ toDate: dateStr, skipUnavailable: true })
+          dates = extracted.dates
+          if (generation === loadGeneration.current) setRolloverError(Boolean(extracted.unavailableFiles?.length))
+        }
+        catch (error) {
+          console.error('Failed to load carried tasks:', error)
+          if (generation === loadGeneration.current) setRolloverError(true)
+        }
+      }
+      if (generation !== loadGeneration.current) return
+      dates = dates.filter(section => section.date < dateStr)
+      const carried = carriedTasks(dates, dateStr)
+      archive.current = dates
+      carriedIds.current = new Set(carried.map(task => task.id))
+      setTasks([...result.tasks, ...carried])
+      filePathRef.current = result.filePath || null
+      setFilePath(result.filePath || null)
+    } catch (e) {
+      if (generation !== loadGeneration.current) return
+      console.error('Failed to load tasks:', e)
+      setLoadError(String(e).includes('TASK_ARCHIVE_CLOUD_ONLY') ? 'cloud-only' : 'failed')
+    } finally {
+      if (generation === loadGeneration.current) setLoading(false)
+    }
+  }, [dateStr, isCurrentDay, flushPendingSave])
+
+  useEffect(() => { void load(); return () => { loadGeneration.current += 1 } }, [load])
+  useEffect(() => api.onFileChanged(() => { void load() }), [load])
 
   const addTask = useCallback((text: string) => {
     const task: AggregatedTask = {
@@ -217,18 +260,21 @@ export function useTasks(dateStr: string) {
         if (subtaskId) {
           if (t.id !== taskId) return t
           const todaySubtasks = t.todaySubtasks.map(s =>
-            s.id === subtaskId ? { ...s, status: nextStatus(s.status) } : s
+            s.id === subtaskId ? (nextStatus(s.status) === 'done' ? completeTree(s) : { ...s, status: nextStatus(s.status) }) : s
           )
           const completedSubtask = todaySubtasks.find(s => s.id === subtaskId)
           const allDone = completedSubtask?.status === 'done'
             && todaySubtasks.every(s => s.status === 'done')
           return {
             ...t,
-            status: allDone ? 'done' : t.status,
+            status: allDone ? 'done' : (t.status === 'done' && completedSubtask && completedSubtask.status !== 'done' ? 'partial' : t.status),
             todaySubtasks,
           }
         }
-        if (t.id === taskId) return { ...t, status: nextStatus(t.status) }
+        if (t.id === taskId) {
+          const status = nextStatus(t.status)
+          return { ...t, status, todaySubtasks: status === 'done' ? t.todaySubtasks.map(completeTree) : t.todaySubtasks }
+        }
         return t
       })
       persist(next)
@@ -279,6 +325,8 @@ export function useTasks(dateStr: string) {
 
     if (!taskText) return
 
+    await flushPendingSave()
+
     // Remove from UI immediately
     if (subtaskId) {
       setTasks(prev => prev.map(t =>
@@ -300,15 +348,11 @@ export function useTasks(dateStr: string) {
         parentTaskText,
       })
 
-      // Save the source date section after removing the carried task.
-      setTasks(prev => {
-        const flat = flattenToday(prev)
-        const fp = filePathRef.current
-        if (fp) {
-          api.saveTasks({ filePath: fp, dateStr, tasks: flat })
-        }
-        return prev
-      })
+      const remaining = subtaskId
+        ? currentTasks.map(task => task.id === taskId ? { ...task, todaySubtasks: task.todaySubtasks.filter(sub => sub.id !== subtaskId) } : task)
+        : currentTasks.filter(task => task.id !== taskId)
+      persist(remaining)
+      await flushPendingSave()
       return target
     } catch (e) {
       console.error('Failed to carry task forward:', e)
@@ -316,13 +360,13 @@ export function useTasks(dateStr: string) {
       await load()
       throw e
     }
-  }, [dateStr, tasks, load])
+  }, [dateStr, tasks, load, persist, flushPendingSave])
 
   const addSubtask = useCallback((taskId: string, text: string) => {
     const sub: Task = { id: newId(), text, status: 'todo', subtasks: [] }
     setTasks(prev => {
       const next = prev.map(t =>
-        t.id === taskId ? { ...t, todaySubtasks: [...t.todaySubtasks, sub] } : t
+        t.id === taskId ? { ...t, status: t.status === 'done' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, sub] } : t
       )
       persist(next)
       return next
@@ -386,7 +430,7 @@ export function useTasks(dateStr: string) {
           status: 'todo' as const,
           subtasks: [],
         }))
-        return { ...t, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
+        return { ...t, status: newSubs.length && t.status === 'done' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
       })
       persist(next)
       return next
@@ -419,6 +463,7 @@ export function useTasks(dateStr: string) {
 
         const alreadyExists = next[idx].todaySubtasks.some(s => s.text === label)
         if (!alreadyExists) {
+          if (next[idx].status === 'done') next[idx].status = 'partial'
           next[idx].todaySubtasks.push({
             id: newId(),
             text: label,
@@ -444,7 +489,7 @@ export function useTasks(dateStr: string) {
 
   return {
     flushPendingSave,
-    tasks, loading, loadError, load,
+    tasks, loading, loadError, rolloverError, load,
     addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { format, addDays, subDays } from 'date-fns'
 
 export function useCalendar() {
@@ -6,12 +6,20 @@ export function useCalendar() {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [todayStr, setTodayStr] = useState(() => format(new Date(), 'yyyy-MM-dd'))
 
+  const previousToday = useRef(todayStr)
+
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
     const refreshToday = () => {
       clearTimeout(timer)
       const now = new Date()
-      setTodayStr(format(now, 'yyyy-MM-dd'))
+      const nextToday = format(now, 'yyyy-MM-dd')
+      if (nextToday !== previousToday.current) {
+        const oldToday = previousToday.current
+        setSelectedDate(selected => format(selected, 'yyyy-MM-dd') === oldToday ? now : selected)
+        previousToday.current = nextToday
+      }
+      setTodayStr(nextToday)
 
       // Local midnight follows DST. The minute cap also catches clock/timezone
       // changes and resume paths that do not dispatch a focus event.

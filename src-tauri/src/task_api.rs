@@ -13,6 +13,7 @@ pub struct ExtractTasksRequest {
     pub from_date: Option<String>,
     pub to_date: Option<String>,
     pub all: bool,
+    pub skip_unavailable: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -29,6 +30,7 @@ pub struct ExtractedDate {
 #[serde(rename_all = "camelCase")]
 pub struct ExtractTasksResponse {
     pub dates: Vec<ExtractedDate>,
+    pub unavailable_files: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -213,6 +215,7 @@ pub fn extract_tasks(
 
     let todo_dir = todo_dir(kb_path);
     let mut dates = Vec::new();
+    let mut unavailable_files = Vec::new();
     if let Some(date) = request.date.as_deref() {
         if let Some(info) = file_sync::find_weekly_file(&todo_dir.to_string_lossy(), date)? {
             dates.extend(extract_file(info.clone(), Some(date), Some(date))?);
@@ -233,18 +236,23 @@ pub fn extract_tasks(
             if !file_path.exists() {
                 continue;
             }
-            dates.extend(extract_file(
+            let extracted = extract_file(
                 FileInfo {
                     file_path: file_path.to_string_lossy().into(),
                     week_start,
                 },
                 request.from_date.as_deref(),
                 request.to_date.as_deref(),
-            )?);
+            );
+            match extracted {
+                Ok(sections) => dates.extend(sections),
+                Err(_) if request.skip_unavailable => unavailable_files.push(file_path.to_string_lossy().into()),
+                Err(error) => return Err(error),
+            }
         }
     }
     dates.sort_by(|left, right| left.date.cmp(&right.date));
-    Ok(ExtractTasksResponse { dates })
+    Ok(ExtractTasksResponse { dates, unavailable_files })
 }
 
 fn load_date_for_mutation(
@@ -438,6 +446,25 @@ mod tests {
             std::env::temp_dir().join(format!("sticky-todo-task-api-test-{}", new_task_id()));
         fs::create_dir_all(&path).expect("test knowledge base should be created");
         path
+    }
+
+    #[test]
+    fn optional_partial_extraction_reports_unreadable_archives() {
+        let kb = tempfile::tempdir().unwrap();
+        let todo = kb.path().join("content/to-do");
+        for week in ["2026-10-05", "2026-10-12"] {
+            fs::create_dir_all(todo.join(week)).unwrap();
+        }
+        fs::write(todo.join("2026-10-05/index.md"), [0xff]).unwrap();
+        fs::write(todo.join("2026-10-12/index.md"), "## 2026-10-12\n- [ ] Available task\n").unwrap();
+        assert!(extract_tasks(kb.path(), ExtractTasksRequest { all: true, ..Default::default() }).is_err());
+        let result = extract_tasks(kb.path(), ExtractTasksRequest {
+            all: true, skip_unavailable: true, ..Default::default()
+        }).unwrap();
+        assert_eq!(result.dates.len(), 1);
+        assert_eq!(result.dates[0].tasks[0].text, "Available task");
+        assert_eq!(result.unavailable_files.len(), 1);
+        assert_eq!(fs::read(todo.join("2026-10-05/index.md")).unwrap(), [0xff]);
     }
 
     #[test]
