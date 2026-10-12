@@ -1,6 +1,6 @@
 # Todo
 
-- [ ] [4-36-publish-2-1-10](plans/4-36-publish-2-1-10.md) — publish the fast-loading correction.
+- [x] [4-36-publish-2-1-10](plans/4-36-publish-2-1-10.md) — publish the fast-loading correction.
 - [x] [4-35-fast-task-loading](plans/4-35-fast-task-loading.md) — show Today before history, deduplicate repeated archive sections by calendar ownership, and batch carried rows.
 
 - [x] [4-34-publish-2-1-9](plans/4-34-publish-2-1-9.md) — publish completion cascade and cumulative daily rollover.
