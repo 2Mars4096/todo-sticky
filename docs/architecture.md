@@ -214,3 +214,5 @@
 - AI breakdown receives the promise/deadline within task context; the system prompt requests a bounded, nonduplicated plan with closing evidence.
 
 - Finish editor suggestions use `llm_breakdown` with optional `suggestFinish: true` and a validated `finishSuggestion` response. Requests start on editor opening, cache per task text/component, never overwrite draft input, and never persist placeholder text. Manual editing remains available on provider failure. Tab accepts a suggestion into the draft; Enter/blur saves.
+
+- Outcome/Due presentation uses a fixed two-column inline grid. Row selection triggers ephemeral suggestions; title editing requires double-click or Enter. Empty fields and unaccepted suggestions disappear on deselection; saved metadata stays visible.

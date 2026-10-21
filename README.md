@@ -161,6 +161,7 @@ Browser controls can be checked without native data or an agent: run Vite on por
 
 ### Finish promises (local review build)
 
-Select/edit a task to reveal **What would be enough?** and **Set deadline**. The editor shows a grey AI suggestion: Tab accepts it, typing replaces it, and clearing your words reveals it again. The optional saved sentence stays beneath the title as **Enough:**; its deadline badge shows upcoming, due today, or overdue. Click the sentence or badge to edit. Enter/blur saves a sentence; Escape cancels. Date changes save immediately; **Remove date** clears the date. Only one editor opens at a time. Carrying work forward keeps its deadline.
+Single-click a task to reveal **Outcome** and **Due** rows; double-click its title or press Enter to edit the title. Outcome shows a grey AI suggestion: Tab accepts it, typing replaces it, and clearing your words reveals it again. Click the outcome value to edit; Enter/blur saves and Escape cancels. Click **No date** or the existing date to choose a date, which saves automatically. Unselected tasks show saved details only. Carrying work forward keeps its due date.
+
 
 AI breakdown uses the finish criterion and date to propose a short plan including the closing action. Promised tasks require **Complete / Revise / Stop** review instead of automatic parent completion. Stopped tasks remain distinct from completed tasks and do not carry forward. The deadline editor offers scope reduction, stopping, and the original date/reschedule count. Tasks without these fields retain their normal behavior.

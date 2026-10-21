@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type PointerEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
-import { TaskFinish, DeadlineBadge } from './TaskFinish'
+import { TaskFinish } from './TaskFinish'
 import { DianeAction } from './DianeAction'
 import type { Task, DatedTask, ViewMode, FinishPromise } from '../types'
 
@@ -223,7 +223,7 @@ export function TaskItem({
           onClick={event => {
             if (event.target !== event.currentTarget) return
             if (editing) inputRef.current?.focus()
-            else beginEditing()
+            else setSelected(true)
           }}
         >
           {editing ? (
@@ -240,15 +240,15 @@ export function TaskItem({
               className={`task-text ${status === 'done' ? 'done' : ''}`}
               role={isOtherDate ? undefined : 'button'}
               tabIndex={isOtherDate ? undefined : 0}
-              onClick={beginEditing}
+              onClick={() => setSelected(true)}
+              onDoubleClick={beginEditing}
               onKeyDown={isOtherDate ? undefined : handleTaskTextKeyDown}
-              title={isOtherDate ? undefined : 'Edit task'}
+              title={isOtherDate ? undefined : 'Select task. Double-click or press Enter to edit title.'}
             >
               {text}
             </span>
           )}
           {status === 'stopped' && <span className="date-tag">Stopped</span>}
-          {finish?.by && <DeadlineBadge by={finish.by} closed={status === 'done' || status === 'stopped'} onClick={() => { setSelected(true); setDateOpen(open => !open) }} />}
           {dateLabel && <span className="date-tag">{dateLabel}</span>}
           <span className="task-actions">
             {!isOtherDate && <DianeAction sourceDate={dianeSourceDate ?? sourceDate} id={sourceDate && !isOtherDate ? id.replace(`${sourceDate}:`, '') : id} text={text} parent={parentText} steps={todaySubtasks?.map(step => `${step.status === 'done' ? '[completed] ' : ''}${step.text}`)} />}
@@ -313,7 +313,7 @@ export function TaskItem({
               </button>
             )}
           </span>
-          {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish} selected={selected} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} />}
+          {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish} selected={selected && !editing} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} />}
         </div>
       </div>
 

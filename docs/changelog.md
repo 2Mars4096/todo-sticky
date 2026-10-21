@@ -2,6 +2,10 @@
 
 ## 2026-10-21
 
+- [install] Reinstall and launch Outcome/Due review build. TypeScript, urgency and both finish UI suites pass; strict signature and bundle hashes verified, all 56 task-file hashes unchanged.
+
+- [ux] Use stable Outcome / Due rows for display and editing. Single-click selects; double-click or Enter edits titles. Selected empty outcomes show grey suggestions; unselected tasks retain saved details only.
+
 - [install] Reinstall and launch the ghost-suggestion review build; set active/saved OpenRouter model to `deepseek/deepseek-v4.1-flash` after a successful live API check. Bundle/signature verified, all 56 task-file hashes unchanged. TypeScript, 27 native tests, and both finish UI suites pass.
 
 - [ux] Replace blank finish editing with contextual grey suggestions: Tab accepts, typing overrides, clearing restores, Escape cancels. Use “What would be enough?” and “Enough:”. Simplify date selection to immediate save; keep scope/stop controls for overdue/review only.

@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [4-41-2-outcome-due-presentation](plans/4-41-2-outcome-due-presentation.md) — consistent metadata rows, selection/edit separation, and local reinstall.
+
 - [x] [4-41-1-finish-ghost-suggestions](plans/4-41-1-finish-ghost-suggestions.md) — simplify finish/deadline editing, switch local OpenRouter to DeepSeek V4.1 Flash, and reinstall.
 
 - [x] [4-41-finish-promises](plans/4-41-finish-promises.md) — implemented and locally installed the finish/deadline workflow; user review pending on the separate feature branch.

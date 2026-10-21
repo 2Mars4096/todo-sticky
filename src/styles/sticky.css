@@ -5737,3 +5737,18 @@ select:focus-visible {
 .finish-editor textarea { display: block; width: 100%; box-sizing: border-box; resize: vertical; min-height: 64px; font: inherit; line-height: 1.5; color: #3d3520; background: transparent; border: 1px solid #c4a44a; border-radius: 3px; padding: 5px; }
 .finish-editor textarea::placeholder { color: #948a70; opacity: 1; }
 .suggestion-hint { display: block; color: #7a6f50; margin-top: 3px; }
+
+/* Stable metadata rows: the label and value stay put during edits. */
+.task-finish { clear: both; }
+.finish-field { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 5px; align-items: baseline; padding-top: 3px; }
+.finish-field-label { color: #7a6f50; }
+.finish-field-value { min-width: 0; }
+.task-finish .outcome-value { display: block; padding: 0; text-align: left; width: 100%; color: #63583e; overflow-wrap: anywhere; }
+.task-finish .outcome-value.suggested, .task-finish .due-empty { color: #948a70; }
+.task-finish .due-empty { padding: 0; }
+.finish-field .deadline-badge { margin: 0; padding: 0 3px; }
+.finish-field textarea { display: block; box-sizing: border-box; width: 100%; resize: vertical; min-height: 54px; font: inherit; line-height: 1.5; color: #3d3520; background: transparent; border: 1px solid #c4a44a; border-radius: 3px; padding: 3px; }
+.finish-field textarea::placeholder { color: #948a70; opacity: 1; }
+.due-edit { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.due-edit input { font: inherit; color: #3d3520; background: transparent; border: 1px solid #c4a44a; border-radius: 3px; padding: 3px; min-width: 0; }
+.due-edit small { flex-basis: 100%; }
