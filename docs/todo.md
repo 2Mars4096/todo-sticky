@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] [4-46-checkbox-and-release-2-1-13](plans/4-46-checkbox-and-release-2-1-13.md) — align visible checkboxes with title text and publish the final updated release.
+
 - [ ] [4-45-publish-2-1-12](plans/4-45-publish-2-1-12.md) — publish UI refinements as the latest signed update.
 
 - [x] Integrate reviewed UI refinements into local main and remove feature/build worktrees → [4-44](plans/4-44-ui-interaction-refinement.md).

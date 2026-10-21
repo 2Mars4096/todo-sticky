@@ -1,30 +1,44 @@
 /* Task details stay attached to the note. The extra specificity keeps this file
    independent of the older sticky.css rules and their import order. */
 .task-entry > .task-item {
+  --task-title-size: 14px;
   padding: 8px 10px;
   gap: 6px;
 }
 .task-entry > .task-item.task-selected {
   background: rgba(196, 164, 74, .08);
 }
-.task-entry > .task-item.subtask { padding-left: 30px; }
+.task-entry > .task-item.subtask { --task-title-size: 13px; padding-left: 30px; }
 .task-entry > .task-item.other-date { opacity: 1; color: #6d6144; }
 .task-entry .task-content-flow,
 .task-entry .task-content-flow.editing { display: block; cursor: default; min-width: 0; }
 .task-entry .task-title-line { min-width: 0; line-height: 1.5; }
-.task-entry .main-task .task-title-line { font-size: 14px; font-weight: 550; }
-.task-entry .subtask .task-title-line { font-size: 13px; font-weight: 400; }
+.task-entry .main-task .task-title-line { font-size: var(--task-title-size); font-weight: 550; }
+.task-entry .subtask .task-title-line { font-size: var(--task-title-size); font-weight: 400; }
 .task-entry .task-text { cursor: pointer; }
 .task-entry .task-text.done { color: #706345; }
 .task-entry .task-inline-edit { width: 100%; min-height: 26px; box-sizing: border-box; }
 .task-entry .task-drag-handle { flex-basis: 24px; width: 24px; height: 28px; margin: -2px 0 0 -4px; opacity: .85; color: #796a47; }
 .task-entry .task-drag-handle svg { margin: auto; }
-.task-entry .task-checkbox { width: 24px; height: 24px; margin-top: 0; border-color: #84723f; }
-.task-entry .task-checkbox.done { background: #577546; border-color: #577546; }
-.task-entry .task-checkbox.partial { background: #9b7b27; border-color: #9b7b27; }
+.task-entry .task-checkbox {
+  position: relative; width: 24px; height: 24px;
+  margin-top: calc((var(--task-title-size) * 1.5 - 24px) / 2);
+  border: 0; background: transparent;
+}
+.task-entry .task-checkbox.done,
+.task-entry .task-checkbox.partial,
+.task-entry .task-checkbox.stopped { border: 0; background: transparent; }
+.task-entry .task-checkbox::before {
+  content: ''; position: absolute; box-sizing: border-box;
+  width: var(--task-title-size); height: var(--task-title-size);
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  border: 1.5px solid #84723f; border-radius: 3px;
+}
+.task-entry .task-checkbox:hover::before { border-color: var(--accent); }
+.task-entry .task-checkbox.done::before { background: #577546; border-color: #577546; }
+.task-entry .task-checkbox.partial::before { background: #9b7b27; border-color: #9b7b27; }
 .task-entry .task-checkbox:disabled { cursor: default; }
-.task-entry .task-checkbox.done::after,
-.task-entry .task-checkbox.partial::after { font-size: 13px; }
+.task-entry .task-checkbox::after { position: relative; font-size: 10px; line-height: 1; }
 .task-entry .task-state-line { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 2px; font-size: 11px; line-height: 1.5; color: #706345; }
 .task-entry .task-state-label { font-weight: 550; }
 .task-entry .state-stopped { color: #70584b; }

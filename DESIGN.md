@@ -136,7 +136,7 @@ The working note is tonally layered and mostly flat. Ambient shadow belongs to t
 - **Primary:** Task Amber with Graphite Brown, 7px by 12px padding.
 - **Hover / Focus:** stronger amber tint plus a visible 2px focus ring; state transitions stay within 150 to 200ms.
 - **Secondary / Ghost:** paper tint or transparent background with a ruled border.
-- **Targets:** task checkboxes are 24px; common task actions are at least 28px tall and capture controls are 32px. Preserve reachable hit areas as labels wrap.
+- **Targets:** task checkboxes have a 24px click target and a visible square matching the title font size (14px tasks, 13px steps); common task actions are at least 28px tall and capture controls are 32px. Preserve reachable hit areas as labels wrap.
 
 ### Chips
 

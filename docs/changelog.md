@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-21 — Checkbox alignment and 2.1.13
+
+- [ui] Match visible checkbox dimensions to the task/step title font (14px/13px), align to the first text line and preserve 24px click targets. Compact/default browser geometry and completion-click checks, TypeScript and frontend build pass.
+- [release] Prepare 2.1.13 to include this requested follow-up after the already-running 2.1.12 build; preserve existing tags and make the final patch latest.
+
 ## 2026-10-21 — Release 2.1.12
 
 - [release] Prepare 2.1.12 with reviewed task interactions, undo/save recovery, day planning, focus fixes, direct action icons, compact copy, startup reveal and stable Settings. Supersede 2.1.11 as latest so existing clients detect the update; publication verification pending.
