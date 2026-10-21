@@ -46,12 +46,12 @@
 - [ ] `src/taskTransfer.ts` and `src/clipboard.ts`: generate local execution-agent prompts and write them through the official Tauri clipboard plugin; ordinary text copy/paste stays with the native focused-field behavior.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
 - [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between API-backed profiles and the keyless local Codex profile.
-- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: expose selected-row Focus / Add step / More actions, visible manual step entry, collapsible step groups, destination-aware carry-forward, parent-preserving moves, and Markdown-persisted pointer/keyboard reordering. Pointer-driven selection changes settle after the click to avoid moving its target; keyboard selection remains immediate. TaskList uses captured pointer gestures with a movement threshold and scoped row geometry.
+- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: expose selected-row Focus / Add step / Suggest steps with AI / Move / Delete actions, visible manual step entry, collapsible step groups, destination-aware carry-forward, parent-preserving moves, and Markdown-persisted pointer/keyboard reordering. Pointer-driven selection changes settle after the click to avoid moving its target; keyboard selection remains immediate. TaskList uses captured pointer gestures with a movement threshold and scoped row geometry.
 - [ ] `src/hooks/useDialogFocus.ts`: contains Tab/Shift+Tab in the topmost dialog, respects editor Escape/IME handling, and restores the opener or a stable caller-supplied fallback. Settings, day planning and Focus share it.
 - [ ] `src/styles/*-refinements.css`, `task-interactions.css`, `settings-navigation.css` and `day-planning.css`: scoped refinements over the established sticky-note theme; shell overrides load after the base stylesheet.
 - [ ] `src-tauri/src/commands.rs` and `src-tauri/src/file_sync.rs`: persist task changes and merge individually carried subtasks under a normalized matching parent in the destination date section.
 - [ ] `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and `src-tauri/capabilities/default.json`: define the `todo-sticky` default desktop target and bundle name, the `460x640` default, the `340x440` minimum, and native resize-drag permission so the sibling task API CLI cannot become the bundled executable.
-- [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area, shows it from `RunEvent::Ready`, preserves later user placement, and installs native macOS Copy/Paste menu responders for focused editable text.
+- [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area, reveals it once after `frontend_ready` (or the bounded native fallback), preserves later user placement, and installs native macOS Copy/Paste menu responders for focused editable text.
 
 ## Star Focus Modules
 
@@ -93,12 +93,12 @@
 - Keep date navigation on a fixed three-column frame: equal-width arrow columns flank a flexible center slot, and decorative calendar affordances must not offset the date label's visual center.
 - Keep frameless resizing discoverable through generous edge/corner hit zones and a visible bottom-right grip.
 - Keep the macOS frameless window opaque with an explicit sticky-paper window/WebView background; transparent Tauri windows require private macOS APIs and can fail at the compositor even after WebKit reports a successful paint.
-- Position and show the app only once during native launch readiness; do not snap it back after the user moves it and later toggles visibility.
+- Position and show the app only once after frontend shell readiness or its bounded fallback; do not snap it back after the user moves it and later toggles visibility.
 - On macOS, resolve default task and bundle app-data roots from the signed-in account record; do not let an inherited `HOME` create a parallel empty store.
 - Run startup archive reads on Tauri's blocking worker pool so File Provider hydration cannot freeze native window painting; keep task creation disabled while the initial archive load is pending.
 - On macOS, reject `SF_DATALESS` task archives before every content read or read-before-write operation; surface cloud availability separately from an empty task list and require an explicit retry after Finder/Dropbox materializes the file.
 - Single-click selects a task; double-click or Enter on its title edits. Enter/blur commits, Escape cancels, and composing Enter never submits an IME draft.
-- Keep Focus / Add step / More visibly labeled on the selected task. More is an ordinary disclosure with native buttons; less frequent actions must not widen the default task row.
+- Keep Focus, Add step, Suggest steps with AI and Move directly available as selected-task icons with hover titles and accessible names, followed by Delete. There is no More menu.
 - Treat task-array order as the reorder source of truth: top-level moves carry their subtask group, while subtask moves stay inside the current parent and exclude read-only other-date steps.
 - Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
 - Preserve hierarchy when carrying one subtask: create its parent on the destination date when absent, then merge later sibling moves into that same parent without duplicate steps.
@@ -232,3 +232,10 @@
 - Outcome/Due use a subordinate two-column grid. Optional empty fields appear only on selection. Unchanged edits and cancelled Revise preserve review readiness; clear is explicit. Dates are staged with Save / Cancel / Clear, so abandoning a date draft adds no deadline-history entry.
 
 - Goals uses one-line composers and flat editable rows, retaining its browser-local storage. The Routines label describes manually reset reminders; the stored `recurring` category is unchanged. Enter submission ignores IME composition; empty title edits preserve the goal.
+
+## Initial window visibility
+
+- `frontend_ready` is an internal no-argument launch signal after React shell commit (two animation frames, or a 120ms hidden-WebKit frame fallback). An atomic native guard positions/reveals the window once on the UI thread; repeated signals never reopen or reposition it.
+- Native readiness starts a 1.5-second fallback reveal for frontend failures. This never waits for task archives, AI settings, Star Focus or Diane. Existing startup error/reload UI remains available.
+
+Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.

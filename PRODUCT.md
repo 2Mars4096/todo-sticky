@@ -14,11 +14,11 @@ Sticky Todo helps a person capture work, define what would be enough, take the n
 
 ## Core Interaction
 
-The app opens with a persistent task-capture field, including on first launch. Selecting an unfinished task reveals **Focus / Add step / More**, optional Outcome and Due fields, and a short step summary. Double-click or Enter on the title begins editing; additional operations remain in More. Earlier unfinished tasks and historical steps are separate disclosures.
+The app opens with a persistent task-capture field, including on first launch. Selecting an unfinished task reveals **Focus / Add step / Suggest steps with AI / Move / Delete**, optional Outcome and Due fields, and a short step summary. Double-click or Enter on the title begins editing; Delete is available directly beside the other action icons. Earlier unfinished tasks and historical steps are separate disclosures.
 
 Outcome suggestions require an explicit request and are labeled as unsaved suggestions. Accepting one copies it into an editable draft; saving remains a separate step. Due dates also have **Save date / Cancel**. Tasks with an Outcome finish through **Complete / Revise / Stop**, preserving the distinction between reaching the result and deliberately stopping.
 
-**Plan day** uses the selected date, available time, and chosen configured machines. Its chronological proposal can be applied or discarded. Applying replaces unfinished generated blocks for that planning date while retaining manual and completed work, and offers Undo. Task deletion also offers Undo. Failed saves retain the current edits in memory with a persistent Retry action.
+**Plan** uses the selected date, available time, and chosen configured machines. Its chronological proposal can be applied or discarded. Applying replaces unfinished generated blocks for that planning date while retaining manual and completed work, and offers Undo. Task deletion also offers Undo. Failed saves retain the current edits in memory with a persistent Retry action.
 
 In compact windows, named **Goals** and **Focus** entries leave the note its full width; an active Focus timer remains visible. Focus uses **Start focus / Pause / Resume / Finish session**. Saving a session records a completed focus session; task-outcome review remains separate, and logged duration is identified as planned. A simplified map preserves session controls when 3D rendering fails. Settings groups storage, AI assistance, integrations, and updates, with advanced options disclosed when needed.
 

@@ -62,6 +62,7 @@ function seedBridge({ firstRun = false } = {}) {
         sections[args.dateStr]=structuredClone(args.tasks);state.writes.push(structuredClone(args));persist();return {ok:true,filePath:'fixture.md',weekStart:older};
       }
       if(cmd==='push_task'){(sections[args.toDate]||=[]).push(structuredClone(args.taskSnapshot));persist();return {ok:true,filePath:'fixture.md'}}
+      if(cmd==='frontend_ready')return;
       if(cmd==='get_settings')return structuredClone(settings);
       if(cmd==='save_settings'){Object.assign(settings,args.settings);state.firstRun=false;persist();return {ok:true}}
       if(cmd==='check_first_run')return state.firstRun;

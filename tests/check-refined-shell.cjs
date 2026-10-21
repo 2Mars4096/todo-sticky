@@ -34,7 +34,7 @@ async function row(page, text) {
   return title.locator('xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " task-entry ")][1]')
 }
 async function openPlan(page) {
-  await page.getByRole('button', { name: 'Plan day', exact: true }).click()
+  await page.getByRole('button', { name: 'Plan', exact: true }).click()
   await page.getByRole('dialog', { name: 'Plan day' }).waitFor()
 }
 async function fixturePlan(page, blocks) {
@@ -94,7 +94,7 @@ const block = (action, time = '09:00', endTime = '09:30', taskId = 'figures') =>
     await page.getByRole('dialog', { name: 'Settings', exact: true }).waitFor()
     await page.waitForTimeout(60)
     await assertDialogFocus(page, '.settings-refined')
-    await page.getByRole('button', { name: 'AI assistance', exact: true }).click()
+    await page.getByRole('button', { name: 'AI', exact: true }).click()
     assert.equal(await page.getByLabel('API base URL', { exact: true }).isVisible(), false)
     await page.getByText('Model and connection options', { exact: true }).click()
     assert.equal(await page.getByLabel('API base URL', { exact: true }).isVisible(), true)
@@ -107,7 +107,6 @@ const block = (action, time = '09:00', endTime = '09:30', taskId = 'figures') =>
     // Deletion is reversible after disk save, without reverting unrelated work.
     const original = await page.evaluate(() => structuredClone(window.__review.sections[window.__review.today].find(task => task.id === 'release')))
     let selected = await row(page, 'Share the first usable todo-sticky release')
-    await selected.getByRole('button', { name: /^More actions for/ }).click()
     await selected.getByRole('button', { name: /^Delete / }).click()
     await delay(page)
     await capture(page, 'Keep this later capture')

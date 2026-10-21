@@ -95,7 +95,6 @@
 .goals-close-label { font-size: 12px; }
 .goals-sidebar .goal-section-header h2 { color: #493d24; }
 .goals-sidebar .goal-section-header > span,
-.goals-sidebar .goal-entry-hint,
 .goals-sidebar .goal-composer-input::placeholder { color: #63583e; }
 
 .goals-sidebar .goal-section-description {
@@ -158,7 +157,9 @@
   box-sizing: border-box;
   width: calc(100% - 24px);
   max-width: 450px;
+  height: min(600px, calc(100dvh - 24px));
   max-height: calc(100dvh - 24px);
+  overflow: hidden;
   padding: 14px;
   color: #3d3520;
 }
@@ -168,20 +169,24 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
+  flex-shrink: 0;
 }
 .settings-refined .settings-dialog-header h2 { font-size: 16px; font-weight: 650; margin: 0; }
 .settings-panel.settings-refined .settings-close { width: 30px; min-height: 30px; padding: 0; font-size: 21px; }
 .settings-panel.settings-refined .settings-section-nav {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
   flex-shrink: 0;
   padding-bottom: 12px;
+  overflow-x: auto;
 }
 .settings-panel.settings-refined .settings-section-nav button {
   min-height: 32px;
-  padding: 5px 8px;
-  text-align: left;
+  padding: 5px 6px;
+  flex: 1 0 auto;
+  white-space: nowrap;
+  text-align: center;
   color: #63583e;
   background: transparent;
 }
@@ -193,6 +198,7 @@
 }
 .settings-panel.settings-refined .settings-scroll {
   min-height: 0;
+  scrollbar-gutter: stable;
   margin: 0 -3px;
   padding: 0 3px;
 }
@@ -261,7 +267,7 @@
 .settings-panel.settings-refined .btn-row { margin-top: 10px; padding-top: 10px; }
 
 @media (max-height: 500px) {
-  .settings-overlay .settings-panel.settings-refined { padding: 10px; max-height: calc(100dvh - 16px); }
+  .settings-overlay .settings-panel.settings-refined { padding: 10px; height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
   .settings-refined .settings-dialog-header { margin-bottom: 6px; }
   .settings-panel.settings-refined .settings-section-nav { padding-bottom: 6px; gap: 4px; }
 }

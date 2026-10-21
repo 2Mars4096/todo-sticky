@@ -27,8 +27,8 @@ const EMPTY_SETTINGS: AppSettings = {
 
 type SettingsSection = 'tasks' | 'ai' | 'integrations' | 'updates'
 const SECTIONS: { id: SettingsSection; label: string }[] = [
-  { id: 'tasks', label: 'Tasks & storage' },
-  { id: 'ai', label: 'AI assistance' },
+  { id: 'tasks', label: 'Storage' },
+  { id: 'ai', label: 'AI' },
   { id: 'integrations', label: 'Integrations' },
   { id: 'updates', label: 'Updates' },
 ]

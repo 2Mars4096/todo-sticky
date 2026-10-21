@@ -165,14 +165,14 @@ The working note is tonally layered and mostly flat. Ambient shadow belongs to t
 
 ### Task hierarchy and editing
 
-- Lead with the task title, then saved Outcome, Due, and status information. Selected tasks expose **Focus / Add step / More**; infrequent operations live under More. Essential actions are available through selection and keyboard focus.
-- Step groups collapse to a count and next-step summary. **Earlier tasks** is a separate, remembered disclosure for unfinished work from past dates. **Show steps from other dates** reveals historical steps.
+- Lead with the task title, then saved Outcome, Due, and status information. Selected tasks expose **Focus / Add step / Suggest steps with AI / Move / Delete**; Delete is directly available beside the other actions. Essential actions are available through selection and keyboard focus.
+- Step groups collapse to a count and next-step summary. **Earlier tasks** is a separate, remembered disclosure for unfinished work from past dates. **Earlier steps (N)** within each task reveals read-only historical steps.
 - Selection does not request AI. **Suggest outcome** is explicit inside an empty editor; its labeled suggestion becomes an editable draft through **Use suggestion** or Tab. Enter or leaving the editor commits; Escape cancels. Choosing a due date or clearing it stays a draft until **Save date** or Enter.
 - **Complete / Revise / Stop** reviews an Outcome. Completion, partial progress, and stopping have distinct labels; a focus session never substitutes for this review.
 
 ### Planning and recovery
 
-- **Plan day** shows the selected date, available time, and optional configured machines before generation. Show proposed blocks chronologically and disclose unscheduled tasks. **Apply plan / Discard** makes commitment explicit; applying replaces only unfinished generated blocks for that planning date.
+- **Plan** shows the selected date, available time, and optional configured machines before generation. Show proposed blocks chronologically and disclose unscheduled tasks. **Apply plan / Discard** makes commitment explicit; applying replaces only unfinished generated blocks for that planning date.
 - Deletion and applied plans expose **Undo** near the working list. A failed write keeps the local edits and a persistent **Changes not saved / Retry save** notice; transient success feedback must not imply those edits reached storage.
 - Settings, Focus, and planning dialogs contain keyboard focus and restore it to the invoking control or a stable task title on close.
 
@@ -200,3 +200,5 @@ The working note is tonally layered and mostly flat. Ambient shadow belongs to t
 - **Don't** let space-game decoration overpower the productivity workflow.
 - **Don't** rely on hover-only or cryptic controls for the shortest path to a key action.
 - **Don't** use modal-first flows for routine task capture or editing.
+
+Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.

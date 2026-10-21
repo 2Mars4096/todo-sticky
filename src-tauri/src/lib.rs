@@ -12,7 +12,7 @@ use config::get_kb_path;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::fs;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Mutex, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
 #[cfg(target_os = "macos")]
 use tauri::image::Image;
@@ -25,6 +25,24 @@ use tauri::{
 use tauri_plugin_global_shortcut::ShortcutState;
 
 const WINDOW_EDGE_MARGIN_LOGICAL: f64 = 16.0;
+
+#[derive(Default)]
+struct LaunchVisibility(AtomicBool);
+
+fn reveal_initial_window(app: &AppHandle) {
+    let Some(win) = app.get_webview_window("main") else { return; };
+    if app.state::<LaunchVisibility>().0.swap(true, Ordering::SeqCst) { return; }
+    place_window_top_right(&win);
+    show_window(&win, true);
+}
+
+#[tauri::command]
+fn frontend_ready(app: AppHandle) {
+    // Webview commands and the fallback converge on the same one-shot UI action.
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || reveal_initial_window(&handle));
+}
+
 
 fn show_window(win: &WebviewWindow, focus: bool) {
     win.show().ok();
@@ -312,6 +330,7 @@ pub fn run() {
                 })
                 .build(),
         )
+        .manage(LaunchVisibility::default())
         .manage(Mutex::new(WatcherState::default()))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -413,6 +432,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            frontend_ready,
             diane_credentials::diane_credential_status,
             diane::diane_request,
             commands::get_tasks,
@@ -441,10 +461,12 @@ pub fn run() {
 
     app.run(|app, event| {
         if let RunEvent::Ready = event {
-            if let Some(win) = app.get_webview_window("main") {
-                place_window_top_right(&win);
-                show_window(&win, true);
-            }
+            // Never wait indefinitely on JavaScript, archive reads or integrations.
+            let handle = app.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_millis(1500));
+                frontend_ready(handle);
+            });
         }
     });
 }

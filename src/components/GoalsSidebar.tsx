@@ -167,7 +167,6 @@ function GoalSection({
             if (event.key === 'Escape') { event.stopPropagation(); setDraft(''); event.currentTarget.blur() }
           }}
         />
-        <small className="goal-entry-hint">Enter to add</small>
       </div>
     </section>
   )

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type PointerEvent } from 'react'
-import type { AggregatedTask, Task, ViewMode, FinishPromise } from '../types'
+import type { AggregatedTask, Task, FinishPromise } from '../types'
 import type { ReorderPosition } from '../hooks/useTasks'
 import { TaskItem } from './TaskItem'
 import { AddTask } from './AddTask'
@@ -16,7 +16,6 @@ interface Props {
   rolloverError?: boolean
   rolloverLoading?: boolean
   loadError?: 'cloud-only' | 'failed' | null
-  viewMode: ViewMode
   selectedTaskId?: string | null
   focusLocked?: boolean
   isCurrentDay: boolean
@@ -39,7 +38,7 @@ interface Props {
 }
 
 export function TaskList({
-  tasks, loading, loadError, rolloverError, rolloverLoading, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
+  tasks, loading, loadError, rolloverError, rolloverLoading, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
   onToggle, onDelete, onPush, onCopyTask, onTextChange, onUpdateFinish, onReview,
   onAddSubtask, onAddTask, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
@@ -244,7 +243,7 @@ export function TaskList({
             isFocusSelected={selectedTaskId === task.id}
             isFocusLocked={focusLocked}
             moveTargetLabel={moveTargetLabel}
-            viewMode={viewMode}
+
             todaySubtasks={task.todaySubtasks}
             otherSubtasks={task.otherSubtasks}
             onToggle={() => onToggle(task.id)}

@@ -226,3 +226,5 @@ Task extraction may include optional `finish`: `{ "doneWhen": "A colleague can c
 Desktop `push_task` accepts optional `taskSnapshot` and `parentSnapshot` Task objects in addition to its existing text arguments; snapshots preserve metadata and nested state. Moving a task does not modify `finish.by`. Promise review is a desktop interaction; agents must not infer outcome completion from finished steps alone.
 
 Desktop `llm_breakdown` accepts optional `suggestFinish: true` to return `{ "finishSuggestion": "One short observable outcome", "subtasks": [] }` instead of steps. The UI treats it as unaccepted placeholder text until Tab acceptance; default breakdown behavior is unchanged.
+
+Internal desktop command `frontend_ready` accepts no arguments and acknowledges the committed shell for one-time window reveal; it does not read or mutate task data and is not a task API operation.

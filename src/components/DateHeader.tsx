@@ -1,7 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { format } from 'date-fns'
-import type { ViewMode } from '../types'
 import { MiniCalendar } from './MiniCalendar'
 import '../styles/settings-navigation.css'
 
@@ -10,21 +9,18 @@ interface Props {
   selectedDate: Date
   calendarOpen: boolean
   isCurrentDay: boolean
-  viewMode: ViewMode
   onPrev: () => void
   onNext: () => void
   onToggleCalendar: () => void
   onSelectDate: (date: Date) => void
   onToday: () => void
   onCloseCalendar: () => void
-  onViewModeChange: (mode: ViewMode) => void
 }
 
 export function DateHeader({
   displayDate, selectedDate, calendarOpen, isCurrentDay,
-  viewMode, onPrev, onNext,
+  onPrev, onNext,
   onToggleCalendar, onSelectDate, onToday, onCloseCalendar,
-  onViewModeChange,
 }: Props) {
   const calRef = useRef<HTMLDivElement>(null)
   const dateButtonRef = useRef<HTMLButtonElement>(null)
@@ -88,15 +84,10 @@ export function DateHeader({
         </div>
         <button className="date-step" onClick={onNext} title="Next day" aria-label="Next day">›</button>
       </div>
-      <div className="header-row">
-        {!isCurrentDay && (
-          <button className="today-jump" onClick={onToday}>Go to today</button>
-        )}
-        <label className="historical-steps-toggle">
-          <input type="checkbox" checked={viewMode === 'all'} onChange={event => onViewModeChange(event.target.checked ? 'all' : 'today')} />
-          <span>Show steps from other dates</span>
-        </label>
-      </div>
+      {!isCurrentDay && <div className="header-row">
+        <button className="today-jump" onClick={onToday}>Go to today</button>
+      </div>}
+
     </div>
   )
 }

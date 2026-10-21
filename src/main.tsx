@@ -54,7 +54,3 @@ ReactDOM.createRoot(rootElement).render(
     </AppErrorBoundary>
   </React.StrictMode>,
 )
-
-window.requestAnimationFrame(() => {
-  window.__stickyTodoBoot?.record('render-complete', '')
-})

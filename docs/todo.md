@@ -1,5 +1,17 @@
 # Todo
 
+- [ ] Integrate reviewed UI refinements into local main and remove feature/build worktrees → [4-44](plans/4-44-ui-interaction-refinement.md).
+
+- [x] Stable Settings height and single-row navigation; local reinstall → [4-44](plans/4-44-ui-interaction-refinement.md).
+
+- [x] Prevent startup layout flash and reinstall → [4-44](plans/4-44-ui-interaction-refinement.md).
+
+- [x] Finish compact controls, remove all entry hints/header checkbox and reinstall → [4-44](plans/4-44-ui-interaction-refinement.md).
+
+- [x] Direct task action icons and local reinstall → [4-44](plans/4-44-ui-interaction-refinement.md).
+
+- [x] Install UI refinement commit `3fcad22` locally on macOS with backup, native tests, signature/hash checks and launch verification → [4-44](plans/4-44-ui-interaction-refinement.md).
+
 - [ ] [4-44-ui-interaction-refinement](plans/4-44-ui-interaction-refinement.md) — separate worktree implementation and automated browser/Node verification complete; native build/installed acceptance and a real-person usability pass remain.
 
 - [x] [4-42-compact-goals](plans/4-42-compact-goals.md) — compact inline long-term/recurring entry and editing.

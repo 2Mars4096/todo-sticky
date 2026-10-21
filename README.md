@@ -25,6 +25,8 @@ Open **Settings** to configure tools by purpose:
 
 For AI assistance, choose Moonshot, OpenRouter, OpenAI, Anthropic, Gemini, a custom OpenAI-compatible endpoint, or **Codex (ChatGPT login)**. API providers use their configured endpoint, key, and model. Codex reuses your existing local `codex login`; its model can be blank, and its executable defaults to `codex` with common install paths detected. Use **Test connection**, then save the settings.
 
+The window appears after the app shell is ready; a short fallback keeps startup errors visible if frontend loading fails.
+
 On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Sticky Todo from an installer or automation tool cannot silently open a separate empty data store.
 
 If macOS or Dropbox has offloaded the Markdown archive, Sticky Todo reports **Tasks are waiting in Dropbox** instead of treating the archive as empty or waiting forever. Reveal the configured `content/to-do/.../index.md` file in Finder, choose **Make available offline** or **Download now**, then use **Retry** after the file becomes local.
@@ -57,20 +59,20 @@ The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY` and, for an
 
 ## Features
 
-Click an unfinished task to select it. **Focus**, **Add step**, and **More** appear beside its details. Double-click the title, press Enter while the title is focused, or choose **More → Edit title** to edit it. Enter saves; Escape cancels.
+Click an unfinished task to select it. Icon buttons for **Focus**, **Add step**, **Suggest steps with AI**, **Move**, and **Delete** appear beside its details. Hover to see each action name. Double-click the title or press Enter while the title is focused to edit it. Enter saves; Escape cancels.
 
 - **Persistent capture** — The top **New task** field stays visible. Add step opens a visible inline field for the selected task; Enter adds the step and Escape clears its draft.
 - **Readable task hierarchy** — Titles lead, saved Outcome and Due details sit beneath them, and step groups collapse to a count and next-step summary. Expand a group to work through it.
-- **Named task actions** — More contains AI step suggestions, copying, moving, stopping, deletion, and optional Diane controls. Drag the six-dot handle to reorder tasks or steps within one task.
+- **Task actions** — AI step suggestions and moving are available directly. Delete is also directly available; deletion offers Undo. Drag the six-dot handle to reorder tasks or steps within one task.
 - **Compact shell** — Named **Goals** and **Focus** controls replace idle side columns in small windows. The active Focus countdown stays visible; expanded tools overlay the note. Wider windows can show side panels.
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Task completion** — Tasks without an Outcome retain the todo → done → partial cycle and completion of their parent when its current-day steps are done. Tasks with an Outcome require **Complete / Revise / Stop** review. Completing a parent completes its steps; stopping remains a separate decision.
 - **Earlier unfinished work** — Today collects unfinished past tasks under **Earlier tasks**, with their source dates. The collapsed section remembers your choice, loads separately from Today, and offers Show more in batches of 40. Edits stay in the original Markdown date.
 - **Smart carry-forward** — Move unfinished past work directly to today; moving one subtask preserves its parent on the destination date and merges later sibling moves beneath it. A single-line confirmation shows the destination
 - **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today. The Today marker refreshes at midnight and when you return to the app, advancing an open Today view while preserving explicitly browsed dates
-- **Native clipboard** — Use standard Command-C and Command-V while editing; **More → Copy task** exports a parent with its steps, or a selected step with its parent context, for Codex and other agents
+- **Native clipboard** — Use standard Command-C and Command-V while editing; the task action row stays limited to Focus, Add step, AI suggestions, Move and Delete
 - **Agent task API** — Extract, create, edit, and delete Markdown-backed tasks from reusable skills through a local JSON CLI, with revision checks for safe writes
-- **Task history** — **Show steps from other dates** reveals historical steps; the default view keeps the current day's steps in view
+- **Task history** — **Earlier steps (N)** within a task reveals its read-only historical steps; these stay collapsed by default
 - **AI assistance** — Explicitly request outcome suggestions, step breakdowns, or a proposed day plan when useful. Selecting a task does not make an AI request.
 - **Codex background provider** — Run breakdowns, schedules, and album picks through the locally authenticated Codex CLI in an ephemeral read-only workspace, without adding an OpenAI API key
 - **Task-aware albums** — Find four albums suited to the concentration, energy, and atmosphere of the work, in a compact list with musical reasons and listening-mood cues (requires a configured AI provider)
@@ -91,7 +93,7 @@ AI step suggestions use the outcome and date to propose bounded work including a
 
 ### Review a day plan before applying it
 
-Open **Plan day** for the selected date, set your available **From / Until** times, and optionally select configured machines. **Generate proposal** shows chronological blocks and any tasks left unscheduled. Generating a proposal does not change your tasks.
+Open **Plan** for the selected date, set your available **From / Until** times, and optionally select configured machines. **Generate proposal** shows chronological blocks and any tasks left unscheduled. Generating a proposal does not change your tasks.
 
 Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as they were. Replanning replaces unfinished generated blocks for that planning date while retaining manual and completed work. The confirmation offers **Undo**. If tasks or planning details change during review, generate a fresh proposal before applying it.
 
@@ -174,7 +176,7 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 
 Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and focus without it. If Diane is disconnected or unavailable, only its dispatch/status controls are affected. Independently configured AI providers continue to use their own configuration.
 
-In **Settings → Integrations**, enable **Connect to Dear Diane on this computer** and Save. It is off by default; off hides task controls and stops connection attempts without deleting session links or stopping existing Diane runs. The separate credential preference controls key reuse. Open Dear Diane and select the project/folder you want to use; Settings shows that destination when you enable the connection. Select a Todo task and open **More** to reach its Diane controls. Diane inherits its current execution settings and credentials. Its status control opens the brief result, Open in Diane, or Stop. All questions and follow-up stay in the same Diane session. Mark the todo done yourself.
+In **Settings → Integrations**, enable **Connect to Dear Diane on this computer** and Save. It is off by default; off hides task controls and stops connection attempts without deleting session links or stopping existing Diane runs. The separate credential preference controls key reuse. Open Dear Diane and select the project/folder you want to use; Settings shows that destination when you enable the connection. The simplified task row currently omits Diane dispatch controls. Existing integration settings and stored links are preserved.
 
 Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. Todo 2.1.7 includes the Todo side of this integration; running tasks requires the separate Diane companion update.
 
@@ -185,3 +187,5 @@ STICKY_TODO_DEV_DATA_DIR=/private/tmp/sticky-todo-diane-data npm run tauri -- de
 ```
 
 Browser controls can be checked without native data or an agent: run Vite on port 15173, then `python tests/check_diane_ui.py` with Python Playwright installed. `CHROME_EXECUTABLE` and `TODO_TEST_URL` override the test browser and preview URL.
+
+Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.

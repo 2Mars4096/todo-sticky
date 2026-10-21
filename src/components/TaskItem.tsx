@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useId, type PointerEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
 import { TaskFinish } from './TaskFinish'
-import { DianeAction } from './DianeAction'
-import type { Task, DatedTask, ViewMode, FinishPromise } from '../types'
+import type { Task, DatedTask, FinishPromise } from '../types'
 import '../styles/task-interactions.css'
 
 function BreakdownIcon() {
@@ -16,13 +15,8 @@ function BreakdownIcon() {
   )
 }
 
-function CopyIcon() {
-  return (
-    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
-      <rect x="5" y="5" width="8" height="8" rx="1.5" />
-      <path d="M3 11H2.5A1.5 1.5 0 0 1 1 9.5v-7A1.5 1.5 0 0 1 2.5 1h7A1.5 1.5 0 0 1 11 2.5V3" />
-    </svg>
-  )
+function AddStepIcon() {
+  return <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
 }
 
 function FocusIcon() {
@@ -88,7 +82,6 @@ interface Props {
   sourceDate?: string
   dianeSourceDate?: string
   moveTargetLabel: string
-  viewMode: ViewMode
   onToggle: () => void
   onDelete: () => void
   onPush: () => void
@@ -112,14 +105,13 @@ interface Props {
 
 export function TaskItem({
   id, text, status, isSubtask, isOtherDate, sourceDate, dianeSourceDate, moveTargetLabel,
-  isFocusSelected, isFocusLocked, viewMode, onToggle, onDelete, onPush, onTextChange,
+  isFocusSelected, isFocusLocked, onToggle, onDelete, onPush, onTextChange,
   onCopyTask, onFocusSelect, onFocusSubtask, onAddSubtask, onAIBreakdown,
   todaySubtasks, otherSubtasks, onToggleSubtask, onDeleteSubtask, onPushSubtask, onSubtaskTextChange,
   sortable, getSubtaskSortable, parentText, selectedFocusId, finish, onUpdateFinish, onReview,
 }: Props) {
   const [selected, setSelected] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
-  const [moreOpen, setMoreOpen] = useState(false)
   const [stepsOpen, setStepsOpen] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
   const [breakingDown, setBreakingDown] = useState(false)
@@ -128,19 +120,16 @@ export function TaskItem({
   const [subInput, setSubInput] = useState('')
   const groupRef = useRef<HTMLDivElement>(null)
   const rowRef = useRef<HTMLDivElement>(null)
-  const moreRef = useRef<HTMLDivElement>(null)
-  const moreTriggerRef = useRef<HTMLButtonElement>(null)
   const titleRef = useRef<HTMLSpanElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const stepInputRef = useRef<HTMLInputElement>(null)
   const titleEditActive = useRef(false)
   const pointerActive = useRef(false)
   const afterPointer = useRef<Array<() => void>>([])
-  const moreId = useId()
   const stepsId = useId()
   const closed = status === 'done' || status === 'stopped'
   const steps = todaySubtasks ?? []
-  const history = viewMode === 'all' ? otherSubtasks ?? [] : []
+  const history = otherSubtasks ?? []
   const doneSteps = steps.filter(step => step.status === 'done').length
   const nextStep = steps.find(step => step.status !== 'done' && step.status !== 'stopped')
 
@@ -175,7 +164,6 @@ export function TaskItem({
       if (!belongsTo(groupRef.current)) {
         setSelected(false); setDateOpen(false); setAddingStep(false)
       }
-      if (!belongsTo(moreRef.current) && !belongsTo(moreTriggerRef.current)) setMoreOpen(false)
     }
     document.addEventListener('pointerdown', startPointer, true)
     document.addEventListener('pointerup', releasePointer)
@@ -208,7 +196,7 @@ export function TaskItem({
   }
   const beginEditing = () => {
     if (isOtherDate) return
-    setMoreOpen(false); setDateOpen(false)
+    setDateOpen(false)
     titleEditActive.current = true
     setEditing(true); setEditText(text)
   }
@@ -216,12 +204,8 @@ export function TaskItem({
     if (event.key !== 'Enter' && event.key !== ' ') return
     event.preventDefault(); beginEditing()
   }
-  const closeMore = (restoreFocus = false) => {
-    setMoreOpen(false)
-    if (restoreFocus) requestAnimationFrame(() => moreTriggerRef.current?.focus())
-  }
   const openStepEntry = () => {
-    setStepsOpen(true); setAddingStep(true); setMoreOpen(false)
+    setStepsOpen(true); setAddingStep(true)
     requestAnimationFrame(() => stepInputRef.current?.focus())
   }
   const handleSubAdd = () => {
@@ -230,17 +214,9 @@ export function TaskItem({
   }
   const breakdown = async () => {
     if (!onAIBreakdown || breakingDown || closed) return
-    setBreakingDown(true); closeMore(); setStepsOpen(true)
+    setBreakingDown(true); setStepsOpen(true)
     try { await onAIBreakdown() }
     finally { setBreakingDown(false) }
-  }
-  const copyTask = () => {
-    onCopyTask?.(
-      isSubtask && parentText ? parentText : text,
-      isSubtask ? [{ id, text, status, subtasks: [] }] : steps,
-      finish,
-    )
-    closeMore(true)
   }
   const dateLabel = sourceDate
     ? (isOtherDate ? format(new Date(sourceDate + 'T00:00:00'), 'MMMd')
@@ -263,7 +239,7 @@ export function TaskItem({
       const target = event.relatedTarget as HTMLElement | null
       if (target?.closest('.diane-details')) return
       if (target && !event.currentTarget.contains(target)) {
-        settleLayout(() => { setSelected(false); setMoreOpen(false); setDateOpen(false); setAddingStep(false) })
+        settleLayout(() => { setSelected(false); setDateOpen(false); setAddingStep(false) })
       }
     }}>
     <div ref={rowRef} onClick={() => setSelected(true)} onFocusCapture={() => settleLayout(() => setSelected(true))}
@@ -297,57 +273,45 @@ export function TaskItem({
         </div>}
         {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
           selected={selected && !editing} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
-        {!isSubtask && (steps.length > 0 || history.length > 0) && <div className="task-steps-summary">
+        {!isSubtask && steps.length > 0 && <div className="task-steps-summary">
           <button type="button" className="task-steps-toggle" aria-expanded={stepsOpen} aria-controls={stepsId}
             aria-label={`${stepsOpen ? 'Hide' : 'Show'} steps for ${text}. ${doneSteps} of ${steps.length} done`}
             onClick={() => setStepsOpen(value => !value)}>
             <span aria-hidden="true">{stepsOpen ? '▾' : '▸'}</span>
-            {steps.length ? `${doneSteps}/${steps.length} steps done` : 'Historical steps'}
-            {history.length > 0 && <span className="task-history-count"> · {history.length} from other dates</span>}
+            {`${doneSteps}/${steps.length} steps done`}
           </button>
           {!stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
         </div>}
-        {(selected || moreOpen || isOtherDate) && !editing && <div className="task-primary-actions">
-          {!isOtherDate && !closed && onFocusSelect && <button type="button" className={`task-text-action task-focus-action${isFocusSelected ? ' active' : ''}`}
+        {(selected && !isOtherDate) && !editing && <div className="task-primary-actions">
+          {!isOtherDate && !closed && onFocusSelect && <button type="button" className={`task-text-action task-icon-action task-focus-action${isFocusSelected ? ' active' : ''}`}
             onClick={event => { event.currentTarget.focus(); onFocusSelect() }} disabled={Boolean(isFocusLocked && !isFocusSelected)}
-            title={isFocusLocked && !isFocusSelected ? 'A focus session is already active' : 'Choose this task for a focus session'}
-            aria-label={isFocusSelected ? `Focused task: ${text}` : `Focus on ${text}`}><FocusIcon /> Focus</button>}
-          {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action" onClick={openStepEntry}>Add step</button>}
-          <button ref={moreTriggerRef} type="button" className="task-text-action task-more-trigger" aria-expanded={moreOpen} aria-controls={moreId}
-            aria-label={`More actions for ${text}`} onClick={() => setMoreOpen(value => !value)}
-            onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); closeMore(true) } }}>More <span aria-hidden="true">{moreOpen ? '▴' : '▾'}</span></button>
+            title={isFocusLocked && !isFocusSelected ? 'A focus session is already active' : 'Focus'}
+            aria-label={isFocusSelected ? `Focused task: ${text}` : `Focus on ${text}`}><FocusIcon /></button>}
+          {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title="Add step" aria-label="Add step" onClick={openStepEntry}><AddStepIcon /></button>}
+          {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? 'Preparing suggested steps…' : 'Suggest steps with AI'} disabled={breakingDown}
+            onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /></button>}
+          {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={`Move to ${moveTargetLabel}`}
+            onClick={() => { onPush() }} aria-label={`Move ${text} to ${moveTargetLabel}`}><PushIcon /></button>}
+          {!isOtherDate && <button type="button" className="task-text-action task-icon-action task-delete-action" title="Delete"
+            onClick={onDelete} aria-label={`Delete ${text}`}><DeleteIcon /></button>}
         </div>}
-        <div ref={moreRef} id={moreId} className="task-more-panel" hidden={!moreOpen} role="group" aria-label={`More actions for ${text}`}
-          onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeMore(true) } }}>
-          {!isOtherDate && <button type="button" onClick={beginEditing}>Edit title</button>}
-          {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-ai-action" disabled={breakingDown}
-            onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /> Suggest steps with AI</button>}
-          {onCopyTask && <button type="button" onClick={copyTask}
-            aria-label={isSubtask ? `Copy ${parentText ?? text} with step ${text}` : `Copy ${text} and its steps`}><CopyIcon /> Copy task{!isSubtask && steps.length > 0 ? ' and steps' : ''}</button>}
-          {!isOtherDate && <>
-            <button type="button" onClick={() => { closeMore(); onPush() }} aria-label={`Move ${text} to ${moveTargetLabel}`}><PushIcon /> Move to {moveTargetLabel}</button>
-            {!closed && !isSubtask && onReview && <button type="button" onClick={() => { closeMore(true); onReview('stop') }}>Stop task</button>}
-            <button type="button" className="task-delete-action" onClick={() => { closeMore(); onDelete() }} aria-label={`Delete ${text}`}><DeleteIcon /> Delete</button>
-          </>}
-          {!isOtherDate && <span className="task-diane-control"><DianeAction sourceDate={dianeSourceDate ?? sourceDate}
-            id={sourceDate ? id.replace(`${sourceDate}:`, '') : id} text={text} parent={parentText}
-            steps={todaySubtasks?.map(step => `${step.status === 'done' ? '[completed] ' : ''}${step.text}`)} /></span>}
-        </div>
         {breakingDown && <span className="task-inline-status" role="status">Preparing suggested steps…</span>}
       </div>
     </div>
     {!isSubtask && stepsOpen && <div id={stepsId} className="task-steps-body">
       {steps.map(sub => <TaskItem key={sub.id} id={sub.id} dianeSourceDate={dianeSourceDate ?? sourceDate} text={sub.text} status={sub.status}
-        isSubtask moveTargetLabel={moveTargetLabel} viewMode={viewMode} onToggle={() => onToggleSubtask?.(sub.id)}
+        isSubtask moveTargetLabel={moveTargetLabel} onToggle={() => onToggleSubtask?.(sub.id)}
         onDelete={() => onDeleteSubtask?.(sub.id)} onPush={() => onPushSubtask?.(sub.id)} onCopyTask={onCopyTask}
         onTextChange={value => onSubtaskTextChange?.(sub.id, value)} parentText={text} selectedFocusId={selectedFocusId}
         isFocusSelected={selectedFocusId === sub.id} isFocusLocked={isFocusLocked}
         onFocusSelect={() => onFocusSubtask?.(sub.id, sub.text)} sortable={getSubtaskSortable?.(sub.id, sub.text)} />)}
-      {history.length > 0 && <div className="task-history-heading">From other dates · read only</div>}
-      {history.map(sub => <TaskItem key={`${sub.sourceDate}-${sub.id}`} id={sub.id} text={sub.text} status={sub.status}
-        isSubtask isOtherDate sourceDate={sub.sourceDate} moveTargetLabel={moveTargetLabel} viewMode={viewMode}
-        onToggle={() => {}} onDelete={() => {}} onPush={() => {}} onCopyTask={onCopyTask} onTextChange={() => {}} parentText={text} />)}
     </div>}
+    {!isSubtask && history.length > 0 && <details className="task-earlier-steps">
+      <summary>Earlier steps ({history.length})</summary>
+      {history.map(sub => <TaskItem key={`${sub.sourceDate}-${sub.id}`} id={sub.id} text={sub.text} status={sub.status}
+        isSubtask isOtherDate sourceDate={sub.sourceDate} moveTargetLabel={moveTargetLabel}
+        onToggle={() => {}} onDelete={() => {}} onPush={() => {}} onTextChange={() => {}} parentText={text} />)}
+    </details>}
     {!isSubtask && !isOtherDate && !closed && onAddSubtask && (selected || addingStep || subInput) && <div className="task-step-composer">
       <input ref={stepInputRef} className="task-text-input task-step-add-input" placeholder="Add a step…" aria-label={`New step for ${text}`}
         value={subInput} onChange={event => setSubInput(event.target.value)}
@@ -357,7 +321,6 @@ export function TaskItem({
           if (event.key === 'Enter') { event.preventDefault(); handleSubAdd() }
           if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setSubInput(''); setAddingStep(false); returnToTitle() }
         }} />
-      <span className="task-step-entry-hint">Enter to add</span>
     </div>}
   </div>
 }

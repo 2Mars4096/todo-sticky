@@ -1,3 +1,4 @@
+import { invoke, isTauri } from '@tauri-apps/api/core'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { DateHeader } from './components/DateHeader'
 import { TaskList } from './components/TaskList'
@@ -31,7 +32,6 @@ import type {
   AppSettings,
   Provider,
   Task,
-  ViewMode,
 } from './types'
 
 const READY_LAYOUT_MIGRATION_KEY = 'todo-sticky-ready-layout-v1'
@@ -49,7 +49,6 @@ export default function App() {
   const tasks = useTasks(calendar.dateStr, calendar.isCurrentDay)
   const goals = useGoals()
   const starFocus = useStarFocus(tasks.tasks)
-  const [viewMode, setViewMode] = useState<ViewMode>('today')
   const [showSettings, setShowSettings] = useState(false)
   const [showPlanner, setShowPlanner] = useState(false)
   const [settingsProvider, setSettingsProvider] = useState<Provider | undefined>()
@@ -73,6 +72,22 @@ export default function App() {
   currentDateRef.current = calendar.dateStr
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
+
+  useEffect(() => {
+    let revealed = false
+    let frame = 0
+    const reveal = () => {
+      if (revealed) return
+      revealed = true
+      window.__stickyTodoBoot?.record('render-complete', '')
+      if (isTauri()) void invoke('frontend_ready').catch(() => {})
+    }
+    // Commit the real shell before native launch visibility. Two frames allow a paint;
+    // the short timer also handles WebKit throttling frames in a hidden window.
+    frame = requestAnimationFrame(() => { frame = requestAnimationFrame(reveal) })
+    const fallback = setTimeout(reveal, 120)
+    return () => { cancelAnimationFrame(frame); clearTimeout(fallback) }
+  }, [])
   const updateBlockedReason = starFocus.activeSession
     ? 'Finish the focus session before updating.'
     : aiLoading || providerSwitching || tasks.loading
@@ -455,14 +470,13 @@ export default function App() {
           selectedDate={calendar.selectedDate}
           calendarOpen={calendar.calendarOpen}
           isCurrentDay={calendar.isCurrentDay}
-          viewMode={viewMode}
+
           onPrev={() => { void navigateAfterSave(calendar.goPrev) }}
           onNext={() => { void navigateAfterSave(calendar.goNext) }}
           onToggleCalendar={calendar.toggleCalendar}
           onSelectDate={date => { void navigateAfterSave(() => calendar.goToDate(date)) }}
           onToday={() => { void navigateAfterSave(calendar.goToday) }}
           onCloseCalendar={() => calendar.setCalendarOpen(false)}
-          onViewModeChange={setViewMode}
         />
 
         <AddTask
@@ -509,7 +523,7 @@ export default function App() {
             tasks={tasks.tasks}
             loading={tasks.loading}
             loadError={tasks.loadError}
-            viewMode={viewMode}
+
             selectedTaskId={starFocus.selectedTaskId}
             focusLocked={Boolean(starFocus.activeSession)}
             isCurrentDay={calendar.isCurrentDay}
@@ -593,7 +607,7 @@ export default function App() {
             disabled={!!aiLoading || !tasks.tasks.some(task => task.status !== 'done' && task.status !== 'stopped') || tasks.loading}
             title="Preview an AI plan for the selected date"
           >
-            Plan day
+            Plan
           </button>
           <button
             className={showAlbumRecommendations ? 'active' : ''}

@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-21 — UI refinement integration
+
+- [integration] User approved the installed compact controls, startup reveal and stable Settings layout for local main integration. Verified feature/build source parity; final regression and TypeScript checks precede merge and worktree cleanup.
+
+## 2026-10-21 — Stable Settings layout
+
+- [ui] Use one Settings navigation row with Storage, AI, Integrations and Updates. Keep the dialog height fixed within the viewport, with scrolling content and stationary header/footer. TypeScript and all-section geometry checks at compact/default/wide sizes pass. Reinstalled and launched locally; bundle/signature verified and all 56 task files unchanged.
+
+## 2026-10-21 — Startup layout flash
+
+- [fix] Keep the native window hidden until the React shell commits and has a paint opportunity, avoiding the separate startup-screen flash. Reveal once on the UI thread; retain a 1.5-second native fallback so frontend errors stay visible. No archive or integration dependency. TypeScript, all 28 native tests and isolated startup checks pass. Locally installed and launched; bundle/signature verified and 56 task-file hashes unchanged.
+
+## 2026-10-21 — Compact controls follow-up
+
+- [ui] Remove More and place Delete beside the other icons. Remove all Enter-to-add hints and duplicate title editing. Replace the global history checkbox with task-local Earlier steps; shorten the bottom-bar Plan label. Keep title keyboard/double-click editing, Enter submission and deletion Undo. Copy/Stop/Diane entries are no longer in the task row; outcome review and integration state remain intact. TypeScript/build, task/shell browser suites and history/routine checks pass. Locally installed and launched with verified bundle/signature; all 56 task files unchanged.
+
+## 2026-10-21 — Step entry copy trim
+
+- [ui] Remove “Enter to add” under the step input and its unused style. Enter still submits steps. Remove duplicate Edit title from More; double-click and Enter on the title still edit it.
+
+## 2026-10-21 — Direct task actions
+
+- [ux] Expose Focus, Add step, Suggest steps with AI and date-aware Move directly as icons with hover names and accessible labels. Use an ellipsis for remaining actions; preserve existing handlers and disabled states. TypeScript/build and compact browser interactions pass. Reinstalled and launched with verified bundle/signature and all 56 task files unchanged.
+
+## 2026-10-21 — Feature branch local installation
+
+- [install] Build and install `feat/ui-interaction-refinement` at `3fcad22` as local 2.1.11. All 12 Node suites, TypeScript and 28 native tests pass. Installed bundle matches build output and passes strict deep signing; app launches and all 56 task files remain unchanged. Back up prior app/native state/tasks; no merge or publication. See [4-44](plans/4-44-ui-interaction-refinement.md) for backup and remaining native acceptance boundaries.
+
 ## 2026-10-21 — UI Refinement Worktree
 
 - [plan] Begin the authorized UI/interaction refinement on `feat/ui-interaction-refinement` from latest main. Scope and native acceptance boundaries are recorded in [4-44](plans/4-44-ui-interaction-refinement.md).

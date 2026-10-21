@@ -1,5 +1,7 @@
 # Bugs And Failed Approaches
 
+- 2026-10-21: Native Ready revealed the WebView before React replaced the separate startup surface, allowing a different layout to flash on launch. Use a one-shot frontend-ready signal after commit/paint, plus a bounded native fallback so the prior invisible-window failure cannot recur.
+
 ## 2026-10-21: UI Refinement Worktree
 
 - Selecting a task could start an outcome request and ordinary Tab navigation could accept it. Suggestions now require explicit intent inside the editor; cancellation and unchanged Revise retain review readiness. Date changes are staged before committing history.
