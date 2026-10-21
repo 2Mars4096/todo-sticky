@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-21 — Verified final release 2.1.14
+
+- [release] Publish [v2.1.14](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.14) as latest with the approved checkbox size/equal spacing and all prior UI refinements. All platform builds and publication succeed. Public manifest/asset links validate for four updater targets; all three downloaded update packages pass Ed25519 signature checks.
+- [install] Local 2.1.14 is installed and running; strict signature/bundle hashes verified and all 56 task-file hashes unchanged. Intermediate 2.1.12 and 2.1.13 remain available.
+
 ## 2026-10-21 — Equal task spacing and 2.1.14
 
 - [ui] Equalize visible drag-dots/checkbox/title spacing to 8px for tasks (8.5px for steps), keep 24px nonoverlapping control targets, and align step entry with task text. Geometry checks cover compact/default roots and steps.

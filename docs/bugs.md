@@ -1,5 +1,7 @@
 # Bugs And Failed Approaches
 
+- 2026-10-21: GitHub CLI status/cancellation hit the anonymous API rate limit during releases; optional custom-note edits still return HTTP 401. Public workflow HTML, release asset listings, downloads and signature verification remain usable. Verify older releases with the validator/package.json from their tag, because the validator intentionally compares against its local package version.
+
 - 2026-10-21: Native Ready revealed the WebView before React replaced the separate startup surface, allowing a different layout to flash on launch. Use a one-shot frontend-ready signal after commit/paint, plus a bounded native fallback so the prior invisible-window failure cannot recur.
 
 ## 2026-10-21: UI Refinement Worktree
