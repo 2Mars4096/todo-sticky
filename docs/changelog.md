@@ -2,6 +2,10 @@
 
 ## 2026-10-21
 
+- [ui] Simplify long-term and recurring goals to flat rows and one-line entry with Enter submission; remove large composer boxes, repeated empty text and Add buttons. Add keyboard editing, IME-safe submission and explicit-delete-only empty edits. Browser add/edit/cancel/complete/delete/reload checks pass.
+
+- [ui] Match Outcome editing to inline title editing: replace the rounded double-outline box and resize grip with a single underline; keep text aligned.
+
 - [install] Reinstall and launch Outcome/Due review build. TypeScript, urgency and both finish UI suites pass; strict signature and bundle hashes verified, all 56 task-file hashes unchanged.
 
 - [ux] Use stable Outcome / Due rows for display and editing. Single-click selects; double-click or Enter edits titles. Selected empty outcomes show grey suggestions; unselected tasks retain saved details only.

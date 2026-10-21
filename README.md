@@ -165,3 +165,5 @@ Single-click a task to reveal **Outcome** and **Due** rows; double-click its tit
 
 
 AI breakdown uses the finish criterion and date to propose a short plan including the closing action. Promised tasks require **Complete / Revise / Stop** review instead of automatic parent completion. Stopped tasks remain distinct from completed tasks and do not carry forward. The deadline editor offers scope reduction, stopping, and the original date/reschedule count. Tasks without these fields retain their normal behavior.
+
+Long-term and Recurring goals use compact inline entries: type and press Enter to add. Double-click a goal or focus it and press Enter to edit; Escape cancels. Completion and deletion remain explicit row controls.

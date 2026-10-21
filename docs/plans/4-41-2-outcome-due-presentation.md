@@ -20,3 +20,7 @@
 - Inspected 350px selected-row screenshot; Outcome / Due align consistently.
 - Optimized app installed and launched; strict signature and exact bundle hashes verified, all 56 task-file hashes unchanged.
 - Backup: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-outcome-due-l1es1k83/Sticky Todo.app`. Remains on feature/finish-promises; no main merge.
+
+## Outcome editor edge refinement
+- [x] Match the title editor: transparent surface, no rounded box or resize grip, one accent underline, and no offset double focus ring. Keep value text aligned with its display position.
+- [ ] Verify visually and reinstall the local review bundle.

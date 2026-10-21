@@ -1,5 +1,10 @@
 # Todo
 
+- [x] [4-42-compact-goals](plans/4-42-compact-goals.md) — compact inline long-term/recurring entry and editing.
+- [ ] [4-43-publish-2-1-11](plans/4-43-publish-2-1-11.md) — merge, install, push and publish the verified refinements.
+
+- [ ] Outcome editor edge refinement → [4-41-2](plans/4-41-2-outcome-due-presentation.md).
+
 - [x] [4-41-2-outcome-due-presentation](plans/4-41-2-outcome-due-presentation.md) — consistent metadata rows, selection/edit separation, and local reinstall.
 
 - [x] [4-41-1-finish-ghost-suggestions](plans/4-41-1-finish-ghost-suggestions.md) — simplify finish/deadline editing, switch local OpenRouter to DeepSeek V4.1 Flash, and reinstall.

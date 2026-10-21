@@ -216,3 +216,5 @@
 - Finish editor suggestions use `llm_breakdown` with optional `suggestFinish: true` and a validated `finishSuggestion` response. Requests start on editor opening, cache per task text/component, never overwrite draft input, and never persist placeholder text. Manual editing remains available on provider failure. Tab accepts a suggestion into the draft; Enter/blur saves.
 
 - Outcome/Due presentation uses a fixed two-column inline grid. Row selection triggers ephemeral suggestions; title editing requires double-click or Enter. Empty fields and unaccepted suggestions disappear on deselection; saved metadata stays visible.
+
+- Goals sidebar uses one-line composers and flat editable rows, retaining its existing browser-local storage. Enter submission ignores IME composition; empty title edits preserve the goal.

@@ -17,7 +17,6 @@ interface SectionProps {
   category: GoalCategory
   items: GoalItem[]
   placeholder: string
-  emptyText: string
   onAddGoal: SidebarProps['onAddGoal']
   onUpdateGoal: SidebarProps['onUpdateGoal']
   onDeleteGoal: SidebarProps['onDeleteGoal']
@@ -53,7 +52,9 @@ function GoalRow({
 
   const commit = () => {
     setEditing(false)
-    onUpdateGoal(category, item.id, draft)
+    const text = draft.trim()
+    if (text) onUpdateGoal(category, item.id, text)
+    else setDraft(item.text)
   }
 
   return (
@@ -68,11 +69,13 @@ function GoalRow({
         <textarea
           ref={inputRef}
           className="goal-edit-input"
-          rows={2}
+          rows={1}
+          aria-label={`Edit ${item.text}`}
           value={draft}
           onChange={event => setDraft(event.target.value)}
           onBlur={commit}
           onKeyDown={event => {
+            if (event.nativeEvent.isComposing) return
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault()
               commit()
@@ -86,8 +89,11 @@ function GoalRow({
       ) : (
         <span
           className="goal-text"
+          role="button"
+          tabIndex={0}
+          onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setEditing(true) } }}
           onDoubleClick={() => setEditing(true)}
-          title="Double-click to edit"
+          title="Double-click or press Enter to edit"
         >
           {item.text}
         </span>
@@ -98,7 +104,7 @@ function GoalRow({
         title="Delete item"
         aria-label={`Delete ${item.text}`}
       >
-        ✕
+        <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h10M6 2h4l.75 2.5M4.5 4.5l.6 9h5.8l.6-9M6.5 7v4M9.5 7v4" /></svg>
       </button>
     </div>
   )
@@ -109,7 +115,6 @@ function GoalSection({
   category,
   items,
   placeholder,
-  emptyText,
   onAddGoal,
   onUpdateGoal,
   onDeleteGoal,
@@ -128,11 +133,11 @@ function GoalSection({
     <section className="goal-section">
       <div className="goal-section-header">
         <h2>{title}</h2>
-        <span>{openCount} open</span>
+        {items.length > 0 && <span>{openCount} open</span>}
       </div>
 
       <div className="goal-list">
-        {items.length ? items.map(item => (
+        {items.map(item => (
           <GoalRow
             key={item.id}
             category={category}
@@ -141,28 +146,24 @@ function GoalSection({
             onDeleteGoal={onDeleteGoal}
             onToggleGoal={onToggleGoal}
           />
-        )) : (
-          <p className="goal-empty">{emptyText}</p>
-        )}
+        ))}
       </div>
 
       <div className="goal-composer">
-        <textarea
+        <span className="goal-add-mark" aria-hidden="true">+</span>
+        <input
           className="goal-composer-input"
-          rows={2}
+          aria-label={placeholder}
           placeholder={placeholder}
           value={draft}
           onChange={event => setDraft(event.target.value)}
           onKeyDown={event => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              event.preventDefault()
-              handleAdd()
-            }
+            if (event.nativeEvent.isComposing) return
+            if (event.key === 'Enter') { event.preventDefault(); handleAdd() }
+            if (event.key === 'Escape') { event.stopPropagation(); setDraft(''); event.currentTarget.blur() }
           }}
         />
-        <button onClick={handleAdd} disabled={!draft.trim()}>
-          Add
-        </button>
+        <small className="goal-entry-hint">Enter to add</small>
       </div>
     </section>
   )
@@ -181,7 +182,7 @@ export function GoalsSidebar({
   return (
     <aside className={`goals-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Goals and recurring tasks">
       <div className="sidebar-top">
-        <div className="sidebar-spacer" />
+        {collapsed ? <div className="sidebar-spacer" /> : <span className="goals-heading">Goals</span>}
         <button
           className="sidebar-toggle"
           onClick={onToggleCollapse}
@@ -208,11 +209,10 @@ export function GoalsSidebar({
       ) : (
         <div className="sidebar-body">
           <GoalSection
-            title="Long-Term"
+            title="Long-term"
             category="targets"
             items={targets}
             placeholder="Add a goal"
-            emptyText="Pin what matters beyond today."
             onAddGoal={onAddGoal}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}
@@ -224,7 +224,6 @@ export function GoalsSidebar({
             category="recurring"
             items={recurring}
             placeholder="Add a recurring task"
-            emptyText="Add routines you want to repeat."
             onAddGoal={onAddGoal}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}
