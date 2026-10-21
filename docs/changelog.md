@@ -2,6 +2,8 @@
 
 ## 2026-10-21
 
+- [maintenance] Retain the review feature branch in `.worktrees/finish-promises`; preserve the detached temporary build checkout after cross-volume worktree move proved unsupported.
+
 - [feature, review branch] Add optional inline finish promises and deadlines, urgency badges, deadline history, bounded AI breakdown, explicit completion review, and stopped tasks. Preserve metadata through Markdown, date aggregation, carry-forward and prompt export. Full TypeScript checks, 27 native tests, and isolated 350px interaction/persistence checks pass; optimized review bundle locally installed and launched; strict signature and bundle hashes verified, all 56 task-file hashes unchanged. Feature remains on its separate branch.
 
 - [fix] Restore full TypeScript checking, pass the missing atmosphere lighting angle, normalize archive retention, and type/guard Three.js textures. Completion, loading, rollover, calendar, and persistence checks pass.

@@ -2,6 +2,7 @@
 
 ## 2026-10-21: Review Build Toolchain
 
+- `git worktree move` cannot cross from `/private/tmp` to the project volume. Keep the build checkout detached and create a fresh durable worktree at the same feature commit.
 - The prior temporary Rust toolchain had been cleaned up. Restore an isolated toolchain and use its direct bin path; the account Cargo cache contains the required crates. Do not change the user’s default toolchain.
 - Rust 1.99.1 minimal toolchain emitted nonfatal `rust-objcopy` debug-stripping warnings about a missing LLVM library; optimized app build and strict deep signature verification succeeded.
 - Browser verification uses isolated fixture data; it does not establish installed macOS drag acceptance.

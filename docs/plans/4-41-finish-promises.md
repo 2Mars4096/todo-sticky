@@ -28,3 +28,5 @@
 - Rollback app: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-finish-s48ginaw/Sticky Todo.app`.
 - Feature worktree: `.worktrees/finish-promises`, branch `feature/finish-promises`; feature is not merged into main.
 - User review pending; native pointer behavior is still a manual acceptance item.
+
+- Durable checkout was recreated at the same feature commit because a direct cross-volume move is unsupported. The detached `/private/tmp/todo-finish-review` checkout retains build/test artifacts.
