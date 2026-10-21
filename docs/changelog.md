@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-21 — Release 2.1.12
+
+- [release] Prepare 2.1.12 with reviewed task interactions, undo/save recovery, day planning, focus fixes, direct action icons, compact copy, startup reveal and stable Settings. Supersede 2.1.11 as latest so existing clients detect the update; publication verification pending.
+
 ## 2026-10-21 — UI refinement integration
 
 - [integration] Fast-forward local main through `f8befcb` with the reviewed UI refinements, compact controls, startup reveal and stable Settings layout. All 12 Node suites and TypeScript checks pass; installed-build/source parity verified. Remove both UI-refinement worktrees and the merged local feature branch. Remote branches/releases unchanged.

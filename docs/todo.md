@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] [4-45-publish-2-1-12](plans/4-45-publish-2-1-12.md) — publish UI refinements as the latest signed update.
+
 - [x] Integrate reviewed UI refinements into local main and remove feature/build worktrees → [4-44](plans/4-44-ui-interaction-refinement.md).
 
 - [x] Stable Settings height and single-row navigation; local reinstall → [4-44](plans/4-44-ui-interaction-refinement.md).
