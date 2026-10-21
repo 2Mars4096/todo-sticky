@@ -2,6 +2,8 @@
 
 ## 2026-10-21
 
+- [release] Prepare v2.1.11 on main with finish promises, persistent deadlines, reversible AI suggestions, explicit completion review, compact goals and Star Focus reliability fixes. Signed publication and local install in progress.
+
 - [ui] Simplify long-term and recurring goals to flat rows and one-line entry with Enter submission; remove large composer boxes, repeated empty text and Add buttons. Add keyboard editing, IME-safe submission and explicit-delete-only empty edits. Browser add/edit/cancel/complete/delete/reload checks pass.
 
 - [ui] Match Outcome editing to inline title editing: replace the rounded double-outline box and resize grip with a single underline; keep text aligned.
