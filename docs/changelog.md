@@ -2,6 +2,8 @@
 
 ## 2026-10-21
 
+- [release] Publish [v2.1.11](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.11) as latest after successful macOS/Windows/Linux builds. Public updater manifest and URLs verify for all four targets; all three downloaded updater packages pass Ed25519 signature checks. Local 2.1.11 installed and launched with a rollback backup; all 56 task-file hashes unchanged.
+
 - [release] Prepare v2.1.11 on main with finish promises, persistent deadlines, reversible AI suggestions, explicit completion review, compact goals and Star Focus reliability fixes. Signed publication and local install in progress.
 
 - [ui] Simplify long-term and recurring goals to flat rows and one-line entry with Enter submission; remove large composer boxes, repeated empty text and Add buttons. Add keyboard editing, IME-safe submission and explicit-delete-only empty edits. Browser add/edit/cancel/complete/delete/reload checks pass.

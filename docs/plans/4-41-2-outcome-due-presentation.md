@@ -23,4 +23,4 @@
 
 ## Outcome editor edge refinement
 - [x] Match the title editor: transparent surface, no rounded box or resize grip, one accent underline, and no offset double focus ring. Keep value text aligned with its display position.
-- [ ] Verify visually and reinstall the local review bundle.
+- [x] Verify visually and reinstall the local review bundle.

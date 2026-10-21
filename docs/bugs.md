@@ -1,5 +1,7 @@
 # Bugs And Failed Approaches
 
+- 2026-10-21: After v2.1.11 publication, GitHub CLI requests began returning HTTP 401, including with environment tokens removed. Public API/download endpoints remain usable for verification; the optional custom release-note edit was not applied, so generated notes remain. Git transport uses SSH independently.
+
 - 2026-10-21: Standalone Python HTTPS verification lacked the local issuer certificate. Use the system HTTPS client with normal certificate validation; do not disable TLS verification. The OpenRouter model check succeeds through system curl.
 
 ## 2026-10-21: Review Build Toolchain

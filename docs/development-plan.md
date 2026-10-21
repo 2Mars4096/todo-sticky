@@ -6,7 +6,7 @@
 
 ## Current Goal
 
-- [x] Deliver the agreed finish/deadline workflow as a separate-branch local review build through [4-41](plans/4-41-finish-promises.md). AI-tool linking remains deferred in the idea cart.
+- [x] Deliver the agreed finish/deadline workflow as a locally installed and published v2.1.11 release through [4-41](plans/4-41-finish-promises.md). AI-tool linking remains deferred in the idea cart.
 
 - [x] Add quiet automatic update discovery and Settings/action indicators through [4-24](plans/4-24-automatic-update-indicators.md); keep installation manual.
 
