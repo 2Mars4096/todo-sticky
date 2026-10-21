@@ -26,6 +26,7 @@ function fixture() {
    }
    if(name==='../api')return {api,waitForPendingWrites:async()=>{}}
    if(name==='../taskRollover')return rollover
+  if(name==='../taskHistory'||name==='../taskPlanning')return require('./helpers/load-typescript.cjs')(`src/${name.slice(3)}.ts`)
    if(name==='../taskCarryForward')return {resolveTaskCarryForwardTarget:()=>({dateStr:'2026-10-13'})}
    throw Error(name)
   },

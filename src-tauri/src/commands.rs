@@ -1,4 +1,4 @@
-use crate::config::{self, get_kb_path, AppSettings, StarFocusState};
+use crate::config::{self, get_kb_path, AppSettings, Machine, StarFocusState};
 use crate::file_sync;
 use crate::llm::{self, LLMConfig};
 use crate::markdown::{AggregatedTask, Task};
@@ -221,8 +221,22 @@ pub async fn llm_breakdown(
 }
 
 #[tauri::command]
-pub async fn llm_schedule(tasks: Value, app: AppHandle) -> Result<Value, String> {
-    llm::schedule(&app, &tasks, &[]).await
+pub async fn llm_schedule(
+    tasks: Value,
+    machines: Option<Vec<Machine>>,
+    date_str: Option<String>,
+    available_start: Option<String>,
+    available_end: Option<String>,
+    app: AppHandle,
+) -> Result<Value, String> {
+    llm::schedule(
+        &app,
+        &tasks,
+        machines.as_deref(),
+        date_str.as_deref(),
+        available_start.as_deref(),
+        available_end.as_deref(),
+    ).await
 }
 
 #[tauri::command]

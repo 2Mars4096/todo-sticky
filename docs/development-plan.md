@@ -6,6 +6,8 @@
 
 ## Current Goal
 
+- [ ] Complete the separate-worktree [4-44 UI refinement](plans/4-44-ui-interaction-refinement.md): deliberate editing, recoverable writes and Undo, compact layout, plan preview, accessible dialogs and resilient Focus rendering. Implementation and browser/Node verification are complete; native build/installed acceptance and real-person usability review remain explicit follow-up gates. No release or installation is part of this slice.
+
 - [x] Deliver the agreed finish/deadline workflow as a locally installed and published v2.1.11 release through [4-41](plans/4-41-finish-promises.md). AI-tool linking remains deferred in the idea cart.
 
 - [x] Add quiet automatic update discovery and Settings/action indicators through [4-24](plans/4-24-automatic-update-indicators.md); keep installation manual.

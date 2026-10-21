@@ -1,5 +1,18 @@
 # Bugs And Failed Approaches
 
+## 2026-10-21: UI Refinement Worktree
+
+- Selecting a task could start an outcome request and ordinary Tab navigation could accept it. Suggestions now require explicit intent inside the editor; cancellation and unchanged Revise retain review readiness. Date changes are staged before committing history.
+- Compact idle rails consumed 92px, and fixed footer controls could overlap. Named compact Goals/Focus entries restore task width; the footer wraps and wide provider controls remain bounded. Enlarged date text wraps instead of truncating.
+- Failed task writes were console-only and could lose their pending retry. The latest snapshot remains in memory with persistent Retry, and failed saves block reload/navigation. A newer queued snapshot can run after an older write fails.
+- Mutating the archived template after deletion broke original-position Undo around hidden completed rows. Keep the original template and track saved content separately. Restoring an unfinished step under a newly closed parent must reopen that parent; reversing a plan must preserve work completed/edited since application.
+- Outcome/action layout changes on pointerdown/blur could move Earlier tasks, Show steps or another click target before pointerup. Defer selection/editor layout settling until the pointer click completes; keyboard focus behavior stays immediate.
+- Three.js already declares `cameraPosition` in ShaderMaterial programs. Duplicate declarations caused compile errors; the cloud-shadow fragment also needed its `modelMatrix` declaration. Construction, shader and context failures now use SVG fallback with recoverable session controls. Live-route geometry preallocates its buffer instead of changing GPU attribute size.
+- Plan output previously applied immediately with default assumptions. Validate selected date/time/task/machine context, preview it, reject stale responses and replace only unfinished generated blocks for that date. Undo remains scoped to a loaded snapshot and is cleared on successful refresh or moving work.
+- A late AI breakdown could reopen a task after Complete/Stop or append work based on an obsolete title/outcome. Capture the target fingerprint and loaded date, rejecting changed/closed targets while allowing unrelated edits. Apply, Undo and arriving breakdowns also reject mutations while the selected-day file read is pending, preventing a refresh from replacing newly written work.
+- Browser geometry checks must wait for layout transitions to settle after viewport/text changes. Tests use real production assets and synthetic bridge data; forced WebGL faults verify the fallback, not native GPU compatibility.
+- This Linux review environment has no Cargo/Rust compiler or installed desktop app. The new native planning-window test is source-only here. Native build/tests, physical IME, platform drag/resize and installed WebView/GPU acceptance remain pending; no real-person study was conducted.
+
 - 2026-10-21: After v2.1.11 publication, GitHub CLI requests began returning HTTP 401, including with environment tokens removed. Public API/download endpoints remain usable for verification; the optional custom release-note edit was not applied, so generated notes remain. Git transport uses SSH independently.
 
 - 2026-10-21: Standalone Python HTTPS verification lacked the local issuer certificate. Use the system HTTPS client with normal certificate validation; do not disable TLS verification. The OpenRouter model check succeeds through system curl.

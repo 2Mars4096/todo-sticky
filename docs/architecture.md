@@ -15,7 +15,7 @@
 
 - [ ] Languages: TypeScript/TSX for the frontend, Rust for the Tauri native layer, Markdown for task storage.
 - [ ] Frameworks: React 18, Vite 6, Tauri 2, Three.js, date-fns, react-day-picker.
-- [ ] Build and test tools: `vite build`, `npx tauri dev`, `npx tauri build`; there is no established automated test suite yet.
+- [ ] Build and test tools: TypeScript, Vite, Tauri, `npm test` for twelve Node regression suites, and isolated Playwright browser fixtures for full-shell interactions.
 - [ ] Runtime or deployment targets: desktop app for macOS, Windows, and Linux.
 
 ## Repository Layout
@@ -39,14 +39,16 @@
 
 - [ ] `src/hooks/useCalendar.ts`: keeps selected-date navigation separate from a live local-today key; refreshes at local midnight, within one minute of clock changes while timers run, and on focus/visibility/page restoration, with effect cleanup and automatic advance when the selected date was Today.
 
-- [ ] `src/App.tsx`: coordinates the one-time collapsed-rail layout migration, 760px compact breakpoint, overlay-panel dismissal, top task composer, action feedback, day-first view default, compact action-bar AI provider switching, and task-context handoff for album recommendations.
+- [ ] `src/App.tsx`: coordinates the 760px compact breakpoint, named compact Goals/Focus entries, active-session timer, overlay-panel dismissal, persistent top composer, optional setup, save/Undo feedback, plan preview and task-context handoff for album recommendations. The provider selector appears only in wide layouts.
 - [ ] `src/components/AlbumRecommendations.tsx`: presents the configured AI provider's four-album work soundtrack in a dismissible paper-toned sheet above the action bar, with loading, regenerate, Escape, and compact-layout states.
 - [ ] `src/components/WindowResizeHandles.tsx`: maps generous edge/corner pointer zones to Tauri native resize dragging for the frameless window.
-- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top and provide an inline AddTask variant after nonempty lists, expose hierarchy-aware copy and task/subtask Focus handoff, provide an instructional empty state for today, route empty past/future dates directly back to today, and scope drag-reordering to top-level tasks or subtasks within one parent.
+- [ ] `src/components/AddTask.tsx` and `src/components/TaskList.tsx`: keep task capture at the top, expose hierarchy-aware copy and task/subtask Focus handoff, provide a date-aware empty state, collapse Earlier tasks with a persisted preference, and scope drag-reordering to top-level tasks within a source date or subtasks within one parent.
 - [ ] `src/taskTransfer.ts` and `src/clipboard.ts`: generate local execution-agent prompts and write them through the official Tauri clipboard plugin; ordinary text copy/paste stays with the native focused-field behavior.
 - [ ] `src/taskCarryForward.ts`: resolves the local-date destination and user-facing action label for past, current, and future task dates.
 - [ ] `src/llmProviders.ts`: centralizes provider labels, presets, configured-state checks, and safe switching between API-backed profiles and the keyless local Codex profile.
-- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: keep task mutations and icon-only row actions reachable, including right-aligned final-line action packing, destination-aware carry-forward, parent-preserving subtask moves, aligned step entry, and Markdown-persisted pointer/keyboard reordering. TaskList uses captured pointer gestures with a movement threshold and scoped row geometry; handles explicitly focus on pointer-down for keyboard movement.
+- [ ] `src/hooks/useTasks.ts` and `src/components/TaskItem.tsx`: expose selected-row Focus / Add step / More actions, visible manual step entry, collapsible step groups, destination-aware carry-forward, parent-preserving moves, and Markdown-persisted pointer/keyboard reordering. Pointer-driven selection changes settle after the click to avoid moving its target; keyboard selection remains immediate. TaskList uses captured pointer gestures with a movement threshold and scoped row geometry.
+- [ ] `src/hooks/useDialogFocus.ts`: contains Tab/Shift+Tab in the topmost dialog, respects editor Escape/IME handling, and restores the opener or a stable caller-supplied fallback. Settings, day planning and Focus share it.
+- [ ] `src/styles/*-refinements.css`, `task-interactions.css`, `settings-navigation.css` and `day-planning.css`: scoped refinements over the established sticky-note theme; shell overrides load after the base stylesheet.
 - [ ] `src-tauri/src/commands.rs` and `src-tauri/src/file_sync.rs`: persist task changes and merge individually carried subtasks under a normalized matching parent in the destination date section.
 - [ ] `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and `src-tauri/capabilities/default.json`: define the `todo-sticky` default desktop target and bundle name, the `460x640` default, the `340x440` minimum, and native resize-drag permission so the sibling task API CLI cannot become the bundled executable.
 - [ ] `src-tauri/src/lib.rs`: positions a fresh window at the top-right of the current monitor work area, shows it from `RunEvent::Ready`, preserves later user placement, and installs native macOS Copy/Paste menu responders for focused editable text.
@@ -84,8 +86,8 @@
 - Keep the sidebar and fallback path lightweight, but Tracking Station can now use an on-demand true 3D/WebGL renderer where the realism gain is worth the heavier runtime.
 - Keep Star Focus copy terse; prefer labels, metrics, and direct actions over explanatory paragraphs.
 - Prefer one strong Star Focus readout over duplicated secondary labels when the context is already obvious.
-- Keep the right Mission Control rail as the quick-control entry surface even now that Tracking Station exists as an expanded overlay.
-- Default new left-goals and right-mission rails to collapsed so the sticky-note window keeps a usable center column before the user opts into the larger side surfaces.
+- Keep wide Mission Control as a quick-control entry surface; compact windows use the named Focus action and keep an active timer visible in the footer.
+- Default side tools to collapsed. Compact collapsed rails take no width; wide windows retain their rail entries.
 - In compact window widths, expanding one side rail should collapse the other and overlay the center instead of crushing the task column.
 - Keep task capture immediately below the date header; secondary actions such as AI day planning stay in the lower action bar.
 - Keep date navigation on a fixed three-column frame: equal-width arrow columns flank a flexible center slot, and decorative calendar affordances must not offset the date label's visual center.
@@ -95,8 +97,8 @@
 - On macOS, resolve default task and bundle app-data roots from the signed-in account record; do not let an inherited `HOME` create a parallel empty store.
 - Run startup archive reads on Tauri's blocking worker pool so File Provider hydration cannot freeze native window painting; keep task creation disabled while the initial archive load is pending.
 - On macOS, reject `SF_DATALESS` task archives before every content read or read-before-write operation; surface cloud availability separately from an empty task list and require an explicit retry after Finder/Dropbox materializes the file.
-- Task-content whitespace activates title editing; edit mode uses a flexible input ending beside the fixed-width action group. Display mode retains final-line inline flow.
-- Keep essential task actions keyboard reachable and visible at low emphasis; flow the atomic icon group into spare space after the final task-text fragment, pin it to the right edge, then wrap the whole right-aligned group only when it cannot fit.
+- Single-click selects a task; double-click or Enter on its title edits. Enter/blur commits, Escape cancels, and composing Enter never submits an IME draft.
+- Keep Focus / Add step / More visibly labeled on the selected task. More is an ordinary disclosure with native buttons; less frequent actions must not widen the default task row.
 - Treat task-array order as the reorder source of truth: top-level moves carry their subtask group, while subtask moves stay inside the current parent and exclude read-only other-date steps.
 - Treat the task arrow as carry-forward: past dates catch up directly to local today, today moves to tomorrow, and future dates move to their following day.
 - Preserve hierarchy when carrying one subtask: create its parent on the destination date when absent, then merge later sibling moves into that same parent without duplicate steps.
@@ -183,10 +185,22 @@
 
 ## Quality Checks
 
-- [ ] Default frontend verification command: `npm run build:frontend`
+- [ ] Frontend verification: `npx tsc --noEmit`, `npm test`, `npm run build:frontend`.
+- [ ] Browser interaction checks: `check-refined-shell.cjs`, `check-task-interactions.cjs`, `check-focus-refinements.cjs`, `check-goals-ui.cjs` and `check-task-reorder.cjs` under `tests/`. The shared fixture supports `TODO_TEST_URL`, `PLAYWRIGHT_MODULE`, `CHROME_EXECUTABLE`, optional browser arguments/library/font paths, and optional `TODO_TEST_OUTPUT`; all task data is synthetic.
 - [ ] Default local app run command: `npm run dev`
-- [ ] Native-side sanity check when touching Rust: `cargo check --manifest-path src-tauri/Cargo.toml`
-- [ ] CI/release flow exists under `.github/workflows/release.yml`; there is no separate lint/test standard documented yet.
+- [ ] Native verification when touching Rust: `cargo check --manifest-path src-tauri/Cargo.toml` and `cargo test --manifest-path src-tauri/Cargo.toml` where platform libraries/toolchain are installed.
+- [ ] Release workflow runs TypeScript and the same `npm test` suite before packaging. Browser fixtures do not establish native drag, physical IME, GPU or installed-app acceptance.
+
+## Recoverable Edits And Day Planning
+
+- `useTasks` retains the latest pending snapshot on write failure, exposes persistent `saveError` / `saving` / `retrySave`, and drains writes before reload, date navigation, settings-store changes and updates. A failed older write cannot prevent a newer snapshot from being attempted. Writes use the successfully loaded date, not a newly requested date that failed to load.
+- A synchronous selected-day loading guard rejects plan application, Undo and delayed AI breakdown during a replacement read. The guard ends before background archive discovery, preserving capture while history loads. Breakdown results additionally require the original open target's fingerprint and date; unrelated task edits do not invalidate them.
+- Carried archive templates retain original positions, including hidden completed roots; a separate saved-content map suppresses unchanged writes. This permits deletion Undo after persistence without losing the original hierarchy, metadata, source date or order.
+- `src/taskHistory.ts` owns one-level deletion and plan Undo. It reverses the affected change while preserving later unrelated edits. Restoring an unfinished deleted step reopens a closed parent. Plan Undo retains subsequently completed, stopped or edited generated blocks. Undo expires on another undoable action, dismissal, successful reload, moving work or changing the task store; it is not a persistent cross-session history.
+- `src/taskPlanning.ts` validates provider output before mutation: known open task IDs, explicit time bounds, chronological blocks, selected machines and non-overlap per assignee. `ScheduleView` captures date, task fingerprint, time window and machine choices. Generation is a preview; Apply / Discard are explicit, and changed context invalidates the proposal.
+- Generated steps use `plan_<date>_<batch>_<sequence>` IDs in existing Markdown ID comments. Replanning replaces only unfinished generated steps for that planning date; manual, completed/stopped and other-date steps remain. Applying a plan records a targeted Undo.
+- Native `llm_schedule` accepts optional date/window/machine context for older callers, while the current frontend always sends it explicitly. No occupation, hardware inventory or work hours are invented. See `llm-api-guide.md` for the request/response contract.
+- Focus keeps session controls usable after construction, shader or WebGL context errors through projected SVG fallback and an explicit retry. Renderer resources/listeners/frames are cleaned up on exit; reduced motion redraws on relevant changes instead of continuously when idle. Finishing a focus session does not complete the task outcome.
 
 ## In-App Updates
 
@@ -204,7 +218,7 @@
 
 - Three.js development types track the installed 0.184 renderer; full `npx tsc --noEmit` passes after the 4-40 reliability fixes.
 
-## Finish promises (review branch)
+## Finish Promises
 
 - Optional `finish` metadata travels with Task/AggregatedTask and is serialized as escaped JSON in `sticky-todo:finish` HTML comments before the existing stable-ID comment. No second store or migration is required for old tasks.
 - `doneWhen`, `by`, `originalBy`, `deadlineChanges` and `reviewReady` describe finish criteria, date commitments, date-change history and review state. Work dates and deadlines are independent.
@@ -213,8 +227,8 @@
 - Carry-forward accepts full task/parent snapshots to retain metadata, status, nested steps and stable IDs. Existing text-only command callers remain supported.
 - AI breakdown receives the promise/deadline within task context; the system prompt requests a bounded, nonduplicated plan with closing evidence.
 
-- Finish editor suggestions use `llm_breakdown` with optional `suggestFinish: true` and a validated `finishSuggestion` response. Requests start on editor opening, cache per task text/component, never overwrite draft input, and never persist placeholder text. Manual editing remains available on provider failure. Tab accepts a suggestion into the draft; Enter/blur saves.
+- Finish editor suggestions use `llm_breakdown` with optional `suggestFinish: true` and a validated `finishSuggestion` response. They require an explicit Suggest action inside an empty editor, cache per task text/component and never overwrite a draft. Use suggestion (or Tab in that empty editor only) stages the result; Enter/blur saves. Ordinary Tab navigation never writes an outcome.
 
-- Outcome/Due presentation uses a fixed two-column inline grid. Row selection triggers ephemeral suggestions; title editing requires double-click or Enter. Empty fields and unaccepted suggestions disappear on deselection; saved metadata stays visible.
+- Outcome/Due use a subordinate two-column grid. Optional empty fields appear only on selection. Unchanged edits and cancelled Revise preserve review readiness; clear is explicit. Dates are staged with Save / Cancel / Clear, so abandoning a date draft adds no deadline-history entry.
 
-- Goals sidebar uses one-line composers and flat editable rows, retaining its existing browser-local storage. Enter submission ignores IME composition; empty title edits preserve the goal.
+- Goals uses one-line composers and flat editable rows, retaining its browser-local storage. The Routines label describes manually reset reminders; the stored `recurring` category is unchanged. Enter submission ignores IME composition; empty title edits preserve the goal.

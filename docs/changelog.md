@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-21 — UI Refinement Worktree
+
+- [plan] Begin the authorized UI/interaction refinement on `feat/ui-interaction-refinement` from latest main. Scope and native acceptance boundaries are recorded in [4-44](plans/4-44-ui-interaction-refinement.md).
+
+- [ux] Keep capture available from first launch; replace compact idle rails with named Goals/Focus entries and a visible active timer. Reduce header space, wrap footer controls, improve secondary text/focus/targets, and retain wide panels with a bounded provider selector.
+- [ux] Group selected task actions as Focus / Add step / More, disclose step progress/next work, and keep manual step capture visible. Make AI outcomes explicit drafts, preserve unchanged/cancelled review state, stage date changes, and guard IME submission. Defer pointer-driven layout changes until the click lands.
+- [reliability] Add targeted deletion/plan Undo with original tree/date/order/metadata, preservation of later edits and closure-aware restoration. Keep failed saves visible with Retry and retain the latest memory; block navigation/reload from discarding failed writes.
+- [planning] Add chronological preview with explicit date/time/machines, Apply / Discard / Undo, strict response validation, stale-context guards and replacement of only unfinished generated blocks. Remove invented occupation/machine/time assumptions from native prompts.
+- [focus] Repair shader declarations and growing route buffers; add construction/shader/context-loss SVG fallback and Try 3D again. Clean up renderer resources and avoid idle animation under reduced motion. Use functional session labels and keep session completion separate from task outcomes.
+- [accessibility] Share modal keyboard containment, Escape and focus restoration across Settings, planning and Focus. Group Settings by purpose with optional advanced details; label manually reset reminders Routines and clarify other-date steps.
+- [tests] Add portable production-browser fixtures and twelve-suite `npm test` release gate. Verify minimum/default/wide shell, text enlargement, task/goal edits, recovery/planning, pointer/keyboard reorder, Focus faults/retry and cleanup. Native compilation/installed acceptance and real-person usability review remain pending; no version bump, merge, publication or install.
+
 ## 2026-10-21
 
 - [release] Publish [v2.1.11](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.11) as latest after successful macOS/Windows/Linux builds. Public updater manifest and URLs verify for all four targets; all three downloaded updater packages pass Ed25519 signature checks. Local 2.1.11 installed and launched with a rollback backup; all 56 task-file hashes unchanged.

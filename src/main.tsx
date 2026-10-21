@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import './styles/sticky.css'
+import './styles/shell-refinements.css'
 
 const BOOT_DIAGNOSTIC_KEY = 'todo-sticky-boot-diagnostic-v1'
 

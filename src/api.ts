@@ -81,8 +81,8 @@ export const api = {
   llmBreakdown: (data: { taskText: string; existingSubtasks: string[]; suggestFinish?: boolean }) =>
     invoke<{ finishSuggestion?: string; subtasks: { text: string; estimatedMinutes?: number; machineTask?: boolean }[] }>('llm_breakdown', data),
 
-  llmSchedule: (data: { tasks: any[]; machines: any[] }) =>
-    invoke<{ plan: string; schedule: any[] }>('llm_schedule', data),
+  llmSchedule: (data: { tasks: AggregatedTask[]; machines: AppSettings['machines']; dateStr: string; availableStart: string; availableEnd: string }) =>
+    invoke<unknown>('llm_schedule', data),
 
   llmRecommendAlbums: (data: { tasks: any[] }) =>
     invoke<AlbumRecommendationResult>('llm_recommend_albums', data),

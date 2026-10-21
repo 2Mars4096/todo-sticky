@@ -1,27 +1,50 @@
-const assert=require('node:assert/strict')
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright')
-;(async()=>{
- const b=await chromium.launch({headless:true,executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'})
- const p=await b.newPage({viewport:{width:350,height:640}})
- await p.goto(`${process.env.TEST_URL||'http://127.0.0.1:5174'}/tests/goals-ui.html`)
- const goal=p.getByRole('textbox',{name:'Add a goal',exact:true})
- await goal.waitFor();await p.screenshot({path:'/private/tmp/todo-goals-empty.png'})
- assert.equal(await p.getByRole('button',{name:'Add',exact:true}).count(),0)
- await goal.fill('Publish a useful research note');await goal.press('Enter')
- await p.getByRole('textbox',{name:'Add a recurring task',exact:true}).fill('Review next week')
- await p.getByRole('textbox',{name:'Add a recurring task',exact:true}).press('Enter')
- await p.getByRole('button',{name:'Publish a useful research note',exact:true}).focus();await p.keyboard.press('Enter')
- const edit=p.getByRole('textbox',{name:'Edit Publish a useful research note',exact:true})
- await edit.fill('Share a research note');await edit.press('Enter')
- await p.getByRole('button',{name:'Complete Share a research note',exact:true}).click()
- await p.reload();await p.getByRole('button',{name:'Reactivate Share a research note',exact:true}).waitFor()
- await p.getByRole('button',{name:'Review next week',exact:true}).dblclick()
- await p.getByRole('textbox',{name:'Edit Review next week',exact:true}).fill('Discard this change')
- await p.getByRole('textbox',{name:'Edit Review next week',exact:true}).press('Escape')
- await p.getByRole('button',{name:'Review next week',exact:true}).waitFor()
- await p.screenshot({path:'/private/tmp/todo-goals-filled.png'})
- await p.getByRole('button',{name:'Delete Share a research note',exact:true}).click()
- await p.reload();assert.equal(await p.getByRole('button',{name:'Share a research note',exact:true}).count(),0)
- assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)
- await b.close();console.log('Passed compact goal entry, edit, cancel, complete, delete and reload persistence')
-})().catch(e=>{console.error(e);process.exit(1)})
+const assert = require('node:assert/strict');
+const { launch, testUrl, screenshot } = require('./helpers/browser-fixture.cjs');
+
+(async () => {
+  const browser = await launch();
+  try {
+    // A fresh context keeps this localStorage fixture separate from real data.
+    const context = await browser.newContext({ viewport: { width: 350, height: 640 } });
+    const page = await context.newPage();
+    page.setDefaultTimeout(10000);
+    const errors = [];
+    page.on('pageerror', error => errors.push(String(error)));
+    await page.goto(`${testUrl}/tests/goals-ui.html`);
+    const goal = page.getByRole('textbox', { name: 'Add a goal', exact: true });
+    await goal.waitFor();
+    await screenshot(page, 'goals-empty');
+    assert.equal(await page.getByRole('button', { name: 'Add', exact: true }).count(), 0);
+    await goal.fill('Publish a useful research note');
+    await goal.press('Enter');
+    const routine = page.getByRole('textbox', { name: 'Add a routine', exact: true });
+    await routine.fill('Review next week');
+    await routine.press('Enter');
+
+    await page.getByRole('button', { name: 'Publish a useful research note', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    const edit = page.getByRole('textbox', { name: 'Edit Publish a useful research note', exact: true });
+    await edit.fill('Share a research note');
+    await edit.press('Enter');
+    await page.getByRole('button', { name: 'Complete Share a research note', exact: true }).click();
+    await page.reload();
+    await page.getByRole('button', { name: 'Reactivate Share a research note', exact: true }).waitFor();
+
+    await page.getByRole('button', { name: 'Review next week', exact: true }).dblclick();
+    const routineEdit = page.getByRole('textbox', { name: 'Edit Review next week', exact: true });
+    await routineEdit.fill('Discard this change');
+    await routineEdit.press('Escape');
+    await page.getByRole('button', { name: 'Review next week', exact: true }).waitFor();
+    await screenshot(page, 'goals-filled');
+    await page.getByRole('button', { name: 'Delete Share a research note', exact: true }).click();
+    await page.reload();
+    await page.getByRole('textbox', { name: 'Add a goal', exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Share a research note', exact: true }).count(), 0);
+    assert.equal(await page.getByRole('button', { name: 'Review next week', exact: true }).count(), 1);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    assert.deepEqual(errors, []);
+    console.log('PASS compact goal/routine entry, keyboard edit, cancel, complete, delete and reload persistence');
+  } finally {
+    await browser.close();
+  }
+})().catch(error => { console.error(error.stack); process.exit(1); });

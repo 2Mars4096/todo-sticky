@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] [4-44-ui-interaction-refinement](plans/4-44-ui-interaction-refinement.md) — separate worktree implementation and automated browser/Node verification complete; native build/installed acceptance and a real-person usability pass remain.
+
 - [x] [4-42-compact-goals](plans/4-42-compact-goals.md) — compact inline long-term/recurring entry and editing.
 - [x] [4-43-publish-2-1-11](plans/4-43-publish-2-1-11.md) — merge, install, push and publish the verified refinements.
 

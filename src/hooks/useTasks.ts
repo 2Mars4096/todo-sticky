@@ -4,6 +4,8 @@ import { api, waitForPendingWrites } from '../api'
 import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
 import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection } from '../taskRollover'
+import { applyPlanWithUndo, deleteWithUndo, restoreTaskChange, type TaskUndo } from '../taskHistory'
+import { planningTaskKey, type PlannedBlock } from '../taskPlanning'
 
 // A stalled archive must not leave the entire task surface waiting forever.
 function readWithTimeout<T>(request: Promise<T>, milliseconds = 8000): Promise<T> {
@@ -97,51 +99,78 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   const [rolloverLoading, setRolloverLoading] = useState(false)
   const archiveRead = useRef<{ date: string; request: ReturnType<typeof api.extractTaskApi> } | null>(null)
   const [rolloverError, setRolloverError] = useState(false)
+  const [saveError, setSaveError] = useState<{ date: string; message: string } | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [undo, setUndo] = useState<TaskUndo | null>(null)
   const archive = useRef<ExtractedTaskDate[]>([])
+  const savedArchive = useRef(new Map<string, string>())
   const carriedIds = useRef(new Set<string>())
   const loadGeneration = useRef(0)
+  const loadingRef = useRef(false)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSave = useRef<Promise<void> | null>(null)
   const pendingSave = useRef<(() => Promise<void>) | null>(null)
   const filePathRef = useRef<string | null>(null)
   const dateRef = useRef(dateStr)
+  // A failed save may block navigation. Keep subsequent edits bound to the data
+  // actually on screen, rather than to a newer requested calendar date.
+  const loadedDateRef = useRef(dateStr)
   const carryForwardTarget = resolveTaskCarryForwardTarget(dateStr)
 
   useEffect(() => { dateRef.current = dateStr }, [dateStr])
   useEffect(() => { filePathRef.current = filePath }, [filePath])
 
   const persist = useCallback((updatedTasks: AggregatedTask[]) => {
-    const snapshotDate = dateRef.current
+    const snapshotDate = loadedDateRef.current
     const snapshotPath = filePathRef.current
     if (saveTimer.current) clearTimeout(saveTimer.current)
     const snapshotArchive = archive.current
+    const snapshotSavedArchive = savedArchive.current
     const snapshotIds = carriedIds.current
+    setSaving(true)
     let inFlight: Promise<void> | null = null
     const write = async () => {
       for (const section of snapshotArchive) {
         const merged = mergeCarriedSection(section, snapshotIds, updatedTasks)
-        if (JSON.stringify(merged) === JSON.stringify(section.tasks)) continue
+        const serialized = JSON.stringify(merged)
+        if (serialized === snapshotSavedArchive.get(section.date)) continue
         await api.saveTasks({ filePath: section.filePath, dateStr: section.date, tasks: merged })
-        section.tasks = merged
+        // Keep original archive positions for deletion Undo, including completed
+        // rows that are not visible in Today. Track saved content separately.
+        snapshotSavedArchive.set(section.date, serialized)
       }
       const flat = flattenTasks(updatedTasks.filter(task => !task.sourceDate))
       if (snapshotPath) {
         await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
       } else {
         const result = await api.createDateSection({ dateStr: snapshotDate, tasks: flat })
-        if (dateRef.current === snapshotDate) {
+        if (loadedDateRef.current === snapshotDate) {
           filePathRef.current = result.filePath
           setFilePath(result.filePath)
         }
       }
-      if (pendingSave.current === save) pendingSave.current = null
+      if (pendingSave.current === save) {
+        pendingSave.current = null
+        setSaveError(null)
+        setSaving(false)
+      }
     }
     const save = (): Promise<void> => {
       if (inFlight) return inFlight
       const previous = activeSave.current
       inFlight = (async () => {
-        if (previous) await previous
-        await write()
+        // A newer snapshot contains the latest edits; a failed older write must
+        // not prevent that snapshot from being attempted.
+        if (previous) await previous.catch(() => {})
+        try {
+          await write()
+        } catch (error) {
+          if (pendingSave.current === save) {
+            setSaveError({ date: snapshotDate, message: 'Changes are still in this window. Retry when the task folder is available.' })
+            setSaving(false)
+          }
+          throw error
+        }
       })()
       activeSave.current = inFlight
       void inFlight.then(() => {
@@ -166,31 +195,55 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
       clearTimeout(saveTimer.current)
       saveTimer.current = null
     }
-    await activeSave.current
+    while (activeSave.current || pendingSave.current) {
+      if (activeSave.current) await activeSave.current
+      if (pendingSave.current) await pendingSave.current()
+    }
     await waitForPendingWrites()
-    await pendingSave.current?.()
   }, [])
+
+  const retrySave = useCallback(async () => {
+    setSaving(true)
+    try { await flushPendingSave(); return true }
+    catch { setSaving(false); return false }
+  }, [flushPendingSave])
 
   const load = useCallback(async () => {
     const generation = ++loadGeneration.current
+    loadingRef.current = true
     setLoading(true)
     setLoadError(null)
     setRolloverError(false)
     setRolloverLoading(false)
+    // Do not replace the editable in-memory list after an unsuccessful save.
+    try { await readWithTimeout(flushPendingSave()) }
+    catch {
+      if (generation === loadGeneration.current) {
+        loadingRef.current = false
+        setLoading(false)
+      }
+      return
+    }
     try {
-      await readWithTimeout(flushPendingSave())
       const result = await readWithTimeout(api.getTasks(dateStr))
       if (generation !== loadGeneration.current) return
       archive.current = []
+      savedArchive.current = new Map()
       carriedIds.current = new Set()
+      // A fresh file snapshot may include external edits or a different store.
+      // Undo is scoped to the currently loaded snapshot and its local edits.
+      setUndo(null)
+      loadedDateRef.current = dateStr
       filePathRef.current = result.filePath || null
       setFilePath(result.filePath || null)
       setTasks(result.tasks)
+      loadingRef.current = false
       setLoading(false)
     } catch (e) {
       if (generation !== loadGeneration.current) return
       console.error('Failed to load tasks:', e)
       setLoadError(String(e).includes('TASK_ARCHIVE_CLOUD_ONLY') ? 'cloud-only' : 'failed')
+      loadingRef.current = false
       setLoading(false)
       return
     }
@@ -211,6 +264,8 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
       const carried = carriedTasks(dates, dateStr)
       archive.current = dates
       carriedIds.current = new Set(carried.map(task => task.id))
+      savedArchive.current = new Map(dates.map(section => [section.date,
+        JSON.stringify(mergeCarriedSection(section, carriedIds.current, carried))]))
       // Preserve edits made while history was loading.
       setTasks(current => [...current.filter(task => !task.sourceDate), ...carried])
       setRolloverError(Boolean(extracted.unavailableFiles?.length))
@@ -342,20 +397,24 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
 
   const deleteTask = useCallback((taskId: string, subtaskId?: string) => {
     setTasks(prev => {
-      let next: AggregatedTask[]
-      if (subtaskId) {
-        next = prev.map(t =>
-          t.id === taskId
-            ? { ...t, todaySubtasks: t.todaySubtasks.filter(s => s.id !== subtaskId) }
-            : t
-        )
-      } else {
-        next = prev.filter(t => t.id !== taskId)
-      }
-      persist(next)
-      return next
+      const change = deleteWithUndo(prev, loadedDateRef.current, taskId, subtaskId)
+      if (!change) return prev
+      setUndo(change.undo)
+      persist(change.tasks)
+      return change.tasks
     })
   }, [persist])
+
+  const undoLastAction = useCallback(() => {
+    if (loadingRef.current || !undo || undo.date !== loadedDateRef.current) return
+    setTasks(prev => {
+      if (loadingRef.current || undo.date !== loadedDateRef.current) return prev
+      const restored = restoreTaskChange(prev, undo)
+      persist(restored)
+      return restored
+    })
+    setUndo(null)
+  }, [undo, persist])
 
   const carryForward = useCallback(async (taskId: string, subtaskId?: string) => {
     const target = resolveTaskCarryForwardTarget(dateStr)
@@ -384,6 +443,8 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     if (!taskText) return
 
     await flushPendingSave()
+
+    setUndo(null)
 
     // Remove from UI immediately
     if (subtaskId) {
@@ -482,8 +543,13 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     })
   }, [persist])
 
-  const addAISubtasks = useCallback((taskId: string, subtasks: { text: string }[]) => {
+  const addAISubtasks = useCallback((taskId: string, subtasks: { text: string }[], expectedDate: string, expectedTaskKey: string) => {
+    if (loadingRef.current) return
     setTasks(prev => {
+      if (loadingRef.current || expectedDate !== loadedDateRef.current) return prev
+      const target = prev.find(task => task.id === taskId)
+      if (!target || target.status === 'done' || target.status === 'stopped'
+        || planningTaskKey([target]) !== expectedTaskKey || !subtasks.length) return prev
       const next = prev.map(t => {
         if (t.id !== taskId) return t
         const newSubs: Task[] = subtasks.map(s => ({
@@ -492,51 +558,23 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           status: 'todo' as const,
           subtasks: [],
         }))
-        return { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, status: newSubs.length && t.status === 'done' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
+        return { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
       })
       persist(next)
       return next
     })
   }, [persist])
 
-  const applySchedule = useCallback((schedule: { time: string; endTime?: string; parentTask: string; action: string; assignedTo?: string }[]) => {
+  const applySchedule = useCallback((schedule: PlannedBlock[], expectedDate: string, expectedTaskKey: string) => {
+    if (loadingRef.current) return
+    const batchId = newId()
     setTasks(prev => {
-      const tasksByText = new Map<string, number>()
-      prev.forEach((t, i) => tasksByText.set(t.text.toLowerCase().trim(), i))
-
-      const next = prev.map(t => ({ ...t, todaySubtasks: [...t.todaySubtasks] }))
-
-      for (const entry of schedule) {
-        const key = entry.parentTask.toLowerCase().trim()
-        let idx = tasksByText.get(key)
-
-        // Fuzzy fallback: find best substring match
-        if (idx === undefined) {
-          for (const [text, i] of tasksByText) {
-            if (text.includes(key) || key.includes(text)) { idx = i; break }
-          }
-        }
-        if (idx === undefined) continue
-
-        const timeTag = entry.endTime ? `${entry.time}–${entry.endTime}` : entry.time
-        const who = entry.assignedTo && entry.assignedTo.toLowerCase() !== 'human'
-          ? ` [${entry.assignedTo}]` : ''
-        const label = `⏰ ${timeTag}${who} ${entry.action}`
-
-        const alreadyExists = next[idx].todaySubtasks.some(s => s.text === label)
-        if (!alreadyExists) {
-          if (next[idx].status === 'done') next[idx].status = 'partial'
-          next[idx].todaySubtasks.push({
-            id: newId(),
-            text: label,
-            status: 'todo',
-            subtasks: [],
-          })
-        }
-      }
-
-      persist(next)
-      return next
+      if (loadingRef.current || expectedDate !== loadedDateRef.current || planningTaskKey(prev) !== expectedTaskKey) return prev
+      const change = applyPlanWithUndo(prev, expectedDate, schedule, batchId)
+      if (!change) return prev
+      setUndo(change.undo)
+      persist(change.tasks)
+      return change.tasks
     })
   }, [persist])
 
@@ -551,7 +589,8 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
 
   return {
     flushPendingSave,
-    tasks, loading, loadError, rolloverLoading, rolloverError, load,
+    saveError, saving, retrySave, undo, undoLastAction, dismissUndo: () => setUndo(null),
+    tasks, loading, loadError, rolloverLoading, rolloverError, load, dataDate: loadedDateRef.current,
     updateFinish, reviewTask, addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,

@@ -1,7 +1,9 @@
 import { useRef, useEffect } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { format } from 'date-fns'
 import type { ViewMode } from '../types'
 import { MiniCalendar } from './MiniCalendar'
+import '../styles/settings-navigation.css'
 
 interface Props {
   displayDate: string
@@ -25,12 +27,14 @@ export function DateHeader({
   onViewModeChange,
 }: Props) {
   const calRef = useRef<HTMLDivElement>(null)
+  const dateButtonRef = useRef<HTMLButtonElement>(null)
+  const shortDate = format(selectedDate, selectedDate.getFullYear() === new Date().getFullYear() ? 'EEE, MMM d' : 'EEE, MMM d, yyyy')
 
   const handleDragMouseDown = (event: React.MouseEvent<HTMLElement>) => {
     if (event.button !== 0) return
 
     const target = event.target as HTMLElement
-    if (target.closest('button, input, textarea, select, .calendar-popup, [data-no-window-drag="true"]')) {
+    if (target.closest('button, input, textarea, select, label, .calendar-popup, [data-no-window-drag="true"]')) {
       return
     }
 
@@ -52,7 +56,13 @@ export function DateHeader({
   }, [calendarOpen, onCloseCalendar])
 
   return (
-    <div className="sticky-header" onMouseDown={handleDragMouseDown}>
+    <div className="sticky-header compact-date-header" onMouseDown={handleDragMouseDown} onKeyDown={event => {
+      if (event.key === 'Escape' && calendarOpen) {
+        event.stopPropagation()
+        onCloseCalendar()
+        dateButtonRef.current?.focus()
+      }
+    }}>
       <div className="window-drag-bar" data-tauri-drag-region title="Drag window">
         <div className="window-drag-pill" />
       </div>
@@ -60,12 +70,14 @@ export function DateHeader({
         <button className="date-step" onClick={onPrev} title="Previous day" aria-label="Previous day">‹</button>
         <div className="date-title-slot" ref={calRef}>
           <button
+            ref={dateButtonRef}
             className="date-title"
             onClick={onToggleCalendar}
             aria-expanded={calendarOpen}
             aria-label={`${displayDate}. Open calendar`}
+            title={displayDate}
           >
-            <span className="date-title-label">{displayDate}</span>
+            <span className="date-title-label">{isCurrentDay ? 'Today · ' : ''}{shortDate}</span>
             <span className="cal-chevron">{calendarOpen ? '▴' : '▾'}</span>
           </button>
           {calendarOpen && (
@@ -77,25 +89,13 @@ export function DateHeader({
         <button className="date-step" onClick={onNext} title="Next day" aria-label="Next day">›</button>
       </div>
       <div className="header-row">
-        {isCurrentDay ? (
-          <span className="today-marker">Today</span>
-        ) : (
+        {!isCurrentDay && (
           <button className="today-jump" onClick={onToday}>Go to today</button>
         )}
-        <div className="view-toggle">
-          <button
-            className={viewMode === 'all' ? 'active' : ''}
-            onClick={() => onViewModeChange('all')}
-          >
-            All
-          </button>
-          <button
-            className={viewMode === 'today' ? 'active' : ''}
-            onClick={() => onViewModeChange('today')}
-          >
-            Day
-          </button>
-        </div>
+        <label className="historical-steps-toggle">
+          <input type="checkbox" checked={viewMode === 'all'} onChange={event => onViewModeChange(event.target.checked ? 'all' : 'today')} />
+          <span>Show steps from other dates</span>
+        </label>
       </div>
     </div>
   )

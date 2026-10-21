@@ -1,0 +1,107 @@
+/* Keep the solar-route theme while making the working controls explicit. */
+.tracking-station.focus-refined {
+  --focus-muted: #deceaa;
+  --focus-dim: #c9b995;
+}
+
+.focus-refined .focus-outcome-note {
+  margin: 10px 0;
+  color: #deceaa;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.focus-refined .focus-map-notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #887550;
+  border-radius: 6px;
+  background: #332916;
+  color: #f8e7b2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.focus-refined .focus-map-notice p {
+  flex: 1 1 180px;
+}
+
+.focus-refined .focus-map-notice button {
+  min-height: 32px;
+  padding: 5px 9px;
+  border: 1px solid #bba36f;
+  border-radius: 4px;
+  background: #4b3d23;
+  color: #fff2c7;
+  font: inherit;
+  cursor: pointer;
+}
+
+.focus-refined .focus-btn,
+.focus-refined .mission-btn,
+.focus-refined .focus-duration-options button,
+.focus-refined .duration-chip,
+.focus-refined .tracking-retention-controls button,
+.focus-refined .tracking-history-toggle button {
+  min-height: 32px;
+  min-width: 32px;
+  font-size: 12px;
+}
+
+.focus-refined .focus-cancel-btn,
+.focus-refined .mission-maintenance-btn,
+.focus-refined .tracking-maintenance-row button {
+  min-height: 28px;
+  font-size: 12px;
+}
+
+.focus-refined .tracking-close-btn,
+.focus-refined .tracking-starmap-viewport .starmap-control-btn {
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.focus-refined .tracking-starmap-viewport .starmap-control-btn {
+  color: #ffe8b5;
+  font-size: 11px;
+}
+
+.focus-refined .tracking-starmap-viewport .starmap-controls {
+  /* Keep the second control row below the destination badge in narrow windows. */
+  gap: 18px;
+}
+
+.focus-refined .mission-action-row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.focus-refined .mission-metric-label,
+.focus-refined .mission-section-label,
+.focus-refined .tracking-route-summary,
+.focus-refined .tracking-history-meta,
+.focus-refined .mission-history-meta,
+.focus-refined .focus-complete-meta,
+.focus-refined .mission-empty-copy {
+  color: #deceaa;
+  font-size: 11px;
+}
+
+.focus-refined button:focus-visible,
+.focus-refined [tabindex]:focus-visible {
+  outline: 2px solid #ffe0a2;
+  outline-offset: 3px;
+}
+
+@media (max-width: 430px) {
+  .tracking-station.focus-refined .focus-primary-actions {
+    gap: 8px;
+  }
+
+  .tracking-station.focus-refined .focus-primary-actions .focus-btn {
+    padding-inline: 8px;
+  }
+}

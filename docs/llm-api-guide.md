@@ -154,10 +154,36 @@ Tauri requests use camelCase fields: `fromDate`, `toDate`, `parentId`, and `expe
 These commands belong to the interactive desktop app and are not part of the deterministic `sticky-todo-api` CLI:
 
 - `llmBreakdown({ taskText, existingSubtasks })` → native `llm_breakdown`
-- `llmSchedule({ tasks, machines })` → native `llm_schedule`
+- `llmSchedule({ tasks, machines, dateStr, availableStart, availableEnd })` → native `llm_schedule`
 - `llmRecommendAlbums({ tasks })` → native `llm_recommend_albums`
 
 Album requests contain only the visible date's task text, status, and current-day steps. The response uses `summary` plus an `albums` array whose entries contain `title`, `artist`, optional `year`, `fit`, and `bestFor`. `summary` describes the working atmosphere, `fit` explains audible qualities and listening suitability, and `bestFor` is a short listening-mood or energy cue. Selection uses inferred attention needs rather than keyword or topic matching. Results remain in frontend memory and are not written to the Markdown archive or app-state files.
+
+#### Day-plan proposals
+
+The frontend sends the selected date (`YYYY-MM-DD`), explicit same-day available times (`HH:MM`), the current aggregated tasks including stable IDs/finish metadata, and only the machines the user selected. `machines: []` means human-only work. For legacy native callers, omitted date/time values use local today and 09:00–17:00; omitted machines use configured machines, without inventing equipment. Invalid dates or non-positive time windows return an error.
+
+The response is untrusted until `validateDayPlan` accepts it:
+
+```json
+{
+  "plan": "Draft one example, then share it. Defer the optional appendix.",
+  "schedule": [
+    {
+      "taskId": "task_123",
+      "parentTask": "Prepare an example",
+      "time": "13:00",
+      "endTime": "13:30",
+      "action": "Write and send one runnable example",
+      "assignedTo": "human"
+    }
+  ]
+}
+```
+
+Blocks must identify an open input task, stay inside the requested window, use human or a selected machine, and not overlap for one assignee. The frontend sorts accepted blocks chronologically. Exact task IDs take precedence; legacy title-only results are accepted only when the title identifies exactly one open task. Unknown/ambiguous targets and invalid blocks reject the whole proposal before any write.
+
+Generation does not mutate Markdown. Apply checks that the selected date, tasks and planning details still match the captured context. It replaces only unfinished generated blocks for that planning date, using `plan_<date>_<batch>_<sequence>` IDs through existing Markdown ID comments. Manual, completed/stopped and other-date steps remain. Discard makes no change; the desktop's one-level Undo reverses application without reverting later independent edits. This does not add CLI Undo or change task API schemas.
 
 ### Codex Background Provider
 

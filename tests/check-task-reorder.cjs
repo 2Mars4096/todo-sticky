@@ -1,2 +1,103 @@
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');const assert=require('node:assert/strict');
-(async()=>{const b=await chromium.launch({headless:true,executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});for(const width of [350,460]){const p=await b.newPage({viewport:{width,height:740}});await p.goto('http://127.0.0.1:5173/tests/finish-ui.html');const input=p.getByPlaceholder('Add task...');await input.fill('Second task');await input.press('Enter');await p.getByRole('button',{name:'Second task',exact:true}).waitFor();let a=await p.getByRole('button',{name:'Reorder Second task',exact:true}).boundingBox();let dest=await p.getByRole('button',{name:'Reorder Today task',exact:true}).boundingBox();await p.mouse.move(a.x+a.width/2,a.y+a.height/2);await p.mouse.down();await p.mouse.move(dest.x+dest.width/2,dest.y+2,{steps:12});await p.mouse.up();await p.waitForFunction(()=>fixture.sections[fixture.today][0].text==='Second task');await p.reload();await p.getByRole('button',{name:'Reorder Second task',exact:true}).focus();await p.keyboard.press('ArrowDown');await p.waitForFunction(()=>fixture.sections[fixture.today][0].text==='Today task');assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await p.screenshot({path:`/private/tmp/todo-finish-${width}-reorder.png`});await p.close()}await b.close();console.log('Pointer and keyboard reorder/persistence pass at 350px and 460px')})().catch(e=>{console.error(e);process.exit(1)})
+const assert = require('node:assert/strict');
+const { launch, testUrl, screenshot } = require('./helpers/browser-fixture.cjs');
+
+(async () => {
+  for (const width of [350, 460]) {
+    const browser = await launch();
+    try {
+      const context = await browser.newContext({ viewport: { width, height: 740 } });
+      const page = await context.newPage();
+      page.setDefaultTimeout(10000);
+      const errors = [];
+      page.on('pageerror', error => errors.push(String(error)));
+      await page.goto(`${testUrl}/tests/finish-ui.html`);
+      await page.getByRole('button', { name: 'Today task', exact: true }).waitFor();
+      const handle = name => page.getByRole('button', { name: `Reorder ${name}`, exact: true });
+      const snapshot = () => page.evaluate(() => JSON.parse(JSON.stringify(fixture.sections)));
+      const showEarlier = async () => {
+        const button = page.getByRole('button', { name: /Earlier tasks/ });
+        await button.waitFor();
+        if (await button.getAttribute('aria-expanded') === 'false') await button.click();
+        assert.equal(await button.getAttribute('aria-expanded'), 'true', 'One click opens Earlier tasks after selecting a row');
+      };
+      const showSteps = async name => {
+        const button = page.getByRole('button', { name: new RegExp(`^Show steps for ${name}\\.`) });
+        if (await button.count()) await button.click();
+        await page.getByRole('button', { name: new RegExp(`^Hide steps for ${name}\\.`) }).waitFor();
+      };
+      const dragBefore = async (source, target) => {
+        await source.scrollIntoViewIfNeeded();
+        const from = await source.boundingBox();
+        assert.ok(from, 'Source reorder handle is visible');
+        await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+        await page.mouse.down();
+        // Selection reveals actions; measure the target after that layout change.
+        await page.evaluate(() => new Promise(requestAnimationFrame));
+        await target.scrollIntoViewIfNeeded();
+        const to = await target.boundingBox();
+        assert.ok(to, 'Destination reorder handle is visible');
+        await page.mouse.move(to.x + to.width / 2, to.y + 2, { steps: 12 });
+        await page.mouse.up();
+      };
+      const unchanged = async action => {
+        const before = await snapshot();
+        const writes = await page.evaluate(() => fixture.writes.length);
+        await action();
+        // A forbidden move must neither change the saved order nor queue a write.
+        await page.waitForTimeout(400);
+        assert.deepEqual(await snapshot(), before);
+        assert.equal(await page.evaluate(() => fixture.writes.length), writes);
+      };
+
+      const input = page.getByRole('textbox', { name: 'New top-level task', exact: true });
+      await input.fill('Second task');
+      await input.press('Enter');
+      await page.waitForFunction(() => fixture.sections[fixture.today].length === 2);
+      await dragBefore(handle('Second task'), handle('Today task'));
+      await page.waitForFunction(() => fixture.sections[fixture.today][0].text === 'Second task');
+      await page.reload();
+      await handle('Second task').waitFor();
+      assert.equal(await page.evaluate(() => fixture.sections[fixture.today][0].text), 'Second task');
+      await handle('Second task').focus();
+      await page.keyboard.press('ArrowDown');
+      await page.waitForFunction(() => fixture.sections[fixture.today][0].text === 'Today task');
+      await unchanged(async () => { await handle('Today task').focus(); await page.keyboard.press('ArrowUp'); });
+
+      // Earlier tasks stay in their saved date, even when dropped onto today's rows.
+      await showEarlier();
+      await unchanged(async () => { await handle('Yesterday task').focus(); await page.keyboard.press('ArrowUp'); });
+      await unchanged(() => dragBefore(handle('Yesterday task'), handle('Today task')));
+
+      await showSteps('Today task');
+      const step = page.getByRole('textbox', { name: 'New step for Today task', exact: true });
+      await step.fill('Another today step');
+      await step.press('Enter');
+      await page.waitForFunction(() => fixture.sections[fixture.today][0].subtasks.length === 2);
+      await dragBefore(handle('Another today step within Today task'), handle('Today step within Today task'));
+      await page.waitForFunction(() => fixture.sections[fixture.today][0].subtasks[0].text === 'Another today step');
+      await page.reload();
+      await page.getByRole('button', { name: 'Today task', exact: true }).waitFor();
+      assert.equal(await page.evaluate(() => fixture.sections[fixture.today][0].subtasks[0].text), 'Another today step');
+      await showSteps('Today task');
+      await handle('Another today step within Today task').focus();
+      await page.keyboard.press('ArrowDown');
+      await page.waitForFunction(() => fixture.sections[fixture.today][0].subtasks[0].text === 'Today step');
+      await unchanged(async () => { await handle('Today step within Today task').focus(); await page.keyboard.press('ArrowUp'); });
+
+      // Expanding two groups must not permit a step to move into a different parent.
+      await showEarlier();
+      await showSteps('Yesterday task');
+      await unchanged(() => dragBefore(handle('Today step within Today task'), handle('First step within Yesterday task')));
+      const final = await snapshot();
+      await screenshot(page, `task-reorder-${width}`);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.reload();
+      await page.getByRole('button', { name: 'Today task', exact: true }).waitFor();
+      assert.deepEqual(await snapshot(), final);
+      assert.deepEqual(errors, []);
+    } finally {
+      await browser.close();
+    }
+  }
+  console.log('PASS pointer/keyboard task and step reorder, date/parent boundaries, reload persistence and layout at 350px and 460px');
+})().catch(error => { console.error(error.stack); process.exit(1); });

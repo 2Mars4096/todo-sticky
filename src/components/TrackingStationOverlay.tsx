@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react'
+import { Component, Suspense, lazy, useRef, useState, type ReactNode } from 'react'
 import type { StarFocusMissionRecord, StarFocusSession } from '../types'
 import {
   STAR_FOCUS_ARCHIVE_LIMIT_OPTIONS,
@@ -11,11 +11,26 @@ import {
   type StarFocusJourneyLeg,
 } from '../starFocusJourney'
 import { StarFocusOrbitalMap } from './StarFocusOrbitalMap'
+import { useDialogFocus } from '../hooks/useDialogFocus'
+import '../styles/focus-refinements.css'
 
 const TrackingStationOrbitalMap3D = lazy(async () => {
   const module = await import('./StarFocusOrbitalMap3D')
   return { default: module.StarFocusOrbitalMap3D }
 })
+
+// Isolate graphics and chunk-loading failures from the running focus session.
+class FocusMapBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+
+  static getDerivedStateFromError() { return { failed: true } }
+
+  componentDidCatch(error: unknown) {
+    console.warn('Focus map unavailable; using the simplified map.', error)
+  }
+
+  render() { return this.state.failed ? this.props.fallback : this.props.children }
+}
 
 interface Props {
   collapsed: boolean
@@ -147,6 +162,15 @@ export function TrackingStationOverlay({
   onResetOrbitMap,
 }: Props) {
   const [archiveView, setArchiveView] = useState<'recent' | 'full'>('recent')
+  const [mapUnavailable, setMapUnavailable] = useState(false)
+  const [mapAttempt, setMapAttempt] = useState(0)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useDialogFocus(onClose, {
+    initialFocusRef: closeButtonRef,
+    // The selected task's contextual Focus action disappears when the modal opens.
+    // Its stable title is the nearest meaningful place to resume keyboard work.
+    returnFocus: () => document.querySelector<HTMLElement>('.task-item.selected-for-focus .task-text[role="button"]'),
+  })
   const orbitCount = missionHistory.length
   const canBrowseFullArchive = missionHistory.length > RECENT_ARCHIVE_MISSION_COUNT
   const effectiveArchiveView = canBrowseFullArchive ? archiveView : 'recent'
@@ -177,14 +201,37 @@ export function TrackingStationOverlay({
         ? 'Ready'
         : 'Choose task'
 
+  const projectedMap = (
+    <StarFocusOrbitalMap
+      variant="overlay"
+      className={`tracking-starmap-viewport ${phaseTheme}`}
+      liveLabel={liveLabel}
+      destinationLabel={displayLeg.destination.name}
+      missionHistory={missionHistory}
+      activeSession={activeSession}
+      activeSnapshot={activeSnapshot}
+    />
+  )
+  const graphicsFallback = (
+    <div className="focus-map-fallback">
+      <div className="focus-map-notice" role="status">
+        <p>Showing the simplified map. Focus controls remain available.</p>
+        <button type="button" onClick={() => { setMapUnavailable(false); setMapAttempt(attempt => attempt + 1) }}>Try 3D again</button>
+      </div>
+      {projectedMap}
+    </div>
+  )
+
   return (
     <div className="tracking-overlay" onClick={onClose}>
       <div
-        className={`tracking-station ${phaseTheme}`}
+        ref={dialogRef}
+        className={`tracking-station focus-refined ${phaseTheme}`}
         onClick={event => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Star Focus Mode"
+        tabIndex={-1}
       >
         <header className="tracking-header">
           <div className="tracking-heading">
@@ -198,7 +245,7 @@ export function TrackingStationOverlay({
             <span className={`tracking-live-chip ${activeSession ? activeSnapshot?.isPaused ? 'paused' : 'live' : completedLeg ? 'complete' : selectedTaskText ? 'armed' : 'idle'}`}>
               {stateLabel}
             </span>
-            <button className="tracking-close-btn" onClick={onClose} aria-label="Close Focus Mode">×</button>
+            <button ref={closeButtonRef} className="tracking-close-btn" onClick={onClose} aria-label="Close Focus Mode">×</button>
           </div>
         </header>
 
@@ -210,28 +257,21 @@ export function TrackingStationOverlay({
                 <span className="tracking-map-note">Drag to orbit · Scroll to zoom</span>
               </div>
 
-              <Suspense
-                fallback={(
-                  <StarFocusOrbitalMap
-                    variant="overlay"
-                    className={`tracking-starmap-viewport ${phaseTheme}`}
-                    liveLabel={liveLabel}
-                    destinationLabel={displayLeg.destination.name}
-                    missionHistory={missionHistory}
-                    activeSession={activeSession}
-                    activeSnapshot={activeSnapshot}
-                  />
+              <FocusMapBoundary key={mapAttempt} fallback={graphicsFallback}>
+                {mapUnavailable ? graphicsFallback : (
+                  <Suspense fallback={projectedMap}>
+                    <TrackingStationOrbitalMap3D
+                      className={`tracking-starmap-viewport ${phaseTheme}`}
+                      liveLabel={liveLabel}
+                      destinationLabel={displayLeg.destination.name}
+                      missionHistory={missionHistory}
+                      activeSession={activeSession}
+                      activeSnapshot={activeSnapshot}
+                      onUnavailable={() => setMapUnavailable(true)}
+                    />
+                  </Suspense>
                 )}
-              >
-                <TrackingStationOrbitalMap3D
-                  className={`tracking-starmap-viewport ${phaseTheme}`}
-                  liveLabel={liveLabel}
-                  destinationLabel={displayLeg.destination.name}
-                  missionHistory={missionHistory}
-                  activeSession={activeSession}
-                  activeSnapshot={activeSnapshot}
-                />
-              </Suspense>
+              </FocusMapBoundary>
 
               <div className="tracking-route-bar">
                 <RouteReadout leg={displayLeg} progress={routeProgress} arrived={Boolean(completedLeg)} />
@@ -244,7 +284,7 @@ export function TrackingStationOverlay({
 
             <section className="tracking-focus-console" aria-label="Focus session controls">
               <div className="tracking-section-head">
-                <span className="mission-section-label">Flight Deck</span>
+                <span className="mission-section-label">Focus session</span>
                 {restoredSession && activeSession && <span className="focus-recovered-chip">Recovered</span>}
               </div>
 
@@ -264,6 +304,7 @@ export function TrackingStationOverlay({
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={Math.round(activeSnapshot.progress * 100)}
+                    aria-label="Focus session progress"
                   >
                     <div className="focus-progress-fill" style={{ width: `${Math.round(activeSnapshot.progress * 100)}%` }} />
                   </div>
@@ -272,31 +313,34 @@ export function TrackingStationOverlay({
                     <button className="focus-btn secondary" onClick={activeSnapshot.isPaused ? onResume : onPause}>
                       {activeSnapshot.isPaused ? 'Resume' : 'Pause'}
                     </button>
-                    <button className="focus-btn primary" onClick={onComplete}>Complete leg</button>
+                    <button className="focus-btn primary" onClick={onComplete}>Finish session</button>
                   </div>
+                  <p className="focus-outcome-note">Record your focus session here. Review the task outcome in your task list.</p>
                   <button className="focus-cancel-btn" onClick={onCancel}>Cancel session</button>
                 </div>
               ) : latestCompletedMission && completedLeg ? (
                 <div className="focus-session complete">
                   <div className="focus-arrival-mark" aria-hidden="true">✓</div>
-                  <span className="focus-eyebrow">Arrived at</span>
+                  <span className="focus-eyebrow">Session saved · Arrived at</span>
                   <h2>{completedLeg.destination.name}</h2>
                   <p className="focus-complete-task">{latestCompletedMission.taskText}</p>
                   <div className="focus-complete-meta">
-                    <span>{formatDuration(latestCompletedMission.durationMinutes)} focused</span>
+                    <span>{formatDuration(latestCompletedMission.durationMinutes)} planned</span>
                     <span>{formatCompletedAt(latestCompletedMission.completedAt)}</span>
                   </div>
-                  <button className="focus-btn primary wide" onClick={onDismissCompletion}>Plan next leg</button>
+                  <p className="focus-outcome-note">Review the task outcome in your task list when you are ready.</p>
+                  <button className="focus-btn primary wide" onClick={onClose}>Back to tasks</button>
+                  <button className="focus-cancel-btn" onClick={onDismissCompletion}>Another session</button>
                 </div>
               ) : selectedTaskText ? (
                 <div className="focus-session armed">
                   <div className="focus-task-block">
-                    <span>Task for this leg</span>
+                    <span>Task for this session</span>
                     <h2>{selectedTaskText}</h2>
                   </div>
                   <div className="focus-duration-field">
-                    <span>Focus burn</span>
-                    <div className="focus-duration-options" aria-label="Focus duration">
+                    <span>Duration</span>
+                    <div className="focus-duration-options" role="group" aria-label="Focus duration">
                       {durationOptions.map(option => (
                         <button
                           key={option}
@@ -310,7 +354,7 @@ export function TrackingStationOverlay({
                     </div>
                   </div>
                   <button className="focus-btn primary wide" onClick={onLaunch}>
-                    Launch to {displayLeg.destination.name}
+                    Start focus
                   </button>
                   <button className="focus-cancel-btn" onClick={onClearSelection}>Choose another task</button>
                 </div>
@@ -319,7 +363,7 @@ export function TrackingStationOverlay({
                   <div className="focus-idle-orbit" aria-hidden="true"><span /></div>
                   <span className="focus-eyebrow">Next destination</span>
                   <h2>{displayLeg.destination.name}</h2>
-                  <p>Choose one of your {taskCount || 'sticky'} task{taskCount === 1 ? '' : 's'}, then start a focused leg.</p>
+                  <p>Choose one of your {taskCount || 'sticky'} task{taskCount === 1 ? '' : 's'}, then start a focus session.</p>
                   <button className="focus-btn primary wide" onClick={onClose}>Choose a task</button>
                 </div>
               )}
@@ -331,7 +375,7 @@ export function TrackingStationOverlay({
               <div className="tracking-section-head archive">
                 <div>
                   <span className="mission-section-label">Travel Log</span>
-                  <strong>{orbitCount} completed leg{orbitCount === 1 ? '' : 's'}</strong>
+                  <strong>{orbitCount} saved session{orbitCount === 1 ? '' : 's'}</strong>
                 </div>
                 {canBrowseFullArchive && (
                   <div className="tracking-history-toggle">
@@ -352,7 +396,7 @@ export function TrackingStationOverlay({
                             <strong>{leg.destination.name}</strong>
                             <span>{mission.vehicleCode}</span>
                           </div>
-                          <span className="tracking-history-burn">{formatDuration(mission.durationMinutes)}</span>
+                          <span className="tracking-history-burn">{formatDuration(mission.durationMinutes)} planned</span>
                         </div>
                         <div className="tracking-history-task">{mission.taskText}</div>
                         <div className="tracking-history-meta">
@@ -364,7 +408,7 @@ export function TrackingStationOverlay({
                   })}
                 </div>
               ) : (
-                <div className="tracking-archive-empty">Completed focus legs will appear here.</div>
+                <div className="tracking-archive-empty">Saved focus sessions will appear here.</div>
               )}
             </section>
 

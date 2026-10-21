@@ -1,0 +1,37 @@
+/* The compact note uses its full width; secondary tools open by name. */
+:root { --text-muted: #756747; --focus-ring: #856519; }
+.app-shell.is-compact .goals-sidebar.collapsed,
+.app-shell.is-compact .mission-sidebar.collapsed { display: none; }
+.app-shell.is-compact .goals-sidebar:not(.collapsed) { left: 0; background: linear-gradient(180deg, #f3e5af, #e9d384); }
+.app-shell.is-compact .mission-sidebar:not(.collapsed) { right: 0; }
+.app-shell .add-task { padding: 6px 10px 9px; }
+.app-shell .add-task-heading { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.app-shell .add-task-heading label { color: #65583a; font-size: 11px; }
+.app-shell .add-task-row input { min-height: 32px; font-size: 13px; padding: 6px 8px; }
+.app-shell .add-task-row button { min-width: 40px; min-height: 32px; padding: 5px 9px; }
+.app-shell .add-task-row input::placeholder { color: #796b4c; }
+.app-shell .compact-date-header .date-title-label { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.2; }
+.app-shell .action-bar { padding: 6px 8px; gap: 4px; flex-wrap: wrap; }
+.app-shell .action-bar > button { min-height: 30px; min-width: 30px; padding: 4px 7px; white-space: nowrap; color: #615333; flex-shrink: 0; }
+.app-shell .action-bar .spacer { flex: 1 1 0; min-width: 0; }
+.app-shell .provider-quick-control { flex: 0 1 108px; max-width: 108px; }
+.app-shell .provider-quick-control select { width: 100%; min-width: 0; max-width: 100%; height: 30px; color: #615333; }
+.app-shell .action-bar .compact-focus-entry.active { border-color: #96752d; background: #e9d99f; color: #514019; }
+.compact-focus-clock { margin-left: 5px; font-variant-numeric: tabular-nums; }
+.app-shell button:focus-visible, .app-shell input:focus-visible, .app-shell select:focus-visible { outline: 2px solid #856519; outline-offset: 2px; }
+.first-use-note { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 10px 8px; padding: 7px 0; border-top: 1px solid var(--sticky-border); color: #65583a; font-size: 12px; }
+.first-use-note p { flex: 1 1 180px; margin: 0; line-height: 1.4; }
+.first-use-note button { background: transparent; border: 0; color: #5c481f; min-height: 28px; padding: 3px 6px; font: inherit; cursor: pointer; }
+.task-save-error { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; background: #f5e3d4; color: #72382b; border-block: 1px solid #d7aa91; font-size: 12px; flex-shrink: 0; }
+.task-save-error > div { flex: 1 1 200px; }
+.task-save-error p { margin: 3px 0 0; line-height: 1.4; }
+.task-save-error button { border: 1px solid #ac7862; background: #fff8dc; color: #6f3328; min-height: 30px; border-radius: 4px; padding: 4px 8px; font: inherit; cursor: pointer; }
+.task-save-error button:disabled { opacity: .6; }
+.task-undo-notice { display: flex; align-items: center; gap: 8px; padding: 4px 10px; font-size: 12px; color: #5d4c27; background: #f3e6b6; border-top: 1px solid var(--sticky-border); flex-shrink: 0; }
+.task-undo-notice > span { flex: 1; }
+.task-undo-notice button { border: 0; color: #5d4c27; background: transparent; font: inherit; font-weight: 600; min-height: 28px; min-width: 28px; padding: 3px 6px; cursor: pointer; }
+.app-shell .schedule-toast { z-index: 8; }
+.app-shell .task-entry .finish-field { grid-template-columns: max(54px, 5em) minmax(0, 1fr); column-gap: 6px; }
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .schedule-toast { animation: none; }
+}

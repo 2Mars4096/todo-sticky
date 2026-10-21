@@ -1,0 +1,52 @@
+.day-plan-overlay { padding: 8px; }
+.day-plan-panel {
+  width: min(540px, 100%);
+  max-height: calc(100dvh - 16px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--sticky-bg);
+  border: 1px solid var(--sticky-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .2);
+  font-size: 13px;
+}
+.day-plan-header, .day-plan-actions { display: flex; align-items: center; gap: 8px; padding: 12px; flex-shrink: 0; }
+.day-plan-header { justify-content: space-between; border-bottom: 1px solid var(--sticky-border); }
+.day-plan-header h2 { margin: 0; font-size: 16px; }
+.day-plan-header p { margin: 3px 0 0; color: var(--text-secondary); }
+.day-plan-body { overflow: auto; min-height: 0; padding: 12px; overscroll-behavior: contain; }
+.day-plan-panel button { min-height: 30px; min-width: 30px; border: 1px solid var(--sticky-border); border-radius: 4px; background: var(--sticky-bg-dark); color: var(--text-primary); padding: 5px 10px; font: inherit; cursor: pointer; }
+.day-plan-panel button:disabled { opacity: .5; cursor: default; }
+.day-plan-panel button:focus-visible, .day-plan-panel input:focus-visible, .day-plan-panel summary:focus-visible { outline: 2px solid #80600c; outline-offset: 2px; }
+.day-plan-options { display: grid; gap: 10px; }
+.day-plan-options fieldset { padding: 0; border: 0; margin: 0; min-width: 0; }
+.day-plan-options legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
+.day-plan-options legend span { font-weight: 400; color: var(--text-secondary); }
+.day-plan-times { display: flex; gap: 12px; }
+.day-plan-times label { display: flex; align-items: center; flex: 1; min-width: 0; gap: 6px; color: var(--text-secondary); }
+.day-plan-times input { width: 100%; min-width: 0; min-height: 32px; padding: 4px; font: inherit; color: var(--text-primary); background: transparent; border: 1px solid #b4a56e; border-radius: 4px; }
+.day-plan-machines label { display: inline-flex; align-items: center; min-height: 28px; gap: 6px; margin-right: 12px; }
+.day-plan-machines input { accent-color: #80600c; width: 18px; height: 18px; }
+.day-plan-hint { margin: 3px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.45; }
+.day-plan-generate { justify-self: start; }
+.day-plan-error { color: #853a2d; margin: 8px 0; line-height: 1.45; }
+.day-plan-proposal { border-top: 1px solid var(--sticky-border); margin-top: 16px; padding-top: 12px; }
+.day-plan-proposal h3 { margin: 0; font-size: 14px; }
+.day-plan-proposal p { line-height: 1.45; }
+.day-plan-timeline { list-style: none; padding: 0; margin: 12px 0; }
+.day-plan-timeline li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 10px; border-top: 1px solid var(--sticky-border); padding: 10px 0; }
+.day-plan-time { color: var(--text-secondary); font-variant-numeric: tabular-nums; font-size: 12px; }
+.day-plan-timeline strong { font-weight: 600; overflow-wrap: anywhere; }
+.day-plan-timeline p { margin: 3px 0 0; overflow-wrap: anywhere; }
+.day-plan-assignee { color: var(--text-secondary); font-size: 12px; }
+.day-plan-proposal details { margin-bottom: 12px; }
+.day-plan-proposal summary { min-height: 28px; cursor: pointer; color: var(--text-secondary); }
+.day-plan-actions { justify-content: flex-end; border-top: 1px solid var(--sticky-border); }
+.day-plan-actions .primary { background: var(--accent); border-color: #9e7f23; font-weight: 600; }
+@media (max-width: 380px) {
+  .day-plan-timeline li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .day-plan-times { gap: 8px; }
+  .day-plan-times label { flex-direction: column; align-items: stretch; gap: 3px; }
+}

@@ -9,6 +9,7 @@ import { GoalsSidebar } from './components/GoalsSidebar'
 import { MissionControlSidebar } from './components/MissionControlSidebar'
 import { TrackingStationOverlay } from './components/TrackingStationOverlay'
 import { SettingsPanel } from './components/SettingsPanel'
+import { ScheduleView } from './components/ScheduleView'
 import { WindowResizeHandles } from './components/WindowResizeHandles'
 import { useCalendar } from './hooks/useCalendar'
 import { useGoals } from './hooks/useGoals'
@@ -18,6 +19,7 @@ import { api, waitForPendingWrites } from './api'
 import { useAppUpdates } from './hooks/useAppUpdates'
 import { copyText } from './clipboard'
 import { formatAgentPrompt } from './taskTransfer'
+import { planningTaskKey, type PlannedBlock } from './taskPlanning'
 import {
   isProviderConfigured,
   PROVIDER_ORDER,
@@ -34,6 +36,7 @@ import type {
 
 const READY_LAYOUT_MIGRATION_KEY = 'todo-sticky-ready-layout-v1'
 const COMPACT_LAYOUT_MAX_WIDTH = 760
+const INTRO_SEEN_KEY = 'todo-sticky-intro-seen-v1'
 
 interface AppNotice {
   kind: 'success' | 'error'
@@ -48,6 +51,7 @@ export default function App() {
   const starFocus = useStarFocus(tasks.tasks)
   const [viewMode, setViewMode] = useState<ViewMode>('today')
   const [showSettings, setShowSettings] = useState(false)
+  const [showPlanner, setShowPlanner] = useState(false)
   const [settingsProvider, setSettingsProvider] = useState<Provider | undefined>()
   const [showTrackingStation, setShowTrackingStation] = useState(false)
   const [showDevTools, setShowDevTools] = useState(false)
@@ -63,6 +67,10 @@ export default function App() {
     typeof window === 'undefined' ? 1024 : window.innerWidth
   ))
   const restoredOverlaySessionRef = useRef<string | null>(null)
+  const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const aiOperationRef = useRef(false)
+  const currentDateRef = useRef(calendar.dateStr)
+  currentDateRef.current = calendar.dateStr
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
   const updateBlockedReason = starFocus.activeSession
@@ -83,9 +91,23 @@ export default function App() {
   const albumTaskKey = useMemo(() => JSON.stringify(albumTaskContext), [albumTaskContext])
 
   const presentNotice = useCallback((notice: AppNotice) => {
+    if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
     setAppNotice(notice)
-    window.setTimeout(() => setAppNotice(null), 6000)
+    noticeTimerRef.current = setTimeout(() => setAppNotice(null), 6000)
   }, [])
+  useEffect(() => () => { if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current) }, [])
+
+  const dismissIntro = useCallback(() => {
+    setFirstRun(false)
+    try { window.localStorage.setItem(INTRO_SEEN_KEY, 'seen') } catch { /* capture works without browser storage */ }
+  }, [])
+
+  const navigateAfterSave = useCallback(async (navigate: () => void) => {
+    try { await tasks.flushPendingSave(); navigate() }
+    catch {
+      presentNotice({ kind: 'error', title: 'Date unchanged', message: 'Retry saving your changes before switching days.' })
+    }
+  }, [tasks.flushPendingSave, presentNotice])
 
   const openSettingsForProvider = useCallback((provider?: Provider) => {
     setSettingsProvider(provider)
@@ -134,8 +156,8 @@ export default function App() {
   useEffect(() => {
     api.checkFirstRun().then(isFirst => {
       if (isFirst) {
-        setFirstRun(true)
-        setShowSettings(true)
+        try { setFirstRun(!window.localStorage.getItem(INTRO_SEEN_KEY)) }
+        catch { setFirstRun(true) }
       }
     }).catch(() => {})
   }, [])
@@ -175,19 +197,6 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (!showTrackingStation) return undefined
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setShowTrackingStation(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showTrackingStation])
-
-  useEffect(() => {
     if (!showAlbumRecommendations) return undefined
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -199,6 +208,7 @@ export default function App() {
   }, [showAlbumRecommendations])
 
   useEffect(() => {
+    setShowPlanner(false)
     setShowAlbumRecommendations(false)
     setAlbumRecommendations(null)
     setAlbumRecommendationTaskKey(null)
@@ -266,9 +276,13 @@ export default function App() {
   }, [starFocus.activeSession])
 
   const handleAIBreakdown = useCallback(async (taskId: string) => {
+    if (aiOperationRef.current) return
     const task = tasks.tasks.find(t => t.id === taskId)
-    if (!task) return
-
+    if (!task || task.status === 'done' || task.status === 'stopped' || tasks.loading
+      || tasks.dataDate !== calendar.dateStr) return
+    const requestDate = calendar.dateStr
+    const requestTaskKey = planningTaskKey([task])
+    aiOperationRef.current = true
     setAiLoading(taskId)
     try {
       const existing = task.todaySubtasks.map(s => s.text)
@@ -276,8 +290,8 @@ export default function App() {
         taskText: [task.text, task.finish?.doneWhen && `Done when: ${task.finish.doneWhen}`, task.finish?.by && `Committed deadline: ${task.finish.by}`].filter(Boolean).join('\n'),
         existingSubtasks: existing,
       })
-      if (result.subtasks?.length) {
-        tasks.addAISubtasks(taskId, result.subtasks)
+      if (currentDateRef.current === requestDate && result.subtasks?.length) {
+        tasks.addAISubtasks(taskId, result.subtasks, requestDate, requestTaskKey)
       }
     } catch (e) {
       console.error('AI breakdown failed:', e)
@@ -287,36 +301,20 @@ export default function App() {
         message: 'Check the AI provider in Settings, then try again.',
       })
     } finally {
+      aiOperationRef.current = false
       setAiLoading(null)
     }
-  }, [tasks, presentNotice])
+  }, [tasks, calendar.dateStr, presentNotice])
 
-  const handleSchedule = useCallback(async () => {
-    if (!tasks.tasks.length) return
-    setAiLoading('schedule')
-    try {
-      const result = await api.llmSchedule({ tasks: tasks.tasks, machines: [] })
-      if (result.schedule?.length) {
-        tasks.applySchedule(result.schedule)
-      }
-      if (result.plan) {
-        presentNotice({ kind: 'success', title: 'Plan applied', message: result.plan })
-      }
-    } catch (e) {
-      console.error('Scheduling failed:', e)
-      presentNotice({
-        kind: 'error',
-        title: 'Could not plan the day',
-        message: 'Check the AI provider in Settings, then try again.',
-      })
-    } finally {
-      setAiLoading(null)
-    }
-  }, [tasks, presentNotice])
+  const handleApplyPlan = useCallback((schedule: PlannedBlock[], date: string, taskKey: string) => {
+    if (tasks.loading || date !== calendar.dateStr || taskKey !== planningTaskKey(tasks.tasks)) return
+    tasks.applySchedule(schedule, date, taskKey)
+    setShowPlanner(false)
+  }, [calendar.dateStr, tasks.tasks, tasks.loading, tasks.applySchedule])
 
   const handleAlbumRecommendations = useCallback(async () => {
-    if (!albumTaskContext.length) return
-
+    if (!albumTaskContext.length || aiOperationRef.current) return
+    aiOperationRef.current = true
     setShowAlbumRecommendations(true)
     setAiLoading('albums')
     try {
@@ -343,6 +341,7 @@ export default function App() {
         message: 'Check the AI provider in Settings, then try again.',
       })
     } finally {
+      aiOperationRef.current = false
       setAiLoading(null)
     }
   }, [albumTaskContext, albumTaskKey, presentNotice])
@@ -457,21 +456,38 @@ export default function App() {
           calendarOpen={calendar.calendarOpen}
           isCurrentDay={calendar.isCurrentDay}
           viewMode={viewMode}
-          onPrev={calendar.goPrev}
-          onNext={calendar.goNext}
+          onPrev={() => { void navigateAfterSave(calendar.goPrev) }}
+          onNext={() => { void navigateAfterSave(calendar.goNext) }}
           onToggleCalendar={calendar.toggleCalendar}
-          onSelectDate={calendar.goToDate}
-          onToday={calendar.goToday}
+          onSelectDate={date => { void navigateAfterSave(() => calendar.goToDate(date)) }}
+          onToday={() => { void navigateAfterSave(calendar.goToday) }}
           onCloseCalendar={() => calendar.setCalendarOpen(false)}
           onViewModeChange={setViewMode}
         />
 
         <AddTask
-          onAdd={tasks.addTask}
+          onAdd={text => { tasks.addTask(text); if (firstRun) dismissIntro() }}
           prominent={!tasks.loading && !tasks.tasks.length}
-          autoFocus={!showSettings}
+          autoFocus={!showSettings && !showPlanner && !showTrackingStation}
           disabled={tasks.loading || Boolean(tasks.loadError)}
         />
+
+        {firstRun && !showSettings && (
+          <div className="first-use-note">
+            <p>Capture a task to begin. AI assistance is optional.</p>
+            <button onClick={event => { event.currentTarget.focus(); openSettingsForProvider(aiSettings?.provider) }}>Set up AI</button>
+            <button onClick={dismissIntro} aria-label="Dismiss introduction">✕</button>
+          </div>
+        )}
+
+        {tasks.saveError && (
+          <div className="task-save-error" role="alert">
+            <div><strong>Changes not saved · {tasks.saveError.date}</strong><p>{tasks.saveError.message}</p></div>
+            <button disabled={tasks.saving} onClick={async () => {
+              if (await tasks.retrySave() && tasks.dataDate !== calendar.dateStr) await tasks.load()
+            }}>{tasks.saving ? 'Retrying…' : 'Retry save'}</button>
+          </div>
+        )}
 
         {aiLoading && (
           <div className="ai-loading">
@@ -511,7 +527,7 @@ export default function App() {
             onReorderSubtask={tasks.reorderSubtasks}
             onAIBreakdown={handleAIBreakdown}
             onFocusTask={handleFocusTask}
-            onGoToday={calendar.goToday}
+            onGoToday={() => { void navigateAfterSave(calendar.goToday) }}
             onRetryLoad={tasks.load}
           />
         </DianeProvider>
@@ -542,6 +558,14 @@ export default function App() {
           />
         )}
 
+        {tasks.undo && (
+          <div className="task-undo-notice" role="status">
+            <span>{tasks.undo.label}</span>
+            <button disabled={tasks.loading} onClick={tasks.undoLastAction}>Undo</button>
+            <button onClick={tasks.dismissUndo} aria-label="Dismiss undo">✕</button>
+          </div>
+        )}
+
         <div className="action-bar">
           {isDevMode && (
             <button
@@ -551,10 +575,23 @@ export default function App() {
               Dev
             </button>
           )}
+          {isCompactWindow && (
+            <>
+              <button className="compact-goals-entry" aria-controls="goals-panel" aria-expanded={!goals.sidebarCollapsed}
+                onClick={event => { event.currentTarget.focus(); handleToggleGoalsSidebar() }}>Goals</button>
+              <button className={`compact-focus-entry${starFocus.activeSession ? ' active' : ''}`}
+                onClick={event => { event.currentTarget.focus(); goals.setSidebarCollapsed(true); setShowTrackingStation(true) }}
+                title={starFocus.activeSession?.pausedAt ? 'Focus paused' : starFocus.activeSession ? 'Focus session in progress' : 'Open Focus Mode'}>
+                Focus{starFocus.activeSnapshot && <span className="compact-focus-clock">
+                  {starFocus.activeSession?.pausedAt ? 'Ⅱ ' : ''}{Math.floor(Math.ceil(starFocus.activeSnapshot.remainingMs / 1000) / 60)}:{String(Math.ceil(starFocus.activeSnapshot.remainingMs / 1000) % 60).padStart(2, '0')}
+                </span>}
+              </button>
+            </>
+          )}
           <button
-            onClick={handleSchedule}
-            disabled={!!aiLoading || !tasks.tasks.length}
-            title={tasks.tasks.length ? 'Build a schedule with AI' : 'Add a task before planning the day'}
+            onClick={event => { event.currentTarget.focus(); setShowPlanner(true) }}
+            disabled={!!aiLoading || !tasks.tasks.some(task => task.status !== 'done' && task.status !== 'stopped') || tasks.loading}
+            title="Preview an AI plan for the selected date"
           >
             Plan day
           </button>
@@ -578,7 +615,7 @@ export default function App() {
             Albums
           </button>
           <div className="spacer" />
-          <div
+          {!isCompactWindow && <div
             className={`provider-quick-control ${
               aiSettings && isProviderConfigured(aiSettings, aiSettings.provider)
                 ? 'configured'
@@ -615,10 +652,10 @@ export default function App() {
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
           <button
             className="gear settings-update-button"
-            onClick={() => openSettingsForProvider(aiSettings?.provider)}
+            onClick={event => { event.currentTarget.focus(); openSettingsForProvider() }}
             title={appUpdates.needsAttention ? "Settings · Update ready" : "Settings"}
             aria-label={appUpdates.needsAttention ? "Settings, update ready" : "Settings"}
           >
@@ -627,7 +664,7 @@ export default function App() {
           </button>
         </div>
 
-        {appNotice && (
+        {appNotice && !showSettings && !showPlanner && !showTrackingStation && (
           <div
             className={`schedule-toast ${appNotice.kind}`}
             onClick={() => setAppNotice(null)}
@@ -637,16 +674,25 @@ export default function App() {
             {appNotice.message && <p>{appNotice.message}</p>}
           </div>
         )}
+        {showPlanner && (
+          <ScheduleView date={calendar.dateStr} tasks={tasks.tasks} tasksLoading={tasks.loading} machines={aiSettings?.machines ?? []}
+            onApply={handleApplyPlan} onClose={() => setShowPlanner(false)} />
+        )}
         {showSettings && (
           <SettingsPanel
             appUpdates={appUpdates}
             updateBlockedReason={updateBlockedReason}
             onClose={() => {
               setShowSettings(false)
-              setFirstRun(false)
+              dismissIntro()
               setSettingsProvider(undefined)
             }}
-            onSaved={setAiSettings}
+            onBeforeSave={tasks.flushPendingSave}
+            onSaved={settings => {
+              const folderChanged = aiSettings?.kbPath !== settings.kbPath
+              setAiSettings(settings)
+              if (folderChanged) { tasks.dismissUndo(); void tasks.load() }
+            }}
             firstRun={firstRun}
             initialProvider={settingsProvider}
           />

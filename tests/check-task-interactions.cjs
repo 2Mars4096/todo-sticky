@@ -1,0 +1,56 @@
+const assert=require('node:assert/strict');
+const { seedBridge, launch, testUrl, screenshot }=require('./helpers/browser-fixture.cjs');
+(async()=>{
+ const b=await launch();
+ try {
+ const c=await b.newContext({viewport:{width:460,height:640},timezoneId:'Asia/Hong_Kong'});await c.addInitScript(seedBridge);
+ const p=await c.newPage();p.setDefaultTimeout(10000);const errors=[];p.on('pageerror',e=>errors.push(String(e)));
+ await p.goto(testUrl);await p.getByRole('button',{name:'Share the first usable todo-sticky release',exact:true}).waitFor();
+ const task=id=>p.locator(`[data-reorder-id="${id}"]`);const saved=()=>p.evaluate(()=>__review.sections[__review.today]);
+ const select=async(id,name)=>task(id).getByRole('button',{name,exact:true}).click();
+ await select('release','Share the first usable todo-sticky release');await p.waitForTimeout(220);assert.equal(await p.evaluate(()=>__review.calls.filter(c=>c.cmd==='llm_breakdown').length),0);
+ const releaseMore=task('release').getByRole('button',{name:'More actions for Share the first usable todo-sticky release',exact:true});
+ await releaseMore.click();assert.equal(await releaseMore.getAttribute('aria-expanded'),'true');
+ await task('release').getByRole('button',{name:'Edit title',exact:true}).click();
+ await task('release').getByRole('textbox',{name:'Edit title: Share the first usable todo-sticky release',exact:true}).press('Escape');
+ await releaseMore.click();assert.equal(await releaseMore.getAttribute('aria-expanded'),'true');
+ await select('dentist','Book a dentist appointment');
+ assert.equal(await task('dentist').getByRole('button',{name:'More actions for Book a dentist appointment',exact:true}).count(),1);
+ assert.equal(await task('release').getByRole('group',{name:'More actions for Share the first usable todo-sticky release',exact:true}).count(),0);
+ await select('dentist','Book a dentist appointment');await task('dentist').getByRole('button',{name:'Add outcome',exact:true}).focus();await p.keyboard.press('Tab');
+ assert.equal(await p.evaluate(()=>document.activeElement.textContent),'Add due date');assert.equal((await saved()).find(t=>t.id==='dentist').finish,undefined);
+ await task('dentist').getByRole('button',{name:'Add outcome',exact:true}).click();await task('dentist').getByRole('button',{name:'Suggest outcome',exact:true}).click();
+ const outcome=task('dentist').getByRole('textbox',{name:'Outcome',exact:true});await outcome.fill('My manual result');await p.waitForTimeout(200);assert.equal(await outcome.inputValue(),'My manual result');
+ await outcome.fill('');await task('dentist').getByText('AI suggestion · not saved',{exact:true}).waitFor();await task('dentist').getByRole('button',{name:'Use suggestion',exact:true}).click();
+ assert.equal(await outcome.inputValue(),'The appointment is confirmed and added to my calendar.');assert.equal((await saved()).find(t=>t.id==='dentist').finish,undefined);
+ await outcome.press('Escape');assert.equal((await saved()).find(t=>t.id==='dentist').finish,undefined);
+ await task('dentist').getByRole('button',{name:'Add outcome',exact:true}).click();await outcome.fill('Draft appointment outcome');await outcome.press('Enter');await p.waitForFunction(()=>__review.sections[__review.today].find(t=>t.id==='dentist').finish?.doneWhen==='Draft appointment outcome');
+ await task('dentist').getByRole('button',{name:'Edit outcome',exact:true}).click();await outcome.fill('Appointment confirmed');
+ const earlierAfterEdit=p.getByRole('button',{name:/Earlier tasks/});await earlierAfterEdit.click();
+ assert.equal(await earlierAfterEdit.getAttribute('aria-expanded'),'true','Blur commits the edit without swallowing the following click');
+ await p.waitForFunction(()=>__review.sections[__review.today].find(t=>t.id==='dentist').finish?.doneWhen==='Appointment confirmed');await earlierAfterEdit.click();
+ await select('note','Send the research note for feedback');await task('note').getByRole('button',{name:'Edit outcome',exact:true}).click();await task('note').getByRole('textbox',{name:'Outcome'}).press('Enter');assert.equal((await saved()).find(t=>t.id==='note').finish.reviewReady,true);
+ await task('note').getByRole('button',{name:'Revise',exact:true}).click();await task('note').getByRole('textbox',{name:'Outcome'}).fill('A different outcome');await task('note').getByRole('textbox',{name:'Outcome'}).press('Escape');assert.equal((await saved()).find(t=>t.id==='note').finish.reviewReady,true);
+ await select('dentist','Book a dentist appointment');await task('dentist').getByRole('button',{name:'Add due date',exact:true}).click();await p.getByLabel('Due date',{exact:true}).fill('2026-12-20');await p.getByLabel('Due date',{exact:true}).press('Escape');assert.equal((await saved()).find(t=>t.id==='dentist').finish.by,undefined);
+ await task('dentist').getByRole('button',{name:'Add due date',exact:true}).click();await p.getByLabel('Due date',{exact:true}).fill('2026-12-20');await p.getByRole('button',{name:'Save date',exact:true}).click();await p.waitForFunction(()=>__review.sections[__review.today].find(t=>t.id==='dentist').finish.by==='2026-12-20');
+ await task('dentist').locator('.deadline-badge').click();await p.getByRole('button',{name:'Clear date',exact:true}).click();await p.getByRole('button',{name:'Cancel',exact:true}).click();assert.equal((await saved()).find(t=>t.id==='dentist').finish.by,'2026-12-20');
+ await select('travel','Submit travel reimbursement');assert.equal(await task('travel').getByRole('button',{name:'Add outcome',exact:true}).count(),0);assert.equal(await task('travel').getByRole('button',{name:'Add due date',exact:true}).count(),0);
+ await task('dentist').getByRole('button',{name:'Book a dentist appointment',exact:true}).dblclick();const title=task('dentist').getByRole('textbox',{name:'Edit title: Book a dentist appointment',exact:true});await title.fill('预约牙医');await title.dispatchEvent('keydown',{key:'Enter',isComposing:true,bubbles:true});assert.equal(await title.count(),1);await title.press('Escape');assert.equal((await saved()).find(t=>t.id==='dentist').text,'Book a dentist appointment');
+ await select('release','Share the first usable todo-sticky release');assert.equal(await p.locator('[data-reorder-id="release-test"]').count(),0);await task('release').getByRole('button',{name:/Show steps for/}).click();await p.locator('[data-reorder-id="release-test"]').waitFor();
+ const step=p.getByRole('textbox',{name:'New step for Share the first usable todo-sticky release',exact:true});await step.fill('One more concrete step');await step.press('Enter');await p.waitForFunction(()=>__review.sections[__review.today].find(t=>t.id==='release').subtasks.length===4);
+ await p.getByRole('button',{name:'Reorder Check capture and completion within Share the first usable todo-sticky release',exact:true}).focus();await p.keyboard.press('ArrowDown');await p.waitForFunction(()=>__review.sections[__review.today].find(t=>t.id==='release').subtasks[0].id==='release-fix');
+ await task('release').getByRole('button',{name:'More actions for Share the first usable todo-sticky release',exact:true}).click();await task('release').getByRole('button',{name:'Edit title',exact:true}).focus();await p.keyboard.press('Escape');assert.equal(await task('release').getByRole('button',{name:'More actions for Share the first usable todo-sticky release',exact:true}).getAttribute('aria-expanded'),'false');
+ await task('release').getByRole('button',{name:/Hide steps for/}).click();
+ for(const [width,height] of [[460,640],[340,440]]) {await p.setViewportSize({width,height});await screenshot(p, `task-refined-${width}`);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)}
+ await p.reload();await p.getByRole('button',{name:'Book a dentist appointment',exact:true}).waitFor();
+ assert.equal((await saved()).find(t=>t.id==='dentist').finish.doneWhen,'Appointment confirmed');
+ assert.equal((await saved()).find(t=>t.id==='dentist').finish.by,'2026-12-20');
+ assert.equal((await saved()).find(t=>t.id==='release').subtasks[0].id,'release-fix');
+ const earlier=p.getByRole('button',{name:/Earlier tasks/});await earlier.waitFor();
+ assert.equal(await earlier.getAttribute('aria-expanded'),'false');await earlier.click();
+ assert.equal(await earlier.getAttribute('aria-expanded'),'true');await p.reload();
+ await p.getByRole('button',{name:/Earlier tasks/}).waitFor();
+ assert.equal(await p.getByRole('button',{name:/Earlier tasks/}).getAttribute('aria-expanded'),'true');
+ assert.deepEqual(errors,[]);console.log('PASS local selection, Tab navigation, explicit AI and typing, staged suggestions, Enter/blur saves without lost clicks, review cancellation, reversible dates, closed details, IME title, step add/reorder, More open/edit/outside/Escape, 340/460px overflow, reload persistence and remembered earlier-task disclosure');
+ } finally { await b.close(); }
+})().catch(e=>{console.error(e.stack);process.exit(1)});

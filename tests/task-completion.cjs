@@ -25,6 +25,7 @@ vm.runInNewContext(source, {
       createDateSection: async payload => { saved = payload; return { filePath: 'test.md' } },
     } }
     if (name === '../taskCarryForward') return { resolveTaskCarryForwardTarget: () => ({ dateStr: '2026-09-23' }) }
+    if (name === '../taskHistory' || name === '../taskPlanning') return require('./helpers/load-typescript.cjs')(`src/${name.slice(3)}.ts`)
     if (name === '../taskRollover') {
       const out = {}
       vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/taskRollover.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: out })

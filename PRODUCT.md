@@ -10,7 +10,17 @@ Individuals who keep Sticky Todo visible beside their work and return to it repe
 
 ## Product Purpose
 
-Sticky Todo turns lightweight Markdown-backed tasks into an immediately actionable day. Users can capture and complete work, add steps, move unfinished items forward, generate AI breakdowns or schedules, maintain long-term and recurring anchors, and launch a timed Star Focus session without leaving the task context.
+Sticky Todo helps a person capture work, define what would be enough, take the next step, and make an explicit completion decision. Tasks are Markdown-backed. Optional AI, long-term goals, manually reset Routines, and timed Star Focus sessions support that daily workflow.
+
+## Core Interaction
+
+The app opens with a persistent task-capture field, including on first launch. Selecting an unfinished task reveals **Focus / Add step / More**, optional Outcome and Due fields, and a short step summary. Double-click or Enter on the title begins editing; additional operations remain in More. Earlier unfinished tasks and historical steps are separate disclosures.
+
+Outcome suggestions require an explicit request and are labeled as unsaved suggestions. Accepting one copies it into an editable draft; saving remains a separate step. Due dates also have **Save date / Cancel**. Tasks with an Outcome finish through **Complete / Revise / Stop**, preserving the distinction between reaching the result and deliberately stopping.
+
+**Plan day** uses the selected date, available time, and chosen configured machines. Its chronological proposal can be applied or discarded. Applying replaces unfinished generated blocks for that planning date while retaining manual and completed work, and offers Undo. Task deletion also offers Undo. Failed saves retain the current edits in memory with a persistent Retry action.
+
+In compact windows, named **Goals** and **Focus** entries leave the note its full width; an active Focus timer remains visible. Focus uses **Start focus / Pause / Resume / Finish session**. Saving a session records a completed focus session; task-outcome review remains separate, and logged duration is identified as planned. A simplified map preserves session controls when 3D rendering fails. Settings groups storage, AI assistance, integrations, and updates, with advanced options disclosed when needed.
 
 ## Brand Personality
 
@@ -26,12 +36,14 @@ Calm, tactile, purposeful. The main surface should feel like a dependable workin
 
 ## Design Principles
 
-- Capture first: opening the app should immediately expose the next useful action.
+- Capture first: opening the app exposes a writable task field before optional setup.
 - Keep tasks authoritative: goals, planning, and Star Focus support the center list instead of competing with it.
-- Use progressive disclosure: compact rails provide status and entry; expanded panels appear only when requested.
-- One action from intent: completing, adding a step, moving, planning, or focusing should start from the task itself or a persistent adjacent control.
+- Use progressive disclosure: named compact entries, selected task actions, collapsed steps, and grouped Settings reveal detail when it becomes relevant.
+- Make commitment visible: AI output begins as a labeled suggestion or plan preview; date changes are drafts; outcome completion is an explicit decision.
+- Keep recovery close: cancellation preserves saved values, deletion and planning offer Undo, and write failures remain visible until resolved.
+- Keep actions near their context: adding a step, moving, reviewing, or focusing starts from the task; day planning and capture remain adjacent to the list.
 - Resize gracefully: compact windows adapt structurally, while larger windows earn simultaneous multi-panel views.
 
 ## Accessibility & Inclusion
 
-Target WCAG 2.2 AA for contrast, focus visibility, keyboard access, reduced-motion preferences, and non-color state cues. All icon-only controls require accessible names, and essential actions must not depend on hover alone.
+Target WCAG 2.2 AA for contrast, focus visibility, keyboard access, reduced-motion preferences, and non-color state cues. Use readable task text and reachable controls at the 340×440 minimum window size. Icon-only controls require accessible names. Essential actions work through selection and keyboard focus; dialogs contain focus and restore it on close. Focus graphics respect reduced motion and degrade to a usable map when rendering is unavailable.

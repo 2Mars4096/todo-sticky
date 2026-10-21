@@ -11,9 +11,10 @@ colors:
   mission-surface-deep: "#2B2112"
   ink: "#3D3520"
   ink-secondary: "#7A6F50"
-  ink-muted: "#9C9169"
+  ink-muted: "#756747"
   accent: "#C4A44A"
   accent-deep: "#A8882E"
+  focus-ring: "#856519"
   success: "#78956A"
   danger: "#B85F52"
 typography:
@@ -29,7 +30,7 @@ typography:
     lineHeight: 1.45
   label:
     fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif"
-    fontSize: "10px"
+    fontSize: "11px"
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "0.08em"
@@ -84,12 +85,12 @@ The palette is a restrained family of warm paper neutrals, graphite-brown ink, a
 
 ### Primary
 
-- **Task Amber** (`#C4A44A`): primary task and focus selections, active controls, and focus rings.
+- **Task Amber** (`#C4A44A`): primary task and focus selections and active controls. A deeper amber-brown (`#856519`) makes keyboard focus visible on paper.
 
 ### Secondary
 
-- **Mission Umber** (`#3E321B`): Star Focus rail and Tracking Station entry surface only.
-- **Goal Straw** (`#F1E2A0`): long-term and recurring goal surface.
+- **Mission Umber** (`#3E321B`): Focus side panel and expanded Tracking Station.
+- **Goal Straw** (`#F1E2A0`): long-term goals and manually reset Routines.
 
 ### Neutral
 
@@ -110,9 +111,9 @@ The palette is a restrained family of warm paper neutrals, graphite-brown ink, a
 
 ### Hierarchy
 
-- **Title** (650, 14px, 1.2): date and panel titles.
-- **Body** (400, 13px, 1.45): tasks, fields, and supporting copy.
-- **Label** (700, 10px, 0.08em, uppercase when categorical): rail labels, counts, and compact telemetry.
+- **Title** (650, 14px, 1.2): date and panel titles. Root task titles use 14px at weight 550 with a 1.5 line height.
+- **Body** (400, 13px, 1.45): steps and capture fields. Outcome text and labeled task actions use 12px.
+- **Label** (11px): supporting status, dates, and field labels. Uppercase tracking is reserved for short categorical labels and Focus telemetry.
 
 **The One-Glance Rule.** A user should distinguish date, task, state, and action without reading explanatory prose.
 
@@ -131,10 +132,11 @@ The working note is tonally layered and mostly flat. Ambient shadow belongs to t
 
 ### Buttons
 
-- **Shape:** gently rounded (`6px`) for actions, circular only for directional rail controls.
+- **Shape:** gently rounded (`6px`) for actions; compact circular controls suit close, date navigation, and Focus camera actions.
 - **Primary:** Task Amber with Graphite Brown, 7px by 12px padding.
 - **Hover / Focus:** stronger amber tint plus a visible 2px focus ring; state transitions stay within 150 to 200ms.
 - **Secondary / Ghost:** paper tint or transparent background with a ruled border.
+- **Targets:** task checkboxes are 24px; common task actions are at least 28px tall and capture controls are 32px. Preserve reachable hit areas as labels wrap.
 
 ### Chips
 
@@ -157,13 +159,30 @@ The working note is tonally layered and mostly flat. Ambient shadow belongs to t
 
 ### Navigation
 
-- Compact side rails expose a named destination, useful status, and one clear expand action. At small widths, an expanded rail overlays the task surface and dismisses with Escape or the backdrop. At wider widths, panels may participate in the three-column layout.
+- At compact widths, named **Goals** and **Focus** entries replace idle rail columns. An active focus countdown remains beside Focus. Goals opens over the task surface; Focus opens its dialog. Escape or the backdrop dismisses these surfaces. Wider windows can use side panels.
+- Keep the date header compact and the top capture field visible. The footer wraps without overlapping controls; the provider quick switch appears only in wider layouts.
+- Settings groups **Tasks & storage**, **AI assistance**, **Integrations**, and **Updates**. Connection details and optional machine settings appear on demand. First launch starts with capture and an optional AI setup prompt.
+
+### Task hierarchy and editing
+
+- Lead with the task title, then saved Outcome, Due, and status information. Selected tasks expose **Focus / Add step / More**; infrequent operations live under More. Essential actions are available through selection and keyboard focus.
+- Step groups collapse to a count and next-step summary. **Earlier tasks** is a separate, remembered disclosure for unfinished work from past dates. **Show steps from other dates** reveals historical steps.
+- Selection does not request AI. **Suggest outcome** is explicit inside an empty editor; its labeled suggestion becomes an editable draft through **Use suggestion** or Tab. Enter or leaving the editor commits; Escape cancels. Choosing a due date or clearing it stays a draft until **Save date** or Enter.
+- **Complete / Revise / Stop** reviews an Outcome. Completion, partial progress, and stopping have distinct labels; a focus session never substitutes for this review.
+
+### Planning and recovery
+
+- **Plan day** shows the selected date, available time, and optional configured machines before generation. Show proposed blocks chronologically and disclose unscheduled tasks. **Apply plan / Discard** makes commitment explicit; applying replaces only unfinished generated blocks for that planning date.
+- Deletion and applied plans expose **Undo** near the working list. A failed write keeps the local edits and a persistent **Changes not saved / Retry save** notice; transient success feedback must not imply those edits reached storage.
+- Settings, Focus, and planning dialogs contain keyboard focus and restore it to the invoking control or a stable task title on close.
 
 ### Star Focus
 
-- The collapsed rail provides focus state and entry. Cinematic orbital visuals remain inside expanded Mission Control or Tracking Station so they reward intent instead of occupying the default workspace.
+- The named compact entry shows an active timer; wider side tools retain their focus status. Cinematic orbital visuals remain inside expanded Mission Control or Tracking Station.
 - The expanded surface is titled Focus Mode and frames each completed session as one named Solar Route leg from Earth through the Moon, Venus, Mars, Saturn, and home again.
-- At compact widths, Flight Deck task/timer controls precede the orbital scene. Wider windows pair one dominant map with one focused control column; travel log and retention controls stay secondary.
+- At compact widths, task and timer controls precede the orbital scene. **Start focus / Pause / Resume / Finish session** use functional labels. Completion says **Session saved**, then offers **Back to tasks** for outcome review. Logged duration is labeled planned.
+- Wider windows pair one dominant map with one control column; travel log and retention controls stay secondary. Graphics construction, shader, or context failures reveal a projected SVG map while keeping session controls usable. **Try 3D again** retries rendering.
+- Respect reduced motion with static decorative WebGL rendering and redraws for user or session changes. Release the renderer, observers, and animation work when the view closes.
 
 ## 6. Do's and Don'ts
 

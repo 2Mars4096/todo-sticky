@@ -16,6 +16,8 @@
 
 ## Decisions
 
+- The authorized [4-44](4-44-ui-interaction-refinement.md) refinement replaces idle compact rails with a named Focus entry and visible active timer. Controls use Start focus / Pause / Resume / Finish session; finishing a session remains separate from task outcome review. Existing expanded Focus Mode and SVG/WebGL rendering decisions remain in force.
+
 - Primary instruction file: `AGENTS.md`
 - Tracking docs root: `docs/`
 - Plan numbering: hierarchical and created just in time

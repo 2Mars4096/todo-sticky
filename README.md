@@ -12,26 +12,26 @@ Download the latest installer from [Releases](https://github.com/2Mars4096/todo-
 | **Windows** | `.msi` or `.exe` |
 | **Linux** | `.deb` or `.AppImage` |
 
-On first launch the app opens an optional setup panel. Choose **Start without AI** to begin immediately, or configure a provider to enable AI task breakdown and day planning:
+First launch opens the task list with the **New task** field ready. Type a task and press **Enter** or **Add**. AI setup is optional and can wait until you need it.
 
-| Field | What to enter |
-|-------|---------------|
-| **Provider** | Default is **Moonshot (Kimi)**. Choose **Codex (ChatGPT login)** to use the locally authenticated Codex CLI without an API key, or select OpenRouter, OpenAI, Anthropic, Gemini, or a custom OpenAI-compatible endpoint. |
-| **API Base URL / Codex Executable** | API providers receive their standard endpoint. Codex uses `codex` with common install paths auto-detected; enter a full executable path if needed. |
-| **Model** | Pick an API model, or leave the Codex model blank to use the CLI default. OpenRouter accepts catalog slugs such as `moonshotai/kimi-k3`; the direct Moonshot default remains `kimi-k2.6`. |
-| **API Key** | Required only for API providers. Codex reuses the existing local `codex login` session and does not store another credential in Sticky Todo. |
-| **KB Path** | Where task files live (`content/to-do/` inside this folder). Default: `~/Documents/Sticky Todo`. |
-| **Machines** | *(Optional)* Add servers/workstations for AI scheduling. |
+Open **Settings** to configure tools by purpose:
+
+| Section | What it contains |
+|---------|------------------|
+| **Tasks & storage** | Current task folder and **Change task folder**. The default is `~/Documents/Sticky Todo`; task files live in `content/to-do/` inside it. |
+| **AI assistance** | Provider and key, with **Model and connection options** and **Scheduling machines (optional)** available on demand. |
+| **Integrations** | Optional Dear Diane task handoff and reuse of matching local Diane credentials. |
+| **Updates** | Check for, download, and install app updates. |
+
+For AI assistance, choose Moonshot, OpenRouter, OpenAI, Anthropic, Gemini, a custom OpenAI-compatible endpoint, or **Codex (ChatGPT login)**. API providers use their configured endpoint, key, and model. Codex reuses your existing local `codex login`; its model can be blank, and its executable defaults to `codex` with common install paths detected. Use **Test connection**, then save the settings.
 
 On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Sticky Todo from an installer or automation tool cannot silently open a separate empty data store.
 
 If macOS or Dropbox has offloaded the Markdown archive, Sticky Todo reports **Tasks are waiting in Dropbox** instead of treating the archive as empty or waiting forever. Reveal the configured `content/to-do/.../index.md` file in Finder, choose **Make available offline** or **Download now**, then use **Retry** after the file becomes local.
 
-Click **Test Connection** to verify, then **Save & Start**. Change settings later via ⚙.
+By default, Todo uses Diane’s existing OpenRouter, OpenAI or Moonshot key on the same computer when the provider URL matches, then falls back to Todo’s own key. Diane does not need to be open. Turn off **Use Diane credentials when available** in **Settings → Integrations** to use Todo’s key exclusively. Existing `.env` files, keys and model choices are preserved; there is no Keychain access or cross-device sync. Launch an updated Diane once to advertise its file locations; older installs can use the existing `~/.dan/graphs_dir` marker.
 
-By default, Todo uses Diane’s existing OpenRouter, OpenAI or Moonshot key on the same computer when the provider URL matches, then falls back to Todo’s own key. Diane does not need to be open. Turn off **Use Diane credentials when available** in Settings to use Todo’s key exclusively. Existing `.env` files, keys and model choices are preserved; there is no Keychain access or cross-device sync. Launch an updated Diane once to advertise its file locations; older installs can use the existing `~/.dan/graphs_dir` marker.
-
-After configuring more than one provider, use the compact provider selector beside ⚙ to switch in one action. Each provider keeps its own API URL, key, and last-used model. Choosing an unconfigured provider opens Settings directly on that provider.
+Each provider keeps its own API URL, key, and last-used model. Switch providers in **Settings → AI assistance**; wider windows also show a quick selector beside Settings. Choosing an unconfigured provider opens its setup.
 
 > macOS Gatekeeper may warn about an unsigned app. Right-click → **Open** to bypass.
 
@@ -57,28 +57,43 @@ The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY` and, for an
 
 ## Features
 
-Click a task title or the empty space to its right to edit it. The editor extends up to the action buttons. Press Enter to save or Escape to cancel.
+Click an unfinished task to select it. **Focus**, **Add step**, and **More** appear beside its details. Double-click the title, press Enter while the title is focused, or choose **More → Edit title** to edit it. Enter saves; Escape cancels.
 
-- **Tasks & subtasks** — Type in the aligned Add step field and press Enter, use the branching icon for AI breakdown, and drag the six-dot handle to reorder tasks or steps within one task
-- **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
+- **Persistent capture** — The top **New task** field stays visible. Add step opens a visible inline field for the selected task; Enter adds the step and Escape clears its draft.
+- **Readable task hierarchy** — Titles lead, saved Outcome and Due details sit beneath them, and step groups collapse to a count and next-step summary. Expand a group to work through it.
+- **Named task actions** — More contains AI step suggestions, copying, moving, stopping, deletion, and optional Diane controls. Drag the six-dot handle to reorder tasks or steps within one task.
+- **Compact shell** — Named **Goals** and **Focus** controls replace idle side columns in small windows. The active Focus countdown stays visible; expanded tools overlay the note. Wider windows can show side panels.
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
-- **Automatic parent completion** — Mark the last unfinished subtask done to complete its parent for that day; steps from other dates do not block completion
-- **Status cycle** — Toggle task status: todo → done → partial → todo
-- **Space-aware task actions** — Keep each icon set together and right-aligned after the final task-text fragment when space permits, with a right-aligned fallback row for longer tasks
-- **Automatic daily rollover** — Unfinished past tasks accumulate on Today under a horizontal “Carried over” bar, aligned with today’s tasks and labeled “From yesterday” or their original date. Completing a parent completes all its steps; edits stay in the original Markdown date. Today loads first; history loads separately and appears in batches of 40 with Show more.
+- **Task completion** — Tasks without an Outcome retain the todo → done → partial cycle and completion of their parent when its current-day steps are done. Tasks with an Outcome require **Complete / Revise / Stop** review. Completing a parent completes its steps; stopping remains a separate decision.
+- **Earlier unfinished work** — Today collects unfinished past tasks under **Earlier tasks**, with their source dates. The collapsed section remembers your choice, loads separately from Today, and offers Show more in batches of 40. Edits stay in the original Markdown date.
 - **Smart carry-forward** — Move unfinished past work directly to today; moving one subtask preserves its parent on the destination date and merges later sibling moves beneath it. A single-line confirmation shows the destination
 - **Date navigation** — Jump between days with fixed-position prev/next arrows and a centered calendar label; empty past/future dates offer a direct return to today. The Today marker refreshes at midnight and when you return to the app, advancing an open Today view while preserving explicitly browsed dates
-- **Native clipboard** — Use standard Command-C and Command-V while editing; the row Copy icon exports a parent with all steps, or one selected subtask with its parent context, for Codex and other agents
+- **Native clipboard** — Use standard Command-C and Command-V while editing; **More → Copy task** exports a parent with its steps, or a selected step with its parent context, for Codex and other agents
 - **Agent task API** — Extract, create, edit, and delete Markdown-backed tasks from reusable skills through a local JSON CLI, with revision checks for safe writes
-- **View modes** — **All** shows subtasks from other dates; **Today** shows only today's subtasks
-- **AI breakdown** — One-click breakdown of a task into actionable subtasks (requires a configured AI provider)
-- **AI schedule** — Generate a time-blocked schedule for the day (requires a configured AI provider)
+- **Task history** — **Show steps from other dates** reveals historical steps; the default view keeps the current day's steps in view
+- **AI assistance** — Explicitly request outcome suggestions, step breakdowns, or a proposed day plan when useful. Selecting a task does not make an AI request.
 - **Codex background provider** — Run breakdowns, schedules, and album picks through the locally authenticated Codex CLI in an ephemeral read-only workspace, without adding an OpenAI API key
 - **Task-aware albums** — Find four albums suited to the concentration, energy, and atmosphere of the work, in a compact list with musical reasons and listening-mood cues (requires a configured AI provider)
-- **Star Focus Mission Control + Focus Mode** — Arm a task, choose a focus burn, and travel one leg at a time through an Earth → Moon → Venus → Mars → Saturn route. The compact layout puts the task and timer first; wider windows pair those controls with the interactive 3D Tracking Station. Completed sessions become a native-local travel log with `6` / `12` / `24` retention presets, while the right rail stays lightweight and always shows the next destination.
+- **Goals and Routines** — Keep long-term goals and reusable reminders in flat lists. Routines are reset manually; they do not create tasks on a schedule. Type and press Enter to add, double-click or press Enter on a focused item to edit, and Escape to cancel.
+- **Star Focus** — Select a task, choose a duration, then **Start focus**. **Pause**, **Resume**, and **Finish session** control the timer. Sessions travel the Solar Route and enter a native-local log with `6` / `12` / `24` retention presets. Session completion leaves task-outcome review to you. A simplified map keeps controls working if 3D rendering is unavailable, and **Try 3D again** retries it.
+- **Undo and save recovery** — Deleting a task or applying a day plan offers **Undo**. Failed writes keep edits in memory and show a persistent **Changes not saved** notice with **Retry save**. Pending saves must finish before switching dates or task folders.
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in the menu bar with a tray icon
-- **Lightweight** — Built with Tauri; ~5 MB installer (no bundled browser)
+- **Native shell** — Built with Tauri and the platform WebView
+
+### Outcomes and due dates
+
+Select an unfinished task to add an optional **Outcome** or **Due** date. Saved details remain visible when the task is unselected. Write the outcome yourself, or choose **Suggest outcome** in an empty editor. The response is labeled **AI suggestion · not saved**. **Use suggestion** (or Tab in the empty outcome field) copies it into your draft; Enter or leaving the editor saves, and Escape cancels.
+
+Date changes are drafts until **Save date** or Enter. **Clear date** edits the draft; **Cancel** or Escape preserves the saved date. Deadline history records the original date and subsequent changes. Carrying a task forward keeps its due date.
+
+AI step suggestions use the outcome and date to propose bounded work including a closing action. When an outcome is ready to review, choose **Complete**, **Revise**, or **Stop**. Stopped tasks stay distinct from completed work and do not carry forward.
+
+### Review a day plan before applying it
+
+Open **Plan day** for the selected date, set your available **From / Until** times, and optionally select configured machines. **Generate proposal** shows chronological blocks and any tasks left unscheduled. Generating a proposal does not change your tasks.
+
+Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as they were. Replanning replaces unfinished generated blocks for that planning date while retaining manual and completed work. The confirmation offers **Undo**. If tasks or planning details change during review, generate a fresh proposal before applying it.
 
 ## Development
 
@@ -96,9 +111,25 @@ In development builds, a `Dev` button appears in the bottom action bar so you ca
 |---------|-------------|
 | `npm run dev` | Start app (Vite + Tauri) |
 | `npm run dev:vite` | Vite-only (no native window) |
+| `npm test` | Run the Node regression suites |
+| `npm run build:frontend` | Build the frontend for preview or packaging |
 | `npm run build` | Build distributable for current platform |
 | `npm run task-api -- --help` | Show the local JSON task API used by agent skills |
 | `npm run release` | Bump patch version, tag, and push (triggers CI) |
+
+### Tests
+
+Run `npm test` for the Node regressions and `npx tsc --noEmit` for TypeScript checking. Browser checks use synthetic task/settings data and mocked native services, without accessing an installed app, user archives, credentials, or live AI.
+
+With Playwright available, run `npm run build:frontend`, then start a production preview with `npm run preview -- --host 127.0.0.1 --port 4173`. In another terminal:
+
+```bash
+TODO_TEST_URL=http://127.0.0.1:4173 node tests/check-refined-shell.cjs
+TODO_TEST_URL=http://127.0.0.1:4173 node tests/check-task-interactions.cjs
+TODO_TEST_URL=http://127.0.0.1:4173 node tests/check-focus-refinements.cjs
+```
+
+The shared `tests/helpers/browser-fixture.cjs` also accepts `PLAYWRIGHT_MODULE` (module name or path), `CHROME_EXECUTABLE`, `CHROMIUM_ARGS` (a JSON array of strings), and optional `CHROME_LIBRARY_PATH` / `CHROME_FONTCONFIG_PATH` for an existing Chromium runtime. `TODO_TEST_URL` can point to Vite instead; it defaults to `http://127.0.0.1:5173`. Set `TODO_TEST_OUTPUT` to a directory to save optional screenshots and reports. The Focus suite needs WebGL2 support and deliberately exercises graphics failures.
 
 ## Agent Task API
 
@@ -126,10 +157,6 @@ git push --follow-tags
 
 The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**, then uploads them as a draft GitHub Release. After all platform builds and manifest/asset checks pass, the workflow publishes it as the latest release. Users can install it through **Settings → Updates**.
 
-Use the **Add task...** box below the task list to create another top-level task. Press **Enter** to add it; **Escape** clears the draft. The box starts at the root-task checkbox column, with no leading plus button. The empty box appears on hover or focus, matching step entry; drafts and touch-device fields stay visible.
-
-On desktop, step-entry text and its border appear when you hover over the add-step row or focus its field. A nonempty draft stays visible; touch devices keep the field visible. Type in **Add step...** and press **Enter**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
-
 ## Shortcuts
 
 | Shortcut | Action |
@@ -137,7 +164,7 @@ On desktop, step-entry text and its border appear when you hover over the add-st
 | **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
 | **⌘Q** / **Ctrl+Q** | Quit (app/menu shortcut) |
 | **Enter** | Add task / submit subtask or goal / commit edit |
-| **Escape** | Close Focus Mode or a compact side panel; cancel edit/subtask input |
+| **Escape** | Close a dialog or compact side panel; cancel a title, outcome, date, or step draft |
 | **Drag the six-dot handle** | Reorder a task with its steps, or a step within its parent; Escape cancels the drag |
 | **Arrow Up / Arrow Down** | Move a task or subtask after clicking or tabbing to its six-dot handle |
 | **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
@@ -147,7 +174,7 @@ On desktop, step-entry text and its border appear when you hover over the add-st
 
 Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and focus without it. If Diane is disconnected or unavailable, only its dispatch/status controls are affected. Independently configured AI providers continue to use their own configuration.
 
-In **Settings → Diane**, enable **Connect to Dear Diane on this computer** and Save. It is off by default; off hides task controls and stops connection attempts without deleting session links or stopping existing Diane runs. The separate credential preference controls key reuse. Open Dear Diane and select the project/folder you want to use; Settings shows that destination when you enable the connection. In Todo, hover the small Run triangle to see the target project, then click once. Diane inherits its current execution settings and credentials. Todo shows only a status glyph; click it for the brief result, Open in Diane, or Stop. All questions and follow-up stay in the same Diane session. Mark the todo done yourself.
+In **Settings → Integrations**, enable **Connect to Dear Diane on this computer** and Save. It is off by default; off hides task controls and stops connection attempts without deleting session links or stopping existing Diane runs. The separate credential preference controls key reuse. Open Dear Diane and select the project/folder you want to use; Settings shows that destination when you enable the connection. Select a Todo task and open **More** to reach its Diane controls. Diane inherits its current execution settings and credentials. Its status control opens the brief result, Open in Diane, or Stop. All questions and follow-up stay in the same Diane session. Mark the todo done yourself.
 
 Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. Todo 2.1.7 includes the Todo side of this integration; running tasks requires the separate Diane companion update.
 
@@ -158,12 +185,3 @@ STICKY_TODO_DEV_DATA_DIR=/private/tmp/sticky-todo-diane-data npm run tauri -- de
 ```
 
 Browser controls can be checked without native data or an agent: run Vite on port 15173, then `python tests/check_diane_ui.py` with Python Playwright installed. `CHROME_EXECUTABLE` and `TODO_TEST_URL` override the test browser and preview URL.
-
-### Finish promises (local review build)
-
-Single-click a task to reveal **Outcome** and **Due** rows; double-click its title or press Enter to edit the title. Outcome shows a grey AI suggestion: Tab accepts it, typing replaces it, and clearing your words reveals it again. Click the outcome value to edit; Enter/blur saves and Escape cancels. Click **No date** or the existing date to choose a date, which saves automatically. Unselected tasks show saved details only. Carrying work forward keeps its due date.
-
-
-AI breakdown uses the finish criterion and date to propose a short plan including the closing action. Promised tasks require **Complete / Revise / Stop** review instead of automatic parent completion. Stopped tasks remain distinct from completed tasks and do not carry forward. The deadline editor offers scope reduction, stopping, and the original date/reschedule count. Tasks without these fields retain their normal behavior.
-
-Long-term and Recurring goals use compact inline entries: type and press Enter to add. Double-click a goal or focus it and press Enter to edit; Escape cancels. Completion and deletion remain explicit row controls.

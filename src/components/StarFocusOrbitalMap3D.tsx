@@ -10,6 +10,7 @@ interface Props {
   missionHistory: StarFocusMissionRecord[]
   activeSession: StarFocusSession | null
   activeSnapshot: StarFocusSnapshot | null
+  onUnavailable?: () => void
 }
 
 interface CameraState {
@@ -923,7 +924,6 @@ function createAtmosphereGlowMaterial({
       uniform float glowDaySharpness;
       uniform float twilightStrength;
       uniform vec3 lightPosition;
-      uniform vec3 cameraPosition;
 
       varying vec3 vWorldPosition;
       varying vec3 vWorldNormal;
@@ -995,7 +995,6 @@ function createAtmosphereShellMaterial({
       uniform float limbPower;
       uniform float limbStrength;
       uniform vec3 lightPosition;
-      uniform vec3 cameraPosition;
 
       varying vec3 vWorldPosition;
       varying vec3 vWorldNormal;
@@ -1061,7 +1060,6 @@ function createRingScatteringMaterial(
       uniform vec3 scatterColor;
       uniform float scatterIntensity;
       uniform float forwardPower;
-      uniform vec3 cameraPosition;
 
       varying vec2 vUv;
       varying vec3 vWorldPosition;
@@ -1118,7 +1116,6 @@ function createNightLightsMaterial(nightMap: THREE.Texture, intensity: number) {
       uniform sampler2D nightMap;
       uniform vec3 lightPosition;
       uniform float glowIntensity;
-      uniform vec3 cameraPosition;
 
       varying vec2 vUv;
       varying vec3 vWorldPosition;
@@ -1177,7 +1174,6 @@ function createSurfaceGlintMaterial(glintMap: THREE.Texture, color: number, inte
       uniform vec3 glintColor;
       uniform float glintIntensity;
       uniform float glintPower;
-      uniform vec3 cameraPosition;
 
       varying vec2 vUv;
       varying vec3 vWorldPosition;
@@ -1243,7 +1239,6 @@ function createPhaseRimMaterial(
       uniform float rimPower;
       uniform float nightBoost;
       uniform float terminatorTightness;
-      uniform vec3 cameraPosition;
 
       varying vec3 vWorldPosition;
       varying vec3 vWorldNormal;
@@ -1315,7 +1310,6 @@ function createCloudShellMaterial(
       uniform float cloudOpacity;
       uniform float scatterStrength;
       uniform float rimPower;
-      uniform vec3 cameraPosition;
 
       varying vec2 vUv;
       varying vec3 vWorldPosition;
@@ -1392,7 +1386,7 @@ function createCloudShadowMaterial(
       uniform vec3 shadowColor;
       uniform float shadowOpacity;
       uniform float shadowOffset;
-      uniform vec3 cameraPosition;
+      uniform mat4 modelMatrix;
 
       varying vec2 vUv;
       varying vec3 vWorldPosition;
@@ -1862,6 +1856,9 @@ function disposeMaterialTextures(material: THREE.Material) {
 
 function disposeObjectResources(root: THREE.Object3D) {
   root.traverse(object => {
+    if (object instanceof THREE.PointLight || object instanceof THREE.DirectionalLight || object instanceof THREE.SpotLight) {
+      object.shadow.dispose()
+    }
     if ('geometry' in object && object.geometry instanceof THREE.BufferGeometry) {
       object.geometry.dispose()
     }
@@ -2201,6 +2198,7 @@ export function StarFocusOrbitalMap3D({
   missionHistory,
   activeSession,
   activeSnapshot,
+  onUnavailable,
 }: Props) {
   const mountRef = useRef<HTMLDivElement | null>(null)
   const activeSessionRef = useRef(activeSession)
@@ -2210,6 +2208,9 @@ export function StarFocusOrbitalMap3D({
   const cameraRef = useRef(DEFAULT_CAMERA)
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<DragState | null>(null)
+  const onUnavailableRef = useRef(onUnavailable)
+  const redrawRef = useRef<(() => void) | null>(null)
+  onUnavailableRef.current = onUnavailable
   const latestMission = missionHistory[0] ?? null
   const hasLiveFlight = Boolean(activeSession && activeSnapshot)
   const topHud = destinationLabel
@@ -2228,557 +2229,637 @@ export function StarFocusOrbitalMap3D({
 
   useEffect(() => {
     activeSessionRef.current = activeSession
+    redrawRef.current?.()
   }, [activeSession])
 
   useEffect(() => {
     activeSnapshotRef.current = activeSnapshot
+    redrawRef.current?.()
   }, [activeSnapshot])
 
   useEffect(() => {
     missionHistoryRef.current = missionHistory
+    redrawRef.current?.()
   }, [missionHistory])
+
+  useEffect(() => {
+    redrawRef.current?.()
+  }, [camera])
 
   useEffect(() => {
     if (!mountRef.current) return
 
     const mount = mountRef.current
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    })
-    renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.08
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.domElement.className = 'starmap-3d-canvas'
-    renderer.domElement.setAttribute('aria-hidden', 'true')
-
-    mount.innerHTML = ''
-    mount.appendChild(renderer.domElement)
-
-    const scene = new THREE.Scene()
-    scene.fog = new THREE.Fog(0x060302, 120, 340)
-
-    const world = new THREE.Group()
-    scene.add(world)
-
-    const camera3D = new THREE.PerspectiveCamera(38, 1, 0.1, 1000)
-
-    const ambientLight = new THREE.AmbientLight(0x9a8763, 0.7)
-    const hemisphereLight = new THREE.HemisphereLight(0x87c8ff, 0x1b110a, 0.52)
-    const sunLight = new THREE.PointLight(0xffd390, 2.6, 420, 2)
-    sunLight.position.set(0, 0, 0)
-    sunLight.castShadow = true
-    sunLight.shadow.mapSize.set(1536, 1536)
-    sunLight.shadow.camera.near = 8
-    sunLight.shadow.camera.far = 220
-    sunLight.shadow.bias = -0.00055
-    sunLight.shadow.normalBias = 0.024
-    sunLight.shadow.radius = 2.2
-    const rimLight = new THREE.DirectionalLight(0x84cfff, 0.36)
-    rimLight.position.set(-80, 42, -54)
-    scene.add(ambientLight, hemisphereLight, sunLight, rimLight)
-
-    const sunGroup = new THREE.Group()
-    const sunCore = new THREE.Mesh(
-      new THREE.SphereGeometry(12, 40, 40),
-      new THREE.MeshBasicMaterial({
-        color: 0xffc861,
-      }),
-    )
-    const sunCoronaMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffa84a,
-      transparent: true,
-      opacity: 0.16,
-      side: THREE.BackSide,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    })
-    const sunCorona = new THREE.Mesh(
-      new THREE.SphereGeometry(18, 32, 32),
-      sunCoronaMaterial,
-    )
-    const sunHaloMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffe4a6,
-      transparent: true,
-      opacity: 0.08,
-      side: THREE.BackSide,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    })
-    const sunHalo = new THREE.Mesh(
-      new THREE.SphereGeometry(24, 28, 28),
-      sunHaloMaterial,
-    )
-    const solarFlareTexture = createSolarFlareTexture(7, [
-      'rgba(255, 234, 194, 0.42)',
-      'rgba(255, 181, 97, 0.34)',
-      'rgba(255, 208, 144, 0.3)',
-    ])
-    const solarFlareBloom = createSolarFlareSprite(solarFlareTexture, 108, 108, 0.18, 0xffdfb3)
-    const solarFlareStreak = createSolarFlareSprite(solarFlareTexture, 178, 40, 0.11, 0xffc98d)
-    const solarFlareCross = createSolarFlareSprite(solarFlareTexture, 82, 160, 0.08, 0xffd8aa)
-    const solarScatterVeil = createDustVeilLayer(
-      createDustVeilTexture(44, [
-        'rgba(255, 214, 152, 0.2)',
-        'rgba(255, 240, 210, 0.12)',
-        'rgba(255, 165, 82, 0.1)',
-      ]),
-      172,
-      84,
-      0.24,
-      0xffcd8d,
-    )
-    solarScatterVeil.rotation.x = -Math.PI / 2
-    solarScatterVeil.rotation.z = THREE.MathUtils.degToRad(14)
-    solarScatterVeil.position.y = 0.4
-    sunGroup.add(solarScatterVeil, solarFlareBloom, solarFlareStreak, solarFlareCross, sunHalo, sunCorona, sunCore)
-    world.add(sunGroup)
-
-    const farStars = createStarfieldLayer({
-      count: FAR_STAR_COUNT,
-      radiusMin: 190,
-      radiusMax: 340,
-      verticalScale: 0.84,
-      size: 1.05,
-      opacity: 0.5,
-      palette: ['#fef2d2', '#d8eeff', '#fff0c7', '#ffd9b0'],
-    })
-    const nearStars = createStarfieldLayer({
-      count: NEAR_STAR_COUNT,
-      radiusMin: 118,
-      radiusMax: 236,
-      verticalScale: 0.72,
-      size: 1.75,
-      opacity: 0.82,
-      palette: ['#fff4d7', '#cde6ff', '#ffe1bf'],
-      blending: THREE.AdditiveBlending,
-    })
-    const dustBand = createDustBandLayer(DUST_MOTE_COUNT)
-    const farNebulae = createNebulaSpriteField({
-      count: FAR_NEBULA_COUNT,
-      radiusMin: 220,
-      radiusMax: 360,
-      verticalScale: 0.76,
-      scaleMin: 64,
-      scaleMax: 118,
-      opacity: 0.12,
-      palette: ['rgba(255, 212, 158, 0.34)', 'rgba(210, 227, 255, 0.22)', 'rgba(255, 241, 210, 0.28)'],
-      seedOffset: 100,
-    })
-    const nearNebulae = createNebulaSpriteField({
-      count: NEAR_NEBULA_COUNT,
-      radiusMin: 142,
-      radiusMax: 248,
-      verticalScale: 0.64,
-      scaleMin: 42,
-      scaleMax: 82,
-      opacity: 0.14,
-      palette: ['rgba(255, 226, 186, 0.3)', 'rgba(183, 212, 255, 0.2)', 'rgba(255, 205, 156, 0.24)'],
-      seedOffset: 300,
-    })
-    const warmDustVeil = createDustVeilLayer(
-      createDustVeilTexture(11, ['rgba(255, 209, 152, 0.16)', 'rgba(255, 235, 196, 0.12)', 'rgba(255, 173, 110, 0.1)']),
-      320,
-      154,
-      0.32,
-      0xf6cb8e,
-    )
-    warmDustVeil.rotation.x = -Math.PI / 2
-    warmDustVeil.rotation.z = THREE.MathUtils.degToRad(9)
-
-    const coolDustVeil = createDustVeilLayer(
-      createDustVeilTexture(27, ['rgba(186, 214, 255, 0.12)', 'rgba(255, 228, 192, 0.08)', 'rgba(138, 176, 255, 0.08)']),
-      360,
-      188,
-      0.14,
-      0xa7c8ff,
-    )
-    coolDustVeil.rotation.x = -Math.PI / 2
-    coolDustVeil.rotation.z = THREE.MathUtils.degToRad(-18)
-    coolDustVeil.position.y = -4
-
-    scene.add(farNebulae, nearNebulae, warmDustVeil, coolDustVeil, farStars, nearStars, dustBand)
-
-    const orbitGroup = new THREE.Group()
-    BODY_DEFINITIONS.forEach(definition => {
-      orbitGroup.add(createOrbitLine(definition.orbitRadius, definition.orbitInclination, definition.orbitLongitude, 0x9fd1ff, definition.id === 'saturn' ? 0.16 : 0.1))
-    })
-    world.add(orbitGroup)
-
-    const bodyRuntimes = BODY_DEFINITIONS.map(definition => createBodyRuntime(definition, renderer.capabilities.getMaxAnisotropy()))
-    bodyRuntimes.forEach(runtime => {
-      world.add(runtime.group)
-    })
-
-    const archiveOrbitGroup = new THREE.Group()
-    ARCHIVE_LANES.forEach(lane => {
-      archiveOrbitGroup.add(createOrbitLine(lane.radius, lane.inclination, lane.longitude, 0xffd68a, 0.06))
-    })
-    world.add(archiveOrbitGroup)
-
-    const archiveMarkersGroup = new THREE.Group()
-    world.add(archiveMarkersGroup)
-
-    const missionCurve = buildMissionCurve()
-    const guideTrailMaterial = new THREE.LineBasicMaterial({
-      color: 0x8dcfff,
-      transparent: true,
-      opacity: 0.14,
-    })
-    const guideTrail = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(missionCurve.getPoints(TRAIL_SAMPLE_COUNT)),
-      guideTrailMaterial,
-    )
-    world.add(guideTrail)
-
-    const liveTrailMaterial = new THREE.LineBasicMaterial({
-      color: 0xffc56c,
-      transparent: true,
-      opacity: 0.88,
-    })
-    const liveTrail = new THREE.Line(new THREE.BufferGeometry(), liveTrailMaterial)
-    world.add(liveTrail)
-
-    const craftGroup = new THREE.Group()
-    const craftBody = new THREE.Mesh(
-      new THREE.ConeGeometry(1.7, 5.4, 8),
-      new THREE.MeshStandardMaterial({
-        color: 0xffcc72,
-        emissive: 0x6c3e10,
-        emissiveIntensity: 0.52,
-        roughness: 0.28,
-        metalness: 0.16,
-      }),
-    )
-    craftBody.rotation.z = -Math.PI / 2
-    craftBody.castShadow = true
-    craftBody.receiveShadow = true
-    const craftCore = new THREE.Mesh(
-      new THREE.SphereGeometry(0.96, 20, 20),
-      new THREE.MeshBasicMaterial({
-        color: 0xfff3d2,
-      }),
-    )
-    craftCore.castShadow = true
-    craftCore.receiveShadow = true
-    const craftFlame = new THREE.Mesh(
-      new THREE.ConeGeometry(1.05, 3.2, 8),
-      new THREE.MeshBasicMaterial({
-        color: 0xffb467,
-        transparent: true,
-        opacity: 0.92,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }),
-    )
-    craftFlame.rotation.z = Math.PI / 2
-    craftFlame.position.x = -2.8
-    craftGroup.add(craftFlame, craftBody, craftCore)
-    craftGroup.visible = false
-    world.add(craftGroup)
-
-    const resize = () => {
-      const width = Math.max(mount.clientWidth, 1)
-      const height = Math.max(mount.clientHeight, 1)
-      renderer.setSize(width, height, false)
-      camera3D.aspect = width / height
-      camera3D.updateProjectionMatrix()
+    const disposers: (() => void)[] = []
+    let animationFrame = 0
+    let disposed = false
+    let failed = false
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let reduceMotion = motionPreference.matches
+    const cleanup = () => {
+      if (disposed) return
+      disposed = true
+      window.cancelAnimationFrame(animationFrame)
+      redrawRef.current = null
+      for (const dispose of disposers.reverse()) {
+        try { dispose() } catch (error) { console.warn('Focus map cleanup failed.', error) }
+      }
+      mount.replaceChildren()
+    }
+    const failMap = (error: unknown) => {
+      if (disposed || failed) return
+      failed = true
+      window.cancelAnimationFrame(animationFrame)
+      console.warn('3D focus map unavailable; using the simplified map.', error)
+      // Leave an in-flight WebGL draw before releasing its resources.
+      queueMicrotask(() => {
+        if (disposed) return
+        cleanup()
+        onUnavailableRef.current?.()
+      })
     }
 
-    const resizeObserver = new ResizeObserver(resize)
-    resizeObserver.observe(mount)
-    resize()
+    try {
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+      })
+      disposers.push(() => {
+        renderer.dispose()
+        if (!renderer.getContext().isContextLost()) renderer.forceContextLoss()
+      })
+      renderer.debug.checkShaderErrors = true
+      renderer.debug.onShaderError = () => failMap(new Error('A focus map shader could not be compiled.'))
+      const handleContextLost = (event: Event) => {
+        event.preventDefault()
+        failMap(new Error('The focus map graphics context was lost.'))
+      }
+      renderer.domElement.addEventListener('webglcontextlost', handleContextLost)
+      disposers.push(() => renderer.domElement.removeEventListener('webglcontextlost', handleContextLost))
+      renderer.outputColorSpace = THREE.SRGBColorSpace
+      renderer.toneMapping = THREE.ACESFilmicToneMapping
+      renderer.toneMappingExposure = 1.08
+      renderer.shadowMap.enabled = true
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.domElement.className = 'starmap-3d-canvas'
+      renderer.domElement.setAttribute('aria-hidden', 'true')
 
-    const target = new THREE.Vector3(0, 0, 0)
-    const orbitVector = new THREE.Vector3()
-    const viewVector = new THREE.Vector3()
-    const lightVector = new THREE.Vector3()
-    const bodyWorldPosition = new THREE.Vector3()
-    const bodyToMoonVector = new THREE.Vector3()
-    const moonDirection = new THREE.Vector3()
-    const moonWorldPosition = new THREE.Vector3()
-    const shadowAxisVector = new THREE.Vector3()
-    const radialShadowVector = new THREE.Vector3()
-    const ringNormal = new THREE.Vector3()
-    const ringQuaternion = new THREE.Quaternion()
-    const moonBaseColor = new THREE.Color()
-    const moonEclipseColor = new THREE.Color(0x8a3f2c)
-    const archiveMarkerGeometry = new THREE.SphereGeometry(0.85, 16, 16)
-    const archiveHaloGeometry = new THREE.SphereGeometry(1.8, 16, 16)
-    let renderedHistoryKey = ''
+      mount.innerHTML = ''
+      mount.appendChild(renderer.domElement)
 
-    const clearArchiveMarkers = () => {
-      archiveMarkersGroup.children.forEach(marker => {
-        marker.traverse(object => {
-          if (object instanceof THREE.Mesh) {
-            if (Array.isArray(object.material)) {
-              object.material.forEach(material => material.dispose())
-            } else {
-              object.material.dispose()
+      const scene = new THREE.Scene()
+      disposers.push(() => disposeObjectResources(scene))
+      scene.fog = new THREE.Fog(0x060302, 120, 340)
+
+      const world = new THREE.Group()
+      scene.add(world)
+
+      const camera3D = new THREE.PerspectiveCamera(38, 1, 0.1, 1000)
+
+      const ambientLight = new THREE.AmbientLight(0x9a8763, 0.7)
+      const hemisphereLight = new THREE.HemisphereLight(0x87c8ff, 0x1b110a, 0.52)
+      const sunLight = new THREE.PointLight(0xffd390, 2.6, 420, 2)
+      sunLight.position.set(0, 0, 0)
+      sunLight.castShadow = true
+      sunLight.shadow.mapSize.set(1536, 1536)
+      sunLight.shadow.camera.near = 8
+      sunLight.shadow.camera.far = 220
+      sunLight.shadow.bias = -0.00055
+      sunLight.shadow.normalBias = 0.024
+      sunLight.shadow.radius = 2.2
+      const rimLight = new THREE.DirectionalLight(0x84cfff, 0.36)
+      rimLight.position.set(-80, 42, -54)
+      scene.add(ambientLight, hemisphereLight, sunLight, rimLight)
+
+      const sunGroup = new THREE.Group()
+      const sunCore = new THREE.Mesh(
+        new THREE.SphereGeometry(12, 40, 40),
+        new THREE.MeshBasicMaterial({
+          color: 0xffc861,
+        }),
+      )
+      const sunCoronaMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffa84a,
+        transparent: true,
+        opacity: 0.16,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+      const sunCorona = new THREE.Mesh(
+        new THREE.SphereGeometry(18, 32, 32),
+        sunCoronaMaterial,
+      )
+      const sunHaloMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffe4a6,
+        transparent: true,
+        opacity: 0.08,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+      const sunHalo = new THREE.Mesh(
+        new THREE.SphereGeometry(24, 28, 28),
+        sunHaloMaterial,
+      )
+      const solarFlareTexture = createSolarFlareTexture(7, [
+        'rgba(255, 234, 194, 0.42)',
+        'rgba(255, 181, 97, 0.34)',
+        'rgba(255, 208, 144, 0.3)',
+      ])
+      const solarFlareBloom = createSolarFlareSprite(solarFlareTexture, 108, 108, 0.18, 0xffdfb3)
+      const solarFlareStreak = createSolarFlareSprite(solarFlareTexture, 178, 40, 0.11, 0xffc98d)
+      const solarFlareCross = createSolarFlareSprite(solarFlareTexture, 82, 160, 0.08, 0xffd8aa)
+      const solarScatterVeil = createDustVeilLayer(
+        createDustVeilTexture(44, [
+          'rgba(255, 214, 152, 0.2)',
+          'rgba(255, 240, 210, 0.12)',
+          'rgba(255, 165, 82, 0.1)',
+        ]),
+        172,
+        84,
+        0.24,
+        0xffcd8d,
+      )
+      solarScatterVeil.rotation.x = -Math.PI / 2
+      solarScatterVeil.rotation.z = THREE.MathUtils.degToRad(14)
+      solarScatterVeil.position.y = 0.4
+      sunGroup.add(solarScatterVeil, solarFlareBloom, solarFlareStreak, solarFlareCross, sunHalo, sunCorona, sunCore)
+      world.add(sunGroup)
+
+      const farStars = createStarfieldLayer({
+        count: FAR_STAR_COUNT,
+        radiusMin: 190,
+        radiusMax: 340,
+        verticalScale: 0.84,
+        size: 1.05,
+        opacity: 0.5,
+        palette: ['#fef2d2', '#d8eeff', '#fff0c7', '#ffd9b0'],
+      })
+      const nearStars = createStarfieldLayer({
+        count: NEAR_STAR_COUNT,
+        radiusMin: 118,
+        radiusMax: 236,
+        verticalScale: 0.72,
+        size: 1.75,
+        opacity: 0.82,
+        palette: ['#fff4d7', '#cde6ff', '#ffe1bf'],
+        blending: THREE.AdditiveBlending,
+      })
+      const dustBand = createDustBandLayer(DUST_MOTE_COUNT)
+      const farNebulae = createNebulaSpriteField({
+        count: FAR_NEBULA_COUNT,
+        radiusMin: 220,
+        radiusMax: 360,
+        verticalScale: 0.76,
+        scaleMin: 64,
+        scaleMax: 118,
+        opacity: 0.12,
+        palette: ['rgba(255, 212, 158, 0.34)', 'rgba(210, 227, 255, 0.22)', 'rgba(255, 241, 210, 0.28)'],
+        seedOffset: 100,
+      })
+      const nearNebulae = createNebulaSpriteField({
+        count: NEAR_NEBULA_COUNT,
+        radiusMin: 142,
+        radiusMax: 248,
+        verticalScale: 0.64,
+        scaleMin: 42,
+        scaleMax: 82,
+        opacity: 0.14,
+        palette: ['rgba(255, 226, 186, 0.3)', 'rgba(183, 212, 255, 0.2)', 'rgba(255, 205, 156, 0.24)'],
+        seedOffset: 300,
+      })
+      const warmDustVeil = createDustVeilLayer(
+        createDustVeilTexture(11, ['rgba(255, 209, 152, 0.16)', 'rgba(255, 235, 196, 0.12)', 'rgba(255, 173, 110, 0.1)']),
+        320,
+        154,
+        0.32,
+        0xf6cb8e,
+      )
+      warmDustVeil.rotation.x = -Math.PI / 2
+      warmDustVeil.rotation.z = THREE.MathUtils.degToRad(9)
+
+      const coolDustVeil = createDustVeilLayer(
+        createDustVeilTexture(27, ['rgba(186, 214, 255, 0.12)', 'rgba(255, 228, 192, 0.08)', 'rgba(138, 176, 255, 0.08)']),
+        360,
+        188,
+        0.14,
+        0xa7c8ff,
+      )
+      coolDustVeil.rotation.x = -Math.PI / 2
+      coolDustVeil.rotation.z = THREE.MathUtils.degToRad(-18)
+      coolDustVeil.position.y = -4
+
+      scene.add(farNebulae, nearNebulae, warmDustVeil, coolDustVeil, farStars, nearStars, dustBand)
+
+      const orbitGroup = new THREE.Group()
+      BODY_DEFINITIONS.forEach(definition => {
+        orbitGroup.add(createOrbitLine(definition.orbitRadius, definition.orbitInclination, definition.orbitLongitude, 0x9fd1ff, definition.id === 'saturn' ? 0.16 : 0.1))
+      })
+      world.add(orbitGroup)
+
+      const bodyRuntimes = BODY_DEFINITIONS.map(definition => createBodyRuntime(definition, renderer.capabilities.getMaxAnisotropy()))
+      bodyRuntimes.forEach(runtime => {
+        world.add(runtime.group)
+      })
+
+      const archiveOrbitGroup = new THREE.Group()
+      ARCHIVE_LANES.forEach(lane => {
+        archiveOrbitGroup.add(createOrbitLine(lane.radius, lane.inclination, lane.longitude, 0xffd68a, 0.06))
+      })
+      world.add(archiveOrbitGroup)
+
+      const archiveMarkersGroup = new THREE.Group()
+      world.add(archiveMarkersGroup)
+
+      const missionCurve = buildMissionCurve()
+      const guideTrailMaterial = new THREE.LineBasicMaterial({
+        color: 0x8dcfff,
+        transparent: true,
+        opacity: 0.14,
+      })
+      const guideTrail = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(missionCurve.getPoints(TRAIL_SAMPLE_COUNT)),
+        guideTrailMaterial,
+      )
+      world.add(guideTrail)
+
+      const liveTrailMaterial = new THREE.LineBasicMaterial({
+        color: 0xffc56c,
+        transparent: true,
+        opacity: 0.88,
+      })
+      // Allocate the complete route once, then reveal only the traveled segment.
+      // A zero-length position buffer cannot grow with setFromPoints in Three.
+      const liveTrailGeometry = new THREE.BufferGeometry().setFromPoints(missionCurve.getPoints(TRAIL_SAMPLE_COUNT))
+      liveTrailGeometry.setDrawRange(0, 0)
+      const liveTrail = new THREE.Line(liveTrailGeometry, liveTrailMaterial)
+      world.add(liveTrail)
+
+      const craftGroup = new THREE.Group()
+      const craftBody = new THREE.Mesh(
+        new THREE.ConeGeometry(1.7, 5.4, 8),
+        new THREE.MeshStandardMaterial({
+          color: 0xffcc72,
+          emissive: 0x6c3e10,
+          emissiveIntensity: 0.52,
+          roughness: 0.28,
+          metalness: 0.16,
+        }),
+      )
+      craftBody.rotation.z = -Math.PI / 2
+      craftBody.castShadow = true
+      craftBody.receiveShadow = true
+      const craftCore = new THREE.Mesh(
+        new THREE.SphereGeometry(0.96, 20, 20),
+        new THREE.MeshBasicMaterial({
+          color: 0xfff3d2,
+        }),
+      )
+      craftCore.castShadow = true
+      craftCore.receiveShadow = true
+      const craftFlame = new THREE.Mesh(
+        new THREE.ConeGeometry(1.05, 3.2, 8),
+        new THREE.MeshBasicMaterial({
+          color: 0xffb467,
+          transparent: true,
+          opacity: 0.92,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
+      craftFlame.rotation.z = Math.PI / 2
+      craftFlame.position.x = -2.8
+      craftGroup.add(craftFlame, craftBody, craftCore)
+      craftGroup.visible = false
+      world.add(craftGroup)
+
+      const resize = () => {
+        if (disposed || failed) return
+        const width = Math.max(mount.clientWidth, 1)
+        const height = Math.max(mount.clientHeight, 1)
+        renderer.setSize(width, height, false)
+        camera3D.aspect = width / height
+        camera3D.updateProjectionMatrix()
+        redrawRef.current?.()
+      }
+
+      const resizeObserver = new ResizeObserver(resize)
+      disposers.push(() => resizeObserver.disconnect())
+      resizeObserver.observe(mount)
+      resize()
+
+      const target = new THREE.Vector3(0, 0, 0)
+      const orbitVector = new THREE.Vector3()
+      const viewVector = new THREE.Vector3()
+      const lightVector = new THREE.Vector3()
+      const bodyWorldPosition = new THREE.Vector3()
+      const bodyToMoonVector = new THREE.Vector3()
+      const moonDirection = new THREE.Vector3()
+      const moonWorldPosition = new THREE.Vector3()
+      const shadowAxisVector = new THREE.Vector3()
+      const radialShadowVector = new THREE.Vector3()
+      const ringNormal = new THREE.Vector3()
+      const ringQuaternion = new THREE.Quaternion()
+      const moonBaseColor = new THREE.Color()
+      const moonEclipseColor = new THREE.Color(0x8a3f2c)
+      const archiveMarkerGeometry = new THREE.SphereGeometry(0.85, 16, 16)
+      const archiveHaloGeometry = new THREE.SphereGeometry(1.8, 16, 16)
+      disposers.push(() => { archiveMarkerGeometry.dispose(); archiveHaloGeometry.dispose() })
+      let renderedHistoryKey = ''
+
+      const clearArchiveMarkers = () => {
+        archiveMarkersGroup.children.forEach(marker => {
+          marker.traverse(object => {
+            if (object instanceof THREE.Mesh) {
+              if (Array.isArray(object.material)) {
+                object.material.forEach(material => material.dispose())
+              } else {
+                object.material.dispose()
+              }
+            }
+          })
+        })
+        archiveMarkersGroup.clear()
+      }
+
+      const syncArchiveMarkers = () => {
+        renderedHistoryKey = historyKey(missionHistoryRef.current)
+        clearArchiveMarkers()
+
+        missionHistoryRef.current.slice(0, 12).forEach((mission, index) => {
+          const marker = new THREE.Group()
+          const core = new THREE.Mesh(
+            archiveMarkerGeometry,
+            new THREE.MeshBasicMaterial({
+              color: index === 0 ? 0xffd08b : 0x9fcfff,
+            }),
+          )
+          const halo = new THREE.Mesh(
+            archiveHaloGeometry,
+            new THREE.MeshBasicMaterial({
+              color: index === 0 ? 0xffd08b : 0x7abfff,
+              transparent: true,
+              opacity: index === 0 ? 0.18 : 0.08,
+              side: THREE.BackSide,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false,
+            }),
+          )
+          marker.position.copy(historyMarkerPosition(mission.orbitIndex))
+          marker.add(halo, core)
+          archiveMarkersGroup.add(marker)
+        })
+      }
+
+      syncArchiveMarkers()
+
+      const clock = new THREE.Clock()
+      let elapsed = 0
+
+      const drawFrame = () => {
+        if (disposed || failed) return
+        const frameDelta = clock.getDelta()
+        const delta = reduceMotion ? 0 : Math.min(frameDelta, 0.1)
+        elapsed += delta
+
+        const currentCamera = cameraRef.current
+        orbitVector.set(
+          Math.cos(currentCamera.tilt) * Math.cos(currentCamera.yaw),
+          Math.sin(currentCamera.tilt) * 0.84,
+          Math.cos(currentCamera.tilt) * Math.sin(currentCamera.yaw),
+        ).normalize().multiplyScalar(currentCamera.distance)
+        camera3D.position.copy(orbitVector)
+        camera3D.lookAt(target)
+
+        const phase = activeSnapshotRef.current?.phase ?? 'idle'
+        const phaseTone = PHASE_COLORS[phase]
+        const phaseAtmosphereBoost = phase === 'heating' ? 1.32 : phase === 'ignition' ? 1.18 : phase === 'orbit' ? 0.92 : 1
+        const phaseGlowBoost = phase === 'heating' ? 1.18 : phase === 'ignition' ? 1.12 : phase === 'orbit' ? 0.88 : 1
+        sunLight.color.setHex(phaseTone.accent)
+        sunLight.intensity = phase === 'heating' ? 3.0 : phase === 'ignition' ? 2.8 : phase === 'orbit' ? 2.4 : 2.6
+        ambientLight.intensity = phase === 'orbit' ? 0.62 : 0.7
+        rimLight.intensity = phase === 'heating' ? 0.48 : phase === 'orbit' ? 0.3 : 0.36
+        guideTrailMaterial.color.setHex(phaseTone.soft)
+        liveTrailMaterial.color.setHex(phaseTone.accent)
+        sunCoronaMaterial.color.setHex(phaseTone.accent)
+        sunCoronaMaterial.opacity = phase === 'heating' ? 0.24 : phase === 'ignition' ? 0.2 : 0.16
+        sunHaloMaterial.opacity = phase === 'heating' ? 0.12 : 0.08
+        sunCore.scale.setScalar(phase === 'heating' ? 1.04 : 1)
+        solarFlareBloom.material.opacity = phase === 'heating' ? 0.24 : phase === 'ignition' ? 0.21 : phase === 'orbit' ? 0.16 : 0.18
+        solarFlareBloom.material.color.setHex(phase === 'orbit' ? 0xffe4c5 : phaseTone.accent)
+        solarFlareBloom.scale.setScalar((phase === 'heating' ? 114 : phase === 'ignition' ? 111 : 108) + (Math.sin(elapsed * 0.7) * 4))
+        solarFlareStreak.material.opacity = phase === 'heating' ? 0.16 : phase === 'ignition' ? 0.13 : 0.11
+        solarFlareStreak.material.color.setHex(phase === 'heating' ? 0xffb36d : 0xffc98d)
+        solarFlareStreak.scale.set(176 + (Math.sin(elapsed * 0.48) * 10), 40 + (Math.cos(elapsed * 0.52) * 3), 1)
+        solarFlareCross.material.opacity = phase === 'heating' ? 0.11 : 0.08
+        solarFlareCross.scale.set(82 + (Math.cos(elapsed * 0.44) * 6), 158 + (Math.sin(elapsed * 0.39) * 8), 1)
+        solarScatterVeil.material.opacity = (phase === 'heating' ? 0.31 : phase === 'ignition' ? 0.27 : 0.24) + (Math.sin(elapsed * 0.18) * 0.016)
+        solarScatterVeil.rotation.z = THREE.MathUtils.degToRad(14) + (Math.sin(elapsed * 0.16) * 0.05)
+
+        bodyRuntimes.forEach(runtime => {
+          const { definition, group, mesh, atmosphere, atmosphereGlow, phaseRim, cloudShadow, clouds, glint, nightLights, moonTransitShadow, ring, ringGlow, ringShadow, earthshineLight, moonOrbit, moonMesh, moonPhaseRim } = runtime
+          const angle = definition.baseAngle + (elapsed * definition.orbitSpeed * 180 / Math.PI)
+          group.position.copy(
+            orbitalPosition(
+              definition.orbitRadius,
+              angle,
+              definition.orbitInclination,
+              definition.orbitLongitude,
+            ),
+          )
+          group.getWorldPosition(bodyWorldPosition)
+          lightVector.copy(bodyWorldPosition).normalize().multiplyScalar(-1)
+
+          mesh.rotation.y += delta * definition.spinSpeed
+          mesh.material.emissiveIntensity = definition.id === 'earth'
+            ? 0.18 + (phase === 'heating' ? 0.03 : 0)
+            : definition.id === 'saturn'
+              ? 0.22 + (phase === 'ignition' ? 0.03 : 0)
+              : 0.24 + (phase === 'ignition' ? 0.04 : 0)
+
+          if (atmosphere) {
+            atmosphere.material.uniforms.shellOpacity.value = (definition.atmosphereOpacity ?? 0.12) * 0.48 * phaseAtmosphereBoost
+            atmosphere.rotation.y += delta * definition.spinSpeed * 0.18
+          }
+
+          if (atmosphereGlow) {
+            atmosphereGlow.material.uniforms.glowIntensity.value = (definition.atmosphereOpacity ?? 0.12) * 1.55 * phaseGlowBoost
+            atmosphereGlow.rotation.y += delta * definition.spinSpeed * 0.1
+          }
+
+          if (phaseRim) {
+            phaseRim.rotation.y += delta * definition.spinSpeed
+          }
+
+          if (cloudShadow && definition.clouds) {
+            cloudShadow.material.uniforms.bodyCenter.value.copy(bodyWorldPosition)
+            cloudShadow.material.uniforms.shadowOpacity.value = (definition.id === 'earth' ? 0.2 : 0.14) * (phase === 'heating' ? 1.08 : 1)
+            cloudShadow.rotation.y += delta * definition.clouds.speed
+          }
+
+          if (clouds && definition.clouds) {
+            clouds.material.uniforms.cloudOpacity.value = definition.clouds.opacity * (phase === 'heating' ? 1.06 : 1)
+            clouds.material.uniforms.scatterStrength.value = (definition.id === 'earth' ? 0.42 : 0.56) * (phase === 'heating' ? 1.08 : 1)
+            clouds.rotation.y += delta * definition.clouds.speed
+          }
+
+          if (glint) {
+            glint.rotation.y += delta * definition.spinSpeed
+            glint.material.uniforms.glintIntensity.value = phase === 'heating' ? 1.84 : 1.7
+          }
+
+          if (nightLights) {
+            nightLights.rotation.y += delta * definition.spinSpeed
+            nightLights.material.uniforms.glowIntensity.value = phase === 'heating' ? 2.05 : 1.9
+          }
+
+          if (ring && ringGlow) {
+            ring.getWorldQuaternion(ringQuaternion)
+            ringNormal.set(0, 0, 1).applyQuaternion(ringQuaternion).normalize()
+            viewVector.copy(camera3D.position).sub(bodyWorldPosition).normalize()
+            const ringFace = Math.abs(ringNormal.dot(viewVector))
+            const ringLight = Math.abs(ringNormal.dot(lightVector))
+            ring.material.opacity = 0.32 + (ringFace * 0.28) + (ringLight * 0.24)
+            ring.material.emissiveIntensity = 0.04 + (ringLight * 0.12)
+            ringGlow.material.uniforms.scatterIntensity.value = 0.04 + (ringFace * 0.08) + (ringLight * 0.18)
+          }
+
+          if (ringShadow) {
+            ringShadow.material.uniforms.bodyCenter.value.copy(bodyWorldPosition)
+            ringShadow.material.uniforms.planeNormal.value.copy(ringNormal)
+          }
+
+          if (moonOrbit && definition.moon) {
+            const moonAngle = definition.moon.baseAngle + (elapsed * definition.moon.speed * 180 / Math.PI)
+            moonOrbit.position.copy(orbitalPosition(definition.moon.distance, moonAngle, 28, 16))
+            moonOrbit.getWorldPosition(moonWorldPosition)
+            bodyToMoonVector.copy(moonWorldPosition).sub(bodyWorldPosition)
+            const moonDistance = bodyToMoonVector.length()
+            moonDirection.copy(bodyToMoonVector).normalize()
+
+            if (earthshineLight) {
+              earthshineLight.intensity = 0.08 + (Math.max(moonDirection.dot(lightVector), 0) * 0.18)
+            }
+
+            if (moonTransitShadow) {
+              moonTransitShadow.material.uniforms.bodyCenter.value.copy(bodyWorldPosition)
+              moonTransitShadow.material.uniforms.occluderPosition.value.copy(moonWorldPosition)
+              moonTransitShadow.material.uniforms.occluderCosRadius.value = Math.cos(Math.atan(definition.moon.radius / moonDistance))
+            }
+
+            if (moonMesh) {
+              moonMesh.rotation.y += delta * 0.05
+            }
+
+            if (moonPhaseRim) {
+              moonPhaseRim.rotation.y += delta * 0.05
+            }
+
+            if (moonMesh) {
+              shadowAxisVector.copy(lightVector).multiplyScalar(-1)
+              const shadowDepth = bodyToMoonVector.dot(shadowAxisVector)
+              radialShadowVector.copy(shadowAxisVector).multiplyScalar(shadowDepth)
+              radialShadowVector.copy(bodyToMoonVector).sub(radialShadowVector)
+              const radialDistance = radialShadowVector.length()
+              const eclipseDepth = shadowDepth <= 0
+                ? 0
+                : THREE.MathUtils.smoothstep(shadowDepth, definition.moon.distance * 0.1, definition.moon.distance * 0.55)
+                  * (1 - THREE.MathUtils.smoothstep(radialDistance, definition.radius * 0.72, definition.radius * 1.14))
+
+              moonBaseColor.setHex(definition.moon.color)
+              moonMesh.material.color.copy(moonBaseColor).lerp(moonEclipseColor, eclipseDepth * 0.88)
+              moonMesh.material.emissive.setRGB(0.34 * eclipseDepth, 0.08 * eclipseDepth, 0.05 * eclipseDepth)
+              moonMesh.material.emissiveIntensity = eclipseDepth * 0.58
+            }
+          } else if (earthshineLight) {
+            earthshineLight.intensity = 0.12
+            if (moonMesh && definition.moon) {
+              moonMesh.material.color.setHex(definition.moon.color)
+              moonMesh.material.emissive.setRGB(0, 0, 0)
+              moonMesh.material.emissiveIntensity = 0
             }
           }
         })
-      })
-      archiveMarkersGroup.clear()
-    }
 
-    const syncArchiveMarkers = () => {
-      renderedHistoryKey = historyKey(missionHistoryRef.current)
-      clearArchiveMarkers()
-
-      missionHistoryRef.current.slice(0, 12).forEach((mission, index) => {
-        const marker = new THREE.Group()
-        const core = new THREE.Mesh(
-          archiveMarkerGeometry,
-          new THREE.MeshBasicMaterial({
-            color: index === 0 ? 0xffd08b : 0x9fcfff,
-          }),
-        )
-        const halo = new THREE.Mesh(
-          archiveHaloGeometry,
-          new THREE.MeshBasicMaterial({
-            color: index === 0 ? 0xffd08b : 0x7abfff,
-            transparent: true,
-            opacity: index === 0 ? 0.18 : 0.08,
-            side: THREE.BackSide,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-          }),
-        )
-        marker.position.copy(historyMarkerPosition(mission.orbitIndex))
-        marker.add(halo, core)
-        archiveMarkersGroup.add(marker)
-      })
-    }
-
-    syncArchiveMarkers()
-
-    const clock = new THREE.Clock()
-    let animationFrame = 0
-
-    const animate = () => {
-      animationFrame = window.requestAnimationFrame(animate)
-      const delta = clock.getDelta()
-      const elapsed = clock.elapsedTime
-
-      const currentCamera = cameraRef.current
-      orbitVector.set(
-        Math.cos(currentCamera.tilt) * Math.cos(currentCamera.yaw),
-        Math.sin(currentCamera.tilt) * 0.84,
-        Math.cos(currentCamera.tilt) * Math.sin(currentCamera.yaw),
-      ).normalize().multiplyScalar(currentCamera.distance)
-      camera3D.position.copy(orbitVector)
-      camera3D.lookAt(target)
-
-      const phase = activeSnapshotRef.current?.phase ?? 'idle'
-      const phaseTone = PHASE_COLORS[phase]
-      const phaseAtmosphereBoost = phase === 'heating' ? 1.32 : phase === 'ignition' ? 1.18 : phase === 'orbit' ? 0.92 : 1
-      const phaseGlowBoost = phase === 'heating' ? 1.18 : phase === 'ignition' ? 1.12 : phase === 'orbit' ? 0.88 : 1
-      sunLight.color.setHex(phaseTone.accent)
-      sunLight.intensity = phase === 'heating' ? 3.0 : phase === 'ignition' ? 2.8 : phase === 'orbit' ? 2.4 : 2.6
-      ambientLight.intensity = phase === 'orbit' ? 0.62 : 0.7
-      rimLight.intensity = phase === 'heating' ? 0.48 : phase === 'orbit' ? 0.3 : 0.36
-      guideTrailMaterial.color.setHex(phaseTone.soft)
-      liveTrailMaterial.color.setHex(phaseTone.accent)
-      sunCoronaMaterial.color.setHex(phaseTone.accent)
-      sunCoronaMaterial.opacity = phase === 'heating' ? 0.24 : phase === 'ignition' ? 0.2 : 0.16
-      sunHaloMaterial.opacity = phase === 'heating' ? 0.12 : 0.08
-      sunCore.scale.setScalar(phase === 'heating' ? 1.04 : 1)
-      solarFlareBloom.material.opacity = phase === 'heating' ? 0.24 : phase === 'ignition' ? 0.21 : phase === 'orbit' ? 0.16 : 0.18
-      solarFlareBloom.material.color.setHex(phase === 'orbit' ? 0xffe4c5 : phaseTone.accent)
-      solarFlareBloom.scale.setScalar((phase === 'heating' ? 114 : phase === 'ignition' ? 111 : 108) + (Math.sin(elapsed * 0.7) * 4))
-      solarFlareStreak.material.opacity = phase === 'heating' ? 0.16 : phase === 'ignition' ? 0.13 : 0.11
-      solarFlareStreak.material.color.setHex(phase === 'heating' ? 0xffb36d : 0xffc98d)
-      solarFlareStreak.scale.set(176 + (Math.sin(elapsed * 0.48) * 10), 40 + (Math.cos(elapsed * 0.52) * 3), 1)
-      solarFlareCross.material.opacity = phase === 'heating' ? 0.11 : 0.08
-      solarFlareCross.scale.set(82 + (Math.cos(elapsed * 0.44) * 6), 158 + (Math.sin(elapsed * 0.39) * 8), 1)
-      solarScatterVeil.material.opacity = (phase === 'heating' ? 0.31 : phase === 'ignition' ? 0.27 : 0.24) + (Math.sin(elapsed * 0.18) * 0.016)
-      solarScatterVeil.rotation.z = THREE.MathUtils.degToRad(14) + (Math.sin(elapsed * 0.16) * 0.05)
-
-      bodyRuntimes.forEach(runtime => {
-        const { definition, group, mesh, atmosphere, atmosphereGlow, phaseRim, cloudShadow, clouds, glint, nightLights, moonTransitShadow, ring, ringGlow, ringShadow, earthshineLight, moonOrbit, moonMesh, moonPhaseRim } = runtime
-        const angle = definition.baseAngle + (elapsed * definition.orbitSpeed * 180 / Math.PI)
-        group.position.copy(
-          orbitalPosition(
-            definition.orbitRadius,
-            angle,
-            definition.orbitInclination,
-            definition.orbitLongitude,
-          ),
-        )
-        group.getWorldPosition(bodyWorldPosition)
-        lightVector.copy(bodyWorldPosition).normalize().multiplyScalar(-1)
-
-        mesh.rotation.y += delta * definition.spinSpeed
-        mesh.material.emissiveIntensity = definition.id === 'earth'
-          ? 0.18 + (phase === 'heating' ? 0.03 : 0)
-          : definition.id === 'saturn'
-            ? 0.22 + (phase === 'ignition' ? 0.03 : 0)
-            : 0.24 + (phase === 'ignition' ? 0.04 : 0)
-
-        if (atmosphere) {
-          atmosphere.material.uniforms.shellOpacity.value = (definition.atmosphereOpacity ?? 0.12) * 0.48 * phaseAtmosphereBoost
-          atmosphere.rotation.y += delta * definition.spinSpeed * 0.18
+        if (renderedHistoryKey !== historyKey(missionHistoryRef.current)) {
+          syncArchiveMarkers()
         }
 
-        if (atmosphereGlow) {
-          atmosphereGlow.material.uniforms.glowIntensity.value = (definition.atmosphereOpacity ?? 0.12) * 1.55 * phaseGlowBoost
-          atmosphereGlow.rotation.y += delta * definition.spinSpeed * 0.1
+        if (activeSessionRef.current && activeSnapshotRef.current) {
+          const snapshot = activeSnapshotRef.current
+          const progress = clamp(snapshot.progress, 0, 1)
+          liveTrailGeometry.setDrawRange(0, Math.floor(progress * TRAIL_SAMPLE_COUNT) + 1)
+          craftGroup.visible = true
+          craftFlame.visible = !snapshot.isPaused
+
+          const point = missionCurve.getPoint(progress)
+          const tangent = missionCurve.getTangent(progress).normalize()
+          craftGroup.position.copy(point)
+          craftGroup.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), tangent)
+
+          const pulseScale = snapshot.isPaused ? 0.96 : 1 + (Math.sin(elapsed * 14) * 0.06)
+          craftFlame.scale.set(pulseScale, pulseScale, pulseScale)
+        } else {
+          craftGroup.visible = false
+          liveTrailGeometry.setDrawRange(0, 0)
         }
 
-        if (phaseRim) {
-          phaseRim.rotation.y += delta * definition.spinSpeed
-        }
-
-        if (cloudShadow && definition.clouds) {
-          cloudShadow.material.uniforms.bodyCenter.value.copy(bodyWorldPosition)
-          cloudShadow.material.uniforms.shadowOpacity.value = (definition.id === 'earth' ? 0.2 : 0.14) * (phase === 'heating' ? 1.08 : 1)
-          cloudShadow.rotation.y += delta * definition.clouds.speed
-        }
-
-        if (clouds && definition.clouds) {
-          clouds.material.uniforms.cloudOpacity.value = definition.clouds.opacity * (phase === 'heating' ? 1.06 : 1)
-          clouds.material.uniforms.scatterStrength.value = (definition.id === 'earth' ? 0.42 : 0.56) * (phase === 'heating' ? 1.08 : 1)
-          clouds.rotation.y += delta * definition.clouds.speed
-        }
-
-        if (glint) {
-          glint.rotation.y += delta * definition.spinSpeed
-          glint.material.uniforms.glintIntensity.value = phase === 'heating' ? 1.84 : 1.7
-        }
-
-        if (nightLights) {
-          nightLights.rotation.y += delta * definition.spinSpeed
-          nightLights.material.uniforms.glowIntensity.value = phase === 'heating' ? 2.05 : 1.9
-        }
-
-        if (ring && ringGlow) {
-          ring.getWorldQuaternion(ringQuaternion)
-          ringNormal.set(0, 0, 1).applyQuaternion(ringQuaternion).normalize()
-          viewVector.copy(camera3D.position).sub(bodyWorldPosition).normalize()
-          const ringFace = Math.abs(ringNormal.dot(viewVector))
-          const ringLight = Math.abs(ringNormal.dot(lightVector))
-          ring.material.opacity = 0.32 + (ringFace * 0.28) + (ringLight * 0.24)
-          ring.material.emissiveIntensity = 0.04 + (ringLight * 0.12)
-          ringGlow.material.uniforms.scatterIntensity.value = 0.04 + (ringFace * 0.08) + (ringLight * 0.18)
-        }
-
-        if (ringShadow) {
-          ringShadow.material.uniforms.bodyCenter.value.copy(bodyWorldPosition)
-          ringShadow.material.uniforms.planeNormal.value.copy(ringNormal)
-        }
-
-        if (moonOrbit && definition.moon) {
-          const moonAngle = definition.moon.baseAngle + (elapsed * definition.moon.speed * 180 / Math.PI)
-          moonOrbit.position.copy(orbitalPosition(definition.moon.distance, moonAngle, 28, 16))
-          moonOrbit.getWorldPosition(moonWorldPosition)
-          bodyToMoonVector.copy(moonWorldPosition).sub(bodyWorldPosition)
-          const moonDistance = bodyToMoonVector.length()
-          moonDirection.copy(bodyToMoonVector).normalize()
-
-          if (earthshineLight) {
-            earthshineLight.intensity = 0.08 + (Math.max(moonDirection.dot(lightVector), 0) * 0.18)
-          }
-
-          if (moonTransitShadow) {
-            moonTransitShadow.material.uniforms.bodyCenter.value.copy(bodyWorldPosition)
-            moonTransitShadow.material.uniforms.occluderPosition.value.copy(moonWorldPosition)
-            moonTransitShadow.material.uniforms.occluderCosRadius.value = Math.cos(Math.atan(definition.moon.radius / moonDistance))
-          }
-
-          if (moonMesh) {
-            moonMesh.rotation.y += delta * 0.05
-          }
-
-          if (moonPhaseRim) {
-            moonPhaseRim.rotation.y += delta * 0.05
-          }
-
-          if (moonMesh) {
-            shadowAxisVector.copy(lightVector).multiplyScalar(-1)
-            const shadowDepth = bodyToMoonVector.dot(shadowAxisVector)
-            radialShadowVector.copy(shadowAxisVector).multiplyScalar(shadowDepth)
-            radialShadowVector.copy(bodyToMoonVector).sub(radialShadowVector)
-            const radialDistance = radialShadowVector.length()
-            const eclipseDepth = shadowDepth <= 0
-              ? 0
-              : THREE.MathUtils.smoothstep(shadowDepth, definition.moon.distance * 0.1, definition.moon.distance * 0.55)
-                * (1 - THREE.MathUtils.smoothstep(radialDistance, definition.radius * 0.72, definition.radius * 1.14))
-
-            moonBaseColor.setHex(definition.moon.color)
-            moonMesh.material.color.copy(moonBaseColor).lerp(moonEclipseColor, eclipseDepth * 0.88)
-            moonMesh.material.emissive.setRGB(0.34 * eclipseDepth, 0.08 * eclipseDepth, 0.05 * eclipseDepth)
-            moonMesh.material.emissiveIntensity = eclipseDepth * 0.58
-          }
-        } else if (earthshineLight) {
-          earthshineLight.intensity = 0.12
-          if (moonMesh && definition.moon) {
-            moonMesh.material.color.setHex(definition.moon.color)
-            moonMesh.material.emissive.setRGB(0, 0, 0)
-            moonMesh.material.emissiveIntensity = 0
-          }
-        }
-      })
-
-      if (renderedHistoryKey !== historyKey(missionHistoryRef.current)) {
-        syncArchiveMarkers()
+        world.rotation.y = Math.sin(elapsed * 0.08) * 0.04
+        farNebulae.rotation.y += delta * 0.0005
+        farNebulae.rotation.x = Math.sin(elapsed * 0.018) * 0.05
+        farNebulae.rotation.z = Math.sin(elapsed * 0.012) * 0.04
+        nearNebulae.rotation.y -= delta * 0.0012
+        nearNebulae.rotation.x = Math.sin(elapsed * 0.026) * 0.06
+        warmDustVeil.rotation.z = THREE.MathUtils.degToRad(9) + (Math.sin(elapsed * 0.022) * 0.06)
+        warmDustVeil.material.opacity = 0.28 + (Math.sin(elapsed * 0.034) * 0.02)
+        coolDustVeil.rotation.z = THREE.MathUtils.degToRad(-18) - (Math.sin(elapsed * 0.018) * 0.05)
+        coolDustVeil.material.opacity = 0.12 + (Math.cos(elapsed * 0.028) * 0.015)
+        farStars.rotation.y += delta * 0.0012
+        farStars.rotation.x = Math.sin(elapsed * 0.032) * 0.04
+        nearStars.rotation.y -= delta * 0.0028
+        nearStars.rotation.x = Math.sin(elapsed * 0.05) * 0.06
+        dustBand.rotation.y = elapsed * 0.005
+        dustBand.rotation.z = Math.sin(elapsed * 0.028) * 0.08
+        renderer.render(scene, camera3D)
       }
 
-      if (activeSessionRef.current && activeSnapshotRef.current) {
-        const snapshot = activeSnapshotRef.current
-        const progress = clamp(snapshot.progress, 0, 1)
-        const trailPoints = missionCurve.getPoints(Math.max(3, Math.round(progress * TRAIL_SAMPLE_COUNT)))
-        liveTrail.geometry.setFromPoints(trailPoints)
-        craftGroup.visible = true
-        craftFlame.visible = !snapshot.isPaused
-
-        const point = missionCurve.getPoint(progress)
-        const tangent = missionCurve.getTangent(progress).normalize()
-        craftGroup.position.copy(point)
-        craftGroup.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), tangent)
-
-        const pulseScale = snapshot.isPaused ? 0.96 : 1 + (Math.sin(elapsed * 14) * 0.06)
-        craftFlame.scale.set(pulseScale, pulseScale, pulseScale)
-      } else {
-        craftGroup.visible = false
-        liveTrail.geometry.setFromPoints([])
+      const renderOnce = () => {
+        try { drawFrame() } catch (error) { failMap(error) }
       }
-
-      world.rotation.y = Math.sin(elapsed * 0.08) * 0.04
-      farNebulae.rotation.y += delta * 0.0005
-      farNebulae.rotation.x = Math.sin(elapsed * 0.018) * 0.05
-      farNebulae.rotation.z = Math.sin(elapsed * 0.012) * 0.04
-      nearNebulae.rotation.y -= delta * 0.0012
-      nearNebulae.rotation.x = Math.sin(elapsed * 0.026) * 0.06
-      warmDustVeil.rotation.z = THREE.MathUtils.degToRad(9) + (Math.sin(elapsed * 0.022) * 0.06)
-      warmDustVeil.material.opacity = 0.28 + (Math.sin(elapsed * 0.034) * 0.02)
-      coolDustVeil.rotation.z = THREE.MathUtils.degToRad(-18) - (Math.sin(elapsed * 0.018) * 0.05)
-      coolDustVeil.material.opacity = 0.12 + (Math.cos(elapsed * 0.028) * 0.015)
-      farStars.rotation.y += delta * 0.0012
-      farStars.rotation.x = Math.sin(elapsed * 0.032) * 0.04
-      nearStars.rotation.y -= delta * 0.0028
-      nearStars.rotation.x = Math.sin(elapsed * 0.05) * 0.06
-      dustBand.rotation.y = elapsed * 0.005
-      dustBand.rotation.z = Math.sin(elapsed * 0.028) * 0.08
-      renderer.render(scene, camera3D)
+      const animate = () => {
+        if (disposed || failed || document.hidden) return
+        renderOnce()
+        if (!reduceMotion && !disposed && !failed) animationFrame = window.requestAnimationFrame(animate)
+      }
+      redrawRef.current = () => {
+        if (reduceMotion && !document.hidden) renderOnce()
+      }
+      const refreshMotion = () => {
+        reduceMotion = motionPreference.matches
+        window.cancelAnimationFrame(animationFrame)
+        clock.getDelta()
+        animate()
+      }
+      const refreshVisibility = () => {
+        window.cancelAnimationFrame(animationFrame)
+        clock.getDelta()
+        animate()
+      }
+      motionPreference.addEventListener('change', refreshMotion)
+      document.addEventListener('visibilitychange', refreshVisibility)
+      disposers.push(() => {
+        motionPreference.removeEventListener('change', refreshMotion)
+        document.removeEventListener('visibilitychange', refreshVisibility)
+      })
+      animate()
+    } catch (error) {
+      failMap(error)
     }
 
-    animate()
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame)
-      resizeObserver.disconnect()
-      clearArchiveMarkers()
-      archiveMarkerGeometry.dispose()
-      archiveHaloGeometry.dispose()
-      disposeObjectResources(scene)
-      renderer.dispose()
-      mount.innerHTML = ''
-    }
+    return cleanup
   }, [])
 
   function updateCamera(nextCamera: CameraState | ((previous: CameraState) => CameraState)) {
@@ -2878,15 +2959,16 @@ export function StarFocusOrbitalMap3D({
 
       <div className="starmap-controls">
         <div className="starmap-control-row">
-          <button className="starmap-control-btn" onClick={() => handleZoom(CAMERA_LIMITS.zoomStep)} title="Zoom out">-</button>
+          <button className="starmap-control-btn" onClick={() => handleZoom(CAMERA_LIMITS.zoomStep)} title="Zoom out" aria-label="Zoom out">−</button>
           <span className="starmap-control-readout">{(DEFAULT_CAMERA.distance / camera.distance).toFixed(1)}x</span>
-          <button className="starmap-control-btn" onClick={() => handleZoom(-CAMERA_LIMITS.zoomStep)} title="Zoom in">+</button>
+          <button className="starmap-control-btn" onClick={() => handleZoom(-CAMERA_LIMITS.zoomStep)} title="Zoom in" aria-label="Zoom in">+</button>
         </div>
         <div className="starmap-control-row">
           <button
             className={`starmap-control-btn ${tiltMode === 'above' ? 'active' : ''}`}
             onClick={() => handleTilt(0.64)}
             title="View from above"
+            aria-pressed={tiltMode === 'above'}
           >
             Above
           </button>
@@ -2894,6 +2976,7 @@ export function StarFocusOrbitalMap3D({
             className={`starmap-control-btn ${tiltMode === 'level' ? 'active' : ''}`}
             onClick={() => handleTilt(0)}
             title="Level view"
+            aria-pressed={tiltMode === 'level'}
           >
             Level
           </button>
@@ -2901,6 +2984,7 @@ export function StarFocusOrbitalMap3D({
             className={`starmap-control-btn ${tiltMode === 'below' ? 'active' : ''}`}
             onClick={() => handleTilt(-0.38)}
             title="View from below"
+            aria-pressed={tiltMode === 'below'}
           >
             Below
           </button>

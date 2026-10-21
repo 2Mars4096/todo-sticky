@@ -2,6 +2,7 @@ import type { StarFocusMissionRecord, StarFocusSession } from '../types'
 import { STAR_FOCUS_PHASES, type StarFocusSnapshot } from '../hooks/useStarFocus'
 import { getJourneyLeg, getNextJourneyLeg } from '../starFocusJourney'
 import { StarFocusOrbitalMap } from './StarFocusOrbitalMap'
+import '../styles/focus-refinements.css'
 
 interface Props {
   collapsed: boolean
@@ -108,7 +109,7 @@ export function MissionControlSidebar({
   const displayLeg = completedLeg ?? nextLeg
 
   return (
-    <aside className={`mission-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Star Focus mission control">
+    <aside className={`mission-sidebar focus-refined ${collapsed ? 'collapsed' : ''}`} aria-label="Star Focus mission control">
       <div className="mission-top">
         {!collapsed && (
           <div className="mission-heading">
@@ -157,7 +158,7 @@ export function MissionControlSidebar({
             <div className="mission-panel-head">
               <span className="mission-section-label">Flight Deck</span>
               <span className={`mission-state-chip ${activeSession ? activeSnapshot?.isPaused ? 'paused' : 'live' : selectedTaskText ? 'armed' : 'idle'}`}>
-                {activeSession ? activeSnapshot?.isPaused ? 'Paused' : liveLabel : selectedTaskText ? 'Armed' : 'Idle'}
+                {activeSession ? activeSnapshot?.isPaused ? 'Paused' : liveLabel : selectedTaskText ? 'Ready' : 'Idle'}
               </span>
             </div>
 
@@ -198,16 +199,17 @@ export function MissionControlSidebar({
                 </div>
                 <div className="mission-action-row">
                   <button className="mission-btn subtle" onClick={activeSnapshot.isPaused ? onResume : onPause}>
-                    {activeSnapshot.isPaused ? 'Resume Burn' : 'Pause Burn'}
+                    {activeSnapshot.isPaused ? 'Resume' : 'Pause'}
                   </button>
-                  <button className="mission-btn primary" onClick={onComplete}>Complete Orbit</button>
-                  <button className="mission-btn subtle danger" onClick={onCancel}>Cancel</button>
+                  <button className="mission-btn primary" onClick={onComplete}>Finish session</button>
+                  <button className="mission-btn subtle danger" onClick={onCancel}>Cancel session</button>
                 </div>
+                <p className="focus-outcome-note">Record your focus session here. Review the task outcome in your task list.</p>
               </div>
             ) : latestCompletedMission ? (
               <div className="mission-status-card success">
                 <div className="mission-panel-head compact">
-                  <span className="mission-section-label">Docked</span>
+                  <span className="mission-section-label">Session saved</span>
                   <span className="mission-success-tag">{latestCompletedMission.vehicleCode}</span>
                 </div>
                 <div className="mission-task-title">{latestCompletedMission.taskText}</div>
@@ -217,36 +219,38 @@ export function MissionControlSidebar({
                     <strong>{formatCompletedAt(latestCompletedMission.completedAt)}</strong>
                   </div>
                   <div>
-                    <span className="mission-metric-label">Focus Burn</span>
+                    <span className="mission-metric-label">Planned duration</span>
                     <strong>{formatDuration(latestCompletedMission.durationMinutes)}</strong>
                   </div>
                 </div>
                 <div className="mission-action-row">
-                  <button className="mission-btn primary" onClick={onDismissCompletion}>Keep Flying</button>
+                  <button className="mission-btn primary" onClick={onDismissCompletion}>Another session</button>
                 </div>
+                <p className="focus-outcome-note">Review the task outcome in your task list when you are ready.</p>
               </div>
             ) : selectedTaskText ? (
               <div className="mission-status-card armed">
                 <div className="mission-task-title">{selectedTaskText}</div>
-                <div className="duration-row">
+                <div className="duration-row" role="group" aria-label="Focus duration">
                   {durationOptions.map(option => (
                     <button
                       key={option}
                       className={`duration-chip ${sessionDurationMinutes === option ? 'active' : ''}`}
                       onClick={() => onSelectDuration(option)}
+                      aria-pressed={sessionDurationMinutes === option}
                     >
                       {formatDuration(option)}
                     </button>
                   ))}
                 </div>
                 <div className="mission-action-row">
-                  <button className="mission-btn primary" onClick={onLaunch}>Launch</button>
-                  <button className="mission-btn subtle" onClick={onClearSelection}>Clear</button>
+                  <button className="mission-btn primary" onClick={onLaunch}>Start focus</button>
+                  <button className="mission-btn subtle" onClick={onClearSelection}>Clear selection</button>
                 </div>
               </div>
             ) : (
               <div className="mission-status-card idle">
-                <div className="mission-task-title">No task armed</div>
+                <div className="mission-task-title">Choose a task to focus on</div>
               </div>
             )}
           </section>
@@ -294,7 +298,7 @@ export function MissionControlSidebar({
 
           <section className="mission-panel mission-history-panel">
             <div className="mission-panel-head">
-              <span className="mission-section-label">Recent Orbits</span>
+              <span className="mission-section-label">Recent sessions</span>
             </div>
 
             {missionHistory.length ? (
@@ -308,7 +312,7 @@ export function MissionControlSidebar({
                     <div className="mission-history-copy">
                       <div className="mission-history-task">{mission.taskText}</div>
                       <div className="mission-history-meta">
-                        <span>{formatDuration(mission.durationMinutes)}</span>
+                        <span>{formatDuration(mission.durationMinutes)} planned</span>
                         <span>{formatCompletedAt(mission.completedAt)}</span>
                       </div>
                     </div>

@@ -18,7 +18,7 @@
 - Keep the existing warm sticky-note identity and reserve the cinematic dark surface for intentional Star Focus entry.
 - Compact window widths use overlay side panels so expanding a tool never crushes the task list.
 - The frameless shell needs explicit resize hit zones because native resize edges are too difficult to discover and grab.
-- Keep direct task actions available; at the minimum width, move them below the task text instead of hiding them in a new menu.
+- [4-44](4-44-ui-interaction-refinement.md) revises task actions to selected Focus / Add step / More; infrequent actions use a labeled disclosure. Compact idle rails become named controls so the note uses the full width.
 - Keep Star Focus launch as a deliberate two-action path so users can confirm session duration before the timer starts.
 
 ## Notes

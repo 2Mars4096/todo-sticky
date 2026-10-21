@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState, type PointerEvent } from 'react'
+import { Fragment, useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { AggregatedTask, Task, ViewMode, FinishPromise } from '../types'
 import type { ReorderPosition } from '../hooks/useTasks'
 import { TaskItem } from './TaskItem'
@@ -44,7 +44,15 @@ export function TaskList({
   onAddSubtask, onAddTask, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
-  const [carriedOpen, setCarriedOpen] = useState(true)
+  const [carriedOpen, setCarriedOpen] = useState(() => {
+    try { return window.localStorage.getItem('todo-sticky-carried-open-v1') === 'true' }
+    catch { return false }
+  })
+  const [reorderNotice, setReorderNotice] = useState('')
+  useEffect(() => {
+    try { window.localStorage.setItem('todo-sticky-carried-open-v1', String(carriedOpen)) }
+    catch { /* Disclosure remains usable without storage. */ }
+  }, [carriedOpen])
   const [carriedLimit, setCarriedLimit] = useState(40)
   const orderedTasks = [...tasks.filter(task => !task.sourceDate), ...tasks.filter(task => task.sourceDate).slice(0, carriedLimit)]
   const firstCarriedId = orderedTasks.find(task => task.sourceDate)?.id
@@ -146,6 +154,7 @@ export function TaskList({
     const target = siblings[index + direction]
     if (index < 0 || !target) return
     onReorderTask(taskId, target.id, direction < 0 ? 'before' : 'after')
+    setReorderNotice(`Task moved ${direction < 0 ? 'before' : 'after'} ${target.text}.`)
   }
 
   const moveSubtaskByKeyboard = (taskId: string, subtaskId: string, direction: -1 | 1) => {
@@ -154,6 +163,7 @@ export function TaskList({
     const target = parent?.todaySubtasks[index + direction]
     if (index < 0 || !target) return
     onReorderSubtask(taskId, subtaskId, target.id, direction < 0 ? 'before' : 'after')
+    setReorderNotice(`Step moved ${direction < 0 ? 'before' : 'after'} ${target.text}.`)
   }
 
   if (loading) {
@@ -209,6 +219,7 @@ export function TaskList({
 
   return (
     <div className="task-list" ref={listRef}>
+      <span className="task-reorder-status" role="status" aria-live="polite">{reorderNotice}</span>
       {rolloverLoading && <div className="rollover-error" role="status">Loading carried tasks…</div>}
       {rolloverError && <div className="rollover-error" role="alert">
         Some earlier tasks could not be loaded. <button onClick={onRetryLoad}>Retry</button>
@@ -220,7 +231,7 @@ export function TaskList({
             onClick={() => setCarriedOpen(open => !open)}
           >
             <span aria-hidden="true">{carriedOpen ? '▾' : '▸'}</span>
-            <span>Carried over</span><span className="carried-rule" /><span>{carriedCount}</span>
+            <span>Earlier tasks</span><span className="carried-rule" /><span>{carriedCount}</span>
           </button>}
           {(!task.sourceDate || carriedOpen) && <TaskItem
             id={task.id}
@@ -273,7 +284,7 @@ export function TaskList({
       ))}
       {carriedOpen && carriedCount > carriedLimit && <button
         className="carried-toggle" type="button" onClick={() => setCarriedLimit(limit => limit + 40)}
-      >Show more carried tasks ({carriedCount - carriedLimit} remaining)</button>}
+      >Show more earlier tasks ({carriedCount - carriedLimit} remaining)</button>}
       <AddTask inline onAdd={onAddTask} disabled={loading || Boolean(loadError)} />
     </div>
   )
