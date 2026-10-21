@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] [4-47-equal-task-spacing-and-release-2-1-14](plans/4-47-equal-task-spacing-and-release-2-1-14.md) — equalize visible control gaps and publish the final spacing refinement.
+
 - [ ] [4-46-checkbox-and-release-2-1-13](plans/4-46-checkbox-and-release-2-1-13.md) — align visible checkboxes with title text and publish the final updated release.
 
 - [ ] [4-45-publish-2-1-12](plans/4-45-publish-2-1-12.md) — publish UI refinements as the latest signed update.

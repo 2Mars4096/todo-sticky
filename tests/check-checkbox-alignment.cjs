@@ -13,16 +13,20 @@ const { seedBridge, launch, testUrl } = require('./helpers/browser-fixture.cjs')
         const check=row.querySelector('.task-checkbox'), title=row.querySelector('.task-title-line')
         const square=getComputedStyle(check,'::before'), text=getComputedStyle(title)
         const a=check.getBoundingClientRect(), b=title.getBoundingClientRect()
-        return {size:parseFloat(square.height),font:parseFloat(text.fontSize),hit:a.width,background:getComputedStyle(check).backgroundColor,delta:Math.abs(a.y+a.height/2-(b.y+parseFloat(text.lineHeight)/2))}
+        const svg=row.querySelector('.task-drag-handle svg'), icon=svg?.getBoundingClientRect(), ink=svg?.getBBox()
+        const half=(24-parseFloat(square.width))/2
+        const gapBefore=icon ? a.x+half-(icon.x+ink.x+ink.width) : null
+        const gapAfter=b.x-(a.right-half)
+        return {gapBefore,gapAfter,size:parseFloat(square.height),font:parseFloat(text.fontSize),hit:a.width,background:getComputedStyle(check).backgroundColor,delta:Math.abs(a.y+a.height/2-(b.y+parseFloat(text.lineHeight)/2))}
       }))
       assert.ok(metrics.some(item=>item.font===13))
-      for (const item of metrics) {assert.equal(item.size,item.font);assert.equal(item.hit,24);assert.equal(item.background,'rgba(0, 0, 0, 0)');assert.ok(item.delta<1)}
+      for (const item of metrics) {assert.equal(item.size,item.font);assert.equal(item.hit,24);assert.equal(item.background,'rgba(0, 0, 0, 0)');assert.ok(item.delta<1);if(item.gapBefore!==null){assert.ok(Math.abs(item.gapBefore-item.gapAfter)<0.5);assert.ok(item.gapAfter<=9)}}
     }
     const check=page.getByRole('button',{name:'Book a dentist appointment. Status todo. Change status',exact:true})
     // Outer click target remains interactive beyond the smaller painted square.
     await check.click({position:{x:2,y:12}})
     await page.getByRole('button',{name:'Book a dentist appointment. Status done. Change status',exact:true}).waitFor()
     await page.screenshot({path:'/private/tmp/todo-checkbox-alignment.png'})
-    console.log('PASS matching checkbox/title sizes and first-line centering for roots/steps at 340/460px, with working 24px click targets')
+    console.log('PASS equal visible dots/checkbox/title gaps, matching sizes and first-line centering for roots/steps at 340/460px, with working 24px click targets')
   } finally { await browser.close() }
 })().catch(error=>{console.error(error);process.exit(1)})

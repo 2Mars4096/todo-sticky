@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-21 — Equal task spacing and 2.1.14
+
+- [ui] Equalize visible drag-dots/checkbox/title spacing to 8px for tasks (8.5px for steps), keep 24px nonoverlapping control targets, and align step entry with task text. Geometry checks cover compact/default roots and steps.
+- [release] Prepare 2.1.14 for the follow-up requested during the 2.1.13 build.
+
 ## 2026-10-21 — Checkbox alignment and 2.1.13
 
 - [ui] Match visible checkbox dimensions to the task/step title font (14px/13px), align to the first text line and preserve 24px click targets. Compact/default browser geometry and completion-click checks, TypeScript and frontend build pass.
