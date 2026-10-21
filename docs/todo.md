@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [4-40-reliability-fixes](plans/4-40-reliability-fixes.md) — fix reproduced Star Focus errors; native drag acceptance remains pending.
+
 Deferred ideas (not implementation commitments): [AI-tool integration cart](idea-cart.md). Current design discussion focuses on task presentation and bounded breakdown.
 
 - [x] [4-39-local-install-step-entry](plans/4-39-local-install-step-entry.md) — build and install the step-entry change locally.

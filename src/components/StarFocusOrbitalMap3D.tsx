@@ -1845,7 +1845,7 @@ function disposeMaterialTextures(material: THREE.Material) {
   const textureKeys = ['map', 'alphaMap', 'bumpMap', 'roughnessMap', 'emissiveMap', 'normalMap'] as const
 
   textureKeys.forEach(key => {
-    const texture = (material as Record<string, unknown>)[key]
+    const texture = (material as THREE.Material & Partial<Record<typeof textureKeys[number], unknown>>)[key]
     if (texture instanceof THREE.Texture) {
       texture.dispose()
     }
@@ -1905,7 +1905,7 @@ function createBodyRuntime(definition: BodyDefinition, anisotropy: number) {
     clearcoat: definition.id === 'earth' ? 0.3 : definition.id === 'venus' ? 0.14 : 0.08,
     clearcoatRoughness: definition.id === 'earth' ? 0.36 : 0.58,
   })
-  material.map.anisotropy = anisotropy
+  if (material.map) material.map.anisotropy = anisotropy
   material.bumpMap?.repeat.set(1, 1)
   material.bumpMap && (material.bumpMap.anisotropy = anisotropy)
   material.roughnessMap && (material.roughnessMap.anisotropy = anisotropy)
@@ -2100,8 +2100,8 @@ function createBodyRuntime(definition: BodyDefinition, anisotropy: number) {
       emissiveIntensity: 0.08,
       depthWrite: false,
     })
-    ringMaterial.map.anisotropy = anisotropy
-    ringMaterial.alphaMap.anisotropy = anisotropy
+    if (ringMaterial.map) ringMaterial.map.anisotropy = anisotropy
+    if (ringMaterial.alphaMap) ringMaterial.alphaMap.anisotropy = anisotropy
 
     ring = new THREE.Mesh(
       new THREE.RingGeometry(definition.ring.inner, definition.ring.outer, 240, 12),

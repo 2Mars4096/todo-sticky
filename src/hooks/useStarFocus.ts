@@ -250,7 +250,7 @@ function completeState(state: StarFocusState, completedAt: number): StarFocusSta
     selectedTaskText: state.activeSession.taskText,
     missionHistory: [mission, ...state.missionHistory],
     lastCompletedMissionId: mission.id,
-  }, state.archiveRetentionLimit)
+  }, normalizeArchiveRetentionLimit(state.archiveRetentionLimit))
 }
 
 function getSessionSnapshot(session: StarFocusSession, now: number): StarFocusSnapshot {

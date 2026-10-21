@@ -201,3 +201,5 @@
 - `src-tauri/src/diane_credentials.rs` reads `~/.dan/linked-credentials.json` (absolute saved-key/.env paths only), or the existing `~/.dan/graphs_dir` marker for older Diane installs. No writes or Keychain APIs. Reads are bounded and re-evaluated per request.
 - `preferDianeCredentials` defaults to true in existing/new settings; only matching standard provider endpoints may use Diane keys. Todo’s stored keys remain the fallback. Keys never enter the new status command; it returns only availability. Process-only Diane environment credentials are not shared.
 - `dotenvy` parses file-backed credentials without modifying Todo’s environment. `tempfile` is test-only.
+
+- Three.js development types track the installed 0.184 renderer; full `npx tsc --noEmit` passes after the 4-40 reliability fixes.

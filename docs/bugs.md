@@ -1,5 +1,11 @@
 # Bugs And Failed Approaches
 
+## 2026-10-21: Star Focus Type Checking And Lighting
+
+- Fixed missing light-angle argument that could generate invalid atmosphere coordinates, optional-ring closure narrowing, ES2020-incompatible array indexing, and retention-limit normalization.
+- Added matching Three.js type declarations and nullable texture guards. Full `tsc --noEmit` now passes; older type-check entries below describe historical failures.
+- Native task dragging remains an acceptance boundary, not a newly reproduced failure; existing pointer capture implementation is retained.
+
 ## 2026-10-12: Rollover Loading Regression In 2.1.9
 
 - The first rollover implementation awaited the full archive before displaying Today and rendered every unfinished root at once. Repeated historical date sections across weekly files inflated the user's list to 10,264 roots and created duplicate UI IDs.

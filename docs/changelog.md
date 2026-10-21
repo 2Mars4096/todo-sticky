@@ -2,6 +2,8 @@
 
 ## 2026-10-21
 
+- [fix] Restore full TypeScript checking, pass the missing atmosphere lighting angle, normalize archive retention, and type/guard Three.js textures. Completion, loading, rollover, calendar, and persistence checks pass.
+
 - [docs] Cart optional local Codex/Claude Code execution and skill-based task editing by Codex/Claude Code/Diane for later discussion. No app changes or implementation plan; focus remains on task presentation and finishing.
 
 ## 2026-10-12

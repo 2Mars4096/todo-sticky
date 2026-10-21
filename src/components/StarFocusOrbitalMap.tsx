@@ -1046,17 +1046,18 @@ export function StarFocusOrbitalMap({
           camera,
         )
         : null
-      const ringPoints = body.ring
+      const ring = body.ring
+      const ringPoints = ring
         ? buildProjectedLoop(
           54,
           angleDegrees => addVectors(
             worldPoint,
             ellipticalOffset(
-              body.ring.radiusX,
-              body.ring.radiusZ,
+              ring.radiusX,
+              ring.radiusZ,
               angleDegrees,
-              body.ring.inclination,
-              body.ring.longitude,
+              ring.inclination,
+              ring.longitude,
             ),
           ),
           camera,
@@ -1135,7 +1136,7 @@ export function StarFocusOrbitalMap({
   const liveTrailPoints = hasLiveFlight ? buildTrajectoryPoints(liveProgress, 20, camera) : []
   const liveTrailBackPath = hasLiveFlight ? buildSegmentPath(liveTrailPoints, 'back', false) : ''
   const liveTrailFrontPath = hasLiveFlight ? buildSegmentPath(liveTrailPoints, 'front', false) : ''
-  const livePoint = liveTrailPoints.at(-1) ?? null
+  const livePoint = liveTrailPoints[liveTrailPoints.length - 1] ?? null
   const liveHeadingPoint = hasLiveFlight
     ? projectPoint(liveTrajectoryWorldPoint(clamp(liveProgress + 0.02, 0, 1)), camera)
     : null
@@ -1340,7 +1341,7 @@ export function StarFocusOrbitalMap({
                     r={screenRadius * 2.3}
                     style={{ fill: body.glow }}
                   />
-                  {renderBodyShell(body, projected, screenRadius)}
+                  {renderBodyShell(body, projected, screenRadius, lightAngle)}
 
                   {body.ring && (
                     <>
