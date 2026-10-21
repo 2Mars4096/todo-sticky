@@ -1,6 +1,16 @@
 # Changelog
 
+## 2026-10-21
+
+- [docs] Cart optional local Codex/Claude Code execution and skill-based task editing by Codex/Claude Code/Diane for later discussion. No app changes or implementation plan; focus remains on task presentation and finishing.
+
 ## 2026-10-12
+
+- [install] Build and locally install version 2.1.10 without the step-entry plus button. Back up the previous app, verify exact bundle checksums and strict deep signing, and relaunch the installed GUI. Task archive hashes remain unchanged. No public release change.
+
+- [ui] Remove the plus button beside Add step. Keep the input in its existing aligned position, with Enter to submit and unchanged hover/focus/draft behavior. Source change; not yet published.
+
+- [maintenance] At the user’s request, complete the backlog before 2026-10-12: 224 unfinished parents and 303 task-node status changes across 87 dates. Back up 27 weekly files first; revision-checked updates and re-extraction confirm zero older unfinished nodes, unchanged text/IDs, and unchanged current/future task statuses. No code or release change.
 
 - [release] Publish [v2.1.10](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.10) as latest with fast Today loading, canonical history selection, and bounded carried-row rendering. All platform builds and publication pass; public latest updater manifest, asset URLs, downloads, and matching signature files verify.
 

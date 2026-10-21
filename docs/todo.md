@@ -1,5 +1,13 @@
 # Todo
 
+Deferred ideas (not implementation commitments): [AI-tool integration cart](idea-cart.md). Current design discussion focuses on task presentation and bounded breakdown.
+
+- [x] [4-39-local-install-step-entry](plans/4-39-local-install-step-entry.md) — build and install the step-entry change locally.
+
+- [x] [4-38-remove-step-plus](plans/4-38-remove-step-plus.md) — remove the step-entry plus button, preserving input alignment and Enter submission.
+
+- [x] [4-37-backlog-cleanup](plans/4-37-backlog-cleanup.md) — mark previous tasks done, preserving current/future work and a backup.
+
 - [x] [4-36-publish-2-1-10](plans/4-36-publish-2-1-10.md) — publish the fast-loading correction.
 - [x] [4-35-fast-task-loading](plans/4-35-fast-task-loading.md) — show Today before history, deduplicate repeated archive sections by calendar ownership, and batch carried rows.
 

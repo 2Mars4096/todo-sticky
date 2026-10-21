@@ -59,7 +59,7 @@ The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY` and, for an
 
 Click a task title or the empty space to its right to edit it. The editor extends up to the action buttons. Press Enter to save or Escape to cancel.
 
-- **Tasks & subtasks** — Add a step from the plus aligned below its parent checkbox, use the branching icon for AI breakdown, and drag the six-dot handle to reorder tasks or steps within one task
+- **Tasks & subtasks** — Type in the aligned Add step field and press Enter, use the branching icon for AI breakdown, and drag the six-dot handle to reorder tasks or steps within one task
 - **Ready-to-use compact shell** — Task capture opens at the top, side tools stay collapsed by default, and compact panels overlay instead of squeezing the task list
 - **Predictable launch placement** — Fresh launches open at the top-right of the current display with a safe screen-edge margin; after that, the app respects wherever you drag it
 - **Automatic parent completion** — Mark the last unfinished subtask done to complete its parent for that day; steps from other dates do not block completion
@@ -128,7 +128,7 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 
 Use the **Add task...** box below the task list to create another top-level task. Press **Enter** to add it; **Escape** clears the draft. The box starts at the root-task checkbox column, with no leading plus button. The empty box appears on hover or focus, matching step entry; drafts and touch-device fields stay visible.
 
-On desktop, step-entry text and its border appear when you hover over the add-step row, focus its field, or click **+**. A nonempty draft stays visible; touch devices keep the field visible. Type in **Add step...** and press **Enter** or click **+**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
+On desktop, step-entry text and its border appear when you hover over the add-step row or focus its field. A nonempty draft stays visible; touch devices keep the field visible. Type in **Add step...** and press **Enter**; **Escape** clears the draft. The tray menu labels the visibility action **Toggle / Hide** and displays its platform shortcut alongside the Quit shortcut.
 
 ## Shortcuts
 

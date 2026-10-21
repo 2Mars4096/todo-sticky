@@ -3633,34 +3633,9 @@ select:focus-visible {
   margin-left: -4px;
 }
 
-.task-step-add-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.task-step-add-checkbox-space {
   flex: 0 0 16px;
   width: 16px;
-  height: 16px;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: 3px;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  opacity: 0.7;
-}
-
-.task-step-add-button:hover,
-.task-step-add-button:focus-visible,
-.task-step-add-row:focus-within .task-step-add-button {
-  color: var(--accent-hover);
-  border-color: rgba(196, 164, 74, 0.28);
-  background: rgba(196, 164, 74, 0.1);
-  opacity: 1;
-}
-
-.task-step-add-button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
 }
 
 .task-step-add-input {

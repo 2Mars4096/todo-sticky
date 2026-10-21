@@ -3,14 +3,6 @@ import { format, subDays } from 'date-fns'
 import { DianeAction } from './DianeAction'
 import type { Task, DatedTask, ViewMode } from '../types'
 
-function AddStepIcon() {
-  return (
-    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M8 3v10M3 8h10" />
-    </svg>
-  )
-}
-
 function BreakdownIcon() {
   return (
     <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
@@ -128,7 +120,6 @@ export function TaskItem({
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(text)
   const [subInput, setSubInput] = useState('')
-  const subInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -333,17 +324,8 @@ export function TaskItem({
       {!isSubtask && !isOtherDate && onAddSubtask && (
         <div className={`task-step-add-row${subInput ? ' has-draft' : ''}`}>
           <span className="task-step-add-handle-space" aria-hidden="true" />
-          <button
-            type="button"
-            className="task-step-add-button"
-            onClick={() => { handleSubAdd(); subInputRef.current?.focus() }}
-            title="Add a step"
-            aria-label={`Add a step to ${text}`}
-          >
-            <AddStepIcon />
-          </button>
+          <span className="task-step-add-checkbox-space" aria-hidden="true" />
           <input
-            ref={subInputRef}
             className="task-text-input task-step-add-input"
             placeholder="Add step..."
             aria-label={`New step for ${text}`}
