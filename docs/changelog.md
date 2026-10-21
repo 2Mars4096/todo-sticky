@@ -2,7 +2,7 @@
 
 ## 2026-10-21 — UI refinement integration
 
-- [integration] User approved the installed compact controls, startup reveal and stable Settings layout for local main integration. Verified feature/build source parity; final regression and TypeScript checks precede merge and worktree cleanup.
+- [integration] Fast-forward local main through `f8befcb` with the reviewed UI refinements, compact controls, startup reveal and stable Settings layout. All 12 Node suites and TypeScript checks pass; installed-build/source parity verified. Remove both UI-refinement worktrees and the merged local feature branch. Remote branches/releases unchanged.
 
 ## 2026-10-21 — Stable Settings layout
 

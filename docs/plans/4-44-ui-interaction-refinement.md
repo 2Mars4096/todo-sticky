@@ -97,5 +97,6 @@ Final validation: TypeScript, optimized app build, task-interaction and complete
 
 - [x] User reviewed the installed refinements and authorized main integration and feature-worktree cleanup.
 - [x] Confirm the durable feature worktree exactly matches the verified build checkout.
-- [ ] Commit the refinements, fast-forward local main and remove the two UI-refinement worktrees after preservation checks.
+- [x] Commit the refinements, fast-forward local main and remove the two UI-refinement worktrees after preservation checks.
+- Integrated as `f8befcb`; all 12 Node suites and TypeScript checks pass. Removed the durable feature worktree, temporary UI build checkout and merged local branch. Remote branches/releases remain unchanged.
 - Broader cross-platform, physical IME/GPU and real-person capture-to-review acceptance remain separate follow-ups above. No release/version bump is part of this integration.
