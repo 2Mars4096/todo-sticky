@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [4-41-finish-promises](plans/4-41-finish-promises.md) — implemented and locally installed the finish/deadline workflow; user review pending on the separate feature branch.
+
 - [x] [4-40-reliability-fixes](plans/4-40-reliability-fixes.md) — fix reproduced Star Focus errors; native drag acceptance remains pending.
 
 Deferred ideas (not implementation commitments): [AI-tool integration cart](idea-cart.md). Current design discussion focuses on task presentation and bounded breakdown.

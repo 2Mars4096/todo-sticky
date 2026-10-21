@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, type PointerEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
+import { TaskFinish, DeadlineBadge } from './TaskFinish'
 import { DianeAction } from './DianeAction'
-import type { Task, DatedTask, ViewMode } from '../types'
+import type { Task, DatedTask, ViewMode, FinishPromise } from '../types'
 
 function BreakdownIcon() {
   return (
@@ -73,6 +74,9 @@ export interface SortableTaskProps {
 }
 
 interface Props {
+  finish?: FinishPromise
+  onUpdateFinish?: (patch: Partial<FinishPromise>) => void
+  onReview?: (decision: 'complete' | 'revise' | 'stop') => void
   id: string
   text: string
   status: Task['status']
@@ -87,7 +91,7 @@ interface Props {
   onToggle: () => void
   onDelete: () => void
   onPush: () => void
-  onCopyTask?: (text: string, subtasks: Task[]) => void
+  onCopyTask?: (text: string, subtasks: Task[], finish?: FinishPromise) => void
   onTextChange: (text: string) => void
   onFocusSelect?: () => void
   onFocusSubtask?: (subtaskId: string, subtaskText: string) => void
@@ -115,8 +119,16 @@ export function TaskItem({
   todaySubtasks, otherSubtasks,
   onToggleSubtask, onDeleteSubtask, onPushSubtask, onSubtaskTextChange,
   sortable, getSubtaskSortable,
-  parentText, selectedFocusId,
+  parentText, selectedFocusId, finish, onUpdateFinish, onReview,
 }: Props) {
+  const [selected, setSelected] = useState(false)
+  const [dateOpen, setDateOpen] = useState(false)
+  const rowRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const dismiss = (event: globalThis.PointerEvent) => { if (!rowRef.current?.contains(event.target as Node)) { setSelected(false); setDateOpen(false) } }
+    document.addEventListener('pointerdown', dismiss)
+    return () => document.removeEventListener('pointerdown', dismiss)
+  }, [])
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(text)
   const [subInput, setSubInput] = useState('')
@@ -176,6 +188,10 @@ export function TaskItem({
   return (
     <>
       <div
+        ref={rowRef}
+        onClick={() => setSelected(true)}
+        onFocusCapture={() => setSelected(true)}
+        onBlur={event => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) { setSelected(false); setDateOpen(false) } }}
         className={cls}
         data-reorder-id={sortable ? id : undefined}
       >
@@ -197,7 +213,7 @@ export function TaskItem({
           </button>
         )}
         <button
-          className={`task-checkbox ${status === 'done' ? 'done' : ''} ${status === 'partial' ? 'partial' : ''}`}
+          className={`task-checkbox ${status === 'done' ? 'done' : ''} ${status === 'partial' ? 'partial' : ''} ${status === 'stopped' ? 'stopped' : ''}`}
           onClick={onToggle}
           title={`Status: ${status}. Click to change`}
           aria-label={`${text}. Status ${status}. Change status`}
@@ -231,6 +247,8 @@ export function TaskItem({
               {text}
             </span>
           )}
+          {status === 'stopped' && <span className="date-tag">Stopped</span>}
+          {finish?.by && <DeadlineBadge by={finish.by} closed={status === 'done' || status === 'stopped'} onClick={() => { setSelected(true); setDateOpen(open => !open) }} />}
           {dateLabel && <span className="date-tag">{dateLabel}</span>}
           <span className="task-actions">
             {!isOtherDate && <DianeAction sourceDate={dianeSourceDate ?? sourceDate} id={sourceDate && !isOtherDate ? id.replace(`${sourceDate}:`, '') : id} text={text} parent={parentText} steps={todaySubtasks?.map(step => `${step.status === 'done' ? '[completed] ' : ''}${step.text}`)} />}
@@ -252,6 +270,7 @@ export function TaskItem({
                 onClick={() => onCopyTask(
                   isSubtask && parentText ? parentText : text,
                   isSubtask ? [{ id, text, status, subtasks: [] }] : todaySubtasks ?? [],
+                  finish,
                 )}
                 title={isSubtask ? 'Copy parent task with this step' : 'Copy task and steps'}
                 aria-label={isSubtask ? `Copy ${parentText ?? text} with step ${text}` : `Copy ${text} and its steps`}
@@ -294,6 +313,7 @@ export function TaskItem({
               </button>
             )}
           </span>
+          {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish finish={finish} selected={selected} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} />}
         </div>
       </div>
 

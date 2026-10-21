@@ -158,3 +158,9 @@ STICKY_TODO_DEV_DATA_DIR=/private/tmp/sticky-todo-diane-data npm run tauri -- de
 ```
 
 Browser controls can be checked without native data or an agent: run Vite on port 15173, then `python tests/check_diane_ui.py` with Python Playwright installed. `CHROME_EXECUTABLE` and `TODO_TEST_URL` override the test browser and preview URL.
+
+### Finish promises (local review build)
+
+Select/edit a task to reveal **Define done** and **Set deadline**. The optional sentence stays beneath the title; its deadline badge shows upcoming, due today, or overdue. Click the sentence or badge to edit. Enter/blur saves a sentence; Escape cancels. Date changes use **Save date**, and removals are explicit. Carrying work forward keeps its deadline.
+
+AI breakdown uses the finish criterion and date to propose a short plan including the closing action. Promised tasks require **Complete / Revise / Stop** review instead of automatic parent completion. Stopped tasks remain distinct from completed tasks and do not carry forward. The deadline editor offers scope reduction, stopping, and the original date/reschedule count. Tasks without these fields retain their normal behavior.

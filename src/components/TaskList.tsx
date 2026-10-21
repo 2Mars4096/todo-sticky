@@ -1,5 +1,5 @@
 import { Fragment, useRef, useState, type PointerEvent } from 'react'
-import type { AggregatedTask, Task, ViewMode } from '../types'
+import type { AggregatedTask, Task, ViewMode, FinishPromise } from '../types'
 import type { ReorderPosition } from '../hooks/useTasks'
 import { TaskItem } from './TaskItem'
 import { AddTask } from './AddTask'
@@ -21,10 +21,12 @@ interface Props {
   focusLocked?: boolean
   isCurrentDay: boolean
   moveTargetLabel: string
+  onUpdateFinish?: (taskId: string, patch: Partial<FinishPromise>) => void
+  onReview?: (taskId: string, decision: 'complete' | 'revise' | 'stop') => void
   onToggle: (taskId: string, subtaskId?: string) => void
   onDelete: (taskId: string, subtaskId?: string) => void
   onPush: (taskId: string, subtaskId?: string) => void
-  onCopyTask: (text: string, subtasks: Task[]) => void
+  onCopyTask: (text: string, subtasks: Task[], finish?: FinishPromise) => void
   onTextChange: (taskId: string, text: string, subtaskId?: string) => void
   onAddSubtask: (taskId: string, text: string) => void
   onAddTask: (text: string) => void
@@ -38,7 +40,7 @@ interface Props {
 
 export function TaskList({
   tasks, loading, loadError, rolloverError, rolloverLoading, viewMode, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
-  onToggle, onDelete, onPush, onCopyTask, onTextChange,
+  onToggle, onDelete, onPush, onCopyTask, onTextChange, onUpdateFinish, onReview,
   onAddSubtask, onAddTask, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
@@ -225,6 +227,9 @@ export function TaskList({
             sourceDate={task.sourceDate}
             text={task.text}
             status={task.status}
+            finish={task.finish}
+            onUpdateFinish={onUpdateFinish ? patch => onUpdateFinish(task.id, patch) : undefined}
+            onReview={onReview ? decision => onReview(task.id, decision) : undefined}
             isFocusSelected={selectedTaskId === task.id}
             isFocusLocked={focusLocked}
             moveTargetLabel={moveTargetLabel}

@@ -143,6 +143,8 @@ pub fn push_task(
     task_text: String,
     subtask_texts: Vec<String>,
     parent_task_text: Option<String>,
+    task_snapshot: Option<Task>,
+    parent_snapshot: Option<Task>,
     app: AppHandle,
 ) -> Result<Value, String> {
     crate::mark_own_write(&app);
@@ -152,14 +154,23 @@ pub fn push_task(
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis();
-    let info = if let Some(parent_text) = parent_task_text {
+    let info = if let Some(snapshot) = task_snapshot {
+        if let Some(mut parent) = parent_snapshot {
+            parent.subtasks.clear();
+            file_sync::append_subtask_to_parent(&todo_dir.to_string_lossy(), &to_date, parent, snapshot)?
+        } else {
+            file_sync::append_tasks_to_date(&todo_dir.to_string_lossy(), &to_date, &[snapshot])?
+        }
+    } else if let Some(parent_text) = parent_task_text {
         let parent = Task {
+            finish: None,
             id: format!("push_parent_{}", now),
             text: parent_text,
             status: "todo".into(),
             subtasks: Vec::new(),
         };
         let subtask = Task {
+            finish: None,
             id: format!("push_sub_{}", now),
             text: task_text,
             status: "todo".into(),
@@ -168,6 +179,7 @@ pub fn push_task(
         file_sync::append_subtask_to_parent(&todo_dir.to_string_lossy(), &to_date, parent, subtask)?
     } else {
         let task = Task {
+            finish: None,
             id: format!("push_{}", now),
             text: task_text,
             status: "todo".into(),
@@ -175,6 +187,7 @@ pub fn push_task(
                 .iter()
                 .enumerate()
                 .map(|(i, t)| Task {
+                    finish: None,
                     id: format!("push_sub_{}_{}", now, i),
                     text: t.clone(),
                     status: "todo".into(),

@@ -19,6 +19,8 @@ pub struct Task {
     pub id: String,
     pub text: String,
     pub status: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub finish: Option<serde_json::Value>,
     pub subtasks: Vec<Task>,
 }
 
@@ -27,6 +29,8 @@ pub struct DatedTask {
     pub id: String,
     pub text: String,
     pub status: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub finish: Option<serde_json::Value>,
     pub subtasks: Vec<Task>,
     #[serde(rename = "sourceDate")]
     pub source_date: String,
@@ -37,6 +41,8 @@ pub struct AggregatedTask {
     pub id: String,
     pub text: String,
     pub status: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub finish: Option<serde_json::Value>,
     #[serde(rename = "todaySubtasks")]
     pub today_subtasks: Vec<Task>,
     #[serde(rename = "otherSubtasks")]
@@ -57,6 +63,7 @@ fn status_from_char(c: char) -> &'static str {
         'x' | 'X' => "done",
         '~' => "partial",
         '?' => "question",
+        '-' => "stopped",
         _ => "todo",
     }
 }
@@ -66,6 +73,7 @@ fn char_from_status(s: &str) -> char {
         "done" => 'x',
         "partial" => '~',
         "question" => '?',
+        "stopped" => '-',
         _ => ' ',
     }
 }
@@ -74,6 +82,8 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
     let checkbox_re = Regex::new(r"^(\s*)- \[(.)\]\s+(.*)$").unwrap();
     let bare_re = Regex::new(r"^(\s*)- (.*)$").unwrap();
     let id_re = Regex::new(r"\s*<!--\s*sticky-todo:id=([A-Za-z0-9_-]+)\s*-->\s*$").unwrap();
+
+    let finish_re = Regex::new(r"\s*<!-- sticky-todo:finish=(.*?) -->\s*$").unwrap();
 
     let mut root: Vec<Task> = Vec::new();
     let mut stack: Vec<(usize, usize)> = Vec::new(); // (indent, index into parent's subtasks or root)
@@ -100,7 +110,11 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
             .captures(&raw_text)
             .and_then(|captures| captures.get(1))
             .map(|value| value.as_str().to_string());
-        let text = id_re.replace(&raw_text, "").trim().to_string();
+        let without_id = id_re.replace(&raw_text, "").trim().to_string();
+        let finish = finish_re.captures(&without_id)
+            .and_then(|caps| serde_json::from_str(caps.get(1)?.as_str()).ok());
+        let text = if finish.is_some() { finish_re.replace(&without_id, "").trim().to_string() } else { without_id };
+
         let next_index = if stack.is_empty() {
             root.len()
         } else {
@@ -112,6 +126,7 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
             id: explicit_id.unwrap_or_else(|| format!("legacy_{}_{}", date, path.join("_"))),
             text,
             status,
+            finish,
             subtasks: Vec::new(),
         };
 
@@ -173,9 +188,13 @@ pub fn serialize_tasks(tasks: &[Task], indent: usize) -> String {
     let mut result = String::new();
     for task in tasks {
         let c = char_from_status(&task.status);
+        let metadata = task.finish.as_ref().map(|value| {
+            let json = value.to_string().replace('<', "\\u003c").replace('>', "\\u003e");
+            format!(" <!-- sticky-todo:finish={} -->", json)
+        }).unwrap_or_default();
         result.push_str(&format!(
-            "{}- [{}] {} <!-- sticky-todo:id={} -->\n",
-            pad, c, task.text, task.id
+            "{}- [{}] {}{} <!-- sticky-todo:id={} -->\n",
+            pad, c, task.text, metadata, task.id
         ));
         if !task.subtasks.is_empty() {
             result.push_str(&serialize_tasks(&task.subtasks, indent + 1));
@@ -240,6 +259,7 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
                             id: sub.id.clone(),
                             text: sub.text.clone(),
                             status: sub.status.clone(),
+                            finish: sub.finish.clone(),
                             subtasks: sub.subtasks.clone(),
                             source_date: date.clone(),
                         });
@@ -251,6 +271,7 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
                 id: task.id.clone(),
                 text: task.text.clone(),
                 status: task.status.clone(),
+                finish: task.finish.clone(),
                 today_subtasks: task.subtasks.clone(),
                 other_subtasks,
             });
@@ -314,4 +335,18 @@ title: Weekly Report
         assert_eq!(reparsed.date_sections[0].tasks[0].text, "Keep me");
         assert_eq!(reparsed.date_sections[0].tasks[0].id, "legacy_2026-08-16_0");
     }
+    #[test]
+    fn round_trips_finish_metadata_and_stopped_state() {
+        let mut parsed = parse_weekly_file("## 2026-10-21\n- [ ] Ship it\n");
+        let task = &mut parsed.date_sections[0].tasks[0];
+        task.status = "stopped".into();
+        task.finish = Some(serde_json::json!({"doneWhen":"用户 can use it --> safely", "by":"2026-10-23", "originalBy":"2026-10-22", "deadlineChanges":[{"from":"2026-10-22", "to":"2026-10-23", "at":"2026-10-21T00:00:00Z"}]}));
+        let saved = serialize_date_section("2026-10-21", &parsed.date_sections[0].tasks);
+        let loaded = parse_weekly_file(&saved);
+        assert_eq!(loaded.date_sections[0].tasks[0].finish, parsed.date_sections[0].tasks[0].finish);
+        assert_eq!(loaded.date_sections[0].tasks[0].status, "stopped");
+        assert_eq!(loaded.date_sections[0].tasks[0].text, "Ship it");
+        assert_eq!(get_tasks_for_date(&loaded, "2026-10-21")[0].finish, parsed.date_sections[0].tasks[0].finish);
+    }
+
 }

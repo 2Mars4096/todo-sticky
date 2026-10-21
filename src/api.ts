@@ -70,6 +70,8 @@ export const api = {
     taskText: string
     subtaskTexts: string[]
     parentTaskText?: string
+    taskSnapshot?: Task
+    parentSnapshot?: Task
   }) =>
     persist(invoke<{ ok: boolean; filePath: string }>('push_task', data)),
 

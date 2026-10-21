@@ -4,7 +4,7 @@ use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
-const VALID_STATUSES: [&str; 4] = ["todo", "done", "partial", "question"];
+const VALID_STATUSES: [&str; 5] = ["todo", "done", "partial", "question", "stopped"];
 
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -355,6 +355,7 @@ pub fn create_task(
         request.expected_revision.as_deref(),
     )?;
     let task = Task {
+        finish: None,
         id: new_task_id(),
         text: validate_text(&request.text)?,
         status: validate_status(&request.status)?,
@@ -363,6 +364,7 @@ pub fn create_task(
             .into_iter()
             .map(|draft| {
                 Ok(Task {
+                    finish: None,
                     id: new_task_id(),
                     text: validate_text(&draft.text)?,
                     status: validate_status(&draft.status)?,

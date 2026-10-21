@@ -192,3 +192,9 @@ Settings uses the official Tauri updater `check`, `download`, and `install` oper
 Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
 
 Never treat network failure as run failure, Stop submission as stop completion, or a completed agent run as a completed todo. Open uses the linked desktop session. Approvals, clarification, and further work belong in Diane.
+
+## Finish metadata and stopped tasks
+
+Task extraction may include optional `finish`: `{ "doneWhen": "A colleague can create a task", "by": "2026-10-23", "originalBy": "2026-10-23", "deadlineChanges": [], "reviewReady": false }`. Deadline changes contain `from`/`to` dates (nullable) and ISO `at` timestamps. Existing text/status updates preserve metadata; the CLI does not yet edit finish fields. `stopped` is an accepted status and is intentionally not completion.
+
+Desktop `push_task` accepts optional `taskSnapshot` and `parentSnapshot` Task objects in addition to its existing text arguments; snapshots preserve metadata and nested state. Moving a task does not modify `finish.by`. Promise review is a desktop interaction; agents must not infer outcome completion from finished steps alone.

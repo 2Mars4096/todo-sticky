@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { AggregatedTask, ExtractedTaskDate, Task } from '../types'
+import type { AggregatedTask, ExtractedTaskDate, Task, FinishPromise } from '../types'
 import { api, waitForPendingWrites } from '../api'
 import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
@@ -291,15 +291,49 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
             && todaySubtasks.every(s => s.status === 'done')
           return {
             ...t,
-            status: allDone ? 'done' : (t.status === 'done' && completedSubtask && completedSubtask.status !== 'done' ? 'partial' : t.status),
+            finish: t.finish?.doneWhen ? { ...t.finish, reviewReady: Boolean(allDone) } : t.finish,
+            status: allDone ? (t.finish?.doneWhen ? 'partial' : 'done') : (t.status === 'done' && completedSubtask && completedSubtask.status !== 'done' ? 'partial' : t.status),
             todaySubtasks,
           }
         }
         if (t.id === taskId) {
+          if (t.finish?.doneWhen && t.status !== 'done' && t.status !== 'stopped') {
+            return { ...t, finish: { ...t.finish, reviewReady: true } }
+          }
           const status = nextStatus(t.status)
           return { ...t, status, todaySubtasks: status === 'done' ? t.todaySubtasks.map(completeTree) : t.todaySubtasks }
         }
         return t
+      })
+      persist(next)
+      return next
+    })
+  }, [persist])
+
+  const updateFinish = useCallback((taskId: string, patch: Partial<FinishPromise>) => {
+    setTasks(prev => {
+      const next = prev.map(task => {
+        if (task.id !== taskId) return task
+        const finish = { ...task.finish, ...patch }
+        if ('by' in patch && patch.by !== task.finish?.by) {
+          finish.originalBy = task.finish?.originalBy || task.finish?.by || patch.by
+          finish.deadlineChanges = [...(task.finish?.deadlineChanges ?? []),
+            { from: task.finish?.by ?? null, to: patch.by || null, at: new Date().toISOString() }]
+        }
+        return { ...task, finish }
+      })
+      persist(next)
+      return next
+    })
+  }, [persist])
+
+  const reviewTask = useCallback((taskId: string, decision: 'complete' | 'revise' | 'stop') => {
+    setTasks(prev => {
+      const next = prev.map(task => task.id !== taskId ? task : {
+        ...task,
+        status: (decision === 'complete' ? 'done' : decision === 'stop' ? 'stopped' : 'partial') as Task['status'],
+        finish: { ...task.finish, reviewReady: false },
+        todaySubtasks: decision === 'complete' ? task.todaySubtasks.map(completeTree) : task.todaySubtasks,
       })
       persist(next)
       return next
@@ -370,6 +404,10 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
         taskText,
         subtaskTexts,
         parentTaskText,
+        taskSnapshot: subtaskId
+          ? currentTasks.find(t => t.id === taskId)?.todaySubtasks.find(s => s.id === subtaskId)
+          : flattenTasks(currentTasks.filter(t => t.id === taskId))[0],
+        parentSnapshot: subtaskId ? flattenTasks(currentTasks.filter(t => t.id === taskId))[0] : undefined,
       })
 
       const remaining = subtaskId
@@ -390,7 +428,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     const sub: Task = { id: newId(), text, status: 'todo', subtasks: [] }
     setTasks(prev => {
       const next = prev.map(t =>
-        t.id === taskId ? { ...t, status: t.status === 'done' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, sub] } : t
+        t.id === taskId ? { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, status: t.status === 'done' || t.status === 'stopped' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, sub] } : t
       )
       persist(next)
       return next
@@ -454,7 +492,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           status: 'todo' as const,
           subtasks: [],
         }))
-        return { ...t, status: newSubs.length && t.status === 'done' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
+        return { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, status: newSubs.length && t.status === 'done' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
       })
       persist(next)
       return next
@@ -514,7 +552,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   return {
     flushPendingSave,
     tasks, loading, loadError, rolloverLoading, rolloverError, load,
-    addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
+    updateFinish, reviewTask, addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,
   }

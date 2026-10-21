@@ -5714,3 +5714,23 @@ select:focus-visible {
 .carried-toggle:hover { background: rgba(196, 164, 74, 0.08); }
 .carried-toggle:focus-visible { outline: 2px solid #C4A44A; outline-offset: -2px; }
 .rollover-error { padding: 8px 10px; font-size: 12px; }
+
+/* Finish promises stay attached to the note; tools appear on selection. */
+.task-content-flow.editing { flex-wrap: wrap; }
+.task-finish { display: block; width: 100%; font-size: 11px; line-height: 1.5; color: var(--text-secondary, #7a6f50); cursor: default; }
+.task-finish:empty, .finish-tools:empty { display: none; }
+.task-finish button { font: inherit; color: inherit; background: transparent; border: 0; padding: 3px 4px; border-radius: 3px; cursor: pointer; }
+.task-finish button:hover { background: rgba(166, 132, 43, .12); }
+.task-finish button:focus-visible, .deadline-badge:focus-visible { outline: 2px solid #a8882e; outline-offset: 2px; }
+.task-finish .finish-sentence { display: block; text-align: left; padding-left: 0; overflow-wrap: anywhere; }
+.finish-tools { display: flex; gap: 8px; margin-top: 3px; }
+.finish-editor { display: block; margin-top: 5px; }
+.finish-editor input { width: 100%; box-sizing: border-box; }
+.finish-editor input, .deadline-editor input { font: inherit; color: #3d3520; background: transparent; border: 1px solid #c4a44a; border-radius: 3px; padding: 4px; min-width: 0; }
+.deadline-badge { display: inline-block; vertical-align: baseline; font: inherit; font-size: 10px; color: #75643d; border: 1px solid #d9cb92; background: transparent; border-radius: 4px; margin-left: 5px; padding: 1px 4px; cursor: pointer; }
+.deadline-badge.due { color: #775000; background: #f2dfa2; }
+.deadline-badge.overdue { color: #963f34; background: #f3ddd0; border-color: #d4a498; }
+.deadline-editor, .finish-review { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 5px; padding: 5px 0; border-top: 1px solid #e8d9a0; }
+.deadline-editor small, .finish-review > span { flex-basis: 100%; }
+.review-hint { display: block; color: #775000; }
+.task-checkbox.stopped::after { content: '−'; display: block; line-height: 12px; color: #7a6f50; }

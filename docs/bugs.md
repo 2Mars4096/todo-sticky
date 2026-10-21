@@ -1,5 +1,11 @@
 # Bugs And Failed Approaches
 
+## 2026-10-21: Review Build Toolchain
+
+- The prior temporary Rust toolchain had been cleaned up. Restore an isolated toolchain and use its direct bin path; the account Cargo cache contains the required crates. Do not change the user’s default toolchain.
+- Rust 1.99.1 minimal toolchain emitted nonfatal `rust-objcopy` debug-stripping warnings about a missing LLVM library; optimized app build and strict deep signature verification succeeded.
+- Browser verification uses isolated fixture data; it does not establish installed macOS drag acceptance.
+
 ## 2026-10-21: Star Focus Type Checking And Lighting
 
 - Fixed missing light-angle argument that could generate invalid atmosphere coordinates, optional-ring closure narrowing, ES2020-incompatible array indexing, and retention-limit normalization.

@@ -1,4 +1,7 @@
+import type { FinishPromise } from './types'
+
 export interface TransferTask {
+  finish?: FinishPromise
   text: string
   subtasks: string[]
 }
@@ -13,6 +16,8 @@ export function formatAgentPrompt(task: TransferTask) {
     '',
     'Objective',
     task.text.trim(),
+    ...(task.finish?.doneWhen ? [`Done when: ${task.finish.doneWhen}`] : []),
+    ...(task.finish?.by ? [`Committed deadline: ${task.finish.by}`] : []),
     '',
     'Checklist',
     ...(steps.length

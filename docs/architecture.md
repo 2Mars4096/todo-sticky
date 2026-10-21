@@ -203,3 +203,12 @@
 - `dotenvy` parses file-backed credentials without modifying Todo’s environment. `tempfile` is test-only.
 
 - Three.js development types track the installed 0.184 renderer; full `npx tsc --noEmit` passes after the 4-40 reliability fixes.
+
+## Finish promises (review branch)
+
+- Optional `finish` metadata travels with Task/AggregatedTask and is serialized as escaped JSON in `sticky-todo:finish` HTML comments before the existing stable-ID comment. No second store or migration is required for old tasks.
+- `doneWhen`, `by`, `originalBy`, `deadlineChanges` and `reviewReady` describe finish criteria, date commitments, date-change history and review state. Work dates and deadlines are independent.
+- `TaskFinish` provides inline controls; deadline badges refresh on focus/resume/visibility and a 30-second timer. Date differences use local calendar days.
+- `useTasks` intercepts completion of promised tasks for explicit review. `stopped` serializes as `[-]`, remains distinct from done, and is excluded from automatic carry-over. Normal tasks retain existing completion behavior.
+- Carry-forward accepts full task/parent snapshots to retain metadata, status, nested steps and stable IDs. Existing text-only command callers remain supported.
+- AI breakdown receives the promise/deadline within task context; the system prompt requests a bounded, nonduplicated plan with closing evidence.

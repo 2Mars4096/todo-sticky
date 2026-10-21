@@ -293,6 +293,7 @@ mod tests {
 
     fn task(id: &str, text: &str) -> Task {
         Task {
+            finish: None,
             id: id.into(),
             text: text.into(),
             status: "todo".into(),

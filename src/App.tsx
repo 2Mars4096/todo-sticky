@@ -273,7 +273,7 @@ export default function App() {
     try {
       const existing = task.todaySubtasks.map(s => s.text)
       const result = await api.llmBreakdown({
-        taskText: task.text,
+        taskText: [task.text, task.finish?.doneWhen && `Done when: ${task.finish.doneWhen}`, task.finish?.by && `Committed deadline: ${task.finish.by}`].filter(Boolean).join('\n'),
         existingSubtasks: existing,
       })
       if (result.subtasks?.length) {
@@ -373,10 +373,11 @@ export default function App() {
     }
   }, [tasks.carryForward, presentNotice])
 
-  const handleCopyTask = useCallback(async (text: string, subtasks: Task[]) => {
+  const handleCopyTask = useCallback(async (text: string, subtasks: Task[], finish?: import('./types').FinishPromise) => {
     try {
       await copyText(formatAgentPrompt({
         text,
+        finish,
         subtasks: subtasks.map(subtask => subtask.text),
       }))
       presentNotice({
@@ -502,6 +503,8 @@ export default function App() {
             onPush={handleCarryForward}
             onCopyTask={handleCopyTask}
             onTextChange={tasks.updateTaskText}
+            onUpdateFinish={tasks.updateFinish}
+            onReview={tasks.reviewTask}
             onAddSubtask={tasks.addSubtask}
             onAddTask={tasks.addTask}
             onReorderTask={tasks.reorderTasks}

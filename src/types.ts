@@ -1,7 +1,16 @@
+export interface FinishPromise {
+  doneWhen?: string
+  by?: string
+  originalBy?: string
+  deadlineChanges?: { from: string | null; to: string | null; at: string }[]
+  reviewReady?: boolean
+}
+
 export interface Task {
+  finish?: FinishPromise
   id: string
   text: string
-  status: 'todo' | 'done' | 'partial' | 'question'
+  status: 'todo' | 'done' | 'partial' | 'question' | 'stopped'
   subtasks: Task[]
 }
 
@@ -10,11 +19,12 @@ export interface DatedTask extends Task {
 }
 
 export interface AggregatedTask {
+  finish?: FinishPromise
   sourceDate?: string
   originalId?: string
   id: string
   text: string
-  status: 'todo' | 'done' | 'partial' | 'question'
+  status: 'todo' | 'done' | 'partial' | 'question' | 'stopped'
   todaySubtasks: Task[]
   otherSubtasks: DatedTask[]
 }

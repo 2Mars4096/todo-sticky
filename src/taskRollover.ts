@@ -1,21 +1,22 @@
 import type { AggregatedTask, ExtractedTaskDate, Task } from './types'
 
 export function completeTree(task: Task): Task {
+  if (task.status === 'stopped') return task
   return { ...task, status: 'done', subtasks: task.subtasks.map(completeTree) }
 }
 
 export function flattenTasks(tasks: AggregatedTask[]): Task[] {
   return tasks.map(task => ({
-    id: task.originalId ?? task.id, text: task.text, status: task.status, subtasks: task.todaySubtasks,
+    finish: task.finish, id: task.originalId ?? task.id, text: task.text, status: task.status, subtasks: task.todaySubtasks,
   }))
 }
 
 export function carriedTasks(dates: ExtractedTaskDate[], today: string): AggregatedTask[] {
   return dates.filter(section => section.date < today)
     .sort((a, b) => b.date.localeCompare(a.date))
-    .flatMap(section => section.tasks.filter(task => task.status !== 'done').map(task => ({
+    .flatMap(section => section.tasks.filter(task => task.status !== 'done' && task.status !== 'stopped').map(task => ({
       id: `${section.date}:${task.id}`, originalId: task.id,
-      text: task.text, status: task.status, sourceDate: section.date,
+      finish: task.finish, text: task.text, status: task.status, sourceDate: section.date,
       todaySubtasks: task.subtasks, otherSubtasks: [],
     })))
 }
