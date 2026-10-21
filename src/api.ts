@@ -78,8 +78,8 @@ export const api = {
   listWeeklyFiles: () =>
     invoke<string[]>('list_weekly_files'),
 
-  llmBreakdown: (data: { taskText: string; existingSubtasks: string[] }) =>
-    invoke<{ subtasks: { text: string; estimatedMinutes?: number; machineTask?: boolean }[] }>('llm_breakdown', data),
+  llmBreakdown: (data: { taskText: string; existingSubtasks: string[]; suggestFinish?: boolean }) =>
+    invoke<{ finishSuggestion?: string; subtasks: { text: string; estimatedMinutes?: number; machineTask?: boolean }[] }>('llm_breakdown', data),
 
   llmSchedule: (data: { tasks: any[]; machines: any[] }) =>
     invoke<{ plan: string; schedule: any[] }>('llm_schedule', data),

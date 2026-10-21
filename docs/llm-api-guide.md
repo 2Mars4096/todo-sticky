@@ -198,3 +198,5 @@ Never treat network failure as run failure, Stop submission as stop completion, 
 Task extraction may include optional `finish`: `{ "doneWhen": "A colleague can create a task", "by": "2026-10-23", "originalBy": "2026-10-23", "deadlineChanges": [], "reviewReady": false }`. Deadline changes contain `from`/`to` dates (nullable) and ISO `at` timestamps. Existing text/status updates preserve metadata; the CLI does not yet edit finish fields. `stopped` is an accepted status and is intentionally not completion.
 
 Desktop `push_task` accepts optional `taskSnapshot` and `parentSnapshot` Task objects in addition to its existing text arguments; snapshots preserve metadata and nested state. Moving a task does not modify `finish.by`. Promise review is a desktop interaction; agents must not infer outcome completion from finished steps alone.
+
+Desktop `llm_breakdown` accepts optional `suggestFinish: true` to return `{ "finishSuggestion": "One short observable outcome", "subtasks": [] }` instead of steps. The UI treats it as unaccepted placeholder text until Tab acceptance; default breakdown behavior is unchanged.

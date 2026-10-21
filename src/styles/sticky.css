@@ -5734,3 +5734,6 @@ select:focus-visible {
 .deadline-editor small, .finish-review > span { flex-basis: 100%; }
 .review-hint { display: block; color: #775000; }
 .task-checkbox.stopped::after { content: '−'; display: block; line-height: 12px; color: #7a6f50; }
+.finish-editor textarea { display: block; width: 100%; box-sizing: border-box; resize: vertical; min-height: 64px; font: inherit; line-height: 1.5; color: #3d3520; background: transparent; border: 1px solid #c4a44a; border-radius: 3px; padding: 5px; }
+.finish-editor textarea::placeholder { color: #948a70; opacity: 1; }
+.suggestion-hint { display: block; color: #7a6f50; margin-top: 3px; }

@@ -212,3 +212,5 @@
 - `useTasks` intercepts completion of promised tasks for explicit review. `stopped` serializes as `[-]`, remains distinct from done, and is excluded from automatic carry-over. Normal tasks retain existing completion behavior.
 - Carry-forward accepts full task/parent snapshots to retain metadata, status, nested steps and stable IDs. Existing text-only command callers remain supported.
 - AI breakdown receives the promise/deadline within task context; the system prompt requests a bounded, nonduplicated plan with closing evidence.
+
+- Finish editor suggestions use `llm_breakdown` with optional `suggestFinish: true` and a validated `finishSuggestion` response. Requests start on editor opening, cache per task text/component, never overwrite draft input, and never persist placeholder text. Manual editing remains available on provider failure. Tab accepts a suggestion into the draft; Enter/blur saves.

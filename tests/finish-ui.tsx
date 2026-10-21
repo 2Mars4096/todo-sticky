@@ -36,6 +36,10 @@ api.pushTask = async payload => {
  localStorage.setItem('finish-fixture', JSON.stringify(sections))
  return { ok: true, filePath: 'fixture.md' }
 }
+api.llmBreakdown = async () => {
+ await new Promise(resolve => setTimeout(resolve, 150))
+ return { finishSuggestion: 'Write a one-page map of three themes and one open question each.', subtasks: [] }
+}
 api.onFileChanged = () => () => {}
 function Fixture() {
  const tasks = useTasks(today, true)

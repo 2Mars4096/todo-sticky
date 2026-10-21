@@ -1,5 +1,7 @@
 # Bugs And Failed Approaches
 
+- 2026-10-21: Standalone Python HTTPS verification lacked the local issuer certificate. Use the system HTTPS client with normal certificate validation; do not disable TLS verification. The OpenRouter model check succeeds through system curl.
+
 ## 2026-10-21: Review Build Toolchain
 
 - `git worktree move` cannot cross from `/private/tmp` to the project volume. Keep the build checkout detached and create a fresh durable worktree at the same feature commit.

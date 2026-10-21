@@ -213,8 +213,10 @@ pub fn list_weekly_files(app: AppHandle) -> Result<Vec<String>, String> {
 pub async fn llm_breakdown(
     task_text: String,
     existing_subtasks: Vec<String>,
+    suggest_finish: Option<bool>,
     app: AppHandle,
 ) -> Result<Value, String> {
+    if suggest_finish.unwrap_or(false) { return llm::suggest_finish(&app, &task_text).await; }
     llm::breakdown(&app, &task_text, &existing_subtasks).await
 }
 

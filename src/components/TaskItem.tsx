@@ -313,7 +313,7 @@ export function TaskItem({
               </button>
             )}
           </span>
-          {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish finish={finish} selected={selected} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} />}
+          {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish} selected={selected} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} />}
         </div>
       </div>
 
