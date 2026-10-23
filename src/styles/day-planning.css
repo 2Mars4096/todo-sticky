@@ -50,3 +50,9 @@
   .day-plan-times { gap: 8px; }
   .day-plan-times label { flex-direction: column; align-items: stretch; gap: 3px; }
 }
+
+.day-plan-coverage { margin: 10px 0; padding: 10px; border: 1px solid var(--sticky-border); border-radius: 4px; background: var(--sticky-bg-dark); }
+.day-plan-coverage.incomplete { color: #78382c; border-color: #c7987c; background: #f8e9d9; }
+.day-plan-coverage p { margin: 6px 0; }
+.day-plan-coverage ul { margin: 6px 0; padding-left: 18px; }
+.day-plan-coverage li { margin: 3px 0; overflow-wrap: anywhere; }

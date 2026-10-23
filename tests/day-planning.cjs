@@ -27,7 +27,7 @@ function createTsLoader(stubs = {}, globals = {}) {
   return load
 }
 const load = createTsLoader()
-const { minutesOfDay, validateDayPlan, planningTaskKey } = load('src/taskPlanning.ts')
+const { minutesOfDay, validateDayPlan, planningTaskKey, dayPlanCoverage, planningTaskGroups } = load('src/taskPlanning.ts')
 const task = (id, extra = {}) => ({ id, text: id, status: 'todo', todaySubtasks: [], otherSubtasks: [], ...extra })
 const step = (id, extra = {}) => ({ id, text: id, status: 'todo', subtasks: [], ...extra })
 const day = '2026-10-21'
@@ -132,6 +132,34 @@ check('stale-plan fingerprints include nested steps, finish metadata, dates, ord
   for (const mutate of mutations) { const modified = plain(initial); mutate(modified); assert.notEqual(planningTaskKey(modified), original) }
 })
 
+check('date commitments outrank older deadlines and exclude closed or future tasks', () => {
+  const items = [task('old', {sourceDate:'2026-10-19', finish:{by:'2026-10-18'}}), task('draft'), task('promoted'),
+    task('same-day', {sourceDate:day}), task('future',{sourceDate:'2026-10-22'}), task('closed',{status:'done'}), task('stopped',{status:'stopped'})]
+  const groups = planningTaskGroups(items, day)
+  assert.deepEqual(Array.from(groups.required, t=>t.id), ['draft','promoted','same-day'])
+  assert.deepEqual(Array.from(groups.earlier, t=>t.id), ['old'])
+})
+
+check('every selected-day root needs time even if older tasks or extra steps are scheduled', () => {
+  const tasks = [task('draft'), task('share'), task('old',{sourceDate:'2026-10-19'})]
+  for (const schedule of [[block()], [block(),block({time:'10:00',endTime:'10:30'})], [block({taskId:'old'})]]) {
+    const coverage=dayPlanCoverage(schedule,tasks,day)
+    assert.equal(coverage.complete,false)
+    assert.ok(coverage.missing.some(t=>t.id==='share'))
+  }
+  const covered=[block(),block({taskId:'share',time:'10:00',endTime:'10:30'})]
+  assert.equal(dayPlanCoverage(covered,tasks,day).complete,true)
+  assert.equal(dayPlanCoverage([...covered,block({taskId:'old',time:'11:00',endTime:'11:30'})],tasks,day).complete,true)
+  assert.equal(dayPlanCoverage([block({taskId:'old'})],[tasks[2]],day).complete,true)
+})
+
+check('earlier work cannot displace selected-day work on the same resource', () => {
+  const tasks=[task('draft'),task('old',{sourceDate:'2026-10-19'})]
+  const required=block({time:'10:00',endTime:'10:30'})
+  assert.equal(dayPlanCoverage([block({taskId:'old'}),required],tasks,day).displacesRequired,true)
+  assert.equal(dayPlanCoverage([block({taskId:'old',assignedTo:'Available machine'}),required],tasks,day).complete,true)
+})
+
 function hookFixture() {
   const slots = [], timers = new Map(), writes = []
   let cursor = 0, timerId = 0
@@ -162,7 +190,12 @@ function hookFixture() {
 ;(async () => {
   let fixture = hookFixture()
   await fixture.render().load()
-  const validated = validateDayPlan(proposed(), context()).schedule
+  const partial = validateDayPlan(proposed(), context()).schedule
+  fixture.render().applySchedule(partial, day, planningTaskKey(fixture.render().tasks))
+  await fixture.render().flushPendingSave()
+  assert.equal(fixture.writes.length, 0, 'An incomplete proposal cannot bypass preview checks at mutation time')
+  assert.equal(fixture.render().undo, null)
+  const validated = validateDayPlan(proposed([block(), block({taskId:'share',time:'10:00',endTime:'10:30'})]), context()).schedule
   const initialKey = planningTaskKey(fixture.render().tasks)
   fixture.render().applySchedule(validated, day, initialKey)
   await fixture.render().flushPendingSave()

@@ -1,5 +1,7 @@
 # Bugs And Failed Approaches
 
+- 2026-10-23: Daily planning sent Today and Earlier tasks as one undifferentiated list and accepted proposals omitting Today while scheduling backlog. Requests now group explicit date commitments first, and both preview and mutation guards require full selected-day coverage with no earlier-work displacement on the same assignee. Incomplete previews show missing titles and cannot be applied.
+
 - 2026-10-23: Earlier-task dragging was constrained to the original source date, preventing promotion into Today. Explicit root promotion now preserves full task metadata and saves the destination before archive removal. A cross-file partial failure can leave both copies until Retry; the latest snapshot stays in memory. Step move labels retain their existing destination when the parent gains Move to today.
 
 - 2026-10-21: GitHub CLI status/cancellation hit the anonymous API rate limit during releases; optional custom-note edits still return HTTP 401. Public workflow HTML, release asset listings, downloads and signature verification remain usable. Verify older releases with the validator/package.json from their tag, because the validator intentionally compares against its local package version.

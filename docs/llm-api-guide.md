@@ -163,6 +163,8 @@ Album requests contain only the visible date's task text, status, and current-da
 
 The frontend sends the selected date (`YYYY-MM-DD`), explicit same-day available times (`HH:MM`), the current aggregated tasks including stable IDs/finish metadata, and only the machines the user selected. `machines: []` means human-only work. For legacy native callers, omitted date/time values use local today and 09:00–17:00; omitted machines use configured machines, without inventing equipment. Invalid dates or non-positive time windows return an error.
 
+The native prompt groups unfinished inputs as `requiredOnSelectedDate` (no source date, or source date equal to the selected day) and `earlierBacklog` (an older source date). Completed/stopped roots and future source dates are excluded. Every required root needs a realistic next-action block before adding extra steps or backlog; an earlier deadline does not override the user's selected-day commitments. Earlier work may use spare capacity only after required work on the same assignee.
+
 The response is untrusted until `validateDayPlan` accepts it:
 
 ```json
@@ -183,7 +185,7 @@ The response is untrusted until `validateDayPlan` accepts it:
 
 Blocks must identify an open input task, stay inside the requested window, use human or a selected machine, and not overlap for one assignee. The frontend sorts accepted blocks chronologically. Exact task IDs take precedence; legacy title-only results are accepted only when the title identifies exactly one open task. Unknown/ambiguous targets and invalid blocks reject the whole proposal before any write.
 
-Generation does not mutate Markdown. Apply checks that the selected date, tasks and planning details still match the captured context. It replaces only unfinished generated blocks for that planning date, using `plan_<date>_<batch>_<sequence>` IDs through existing Markdown ID comments. Manual, completed/stopped and other-date steps remain. Discard makes no change; the desktop's one-level Undo reverses application without reverting later independent edits. This does not add CLI Undo or change task API schemas.
+Generation does not mutate Markdown. `dayPlanCoverage` lists any required roots without blocks and detects backlog placed ahead of required work on the same assignee. Such proposals remain reviewable but Apply is disabled; `useTasks.applySchedule` repeats the coverage guard before writing. If a realistic next action for each required root cannot fit, the model explains the shortage and the user adjusts the time window or selected-day task list. With no required roots, partial backlog planning remains available. Apply also checks that the selected date, tasks and planning details still match the captured context. It replaces only unfinished generated blocks for that planning date, using `plan_<date>_<batch>_<sequence>` IDs through existing Markdown ID comments. Manual, completed/stopped and other-date steps remain. Discard makes no change; the desktop's one-level Undo reverses application without reverting later independent edits. This does not add CLI Undo or change task API schemas.
 
 ### Codex Background Provider
 

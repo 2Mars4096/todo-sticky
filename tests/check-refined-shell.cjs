@@ -38,7 +38,18 @@ async function openPlan(page) {
   await page.getByRole('dialog', { name: 'Plan day' }).waitFor()
 }
 async function fixturePlan(page, blocks) {
-  await page.evaluate(schedule => { window.__review.scheduleResult = { plan: 'A bounded proposed plan.', schedule } }, blocks)
+  await page.evaluate(schedule => {
+    const section = Object.values(window.__review.sections).find(items => items.some(task => task.id === schedule[0].taskId)) || []
+    const minute = value => Number(value.slice(0,2))*60 + Number(value.slice(3))
+    const time = value => `${String(Math.floor(value/60)).padStart(2,'0')}:${String(value%60).padStart(2,'0')}`
+    let cursor = Math.max(...schedule.map(block => minute(block.endTime)))
+    for (const task of section) {
+      if (task.status === 'done' || task.status === 'stopped' || schedule.some(block => block.taskId === task.id)) continue
+      schedule.push({taskId:task.id,parentTask:task.text,action:'Take the next concrete step',time:time(cursor),endTime:time(cursor+15),assignedTo:'human'})
+      cursor += 15
+    }
+    window.__review.scheduleResult = { plan: 'A bounded proposed plan.', schedule }
+  }, blocks)
 }
 const block = (action, time = '09:00', endTime = '09:30', taskId = 'figures') => ({ taskId, parentTask: 'Draft figures for the methods section', action, time, endTime, assignedTo: 'human' })
 
@@ -137,8 +148,8 @@ const block = (action, time = '09:00', endTime = '09:30', taskId = 'figures') =>
     await fixturePlan(page, [block('Second block', '10:00', '10:30'), block('First block', '09:00', '09:30')])
     await page.getByRole('button', { name: 'Generate proposal', exact: true }).click()
     await page.getByRole('button', { name: 'Apply plan', exact: true }).waitFor()
-    await page.waitForFunction(() => document.querySelectorAll('.day-plan-timeline li').length === 2)
-    assert.deepEqual(await page.locator('.day-plan-time').allTextContents(), ['09:00–09:30', '10:00–10:30'])
+    await page.waitForFunction(() => document.querySelectorAll('.day-plan-timeline li').length >= 2)
+    assert.deepEqual((await page.locator('.day-plan-time').allTextContents()).slice(0,2), ['09:00–09:30', '10:00–10:30'])
     assert.equal(await page.evaluate(() => JSON.stringify(window.__review.sections)), beforePlan)
     await page.getByRole('button', { name: 'Discard', exact: true }).click()
     assert.equal(await page.evaluate(() => JSON.stringify(window.__review.sections)), beforePlan)

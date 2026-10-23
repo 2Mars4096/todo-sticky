@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-23 — Today-first planning
+
+- [fix, review branch] Group selected-day commitments before earlier backlog in the native planning prompt. Require a realistic block per unfinished selected-day root before extra steps/backlog; show coverage and every missing title. Block Apply and the task mutation if selected-day work is missing or earlier work takes its time on the same assignee. Preserve empty-Today fallback, preview, Discard and Undo.
+- [validation, install] TypeScript, all 12 Node suites, 29 native tests, Cargo check and production browser priority/shell checks pass. Install and launch local 2.1.15 from `fix/today-first-planning`, with strict signature/exact bundle verification and all 56 task-file hashes unchanged. Previous app/state/tasks backed up at `sticky-todo-before-today-first-gmop4w_c`. Main/release unchanged.
+
 ## 2026-10-23 — Verified release 2.1.15
 
 - [release] Publish [v2.1.15](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.15) as latest with earlier-task promotion and optional glass materials. All platform builds and publication succeed; manifest/download URLs validate for four targets and all three update packages pass Ed25519 verification.

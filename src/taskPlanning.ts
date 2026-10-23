@@ -32,6 +32,32 @@ export function planningTaskKey(tasks: AggregatedTask[]): string {
   return JSON.stringify(tasks)
 }
 
+/** Date ownership, not creation order or an overdue badge, sets the priority. */
+export function planningTaskGroups(tasks: AggregatedTask[], date: string) {
+  const open = tasks.filter(task => task.status !== 'done' && task.status !== 'stopped')
+  return {
+    required: open.filter(task => !task.sourceDate || task.sourceDate === date),
+    earlier: open.filter(task => task.sourceDate && task.sourceDate < date),
+  }
+}
+
+export function dayPlanCoverage(schedule: PlannedBlock[], tasks: AggregatedTask[], date: string) {
+  const { required, earlier } = planningTaskGroups(tasks, date)
+  const scheduledIds = new Set(schedule.map(block => block.taskId))
+  const requiredIds = new Set(required.map(task => task.id))
+  const earlierIds = new Set(earlier.map(task => task.id))
+  const missing = required.filter(task => !scheduledIds.has(task.id))
+  const reservedUntil = new Map<string, number>()
+  for (const block of schedule) {
+    if (requiredIds.has(block.taskId)) {
+      reservedUntil.set(block.assignedTo, Math.max(reservedUntil.get(block.assignedTo) ?? 0, minutesOfDay(block.endTime) ?? 0))
+    }
+  }
+  const displacesRequired = schedule.some(block => earlierIds.has(block.taskId)
+    && (minutesOfDay(block.time) ?? 0) < (reservedUntil.get(block.assignedTo) ?? 0))
+  return { required, missing, displacesRequired, complete: missing.length === 0 && !displacesRequired }
+}
+
 /** Provider output is a proposal, never a trusted task mutation. */
 export function validateDayPlan(raw: unknown, context: PlanningContext): DayPlan {
   if (!raw || typeof raw !== 'object') throw new Error('The provider returned an unreadable plan. Try again.')
