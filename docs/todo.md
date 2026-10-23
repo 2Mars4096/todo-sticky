@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [4-48-earlier-tasks-and-materials](plans/4-48-earlier-tasks-and-materials.md) — earlier-to-Today drag and optional glass materials installed locally from the feature branch; awaiting user feedback before any merge.
+
 - [x] [4-47-equal-task-spacing-and-release-2-1-14](plans/4-47-equal-task-spacing-and-release-2-1-14.md) — equalize visible control gaps and publish the final spacing refinement.
 
 - [x] [4-46-checkbox-and-release-2-1-13](plans/4-46-checkbox-and-release-2-1-13.md) — align visible checkboxes with title text and publish the final updated release.

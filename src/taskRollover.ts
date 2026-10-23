@@ -28,3 +28,32 @@ export function mergeCarriedSection(section: ExtractedTaskDate, visibleIds: Set<
   return section.tasks.flatMap(task => visibleIds.has(`${section.date}:${task.id}`)
     ? (index < edits.length ? [edits[index++]] : []) : [task])
 }
+
+// Promote the complete editable tree, preserving metadata and avoiding IDs that
+// already exist in Today (older files can legitimately reuse IDs across dates).
+export function moveCarriedToToday(
+  tasks: AggregatedTask[], sourceId: string, newId: () => string,
+  targetId?: string, position: 'before' | 'after' = 'after',
+): AggregatedTask[] {
+  const source = tasks.find(task => task.id === sourceId)
+  if (!source?.sourceDate) return tasks
+  const today = tasks.filter(task => !task.sourceDate)
+  if (targetId && !today.some(task => task.id === targetId)) return tasks
+  const ids = new Set<string>()
+  const collect = (task: Task) => { ids.add(task.id); task.subtasks.forEach(collect) }
+  flattenTasks(today).forEach(collect)
+  const unique = (task: Task): Task => {
+    let id = task.id
+    while (ids.has(id)) id = newId()
+    ids.add(id)
+    return { ...task, id, subtasks: task.subtasks.map(unique) }
+  }
+  const moved = unique(flattenTasks([source])[0])
+  const promoted: AggregatedTask = {
+    id: moved.id, text: moved.text, status: moved.status, finish: moved.finish,
+    todaySubtasks: moved.subtasks, otherSubtasks: source.otherSubtasks,
+  }
+  const index = targetId ? today.findIndex(task => task.id === targetId) + (position === 'after' ? 1 : 0) : today.length
+  today.splice(index, 0, promoted)
+  return [...today, ...tasks.filter(task => task.sourceDate && task.id !== sourceId)]
+}

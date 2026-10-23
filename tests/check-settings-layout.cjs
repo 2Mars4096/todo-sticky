@@ -11,7 +11,7 @@ const { seedBridge, launch, testUrl } = require('./helpers/browser-fixture.cjs')
     for (const [width, height] of [[340, 440], [460, 640], [1000, 800]]) {
       await page.setViewportSize({ width, height })
       let initial
-      for (const label of ['Storage', 'AI', 'Integrations', 'Updates']) {
+      for (const label of ['Storage', 'Style', 'AI', 'Integrations', 'Updates']) {
         await dialog.getByRole('button', { name: label, exact: true }).click()
         const metrics = await dialog.evaluate(panel => {
           const box = el => { const r = el.getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height, bottom:r.bottom, right:r.right } }
@@ -34,6 +34,6 @@ const { seedBridge, launch, testUrl } = require('./helpers/browser-fixture.cjs')
     await page.setViewportSize({width:460,height:640})
     await dialog.getByRole('button',{name:'AI',exact:true}).click()
     await page.screenshot({path:'/private/tmp/todo-settings-stable.png'})
-    console.log('PASS single-row Settings navigation and invariant panel/footer geometry across four sections at 340, 460 and 1000px; expanded AI options remain inside fixed bounds')
+    console.log('PASS single-row Settings navigation and invariant panel/footer geometry across five sections at 340, 460 and 1000px; expanded AI options remain inside fixed bounds')
   } finally { await browser.close() }
 })().catch(error => { console.error(error); process.exit(1) })

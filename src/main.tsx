@@ -4,6 +4,7 @@ import App from './App'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import './styles/sticky.css'
 import './styles/shell-refinements.css'
+import './styles/note-materials.css'
 
 const BOOT_DIAGNOSTIC_KEY = 'todo-sticky-boot-diagnostic-v1'
 

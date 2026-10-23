@@ -1,3 +1,4 @@
+import { NOTE_MATERIALS, type NoteMaterial } from '../noteMaterial'
 import { useState, useEffect, useId, useRef } from 'react'
 import type { AppSettings, Provider } from '../types'
 import { api } from '../api'
@@ -25,15 +26,19 @@ const EMPTY_SETTINGS: AppSettings = {
   machines: [],
 }
 
-type SettingsSection = 'tasks' | 'ai' | 'integrations' | 'updates'
+type SettingsSection = 'style' | 'tasks' | 'ai' | 'integrations' | 'updates'
 const SECTIONS: { id: SettingsSection; label: string }[] = [
   { id: 'tasks', label: 'Storage' },
+  { id: 'style', label: 'Style' },
   { id: 'ai', label: 'AI' },
   { id: 'integrations', label: 'Integrations' },
   { id: 'updates', label: 'Updates' },
 ]
 
 interface Props {
+  noteMaterial?: NoteMaterial
+  onNoteMaterial?: (material: NoteMaterial) => void
+  materialSaveError?: boolean
   appUpdates: ReturnType<typeof useAppUpdates>
   updateBlockedReason?: string
   onClose: () => void
@@ -43,7 +48,7 @@ interface Props {
   initialProvider?: Provider
 }
 
-export function SettingsPanel({ onClose, onSaved, onBeforeSave, firstRun, initialProvider, appUpdates, updateBlockedReason }: Props) {
+export function SettingsPanel({ noteMaterial = 'paper', onNoteMaterial, materialSaveError, onClose, onSaved, onBeforeSave, firstRun, initialProvider, appUpdates, updateBlockedReason }: Props) {
   const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS)
   const [section, setSection] = useState<SettingsSection>(initialProvider ? 'ai' : 'tasks')
   const [dianeDestination, setDianeDestination] = useState('')
@@ -196,7 +201,22 @@ export function SettingsPanel({ onClose, onSaved, onBeforeSave, firstRun, initia
         <div className="settings-scroll" id={id + '-section'}>
           {loading && <p className="settings-status" role="status">Loading settings…</p>}
           {settingsError && <div className="settings-error" role="alert"><p>{settingsError}</p>{loadFailed && <button type="button" onClick={() => setLoadAttempt(value => value + 1)}>Retry</button>}</div>}
-          {section === 'tasks' && <fieldset className="settings-fields" disabled={fieldsDisabled}>
+          {section === 'style' && <section className="settings-section" aria-labelledby={id + '-material-title'}>
+            <h3 className="section-title" id={id + '-material-title'}>Note material</h3>
+            <p className="settings-description">Choose how your working note catches the light.</p>
+            <div className="material-options" role="group" aria-label="Note material">
+              {NOTE_MATERIALS.map(item => <button key={item.id} type="button"
+                className="material-option" aria-pressed={noteMaterial === item.id}
+                onClick={() => onNoteMaterial?.(item.id)}>
+                <span className="material-swatch" data-material={item.id} aria-hidden="true"><span /><span /><span /></span>
+                <span className="material-copy"><strong>{item.label}</strong><span>{item.detail}</span></span>
+                <span className="material-check" aria-hidden="true">{noteMaterial === item.id ? '✓' : ''}</span>
+              </button>)}
+            </div>
+            <p className="hint">Applies immediately on this device.</p>
+            {materialSaveError && <p role="alert" className="settings-error">This style could not be saved. Choose it again to retry.</p>}
+          </section>}
+          {section === 'tasks'  && <fieldset className="settings-fields" disabled={fieldsDisabled}>
             <section className="settings-section" aria-labelledby={id + '-storage-title'}>
               <h3 className="section-title" id={id + '-storage-title'}>Tasks & storage</h3>
               <p className="settings-description">Your tasks are saved as Markdown in your task folder.</p>

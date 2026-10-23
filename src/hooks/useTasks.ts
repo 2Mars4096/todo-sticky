@@ -3,7 +3,7 @@ import type { AggregatedTask, ExtractedTaskDate, Task, FinishPromise } from '../
 import { api, waitForPendingWrites } from '../api'
 import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
-import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection } from '../taskRollover'
+import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection, moveCarriedToToday } from '../taskRollover'
 import { applyPlanWithUndo, deleteWithUndo, restoreTaskChange, type TaskUndo } from '../taskHistory'
 import { planningTaskKey, type PlannedBlock } from '../taskPlanning'
 
@@ -130,15 +130,6 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     setSaving(true)
     let inFlight: Promise<void> | null = null
     const write = async () => {
-      for (const section of snapshotArchive) {
-        const merged = mergeCarriedSection(section, snapshotIds, updatedTasks)
-        const serialized = JSON.stringify(merged)
-        if (serialized === snapshotSavedArchive.get(section.date)) continue
-        await api.saveTasks({ filePath: section.filePath, dateStr: section.date, tasks: merged })
-        // Keep original archive positions for deletion Undo, including completed
-        // rows that are not visible in Today. Track saved content separately.
-        snapshotSavedArchive.set(section.date, serialized)
-      }
       const flat = flattenTasks(updatedTasks.filter(task => !task.sourceDate))
       if (snapshotPath) {
         await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
@@ -148,6 +139,17 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           filePathRef.current = result.filePath
           setFilePath(result.filePath)
         }
+      }
+      // Persist the destination before removing promoted rows from older dates.
+      // If either write fails, the latest full snapshot remains available to Retry.
+      for (const section of snapshotArchive) {
+        const merged = mergeCarriedSection(section, snapshotIds, updatedTasks)
+        const serialized = JSON.stringify(merged)
+        if (serialized === snapshotSavedArchive.get(section.date)) continue
+        await api.saveTasks({ filePath: section.filePath, dateStr: section.date, tasks: merged })
+        // Keep original archive positions for deletion Undo, including completed
+        // rows that are not visible in Today. Track saved content separately.
+        snapshotSavedArchive.set(section.date, serialized)
       }
       if (pendingSave.current === save) {
         pendingSave.current = null
@@ -496,6 +498,18 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     })
   }, [persist])
 
+  const moveToToday = useCallback((taskId: string, targetId?: string, position: ReorderPosition = 'after') => {
+    if (!isCurrentDay || loadingRef.current || loadedDateRef.current !== dateStr) return
+    setTasks(prev => {
+      if (loadingRef.current || loadedDateRef.current !== dateStr) return prev
+      const next = moveCarriedToToday(prev, taskId, newId, targetId, position)
+      if (next === prev) return prev
+      setUndo(null)
+      persist(next)
+      return next
+    })
+  }, [dateStr, isCurrentDay, persist])
+
   const reorderTasks = useCallback((sourceId: string, targetId: string, position: ReorderPosition) => {
     setTasks(prev => {
       const next = reorderById(prev, sourceId, targetId, position)
@@ -592,7 +606,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     saveError, saving, retrySave, undo, undoLastAction, dismissUndo: () => setUndo(null),
     tasks, loading, loadError, rolloverLoading, rolloverError, load, dataDate: loadedDateRef.current,
     updateFinish, reviewTask, addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
-    addSubtask, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
+    addSubtask, moveToToday, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,
   }
 }

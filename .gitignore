@@ -7,3 +7,6 @@ src-tauri/gen/
 .DS_Store
 .cursor/
 content/
+
+# Local browser verification artifacts
+output/playwright/

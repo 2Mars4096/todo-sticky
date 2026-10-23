@@ -82,6 +82,7 @@ interface Props {
   sourceDate?: string
   dianeSourceDate?: string
   moveTargetLabel: string
+  subtaskMoveTargetLabel?: string
   onToggle: () => void
   onDelete: () => void
   onPush: () => void
@@ -104,7 +105,7 @@ interface Props {
 }
 
 export function TaskItem({
-  id, text, status, isSubtask, isOtherDate, sourceDate, dianeSourceDate, moveTargetLabel,
+  id, text, status, isSubtask, isOtherDate, sourceDate, dianeSourceDate, moveTargetLabel, subtaskMoveTargetLabel,
   isFocusSelected, isFocusLocked, onToggle, onDelete, onPush, onTextChange,
   onCopyTask, onFocusSelect, onFocusSubtask, onAddSubtask, onAIBreakdown,
   todaySubtasks, otherSubtasks, onToggleSubtask, onDeleteSubtask, onPushSubtask, onSubtaskTextChange,
@@ -300,7 +301,7 @@ export function TaskItem({
     </div>
     {!isSubtask && stepsOpen && <div id={stepsId} className="task-steps-body">
       {steps.map(sub => <TaskItem key={sub.id} id={sub.id} dianeSourceDate={dianeSourceDate ?? sourceDate} text={sub.text} status={sub.status}
-        isSubtask moveTargetLabel={moveTargetLabel} onToggle={() => onToggleSubtask?.(sub.id)}
+        isSubtask moveTargetLabel={subtaskMoveTargetLabel ?? moveTargetLabel} onToggle={() => onToggleSubtask?.(sub.id)}
         onDelete={() => onDeleteSubtask?.(sub.id)} onPush={() => onPushSubtask?.(sub.id)} onCopyTask={onCopyTask}
         onTextChange={value => onSubtaskTextChange?.(sub.id, value)} parentText={text} selectedFocusId={selectedFocusId}
         isFocusSelected={selectedFocusId === sub.id} isFocusLocked={isFocusLocked}

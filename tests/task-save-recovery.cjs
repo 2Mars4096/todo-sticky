@@ -7,6 +7,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve))
 
 function fixture() {
   const slots = [], timers = new Map(), writes = [], reads = []
+  let failDate = null
   let cursor = 0, nextTimer = 0, fail = false, hold = null, readHold = null, archiveHold = null, failRead = false
   const sections = {
     '2026-10-21': [node('today')],
@@ -22,7 +23,7 @@ function fixture() {
   async function save(data) {
     writes.push(clone(data))
     if (hold) await hold.promise
-    if (fail) throw Error('Fixture disk unavailable')
+    if (fail || failDate === data.dateStr) throw Error('Fixture disk unavailable')
     sections[data.dateStr] = clone(data.tasks)
     return { filePath: 'fixture.md' }
   }
@@ -53,6 +54,7 @@ function fixture() {
     render(date = '2026-10-21') { cursor = 0; return hook.useTasks(date, date === '2026-10-21') },
     sections, writes, reads,
     fail(value) { fail = value },
+    failDate(value) { failDate = value },
     failRead(value) { failRead = value },
     hold() { let resolve; const promise = new Promise(done => { resolve = done }); hold = { promise, resolve }; return () => { hold.resolve(); hold = null } },
     holdRead() { let resolve; const promise = new Promise(done => { resolve = done }); readHold = { promise, resolve }; return () => { readHold.resolve(); readHold = null } },
@@ -247,5 +249,37 @@ function fixture() {
   releaseArchive(); await loadingArchive; await f.render().flushPendingSave()
   assert.ok(f.sections['2026-10-21'].some(task => task.text === 'Captured while history loads'))
   assert.ok(f.render().tasks.some(task => task.sourceDate === '2026-10-20'))
+  // Promoting a tree writes Today before removing its source; partial failures
+  // retain a recoverable copy, and retries cannot duplicate destination rows.
+  f = fixture(); await f.render().load()
+  const promotedTree = clone(f.sections['2026-10-20'][2])
+  f.render().moveToToday('2026-10-20:nested', 'today', 'before')
+  f.fail(true)
+  await assert.rejects(f.render().flushPendingSave(), /disk unavailable/)
+  assert.deepEqual(f.sections['2026-10-20'][2], promotedTree)
+  assert.equal(f.render().tasks[0].id, 'nested')
+  f.fail(false); f.failDate('2026-10-20')
+  await assert.rejects(f.render().flushPendingSave(), /disk unavailable/)
+  assert.deepEqual(f.sections['2026-10-21'][0], promotedTree)
+  assert.ok(f.sections['2026-10-20'].some(task => task.id === 'nested'))
+  f.render().updateTaskText('nested', 'Edited after the move')
+  f.failDate(null)
+  await f.render().retrySave()
+  assert.equal(f.sections['2026-10-21'].filter(task => task.id === 'nested').length, 1)
+  assert.equal(f.sections['2026-10-21'][0].text, 'Edited after the move')
+  assert.deepEqual(f.sections['2026-10-20'].map(task => task.id), ['first', 'hidden-completed', 'last'])
+  await f.render().load()
+  assert.equal(f.render().tasks.filter(task => task.id === 'nested').length, 1)
+  assert.equal(f.render().tasks.some(task => task.id === '2026-10-20:nested'), false)
+  // Empty Today, repeated requests and invalid/stale date contexts.
+  f = fixture(); f.sections['2026-10-21'] = []; await f.render().load()
+  f.render().moveToToday('2026-10-20:first')
+  f.render().moveToToday('2026-10-20:first')
+  await f.render().flushPendingSave()
+  assert.deepEqual(f.sections['2026-10-21'].map(task => task.id), ['first'])
+  const beforeInvalidMove = clone(f.render().tasks)
+  f.render('2026-10-22').moveToToday('2026-10-20:last')
+  f.render().moveToToday('2026-10-20:last', 'missing')
+  assert.deepEqual(clone(f.render().tasks), beforeInvalidMove)
   console.log('Passed save recovery, deletion Undo, stale breakdown rejection, pending-read mutation guards and background archive editing')
 })().catch(error => { console.error(error); process.exitCode = 1 })

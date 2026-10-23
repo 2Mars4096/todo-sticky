@@ -12,6 +12,7 @@ import { TrackingStationOverlay } from './components/TrackingStationOverlay'
 import { SettingsPanel } from './components/SettingsPanel'
 import { ScheduleView } from './components/ScheduleView'
 import { WindowResizeHandles } from './components/WindowResizeHandles'
+import { useNoteMaterial } from './noteMaterial'
 import { useCalendar } from './hooks/useCalendar'
 import { useGoals } from './hooks/useGoals'
 import { STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS, useStarFocus } from './hooks/useStarFocus'
@@ -45,6 +46,7 @@ interface AppNotice {
 }
 
 export default function App() {
+  const noteMaterial = useNoteMaterial()
   const calendar = useCalendar()
   const tasks = useTasks(calendar.dateStr, calendar.isCurrentDay)
   const goals = useGoals()
@@ -440,7 +442,7 @@ export default function App() {
   ])
 
   return (
-    <div className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
+    <div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
       <WindowResizeHandles />
       <GoalsSidebar
         collapsed={goals.sidebarCollapsed}
@@ -537,6 +539,7 @@ export default function App() {
             onReview={tasks.reviewTask}
             onAddSubtask={tasks.addSubtask}
             onAddTask={tasks.addTask}
+            onMoveToToday={tasks.moveToToday}
             onReorderTask={tasks.reorderTasks}
             onReorderSubtask={tasks.reorderSubtasks}
             onAIBreakdown={handleAIBreakdown}
@@ -694,6 +697,9 @@ export default function App() {
         )}
         {showSettings && (
           <SettingsPanel
+            noteMaterial={noteMaterial.material}
+            onNoteMaterial={noteMaterial.choose}
+            materialSaveError={noteMaterial.error}
             appUpdates={appUpdates}
             updateBlockedReason={updateBlockedReason}
             onClose={() => {

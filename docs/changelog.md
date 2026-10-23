@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23 — Earlier tasks and materials preview
+
+- [feature, review branch] Let earlier root tasks move into Today at the pointer drop position, with an empty-Today target, Escape cancellation, keyboard and direct Move support. Preserve trees, statuses, finish/deadline metadata and safe destination-first save/retry.
+- [ui] Add Settings → Style with persistent Paper, Frosted glass and Liquid glass choices. Keep the opaque native window and flat readable rows, with no continuous motion or new dependencies.
+- [validation] TypeScript, all 12 Node suites, pointer/keyboard reorder, compact Settings geometry and new material/promotion browser checks pass. Exact production shell checks and all five Settings sections pass. Optimized macOS build installed and launched locally as 2.1.14; strict signature and bundle hashes match, all 56 task-file hashes unchanged. App/state/tasks backed up at `sticky-todo-before-materials-5e70qvc2`. Feature branch only, no merge or publication.
+
 ## 2026-10-21 — Verified final release 2.1.14
 
 - [release] Publish [v2.1.14](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.14) as latest with the approved checkbox size/equal spacing and all prior UI refinements. All platform builds and publication succeed. Public manifest/asset links validate for four updater targets; all three downloaded update packages pass Ed25519 signature checks.

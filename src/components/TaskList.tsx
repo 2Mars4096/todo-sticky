@@ -8,7 +8,7 @@ type DraggedItem =
   | { kind: 'task'; id: string }
   | { kind: 'subtask'; id: string; parentId: string }
 
-type DropTarget = DraggedItem & { position: ReorderPosition }
+type DropTarget = (DraggedItem & { position: ReorderPosition }) | { kind: 'today'; id?: string; position: ReorderPosition }
 
 interface Props {
   tasks: AggregatedTask[]
@@ -29,6 +29,7 @@ interface Props {
   onTextChange: (taskId: string, text: string, subtaskId?: string) => void
   onAddSubtask: (taskId: string, text: string) => void
   onAddTask: (text: string) => void
+  onMoveToToday?: (taskId: string, targetId?: string, position?: ReorderPosition) => void
   onReorderTask: (sourceId: string, targetId: string, position: ReorderPosition) => void
   onReorderSubtask: (taskId: string, sourceId: string, targetId: string, position: ReorderPosition) => void
   onAIBreakdown: (taskId: string) => void
@@ -40,7 +41,7 @@ interface Props {
 export function TaskList({
   tasks, loading, loadError, rolloverError, rolloverLoading, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
   onToggle, onDelete, onPush, onCopyTask, onTextChange, onUpdateFinish, onReview,
-  onAddSubtask, onAddTask, onReorderTask, onReorderSubtask,
+  onAddSubtask, onAddTask, onMoveToToday, onReorderTask, onReorderSubtask,
   onAIBreakdown, onFocusTask, onGoToday, onRetryLoad,
 }: Props) {
   const [carriedOpen, setCarriedOpen] = useState(() => {
@@ -59,6 +60,8 @@ export function TaskList({
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
 
+  const earlierRef = useRef<HTMLButtonElement>(null)
+  const draggingEarlier = draggedItem?.kind === 'task' && Boolean(tasks.find(task => task.id === draggedItem.id)?.sourceDate)
   const listRef = useRef<HTMLDivElement>(null)
   const gesture = useRef<{
     item: DraggedItem; pointerId: number; x: number; y: number; active: boolean
@@ -96,7 +99,10 @@ export function TaskList({
       if (event.clientY < bounds.top + 24) list.scrollTop -= 12
       if (event.clientY > bounds.bottom - 24) list.scrollTop += 12
       const source = current.item
-      const ids = source.kind === 'task'
+      const promoting = source.kind === 'task' && isCurrentDay && onMoveToToday
+        && tasks.find(task => task.id === source.id)?.sourceDate
+        && event.clientY < (earlierRef.current?.getBoundingClientRect().top ?? -Infinity)
+      const ids = promoting ? tasks.filter(task => !task.sourceDate).map(task => task.id) : source.kind === 'task'
         ? tasks.filter(task => task.sourceDate === tasks.find(item => item.id === source.id)?.sourceDate).map(task => task.id)
         : tasks.find(task => task.id === source.parentId)?.todaySubtasks.map(task => task.id) ?? []
       const rows = Array.from(list.querySelectorAll<HTMLElement>('[data-reorder-id]'))
@@ -105,6 +111,7 @@ export function TaskList({
       const withinScope = source.kind === 'task' || (rows.length > 0
         && event.clientY >= rows[0].getBoundingClientRect().top - 6
         && event.clientY <= rows[rows.length - 1].getBoundingClientRect().bottom + 6)
+      if (promoting && rows.length === 0) next = { kind: 'today', position: 'after' }
       if (withinScope) {
         let distance = Infinity
         for (const row of rows) {
@@ -114,7 +121,7 @@ export function TaskList({
           if (delta >= distance) continue
           distance = delta
           next = row.dataset.reorderId === source.id ? null : {
-            ...source, id: row.dataset.reorderId!, position: event.clientY < center ? 'before' : 'after',
+            ...(promoting ? { kind: 'today' as const } : source), id: row.dataset.reorderId!, position: event.clientY < center ? 'before' : 'after',
           }
         }
       }
@@ -129,9 +136,12 @@ export function TaskList({
     moveDrag(event)
     const target = targetRef.current
     if (current.active && target) {
-      if (current.item.kind === 'task') {
+      if (current.item.kind === 'task' && target.kind === 'today') {
+        onMoveToToday?.(current.item.id, target.id, target.position)
+        setReorderNotice('Task moved to Today.')
+      } else if (current.item.kind === 'task' && target.kind !== 'today') {
         onReorderTask(current.item.id, target.id, target.position)
-      } else {
+      } else if (current.item.kind === 'subtask' && target.kind === 'subtask') {
         onReorderSubtask(current.item.parentId, current.item.id, target.id, target.position)
       }
     }
@@ -143,7 +153,7 @@ export function TaskList({
 
   const dragStateFor = (item: DraggedItem) => {
     if (draggedItem?.kind === item.kind && draggedItem.id === item.id) return 'dragging' as const
-    if (dropTarget?.kind === item.kind && dropTarget.id === item.id) return `drop-${dropTarget.position}` as const
+    if ((dropTarget?.kind === item.kind || (dropTarget?.kind === 'today' && item.kind === 'task')) && dropTarget?.id === item.id) return `drop-${dropTarget.position}` as const
     return undefined
   }
 
@@ -151,6 +161,11 @@ export function TaskList({
     const siblings = tasks.filter(task => task.sourceDate === tasks.find(item => item.id === taskId)?.sourceDate)
     const index = siblings.findIndex(task => task.id === taskId)
     const target = siblings[index + direction]
+    if (index === 0 && direction < 0 && isCurrentDay && onMoveToToday && siblings[0]?.sourceDate) {
+      onMoveToToday(taskId)
+      setReorderNotice('Task moved to Today.')
+      return
+    }
     if (index < 0 || !target) return
     onReorderTask(taskId, target.id, direction < 0 ? 'before' : 'after')
     setReorderNotice(`Task moved ${direction < 0 ? 'before' : 'after'} ${target.text}.`)
@@ -223,10 +238,15 @@ export function TaskList({
       {rolloverError && <div className="rollover-error" role="alert">
         Some earlier tasks could not be loaded. <button onClick={onRetryLoad}>Retry</button>
       </div>}
+      {isCurrentDay && onMoveToToday && carriedCount > 0 && !tasks.some(task => !task.sourceDate) && (
+        <div className={`today-drop-zone${dropTarget?.kind === 'today' ? ' is-target' : ''}`}>
+          {draggingEarlier ? 'Drop here for Today' : 'Today is clear'}
+        </div>
+      )}
       {orderedTasks.map(task => (
         <Fragment key={task.id}>
           {task.id === firstCarriedId && <button
-            type="button" className="carried-toggle" aria-expanded={carriedOpen}
+            ref={earlierRef} type="button" className="carried-toggle" aria-expanded={carriedOpen}
             onClick={() => setCarriedOpen(open => !open)}
           >
             <span aria-hidden="true">{carriedOpen ? '▾' : '▸'}</span>
@@ -242,13 +262,14 @@ export function TaskList({
             onReview={onReview ? decision => onReview(task.id, decision) : undefined}
             isFocusSelected={selectedTaskId === task.id}
             isFocusLocked={focusLocked}
-            moveTargetLabel={moveTargetLabel}
+            moveTargetLabel={task.sourceDate && isCurrentDay && onMoveToToday ? 'today' : moveTargetLabel}
+            subtaskMoveTargetLabel={moveTargetLabel}
 
             todaySubtasks={task.todaySubtasks}
             otherSubtasks={task.otherSubtasks}
             onToggle={() => onToggle(task.id)}
             onDelete={() => onDelete(task.id)}
-            onPush={() => onPush(task.id)}
+            onPush={() => task.sourceDate && isCurrentDay && onMoveToToday ? onMoveToToday(task.id) : onPush(task.id)}
             onCopyTask={onCopyTask}
             onTextChange={(t) => onTextChange(task.id, t)}
             sortable={{

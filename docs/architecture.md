@@ -32,7 +32,7 @@
 - `src/taskRollover.ts` completes task trees and projects unfinished archived roots into Today with composite UI IDs and original date/ID metadata. Markdown remains authoritative; no daily copies or migration are created.
 - `useTasks` renders the selected date first, then loads earlier sections in the background only for Today, preserving edits during the scan. Reads time out after eight seconds; archive retries share a pending native request. Saves merge visible carried rows into their original sections while preserving hidden completed tasks; today-only rows remain in the selected date. Saves are serialized and flushed before reload, and stale load results are discarded.
 - Native range extraction accepts optional `skipUnavailable` and reports `unavailableFiles`; optional `canonicalDates` retains only the first date section from the file selected by calendar navigation (newest existing week on/before the date, or earliest existing week). Unreadable owners do not revive stale copies from other files. Default agent/CLI extraction remains raw and strict. The UI surfaces a retry notice while showing readable tasks.
-- TaskList uses one flat horizontal disclosure bar, with ordinary TaskItem rows at identical indentation. It initially renders 40 carried roots and offers Show more in batches of 40. Reordering stays within each original date; Diane receipt keys retain the original date and task ID.
+- TaskList uses one flat horizontal disclosure bar, with ordinary TaskItem rows at identical indentation. It initially renders 40 carried roots and offers Show more in batches of 40. Reordering stays within each original date, with an explicit earlier-root-to-Today drop across the disclosure boundary; Diane receipt keys retain the original date and task ID.
 - The calendar follows midnight/resume when viewing Today, preserving an explicitly browsed historical/future date.
 
 ## Ready Shell Modules
@@ -239,3 +239,10 @@
 - Native readiness starts a 1.5-second fallback reveal for frontend failures. This never waits for task archives, AI settings, Star Focus or Diane. Existing startup error/reload UI remains available.
 
 Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.
+
+## Note Material Preview And Promotion
+
+- `src/noteMaterial.ts` owns the validated, default-Paper `todo-sticky-note-material-v1` WebView-local preference. Settings → Style applies independently of native settings/AI services; failed local persistence is reported. `src/styles/note-materials.css` paints frosted and liquid surfaces within the existing opaque window, without render loops, native transparency or dependencies.
+- TaskList routes earlier-root drops above the Earlier tasks divider to `useTasks.moveToToday`, with an empty-Today target, Escape cancellation, a direct Move to today action and first-in-source-date Arrow Up support. Steps retain their parent/date reorder bounds and existing move destination.
+- `moveCarriedToToday` transfers full trees and finish metadata, retaining original IDs unless they collide with Today. The hook rejects unloaded/stale date contexts, clears stale Undo, and uses the existing serialized save/retry pipeline. Today saves before archive removals. A partial failure can leave both on disk until Retry; source data is never removed before the destination write succeeds. Writes remain section-based, not a cross-file transaction.
+- Browser coverage: `tests/check-materials-and-promotion.cjs` uses synthetic bridge data for pointer, empty target, Escape, keyboard, direct move, reload and three material choices at 340/460/1000px. Hook tests exercise partial writes/retry and metadata/ID collisions. No physical native drag acceptance is inferred from browser tests.

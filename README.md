@@ -57,6 +57,12 @@ The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY` and, for an
   <img src="demo/demo.gif" width="600" alt="Demo">
 </p>
 
+## Local material preview
+
+On `feat/earlier-tasks-materials`, drag an earlier task's six-dot handle above the **Earlier tasks** divider to place it among Today's tasks. An empty Today has its own drop area. The full task, steps, outcome and deadline move together. You can also select the earlier task and use **Move to today**, or press Arrow Up on the first handle within its source date. Escape cancels a drag.
+
+Open **Settings → Style** to choose **Paper**, **Frosted glass**, or **Liquid glass**. Choices apply immediately and are remembered on this device. The glass materials are drawn inside the opaque app window. Paper remains the default.
+
 ## Features
 
 Click an unfinished task to select it. Icon buttons for **Focus**, **Add step**, **Suggest steps with AI**, **Move**, and **Delete** appear beside its details. Hover to see each action name. Double-click the title or press Enter while the title is focused to edit it. Enter saves; Escape cancels.

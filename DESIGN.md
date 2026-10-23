@@ -202,3 +202,9 @@ The working note is tonally layered and mostly flat. Ambient shadow belongs to t
 - **Don't** use modal-first flows for routine task capture or editing.
 
 Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.
+
+## Optional Note Materials
+
+Paper remains the default. Settings → Style offers Frosted glass (soft warm-to-sage light and satin edges) and Liquid glass (curved specular highlights and a polished capture button). The material belongs to the note surface; task rows stay flat. Text retains warm graphite contrast. Effects are static, with no perpetual animation, and reduced transparency removes backdrop filtering from controls. The native window stays opaque.
+
+Settings navigation now reads Storage, Style, AI, Integrations, Updates in a single row. Style changes apply immediately and persist locally, separately from Save/Cancel for native settings.

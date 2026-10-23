@@ -1,0 +1,75 @@
+/* Optional materials are painted inside the opaque native window. Task rows
+   remain flat and readable; no moving filters or perpetual animation. */
+.app-shell[data-material='frosted'], .material-swatch[data-material='frosted'] {
+  --sticky-bg: oklch(97% .018 88);
+  --sticky-bg-dark: oklch(93% .026 88);
+  --sticky-border: oklch(82% .035 85);
+  background:
+    radial-gradient(ellipse at 0% 5%, oklch(99% .008 90 / .94), transparent 62%),
+    radial-gradient(ellipse at 100% 90%, oklch(86% .033 171 / .5), transparent 70%),
+    linear-gradient(135deg, oklch(96% .025 90), oklch(92% .028 90) 58%, oklch(95% .015 165));
+  border-color: oklch(87% .025 90);
+  box-shadow: inset 0 1px 0 oklch(99% .005 90), inset 0 0 0 1px oklch(99% .005 90 / .5), inset 0 -1px 8px oklch(65% .035 90 / .12);
+}
+.app-shell[data-material='liquid'], .material-swatch[data-material='liquid'] {
+  --sticky-bg: oklch(97% .023 85);
+  --sticky-bg-dark: oklch(92% .037 85);
+  --sticky-border: oklch(81% .045 85);
+  background:
+    radial-gradient(ellipse 92% 46% at 108% 10%, transparent 48%, oklch(99% .01 85 / .85) 49%, oklch(84% .055 90 / .2) 51%, transparent 55%),
+    radial-gradient(ellipse 90% 70% at -12% 94%, transparent 54%, oklch(99% .01 85 / .8) 55%, oklch(80% .055 162 / .2) 57%, transparent 62%),
+    radial-gradient(ellipse at 95% 88%, oklch(87% .044 160 / .52), transparent 66%),
+    radial-gradient(ellipse at 10% 10%, oklch(99% .014 90), transparent 75%),
+    linear-gradient(140deg, oklch(95% .035 85), oklch(93% .04 88) 55%, oklch(96% .02 95));
+  border-color: oklch(86% .035 90);
+  box-shadow: inset 0 1px 0 oklch(99% .005 90), inset 1px 0 0 oklch(99% .005 90 / .85), inset -1px -1px 0 oklch(65% .05 90 / .18), inset 0 0 12px oklch(99% .01 90 / .65);
+}
+.app-shell[data-material='frosted'] .sticky-container,
+.app-shell[data-material='liquid'] .sticky-container { background: transparent; }
+.app-shell:is([data-material='frosted'], [data-material='liquid']) :is(.sticky-header, .action-bar) {
+  background: oklch(98% .018 90 / .55);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px oklch(99% .005 90 / .8);
+}
+.app-shell:is([data-material='frosted'], [data-material='liquid']) .add-task-row input {
+  background: oklch(99% .01 90 / .6);
+  box-shadow: inset 0 1px 3px oklch(45% .03 80 / .06), 0 1px 0 oklch(99% .01 90 / .8);
+}
+.app-shell:is([data-material='frosted'], [data-material='liquid']) .settings-panel {
+  background: oklch(98% .02 90 / .97);
+}
+.app-shell[data-material='liquid'] .add-task-row button {
+  background: linear-gradient(165deg, oklch(91% .07 90), oklch(83% .08 85));
+  box-shadow: inset 0 1px oklch(99% .01 90 / .85), 0 1px 2px oklch(55% .04 85 / .12);
+}
+.material-options { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.settings-panel .material-option {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 66px;
+  padding: 7px; border: 1px solid var(--sticky-border); border-radius: 7px;
+  background: transparent; color: var(--text-primary); text-align: left; cursor: pointer;
+}
+.settings-panel .material-option[aria-pressed='true'] { border-color: oklch(52% .08 85); background: oklch(91% .05 90 / .32); }
+.settings-panel .material-option:hover { background-color: oklch(91% .04 90 / .4); }
+.material-swatch {
+  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+  flex: 0 0 60px; height: 48px; padding: 12px; border: 1px solid var(--sticky-border); border-radius: 5px;
+  background: linear-gradient(180deg, #fffce8, #fdf4ca);
+}
+.material-swatch span { height: 2px; background: oklch(46% .035 85 / .55); border-radius: 1px; }
+.material-swatch span:nth-child(2) { width: 70%; }
+.material-swatch span:nth-child(3) { width: 85%; }
+.material-copy { display: flex; flex: 1; flex-direction: column; gap: 3px; }
+.material-copy strong { font-size: 13px; font-weight: 600; }
+.material-copy > span { font-size: 11px; color: var(--text-secondary); }
+.material-check { flex: 0 0 16px; font-size: 16px; color: oklch(45% .08 85); }
+.today-drop-zone {
+  display: grid; place-items: center; min-height: 46px; margin: 4px 10px 8px;
+  border: 1px dashed var(--sticky-border); border-radius: 5px; color: var(--text-secondary); font-size: 12px;
+}
+.today-drop-zone.is-target { border-color: var(--accent-hover); background: oklch(90% .06 90 / .4); color: var(--text-primary); }
+@media (prefers-reduced-transparency: reduce) {
+  .app-shell:is([data-material='frosted'], [data-material='liquid']) :is(.sticky-header, .action-bar, .settings-panel, .add-task-row input) {
+    background: var(--sticky-bg); -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
