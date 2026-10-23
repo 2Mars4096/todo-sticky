@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23 — Verified release 2.1.15
+
+- [release] Publish [v2.1.15](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.15) as latest with earlier-task promotion and optional glass materials. All platform builds and publication succeed; manifest/download URLs validate for four targets and all three update packages pass Ed25519 verification.
+- [cleanup] Remove two merged worktrees, four stale registrations, five local merged branches and one remote merged branch. Restore the 19 unrelated demo/docs files with asset hashes and added documentation lines verified against backup.
+
+
 ## 2026-10-23 — Release 2.1.15
 
 - [integration] Merge the approved earlier-to-Today drag and Paper/Frosted glass/Liquid glass materials into main. Prepare 2.1.15 for signed macOS, Windows and Linux publication; preserve unrelated demo work. Prune two clean merged worktrees, four stale registrations and five merged local branches. TypeScript, all 12 Node suites and production build pass.

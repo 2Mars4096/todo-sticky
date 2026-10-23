@@ -1,6 +1,6 @@
 # Todo
 
-- [ ] [4-49-publish-2-1-15](plans/4-49-publish-2-1-15.md) — merge approved materials/task promotion, prune merged work and publish signed updates.
+- [x] [4-49-publish-2-1-15](plans/4-49-publish-2-1-15.md) — approved changes merged, merged branches/worktrees pruned, and signed 2.1.15 published and verified; demo work restored.
 
 - [x] [4-48-earlier-tasks-and-materials](plans/4-48-earlier-tasks-and-materials.md) — approved earlier-to-Today drag and optional glass materials integrated into main; release tracked in 4-49.
 
