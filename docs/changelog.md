@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-23 — Release 2.1.15
+
+- [integration] Merge the approved earlier-to-Today drag and Paper/Frosted glass/Liquid glass materials into main. Prepare 2.1.15 for signed macOS, Windows and Linux publication; preserve unrelated demo work. Prune two clean merged worktrees, four stale registrations and five merged local branches. TypeScript, all 12 Node suites and production build pass.
+
+
 ## 2026-10-23 — Earlier tasks and materials preview
 
 - [feature, review branch] Let earlier root tasks move into Today at the pointer drop position, with an empty-Today target, Escape cancellation, keyboard and direct Move support. Preserve trees, statuses, finish/deadline metadata and safe destination-first save/retry.

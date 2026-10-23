@@ -238,9 +238,9 @@
 - `frontend_ready` is an internal no-argument launch signal after React shell commit (two animation frames, or a 120ms hidden-WebKit frame fallback). An atomic native guard positions/reveals the window once on the UI thread; repeated signals never reopen or reposition it.
 - Native readiness starts a 1.5-second fallback reveal for frontend failures. This never waits for task archives, AI settings, Star Focus or Diane. Existing startup error/reload UI remains available.
 
-Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.
+Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.
 
-## Note Material Preview And Promotion
+## Note Materials And Promotion
 
 - `src/noteMaterial.ts` owns the validated, default-Paper `todo-sticky-note-material-v1` WebView-local preference. Settings → Style applies independently of native settings/AI services; failed local persistence is reported. `src/styles/note-materials.css` paints frosted and liquid surfaces within the existing opaque window, without render loops, native transparency or dependencies.
 - TaskList routes earlier-root drops above the Earlier tasks divider to `useTasks.moveToToday`, with an empty-Today target, Escape cancellation, a direct Move to today action and first-in-source-date Arrow Up support. Steps retain their parent/date reorder bounds and existing move destination.

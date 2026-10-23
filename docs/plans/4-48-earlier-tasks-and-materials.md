@@ -22,3 +22,6 @@
 - Installed and launched `/Applications/Sticky Todo.app` as local version 2.1.14. Strict deep signature validation and exact bundle hashes pass. All 56 task-file hashes are unchanged after launch.
 - Rollback app, native state and task archive: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-materials-5e70qvc2`. Installation report is stored there.
 - Source remains on `feat/earlier-tasks-materials`; no merge, push, tag or public release. Main's existing uncommitted demo/docs work remains untouched. Physical drag and material preference acceptance are for the user's installed-app review.
+
+## Accepted integration
+- 2026-10-23: User approved the installed preview and requested merge, pruning and release. Main fast-forwarded to `7e6ff6d`; publication and cleanup continue in [4-49](4-49-publish-2-1-15.md).

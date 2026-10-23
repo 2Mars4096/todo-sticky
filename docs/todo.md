@@ -1,6 +1,8 @@
 # Todo
 
-- [x] [4-48-earlier-tasks-and-materials](plans/4-48-earlier-tasks-and-materials.md) — earlier-to-Today drag and optional glass materials installed locally from the feature branch; awaiting user feedback before any merge.
+- [ ] [4-49-publish-2-1-15](plans/4-49-publish-2-1-15.md) — merge approved materials/task promotion, prune merged work and publish signed updates.
+
+- [x] [4-48-earlier-tasks-and-materials](plans/4-48-earlier-tasks-and-materials.md) — approved earlier-to-Today drag and optional glass materials integrated into main; release tracked in 4-49.
 
 - [x] [4-47-equal-task-spacing-and-release-2-1-14](plans/4-47-equal-task-spacing-and-release-2-1-14.md) — equalize visible control gaps and publish the final spacing refinement.
 
