@@ -141,3 +141,10 @@
 - 2026-04-20: Deriving Star Focus mission numbering from the retained archive length causes duplicate `vehicleCode` and `orbitIndex` values once the local archive reaches its cap. Future mission numbering should derive from the highest retained orbit index instead.
 
 - 2026-10-10: Full `tsc --noEmit` has 16 pre-existing errors in StarFocusOrbitalMap, StarFocusOrbitalMap3D and useStarFocus. Verified identical output in the unchanged repo and credential-fallback staging tree; production Vite build passes.
+
+## 2026-10-24: Optional account/sync implementation
+
+- Google authentication must run in the system browser; use the proof-bound handoff rather than relying on a Google popup inside the desktop WebView. No existing Dear Diane Firebase configuration was found.
+- A downloaded date tombstone becomes an empty local Markdown date. Reconciliation explicitly treats this as the same deletion, preventing repeated resurrection of empty records. Local focus-history retention must not erase cloud history.
+- Persist remote goals/focus successfully before acknowledging their sync baseline. Corrupt goals must be backed up or recovered before remote application. Never treat unreadable task archives as deletions.
+- FastAPI TestClient stalls inside this environment's default sandbox even for health checks; approved isolated execution completes the API test suite. This is a test-runtime constraint, not a production API timeout.

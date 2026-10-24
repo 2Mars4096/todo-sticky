@@ -602,6 +602,9 @@ class StickyStore extends ChangeNotifier {
         focus.lastOrbitIndex,
         (n, m) => max(n, m.orbitIndex),
       );
+      focus.missionHistory = focus.missionHistory
+          .take(focus.archiveRetentionLimit)
+          .toList();
     } else {
       throw const FormatException('Unknown sync record');
     }

@@ -1,5 +1,9 @@
 # Development Plan
 
+## Authorized account and mobile expansion
+
+- Implement optional Firebase Google login and cross-platform task/goals/completed-focus sync on feature/google-account-sync, with Flutter Android on its own feature branch. Accounts must not become a dependency of local work. See [plan 8](plans/8-google-account-sync.md) and [setup](account-sync.md).
+
 ## Android and account work
 
 - Deliver the native phone implementation on `feature/flutter-android` through [7](plans/7-flutter-android.md), with full workflow parity and explicit desktop-only process/window boundaries. Google account and cross-platform synchronization remain on their separately reviewable branch and build on the local phone state contract.

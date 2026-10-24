@@ -6,7 +6,7 @@ const suites = [
   'finish-dates', 'app-updates', 'app-updates-auto', 'update-persistence',
   'update-manifest', 'task-loading', 'task-rollover', 'task-completion',
   'calendar-rollover', 'task-save-recovery', 'task-history', 'day-planning',
-  'ai-errors', 'review-reliability',
+  'ai-errors', 'review-reliability', 'cloud-sync',
 ]
 
 for (const suite of suites) {

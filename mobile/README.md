@@ -40,6 +40,14 @@ Android system auto-backup is disabled so encrypted key material cannot be accid
 
 The separate `feature/google-account-sync` branch builds on this app. `StickyStore.syncRecords()` exports desktop-compatible `day:YYYY-MM-DD`, `goals`, and completed `focus:<missionId>` records. `applySyncRecord()` validates incoming records and persists them. `syncMetadata` stores per-account baselines/revisions; it is omitted from user exports. Credentials, device preferences and active focus timers are not sync records. `StickyApp.accountBuilder` adds account UI without making core startup depend on authentication.
 
+## Account and sync in this branch
+
+`feature/google-account-sync` includes the optional account client. Open **Settings → Account & sync**, connect the deployed HTTPS service, sign in with Google in the system browser, then enable **Sync this notebook**. The app remains usable offline; signing in alone does not upload notes. Tasks, goals and completed focus sessions use the same protocol as desktop, with explicit conflict choices and recovery export. AI keys, Diane credentials, device preferences and active timers remain local.
+
+The service URL can be entered in Settings or prefilled with `--dart-define=SYNC_SERVER_URL=https://YOUR_SERVICE_HOST`. A configured Firebase Web app and Cloud Run backend are required. No `google-services.json` or native Android OAuth registration is needed for this browser handoff. See [account setup and deployment](../docs/account-sync.md).
+
+The combined app passes **44 tests**: 22 standalone workflow checks, 20 account/protocol checks, and two Account-screen checks at 360 px with 150% text. Analysis is clean and the account-enabled ARM64 debug APK is built and signature-verified. Live Firebase and physical-device acceptance remain pending.
+
 ## Feature parity and platform boundaries
 
 | Desktop capability | Android implementation |

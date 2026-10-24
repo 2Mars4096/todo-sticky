@@ -1,4 +1,5 @@
 import { NOTE_MATERIALS, type NoteMaterial } from '../noteMaterial'
+import { AccountPanel, type CloudAccount } from './AccountPanel'
 import { useState, useEffect, useId, useRef } from 'react'
 import type { AppSettings, Provider } from '../types'
 import { api } from '../api'
@@ -26,16 +27,19 @@ const EMPTY_SETTINGS: AppSettings = {
   machines: [],
 }
 
-type SettingsSection = 'style' | 'tasks' | 'ai' | 'integrations' | 'updates'
+type SettingsSection = 'style' | 'tasks' | 'ai' | 'integrations' | 'updates' | 'account'
 const SECTIONS: { id: SettingsSection; label: string }[] = [
   { id: 'tasks', label: 'Storage' },
   { id: 'style', label: 'Style' },
   { id: 'ai', label: 'AI' },
   { id: 'integrations', label: 'Integrations' },
+  { id: 'account', label: 'Account' },
   { id: 'updates', label: 'Updates' },
 ]
 
 interface Props {
+  account?: CloudAccount
+  initialAccount?: boolean
   noteMaterial?: NoteMaterial
   onNoteMaterial?: (material: NoteMaterial) => void
   materialSaveError?: boolean
@@ -48,9 +52,9 @@ interface Props {
   initialProvider?: Provider
 }
 
-export function SettingsPanel({ noteMaterial = 'paper', onNoteMaterial, materialSaveError, onClose, onSaved, onBeforeSave, firstRun, initialProvider, appUpdates, updateBlockedReason }: Props) {
+export function SettingsPanel({ account, initialAccount = false, noteMaterial = 'paper', onNoteMaterial, materialSaveError, onClose, onSaved, onBeforeSave, firstRun, initialProvider, appUpdates, updateBlockedReason }: Props) {
   const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS)
-  const [section, setSection] = useState<SettingsSection>(initialProvider ? 'ai' : 'tasks')
+  const [section, setSection] = useState<SettingsSection>(initialAccount ? 'account' : initialProvider ? 'ai' : 'tasks')
   const [dianeDestination, setDianeDestination] = useState('')
   const [dianeAvailable, setDianeAvailable] = useState(false)
   const [showKey, setShowKey] = useState(false)
@@ -294,6 +298,7 @@ export function SettingsPanel({ noteMaterial = 'paper', onNoteMaterial, material
           </fieldset>}
 
           {section === 'updates' && <AppUpdates currentVersion={appUpdates.currentVersion} state={appUpdates.state} blockedReason={updateReason} onCheck={appUpdates.check} onInstall={appUpdates.install} onRestart={appUpdates.restart} />}
+          {section === 'account' && account && <AccountPanel account={account} />}
         </div>
 
         <div className="btn-row">

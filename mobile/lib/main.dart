@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'services/persistence.dart';
 import 'state/sticky_store.dart';
-import 'app.dart';
+import 'screens/account_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,8 +12,7 @@ Future<void> main() async {
       persistence: persistence,
       credentials: const SecureCredentials(),
     );
-    runApp(StickyApp(store: store));
-    await store.initialize();
+    runApp(AccountEnabledApp(store: store));
   } catch (_) {
     runApp(
       const MaterialApp(

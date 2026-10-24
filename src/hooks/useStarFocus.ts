@@ -283,6 +283,8 @@ function getSimulatedMissionNow(clock: StarFocusDebugClock, realNow: number, tim
 
 export function useStarFocus(tasks: FocusTaskRef[]) {
   const [state, setState] = useState<StarFocusState>(defaultState)
+  const stateRef = useRef(state)
+  stateRef.current = state
   const [now, setNow] = useState(() => Date.now())
   const [restoredSession, setRestoredSession] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -604,6 +606,20 @@ export function useStarFocus(tasks: FocusTaskRef[]) {
     ? state.missionHistory.find(mission => mission.id === state.lastCompletedMissionId) ?? null
     : null
 
+  const applyCloudMission = useCallback(async (value: StarFocusMissionRecord | null, id: string) => {
+    const mission = value === null ? null : normalizeMission(value)
+    if (value !== null && !mission) throw new Error('Invalid focus session received from sync.')
+    const previous = stateRef.current
+    if (previous.activeSession) throw new Error('Finish the active focus session before receiving focus history.')
+    const history = previous.missionHistory.filter(item => item.id !== id)
+    if (mission) history.push(mission)
+    const next = { ...previous, missionHistory: trimMissionHistory(history.sort((a, b) => b.completedAt - a.completedAt), normalizeArchiveRetentionLimit(previous.archiveRetentionLimit)) }
+    next.lastCompletedMissionId = syncLastCompletedMissionId(next.lastCompletedMissionId, next.missionHistory)
+    await api.saveStarFocusState(next)
+    stateRef.current = next
+    setState(next)
+  }, [])
+
   return {
     sidebarCollapsed: state.sidebarCollapsed,
     selectedTaskId: state.selectedTaskId,
@@ -639,5 +655,6 @@ export function useStarFocus(tasks: FocusTaskRef[]) {
     dismissCompletion,
     clearHistory,
     resetOrbitMap,
+    applyCloudMission,
   }
 }
