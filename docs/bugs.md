@@ -1,5 +1,10 @@
 # Bugs And Failed Approaches
 
+## 2026-10-24: Remote Diane companion protocol boundary
+
+- Dear Diane has bearer-authenticated remote APIs, but `src/diane/server/routers/sticky_todo.py` at revision `2581669` applies `Depends(local_only)` to every companion route. Non-local client/URL hosts receive 403 independently of bearer validity. A phone URL/token setting or relay deployment does not by itself make this protocol remotely supported.
+- Generic `/api/v2/agent-runs` calls require separate project/execution inputs and do not expose the companion's saved defaults and immutable request receipts. Do not silently substitute that workflow or weaken the access guard. Android retains Copy agent prompt; [7-1](plans/7-1-diane-remote-feasibility.md) records the required remote companion work. The simplified desktop task row currently omits dispatch controls as documented in the desktop README.
+
 ## 2026-10-24: Android build and phone validation
 
 - The build host provided a Java runtime without `javac`; use a full isolated JDK 17. Its default trust store lacked the host network issuer, so builds use the system Java certificate store with TLS verification enabled. The JNI dependency also requires Android platform 35 alongside app platform 36.

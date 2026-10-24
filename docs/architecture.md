@@ -7,6 +7,7 @@
 - Android Kotlin handles only user-chosen file imports/exports through the Storage Access Framework. No broad external storage permission or local desktop bridge is introduced. The native Focus painter is a mobile visual adaptation, retaining lifecycle/history behavior.
 - `StickyStore.syncRecords()`, `applySyncRecord()`, per-account `syncMetadata`, and `StickyApp.accountBuilder` are the integration seam for the separate Google account/sync branch. Active timers, provider keys and device settings remain local.
 - `.github/workflows/flutter-android.yml` runs format/analyze/tests and builds an ARM64 debug review APK; release signing requires a locally supplied keystore.
+- Remote Diane handoff is not part of the phone implementation: Dear Diane's companion router enforces `local_only` even behind remote bearer authentication. Its generic run API does not provide the companion defaults/receipt contract. See [7-1](plans/7-1-diane-remote-feasibility.md); no agent links or bearer tokens enter notebook/sync records.
 
 ## Diane Handoff
 

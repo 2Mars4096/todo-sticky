@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:flutter/foundation.dart';
+
 import '../models/models.dart';
 import '../services/persistence.dart';
 
@@ -37,8 +39,7 @@ class StickyStore extends ChangeNotifier {
       loadError = null;
     } catch (_) {
       // An unreadable store is never treated as an empty notebook.
-      loadError =
-          'Your saved notebook could not be read. Your files have not been replaced. Retry or restore an exported backup.';
+      loadError = 'Your saved notebook could not be read. Your files have not been replaced. Retry or restore an exported backup.';
     }
     _notify();
   }
@@ -84,9 +85,9 @@ class StickyStore extends ChangeNotifier {
     'preferences': preferences.toJson(),
     if (includeSyncMetadata) 'syncMetadata': syncMetadata,
   };
-  String exportJson() => const JsonEncoder.withIndent(
-    '  ',
-  ).convert(toJson(includeSyncMetadata: false));
+  String exportJson() =>
+      const JsonEncoder.withIndent('  ')
+          .convert(toJson(includeSyncMetadata: false));
   Future<void> importJson(String value) async {
     if (value.length > 20 * 1024 * 1024) {
       throw const FormatException('Backup exceeds 20 MB');
@@ -112,8 +113,7 @@ class StickyStore extends ChangeNotifier {
         await persistence.save(snapshot);
         saveError = null;
       } catch (_) {
-        saveError =
-            'Changes are only on this screen. Retry saving before closing the app.';
+        saveError = 'Changes are only on this screen. Retry saving before closing the app.';
       }
       _notify();
     });

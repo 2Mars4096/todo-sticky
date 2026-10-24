@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
+
 import '../models/models.dart';
 
 abstract interface class StatePersistence {
@@ -44,8 +46,7 @@ class FilePersistence implements StatePersistence {
       await _file.copy(
         '${directory.path}/sticky-todo.corrupt-${DateTime.now().millisecondsSinceEpoch}.json',
       );
-      recoveryNotice =
-          'Recovered the previous local save. The unreadable file was kept for recovery.';
+      recoveryNotice = 'Recovered the previous local save. The unreadable file was kept for recovery.';
       return data;
     }
   }

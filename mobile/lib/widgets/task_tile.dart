@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+
 import '../app.dart';
 import '../models/models.dart';
 import '../state/sticky_store.dart';
@@ -350,9 +352,8 @@ class _TaskTileState extends State<TaskTile> {
                                     ),
                                   if (widget.showDate)
                                     Text(
-                                      DateFormat(
-                                        'd MMM',
-                                      ).format(parseDate(widget.date)),
+                                      DateFormat('d MMM')
+                                          .format(parseDate(widget.date)),
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: mutedInk,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../app.dart';
 import '../models/models.dart';
 import '../services/ai_service.dart';
@@ -51,9 +52,8 @@ class SettingsScreen extends StatelessWidget {
       if (yes == true) {
         await store.importJson(content);
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Notebook restored')));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Notebook restored')));
         }
       }
     } catch (e) {
@@ -272,8 +272,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
         setState(() {
           loadingKey = false;
           keyLoadFailed = true;
-          message =
-              'Could not open secure key storage. Retry before saving a replacement.';
+          message = 'Could not open secure key storage. Retry before saving a replacement.';
         });
       }
     }
@@ -334,8 +333,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => message =
-              'Settings could not be saved. Your edits remain here. Please retry.',
+          () => message = 'Settings could not be saved. Your edits remain here. Please retry.',
         );
       }
     } finally {

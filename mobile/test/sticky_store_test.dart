@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sticky_todo/models/models.dart';
 import 'package:sticky_todo/services/files.dart';
@@ -116,27 +117,24 @@ void main() {
       ]);
     },
   );
-  test(
-    'past tasks project into Today without copying and promotion preserves metadata',
-    () async {
-      final store = await notebook();
-      store.refreshClock(DateTime(2026, 10, 24));
-      store.selectDate('2026-10-24');
-      final task = store.addTask('Earlier', date: '2026-10-20');
-      store.updateTask(
-        '2026-10-20',
-        task.id,
-        updateFinish: true,
-        outcome: 'Finish',
-        due: '2026-10-30',
-      );
-      expect(store.earlierTasks.single.task.id, task.id);
-      expect(store.tasksFor('2026-10-24'), isEmpty);
-      store.moveTask('2026-10-20', task.id, store.today);
-      expect(store.tasksFor('2026-10-20'), isEmpty);
-      expect(store.tasksFor(store.today).single.finish!.by, '2026-10-30');
-    },
-  );
+  test('past tasks project into Today without copying and promotion preserves metadata', () async {
+    final store = await notebook();
+    store.refreshClock(DateTime(2026, 10, 24));
+    store.selectDate('2026-10-24');
+    final task = store.addTask('Earlier', date: '2026-10-20');
+    store.updateTask(
+      '2026-10-20',
+      task.id,
+      updateFinish: true,
+      outcome: 'Finish',
+      due: '2026-10-30',
+    );
+    expect(store.earlierTasks.single.task.id, task.id);
+    expect(store.tasksFor('2026-10-24'), isEmpty);
+    store.moveTask('2026-10-20', task.id, store.today);
+    expect(store.tasksFor('2026-10-20'), isEmpty);
+    expect(store.tasksFor(store.today).single.finish!.by, '2026-10-30');
+  });
   test(
     'individual step moves merge under parent and clear prior review readiness',
     () async {
@@ -164,52 +162,49 @@ void main() {
     );
     expect(task.subtasks, isEmpty);
   });
-  test(
-    'plan replacement and undo retain completed and manual work and later edits',
-    () async {
-      final store = await notebook();
-      final task = store.addTask('Paper');
-      final date = store.selectedDate;
-      final prior = Task(id: 'plan_${date}_old', text: 'Old generated');
-      final completed = Task(
-        id: 'plan_${date}_done',
-        text: 'Done generated',
-        status: TaskStatus.done,
-      );
-      final manual = Task(text: 'Manual');
-      task.subtasks.addAll([prior, completed, manual]);
-      final plan = DayPlan(
-        summary: '',
-        date: date,
-        fingerprint: tasksFingerprint(store.planningTasks),
-        blocks: [
-          PlanBlock(
-            sourceDate: date,
-            taskId: task.id,
-            time: '09:00',
-            endTime: '10:00',
-            action: 'New generated',
-            assignedTo: 'human',
-          ),
-        ],
-      );
-      store.applyPlan(plan);
-      expect(task.subtasks.any((t) => t.id == prior.id), false);
-      expect(task.subtasks.any((t) => t.id == completed.id), true);
-      final added = task.subtasks.last;
-      store.updateTask(date, added.id, text: 'User edited plan step');
-      store.undo();
-      expect(
-        task.subtasks.map((t) => t.text),
-        containsAll([
-          'Old generated',
-          'Done generated',
-          'Manual',
-          'User edited plan step',
-        ]),
-      );
-    },
-  );
+  test('plan replacement and undo retain completed and manual work and later edits', () async {
+    final store = await notebook();
+    final task = store.addTask('Paper');
+    final date = store.selectedDate;
+    final prior = Task(id: 'plan_${date}_old', text: 'Old generated');
+    final completed = Task(
+      id: 'plan_${date}_done',
+      text: 'Done generated',
+      status: TaskStatus.done,
+    );
+    final manual = Task(text: 'Manual');
+    task.subtasks.addAll([prior, completed, manual]);
+    final plan = DayPlan(
+      summary: '',
+      date: date,
+      fingerprint: tasksFingerprint(store.planningTasks),
+      blocks: [
+        PlanBlock(
+          sourceDate: date,
+          taskId: task.id,
+          time: '09:00',
+          endTime: '10:00',
+          action: 'New generated',
+          assignedTo: 'human',
+        ),
+      ],
+    );
+    store.applyPlan(plan);
+    expect(task.subtasks.any((t) => t.id == prior.id), false);
+    expect(task.subtasks.any((t) => t.id == completed.id), true);
+    final added = task.subtasks.last;
+    store.updateTask(date, added.id, text: 'User edited plan step');
+    store.undo();
+    expect(
+      task.subtasks.map((t) => t.text),
+      containsAll([
+        'Old generated',
+        'Done generated',
+        'Manual',
+        'User edited plan step',
+      ]),
+    );
+  });
   test('stale plan rejected after task modification', () async {
     final store = await notebook();
     final task = store.addTask('One');
@@ -268,30 +263,27 @@ void main() {
     final parsed = parseMarkdownTasks(rendered, keepIds: true);
     expect(parsed.single.toJson(), task.toJson());
   });
-  test(
-    'sync records omit API keys, local prefs, active timer and account metadata',
-    () async {
-      final store = await notebook();
-      final task = store.addTask('A');
-      store.startFocus(task, 20);
-      store.syncMetadata = {'secret': 'not exported'};
-      final records = store.syncRecords();
-      expect(
-        records.keys,
-        everyElement(
-          anyOf(startsWith('day:'), equals('goals'), startsWith('focus:')),
-        ),
-      );
-      expect(jsonEncode(records), isNot(contains('activeSession')));
-      expect(store.exportJson(), isNot(contains('secret')));
-      final imported = {
-        'date': '2026-10-24',
-        'tasks': [task.toJson()],
-      };
-      await store.applySyncRecord('day:2026-10-24', imported);
-      expect(store.tasksFor('2026-10-24').single.id, task.id);
-    },
-  );
+  test('sync records omit API keys, local prefs, active timer and account metadata', () async {
+    final store = await notebook();
+    final task = store.addTask('A');
+    store.startFocus(task, 20);
+    store.syncMetadata = {'secret': 'not exported'};
+    final records = store.syncRecords();
+    expect(
+      records.keys,
+      everyElement(
+        anyOf(startsWith('day:'), equals('goals'), startsWith('focus:')),
+      ),
+    );
+    expect(jsonEncode(records), isNot(contains('activeSession')));
+    expect(store.exportJson(), isNot(contains('secret')));
+    final imported = {
+      'date': '2026-10-24',
+      'tasks': [task.toJson()],
+    };
+    await store.applySyncRecord('day:2026-10-24', imported);
+    expect(store.tasksFor('2026-10-24').single.id, task.id);
+  });
   test('desktop absent reviewReady stays absent through task JSON', () {
     final t = Task.fromJson({
       'id': 'one',

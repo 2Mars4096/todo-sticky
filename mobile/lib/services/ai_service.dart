@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
+
 import '../models/models.dart';
 import 'persistence.dart';
 
@@ -106,9 +108,8 @@ class AiService {
       final streamed = await client
           .send(request)
           .timeout(const Duration(seconds: 90));
-      response = await http.Response.fromStream(
-        streamed,
-      ).timeout(const Duration(seconds: 90));
+      response = await http.Response.fromStream(streamed)
+          .timeout(const Duration(seconds: 90));
     } on TimeoutException {
       throw const AiException(
         'The provider took too long to reply. Your tasks are unchanged. Try again.',

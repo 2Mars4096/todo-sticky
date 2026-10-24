@@ -1,6 +1,7 @@
 // Optional review captures: STICKY_SCREENSHOTS=/tmp/sticky-phone flutter test test/phone_preview_test.dart
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -64,9 +65,8 @@ void main() {
         final image = await boundary.toImage(pixelRatio: 2);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
         await Directory(output!).create(recursive: true);
-        await File(
-          '$output/$name.png',
-        ).writeAsBytes(data!.buffer.asUint8List());
+        await File('$output/$name.png')
+            .writeAsBytes(data!.buffer.asUint8List());
         image.dispose();
       });
     }

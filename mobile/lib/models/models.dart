@@ -362,9 +362,8 @@ class Preferences {
     provider: providerPresets.containsKey(j['provider'])
         ? j['provider'] as String
         : 'moonshot',
-    profiles: object(
-      j['profiles'] ?? {},
-    ).map((k, v) => MapEntry(k, ProviderProfile.fromJson(object(v)))),
+    profiles: object(j['profiles'] ?? {})
+        .map((k, v) => MapEntry(k, ProviderProfile.fromJson(object(v)))),
     machines: (j['machines'] as List? ?? []).map(object).toList(),
     material: ['paper', 'frosted', 'liquid'].contains(j['material'])
         ? j['material'] as String

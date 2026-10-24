@@ -207,3 +207,5 @@ Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stab
 ## Android app (Flutter)
 
 The native phone app lives in [`mobile/`](mobile/README.md). It carries task capture, nested steps, outcomes/deadlines, goals/routines, AI planning, music suggestions and Focus into a phone layout, with offline persistence and secure provider keys. See the mobile README for build instructions, feature parity, account integration and platform-specific boundaries. The Flutter Android workflow produces an installable review APK; production distribution requires your release signing key.
+
+Live Diane companion handoff remains a known phone gap: Dear Diane's `/api/sticky-todo` protocol explicitly enforces local-only access independently of its remote bearer authentication. Android retains Copy agent prompt. The [protocol review](mobile/README.md#dear-diane-companion-protocol-review) identifies the backend work required for remote support.

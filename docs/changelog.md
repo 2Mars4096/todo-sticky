@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Diane phone protocol review
+
+- [docs] Inspect Dear Diane's authenticated remote APIs and verify that its separate Todo companion router still rejects remote hosts through `local_only`. Replace the vague relay limitation with the exact protocol restriction, current desktop control omission and required backend work. Preserve Copy agent prompt; no runtime or Dear Diane changes.
+- [validation] Apply the standard Dart formatter to existing phone source/tests so the exact CI formatting gate passes. Analyzer clean and all 22 tests pass; rebuild the standalone ARM64 debug APK from the final formatted source. The Diane review adds no runtime behavior or dependencies.
+
 ## 2026-10-24 — Flutter Android review branch
 
 - [mobile] Add a native Flutter app with offline tasks, hierarchy, date/backlog/moves, finish promises, goals/routines, provider suggestions and validated planning, scoped Undo, album recommendations and reload-safe Focus.
@@ -219,7 +224,7 @@
 - [release] Publish [v2.1.1](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.1) after all platform builds pass. Verify uploaded updater digests and signatures, final asset URLs, universal Mac architecture, bundle version, and strict Mac code signature.
 - [fix] Repair release validation to account for temporary draft asset URLs; validate canonical asset names before publication and actual URLs afterward, with regression coverage.
 
-- [checks] Release regression scripts and all 22 native library tests pass for 2.1.1.
+- [checks] Release regression scripts and all 21 native library tests pass for 2.1.1.
 - [release] Prepare 2.1.1 for user-authorized publication through the signed GitHub updater workflow.
 
 - [fix] Replace task handle HTML drag-and-drop with captured pointer gestures; explicitly focus clicked handles for keyboard movement, preserve parent groups, and cancel pending moves on Escape or lost capture.
