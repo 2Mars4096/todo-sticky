@@ -36,6 +36,57 @@ const OPENROUTER_APP_URL: &str = "https://github.com/2Mars4096/todo-sticky";
 const OPENROUTER_APP_TITLE: &str = "Sticky Todo";
 const CODEX_TIMEOUT: Duration = Duration::from_secs(180);
 
+fn http_client() -> Result<reqwest::Client, String> {
+    reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(15))
+        .timeout(Duration::from_secs(180))
+        .build()
+        .map_err(request_error)
+}
+
+fn request_error(error: reqwest::Error) -> String {
+    if error.is_timeout() {
+        "The AI provider timed out. Try again or choose a smaller task list.".into()
+    } else {
+        // URLs can contain credentials for custom providers. Never echo them.
+        error.without_url().to_string()
+    }
+}
+
+fn response_text(data: &Value, provider: &str) -> Result<String, String> {
+    let (text, truncated) = match provider {
+        "anthropic" => (
+            data["content"].as_array().map(|blocks| blocks.iter()
+                .filter(|block| block["type"].as_str() == Some("text"))
+                .filter_map(|block| block["text"].as_str()).collect::<Vec<_>>().join("\n"))
+                .unwrap_or_default(),
+            data["stop_reason"].as_str() == Some("max_tokens"),
+        ),
+        "gemini" => (
+            data["candidates"][0]["content"]["parts"].as_array().map(|parts| parts.iter()
+                .filter(|part| part["thought"].as_bool() != Some(true))
+                .filter_map(|part| part["text"].as_str()).collect::<Vec<_>>().join("\n"))
+                .unwrap_or_default(),
+            data["candidates"][0]["finishReason"].as_str() == Some("MAX_TOKENS"),
+        ),
+        _ => (
+            data["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string(),
+            data["choices"][0]["finish_reason"].as_str() == Some("length"),
+        ),
+    };
+    if truncated {
+        return Err("The AI provider cut off its response at the output limit. Try fewer tasks or another model.".into());
+    }
+    if text.trim().is_empty() {
+        return Err("The AI provider returned no answer text. Try again or choose another model; a successful connection test does not guarantee a usable plan.".into());
+    }
+    Ok(text)
+}
+
+fn connection_preview(reply: &str) -> String {
+    reply.chars().take(80).collect()
+}
+
 fn is_openrouter(config: &LLMConfig) -> bool {
     config.provider.eq_ignore_ascii_case("openrouter")
         || config.api_base.to_lowercase().contains("openrouter.ai")
@@ -84,7 +135,7 @@ async fn openai_completion(
         .iter()
         .map(|m| json!({"role": m.role, "content": m.content}))
         .collect();
-    let client = reqwest::Client::new();
+    let client = http_client()?;
     let resp = openai_request(&client, config)
         .json(&json!({
             "model": config.model,
@@ -93,17 +144,14 @@ async fn openai_completion(
         }))
         .send()
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(request_error)?;
 
     if !resp.status().is_success() {
         let text = resp.text().await.unwrap_or_default();
         return Err(format!("API error: {}", text));
     }
-    let data: Value = resp.json().await.map_err(|e| e.to_string())?;
-    Ok(data["choices"][0]["message"]["content"]
-        .as_str()
-        .unwrap_or("")
-        .to_string())
+    let data: Value = resp.json().await.map_err(request_error)?;
+    response_text(&data, "openai")
 }
 
 async fn anthropic_completion(api_base: &str, api_key: &str, model: &str, messages: &[Message]) -> Result<String, String> {
@@ -118,21 +166,21 @@ async fn anthropic_completion(api_base: &str, api_key: &str, model: &str, messag
         body["system"] = json!(sys);
     }
 
-    let client = reqwest::Client::new();
+    let client = http_client()?;
     let resp = client
-        .post(format!("{}/messages", api_base))
+        .post(format!("{}/messages", api_base.trim_end_matches('/')))
         .header("Content-Type", "application/json")
         .header("x-api-key", api_key)
         .header("anthropic-version", "2023-06-01")
         .json(&body)
-        .send().await.map_err(|e| e.to_string())?;
+        .send().await.map_err(request_error)?;
 
     if !resp.status().is_success() {
         let text = resp.text().await.unwrap_or_default();
         return Err(format!("API error: {}", text));
     }
-    let data: Value = resp.json().await.map_err(|e| e.to_string())?;
-    Ok(data["content"][0]["text"].as_str().unwrap_or("").to_string())
+    let data: Value = resp.json().await.map_err(request_error)?;
+    response_text(&data, "anthropic")
 }
 
 async fn gemini_completion(api_base: &str, api_key: &str, model: &str, messages: &[Message]) -> Result<String, String> {
@@ -150,19 +198,20 @@ async fn gemini_completion(api_base: &str, api_key: &str, model: &str, messages:
         body["systemInstruction"] = json!({"parts": [{"text": sys}]});
     }
 
-    let client = reqwest::Client::new();
+    let client = http_client()?;
     let resp = client
-        .post(format!("{}/models/{}:generateContent?key={}", api_base, model, api_key))
+        .post(format!("{}/models/{}:generateContent", api_base.trim_end_matches('/'), model))
         .header("Content-Type", "application/json")
+        .header("x-goog-api-key", api_key)
         .json(&body)
-        .send().await.map_err(|e| e.to_string())?;
+        .send().await.map_err(request_error)?;
 
     if !resp.status().is_success() {
         let text = resp.text().await.unwrap_or_default();
         return Err(format!("API error: {}", text));
     }
-    let data: Value = resp.json().await.map_err(|e| e.to_string())?;
-    Ok(data["candidates"][0]["content"]["parts"][0]["text"].as_str().unwrap_or("").to_string())
+    let data: Value = resp.json().await.map_err(request_error)?;
+    response_text(&data, "gemini")
 }
 
 fn expand_home(path: &str) -> PathBuf {
@@ -363,7 +412,7 @@ pub async fn test_connection(config: &LLMConfig) -> Result<Value, String> {
 
     let messages = vec![Message { role: "user".into(), content: "Reply with exactly one word: ok".into() }];
     match chat_completion(config, &messages).await {
-        Ok(reply) => Ok(json!({"ok": true, "message": &reply[..reply.len().min(80)]})),
+        Ok(reply) => Ok(json!({"ok": true, "message": connection_preview(&reply)})),
         Err(e) => Ok(json!({"ok": false, "message": e})),
     }
 }
@@ -499,23 +548,58 @@ Keep each fit under 18 words and each bestFor label under 5 words. Use listening
 }
 
 fn extract_json(content: &str) -> Result<Value, String> {
-    let re = regex::Regex::new(r"\{[\s\S]*\}").unwrap();
-    if let Some(m) = re.find(content) {
-        serde_json::from_str(m.as_str()).map_err(|e| e.to_string())
-    } else {
-        Ok(json!({}))
-    }
+    let start = content.find('{').ok_or_else(||
+        "The AI provider replied without the requested JSON. Try again or choose another model.".to_string())?;
+    let end = content.rfind('}').filter(|end| *end >= start).ok_or_else(||
+        "The AI provider returned incomplete JSON. Try fewer tasks or another model.".to_string())?;
+    serde_json::from_str(&content[start..=end]).map_err(|_| {
+        "The AI provider returned invalid or incomplete JSON. Try again with fewer tasks or another model.".into()
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
         codex_executable_candidates, codex_not_found_error, codex_prompt, is_openrouter,
-        openai_compatible_temperature, openai_request, planning_window, LLMConfig, Message,
+        openai_compatible_temperature, openai_request, planning_window, response_text,
+        connection_preview, extract_json, LLMConfig, Message,
         DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE, KIMI_TEMPERATURE, OPENROUTER_APP_TITLE,
         OPENROUTER_APP_URL,
     };
     use std::path::PathBuf;
+
+    #[test]
+    fn native_errors_distinguish_empty_truncated_and_invalid_answers() {
+        assert!(response_text(&serde_json::json!({"choices": [{"message": {"content": ""}}]}), "openai").unwrap_err().contains("no answer text"));
+        assert!(response_text(&serde_json::json!({"choices": [{"message": {"content": "{}"}, "finish_reason": "length"}]}), "openai").unwrap_err().contains("output limit"));
+        assert!(extract_json("I cannot produce a plan").unwrap_err().contains("without the requested JSON"));
+        assert!(extract_json("{\"schedule\": [").unwrap_err().contains("incomplete JSON"));
+        assert!(extract_json("{broken}").is_err());
+        assert!(extract_json("} then {").is_err());
+        assert_eq!(extract_json("```json\n{\"schedule\": []}\n```").unwrap(), serde_json::json!({"schedule": []}));
+    }
+
+    #[test]
+    fn text_blocks_skip_reasoning_and_preserve_final_answers() {
+        let anthropic = serde_json::json!({"content": [
+            {"type": "thinking", "thinking": "private reasoning"},
+            {"type": "text", "text": "{\"schedule\":"},
+            {"type": "text", "text": "[]}"}
+        ]});
+        assert_eq!(extract_json(&response_text(&anthropic, "anthropic").unwrap()).unwrap(), serde_json::json!({"schedule": []}));
+        let gemini = serde_json::json!({"candidates": [{"content": {"parts": [
+            {"thought": true, "text": "private reasoning"},
+            {"text": "{\"schedule\": []}"}
+        ]}}]});
+        assert_eq!(response_text(&gemini, "gemini").unwrap(), "{\"schedule\": []}");
+    }
+
+    #[test]
+    fn connection_preview_is_unicode_safe() {
+        let reply = "好".repeat(81);
+        assert_eq!(connection_preview(&reply), "好".repeat(80));
+        assert_eq!(connection_preview("ok"), "ok");
+    }
 
     #[test]
     fn planning_uses_selected_date_and_validated_available_time() {

@@ -180,7 +180,7 @@ export function SettingsPanel({ noteMaterial = 'paper', onNoteMaterial, material
   const preset = PROVIDER_PRESETS[settings.provider] || PROVIDER_PRESETS.custom
   const isCodex = settings.provider === 'codex'
   const isOpenRouter = settings.provider === 'openrouter' || settings.apiBase.toLowerCase().includes('openrouter.ai')
-  const fieldsDisabled = loading || loadFailed || saving || updating
+  const fieldsDisabled = loading || loadFailed || saving || testing || updating
   const updateReason = dirty ? 'Save your settings before updating.'
     : loading || loadFailed ? 'Wait for settings to load before updating.'
     : saving || testing ? 'Wait for the current operation to finish.' : updateBlockedReason
@@ -260,8 +260,9 @@ export function SettingsPanel({ noteMaterial = 'paper', onNoteMaterial, material
               </details>
               <div className="test-row">
                 <button type="button" onClick={handleTest} disabled={testing || !settings.apiBase || (!isCodex && !settings.apiKey && !(settings.preferDianeCredentials !== false && dianeAvailable))}>{testing ? 'Testing…' : 'Test connection'}</button>
-                {testResult && <span className={'test-result ' + (testResult.ok ? 'ok' : 'fail')} role="status">{testResult.ok ? 'Connected' : testResult.message || 'Could not connect. Check the provider settings.'}</span>}
+                {testResult && <span className={'test-result ' + (testResult.ok ? 'ok' : 'fail')} role="status">{testResult.ok ? dirty ? 'Connected. Save to use these settings.' : 'Connected' : testResult.message || 'Could not connect. Check the provider settings.'}</span>}
               </div>
+              <p className="hint">Test connection checks this form. Planning uses your saved provider and model.</p>
               <details className="settings-details">
                 <summary>Scheduling machines (optional)</summary>
                 <p className="hint">Add computers that can run scheduled work.</p>

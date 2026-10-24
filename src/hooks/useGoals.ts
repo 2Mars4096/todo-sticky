@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GoalCategory, GoalItem, GoalsState } from '../types'
 
 const STORAGE_KEY = 'todo-sticky-goals-v1'
@@ -48,29 +48,65 @@ function normalizeState(value: unknown): GoalsState {
   }
 }
 
-function readStoredState(): GoalsState {
-  if (typeof window === 'undefined') return defaultState
+interface StoredGoals {
+  state: GoalsState
+  unreadable: string | null
+  readFailed: boolean
+}
 
+function readStoredState(): StoredGoals {
+  if (typeof window === 'undefined') return { state: defaultState, unreadable: null, readFailed: false }
+  let raw: string | null = null
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return defaultState
-    return normalizeState(JSON.parse(raw))
+    raw = window.localStorage.getItem(STORAGE_KEY)
+    if (!raw) return { state: defaultState, unreadable: null, readFailed: false }
+    const parsed = JSON.parse(raw)
+    const normalized = normalizeState(parsed)
+    const invalid = !parsed || typeof parsed !== 'object' || Array.isArray(parsed)
+      || ['targets', 'recurring'].some(category => parsed[category] !== undefined
+        && (!Array.isArray(parsed[category]) || parsed[category].some((item: unknown) => !normalizeItem(item))))
+    return { state: normalized, unreadable: invalid ? raw : null, readFailed: false }
   } catch (error) {
     console.error('Failed to read long-term sidebar state:', error)
-    return defaultState
+    return { state: defaultState, unreadable: raw, readFailed: raw === null }
   }
 }
 
 export function useGoals() {
-  const [state, setState] = useState<GoalsState>(() => readStoredState())
+  const [stored] = useState<StoredGoals>(() => readStoredState())
+  const [state, setState] = useState<GoalsState>(stored.state)
+  const [storageError, setStorageError] = useState<string | null>(null)
+  const [recoveryNotice, setRecoveryNotice] = useState<string | null>(stored.unreadable
+    ? 'Some saved goals could not be read. Their original data is being kept for recovery.' : null)
+  const recoveryKey = useRef<string | null>(null)
 
-  useEffect(() => {
+  const save = useCallback(() => {
+    if (stored.readFailed) {
+      setStorageError('Saved goals could not be read. New edits are only in this window; existing saved data has not been replaced.')
+      return
+    }
     try {
+      // A corrupt payload must never be replaced until its exact bytes have a
+      // separate durable copy. A quota/write failure leaves the original intact.
+      if (stored.unreadable !== null && recoveryKey.current === null) {
+        const base = `${STORAGE_KEY}-recovery-${Date.now()}`
+        let key = base
+        for (let suffix = 1; window.localStorage.getItem(key) !== null; suffix += 1) key = `${base}-${suffix}`
+        window.localStorage.setItem(key, stored.unreadable)
+        recoveryKey.current = key
+        setRecoveryNotice('Some saved goals could not be read. A recovery copy of the original data was saved on this device.')
+      }
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      setStorageError(null)
     } catch (error) {
       console.error('Failed to persist long-term sidebar state:', error)
+      setStorageError('Goals could not be saved. Your current edits stay in this window. Retry when storage is available.')
     }
-  }, [state])
+  }, [state, stored])
+
+  useEffect(() => {
+    save()
+  }, [save])
 
   const addGoal = useCallback((category: GoalCategory, text: string) => {
     const trimmed = text.trim()
@@ -135,6 +171,7 @@ export function useGoals() {
   }, [])
 
   return {
+    storageError, recoveryNotice, retrySave: stored.readFailed ? undefined : save,
     sidebarCollapsed: state.sidebarCollapsed,
     targets: state.targets,
     recurring: state.recurring,

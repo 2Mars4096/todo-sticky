@@ -29,6 +29,10 @@
 
 ## Task Completion And Daily Rollover
 
+- Carry-forward uses a ref containing the latest accepted task state so async destination completion cannot replay an old list over new captures. Navigation and external reloads drain an active move. Source removal occurs after destination success and only if the moved task is unchanged; conflicting local edits remain available. Native moved-step insertion reopens closed parents for new unfinished work.
+- `useGoals` preserves malformed saved data in a separate WebView recovery key before replacing it, retains valid items from partially invalid arrays, and reports recovery/write errors in Goals. If storage cannot be read, it is not assumed empty or overwritten.
+- `api.onFileChanged` disposes registrations that resolve after cleanup and suppresses callbacks for disposed date views.
+
 - `src/taskRollover.ts` completes task trees and projects unfinished archived roots into Today with composite UI IDs and original date/ID metadata. Markdown remains authoritative; no daily copies or migration are created.
 - `useTasks` renders the selected date first, then loads earlier sections in the background only for Today, preserving edits during the scan. Reads time out after eight seconds; archive retries share a pending native request. Saves merge visible carried rows into their original sections while preserving hidden completed tasks; today-only rows remain in the selected date. Saves are serialized and flushed before reload, and stale load results are discarded.
 - Native range extraction accepts optional `skipUnavailable` and reports `unavailableFiles`; optional `canonicalDates` retains only the first date section from the file selected by calendar navigation (newest existing week on/before the date, or earliest existing week). Unreadable owners do not revive stale copies from other files. Default agent/CLI extraction remains raw and strict. The UI surfaces a retry notice while showing readable tasks.
@@ -192,6 +196,8 @@
 - [ ] Release workflow runs TypeScript and the same `npm test` suite before packaging. Browser fixtures do not establish native drag, physical IME, GPU or installed-app acceptance.
 
 ## Recoverable Edits And Day Planning
+
+- `src/aiErrors.ts` preserves native string and JavaScript error messages at the planning boundary. Provider adapters collect final text blocks, reject empty/truncated output, and use bounded HTTP timeouts. Connection tests use the form draft; actual requests use saved settings. Tests with edited settings explicitly prompt Save.
 
 - `useTasks` retains the latest pending snapshot on write failure, exposes persistent `saveError` / `saving` / `retrySave`, and drains writes before reload, date navigation, settings-store changes and updates. A failed older write cannot prevent a newer snapshot from being attempted. Writes use the successfully loaded date, not a newly requested date that failed to load.
 - A synchronous selected-day loading guard rejects plan application, Undo and delayed AI breakdown during a replacement read. The guard ends before background archive discovery, preserving capture while history loads. Breakdown results additionally require the original open target's fingerprint and date; unrelated task edits do not invalidate them.

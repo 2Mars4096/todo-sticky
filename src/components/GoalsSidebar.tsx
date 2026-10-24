@@ -3,6 +3,9 @@ import type { GoalCategory, GoalItem } from '../types'
 import '../styles/settings-navigation.css'
 
 interface SidebarProps {
+  storageError?: string | null
+  recoveryNotice?: string | null
+  onRetrySave?: () => void
   collapsed: boolean
   targets: GoalItem[]
   recurring: GoalItem[]
@@ -173,6 +176,9 @@ function GoalSection({
 }
 
 export function GoalsSidebar({
+  storageError,
+  recoveryNotice,
+  onRetrySave,
   collapsed,
   targets,
   recurring,
@@ -213,6 +219,11 @@ export function GoalsSidebar({
         </div>
       ) : (
         <div className="sidebar-body">
+          {recoveryNotice && <p className="goal-section-description" role="status">{recoveryNotice}</p>}
+          {storageError && <div className="settings-error" role="alert">
+            <p>{storageError}</p>
+            {onRetrySave && <button type="button" onClick={onRetrySave}>Retry save</button>}
+          </div>}
           <GoalSection
             title="Long-term"
             category="targets"

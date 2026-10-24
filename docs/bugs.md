@@ -1,5 +1,13 @@
 # Bugs And Failed Approaches
 
+- 2026-10-24: Plan hid every native `Err(String)` behind the generic “Check AI assistance in Settings” message. Native string errors now reach the dialog. Test connection uses the edited form while planning loads saved settings; successful unsaved tests now explicitly say Save. Final response text can follow reasoning blocks; adapters now collect answer text instead of reading only block zero. Empty/truncated/invalid JSON responses remain errors, never task mutations. The installed provider's exact failure remains unverified without its live response.
+
+- 2026-10-24: Carry-forward built source cleanup from its pre-request task list. A task captured while `push_task` was pending remained visible but disappeared from the saved date. Source cleanup now uses current state after destination success; edits to the moved task retain both versions with an explanation, and partial cleanup failure keeps Retry save.
+- 2026-10-24: Corrupt goals fell back to an empty state and were overwritten by the mount effect. Preserve the exact original value in a separate recovery key before replacement; if that write or the initial read fails, do not overwrite the original.
+- 2026-10-24: Async native file-listener registration could complete after React effect cleanup and keep stale date handlers alive. Dispose late registrations and guard callbacks.
+- 2026-10-24: An unfinished moved step could be merged under a completed/stopped parent without reopening it or clearing outcome review. Match manual step insertion while leaving duplicate and completed-step inserts unchanged.
+- 2026-10-24: Chromium blurs a focused button when it becomes disabled. The Suggest outcome button therefore closed its enclosing blur-committing editor as the request started. Keep it focusable with `aria-disabled` and the existing in-flight guard; the original browser suite reproduced this on the base UI too.
+
 - 2026-10-23: Earlier-task dragging was constrained to the original source date, preventing promotion into Today. Explicit root promotion now preserves full task metadata and saves the destination before archive removal. A cross-file partial failure can leave both copies until Retry; the latest snapshot stays in memory. Step move labels retain their existing destination when the parent gains Move to today.
 
 - 2026-10-21: GitHub CLI status/cancellation hit the anonymous API rate limit during releases; optional custom-note edits still return HTTP 401. Public workflow HTML, release asset listings, downloads and signature verification remain usable. Verify older releases with the validator/package.json from their tag, because the validator intentionally compares against its local package version.

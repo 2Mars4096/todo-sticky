@@ -6,8 +6,9 @@ const node = (id, status = 'todo', subtasks = []) => ({ id, text: id, status, su
 const tick = () => new Promise(resolve => setImmediate(resolve))
 
 function fixture() {
-  const slots = [], timers = new Map(), writes = [], reads = []
+  const slots = [], timers = new Map(), writes = [], reads = [], moves = []
   let failDate = null
+  let moveHold = null, failMove = false
   let cursor = 0, nextTimer = 0, fail = false, hold = null, readHold = null, archiveHold = null, failRead = false
   const sections = {
     '2026-10-21': [node('today')],
@@ -40,6 +41,13 @@ function fixture() {
       return { dates: Object.entries(sections).map(([date, tasks]) => ({ date, tasks: clone(tasks), filePath: 'fixture.md' })) }
     },
     saveTasks: save, createDateSection: save,
+    pushTask: async data => {
+      moves.push(clone(data))
+      if (moveHold) await moveHold.promise
+      if (failMove) throw Error('Fixture destination unavailable')
+      sections[data.toDate] = [...(sections[data.toDate] ?? []), clone(data.taskSnapshot)]
+      return { filePath: 'fixture.md' }
+    },
     onFileChanged: () => () => {},
   }
   const react = {
@@ -52,10 +60,12 @@ function fixture() {
   })
   return {
     render(date = '2026-10-21') { cursor = 0; return hook.useTasks(date, date === '2026-10-21') },
-    sections, writes, reads,
+    sections, writes, reads, moves,
     fail(value) { fail = value },
     failDate(value) { failDate = value },
     failRead(value) { failRead = value },
+    failMove(value) { failMove = value },
+    holdMove() { let resolve; const promise = new Promise(done => { resolve = done }); moveHold = { promise, resolve }; return () => { moveHold.resolve(); moveHold = null } },
     hold() { let resolve; const promise = new Promise(done => { resolve = done }); hold = { promise, resolve }; return () => { hold.resolve(); hold = null } },
     holdRead() { let resolve; const promise = new Promise(done => { resolve = done }); readHold = { promise, resolve }; return () => { readHold.resolve(); readHold = null } },
     holdArchive() { let resolve; const promise = new Promise(done => { resolve = done }); archiveHold = { promise, resolve }; return () => { archiveHold.resolve(); archiveHold = null } },
@@ -281,5 +291,54 @@ function fixture() {
   f.render('2026-10-22').moveToToday('2026-10-20:last')
   f.render().moveToToday('2026-10-20:last', 'missing')
   assert.deepEqual(clone(f.render().tasks), beforeInvalidMove)
+
+  // Moving a task cannot overwrite captures/edits accepted while its destination
+  // write is pending. Keep the source safe until that destination succeeds.
+  f = fixture(); await f.render().load()
+  let releaseMove = f.holdMove()
+  let moving = f.render().carryForward('today')
+  await tick()
+  const duringMove = f.render()
+  duringMove.addTask('Captured while moving')
+  duringMove.updateTaskText('2026-10-20:first', 'Edited while moving')
+  await f.saveTimer()
+  assert.ok(f.sections['2026-10-21'].some(task => task.id === 'today'), 'Source stays saved before destination exists')
+  let navigationReady = false
+  const navigationDrain = f.render().flushPendingSave().then(() => { navigationReady = true })
+  await tick(); assert.equal(navigationReady, false)
+  releaseMove(); const moved = await moving; await navigationDrain
+  assert.ok(f.sections['2026-10-21'].some(task => task.text === 'Captured while moving'))
+  assert.equal(f.sections['2026-10-20'].find(task => task.id === 'first').text, 'Edited while moving')
+  assert.equal(f.sections['2026-10-21'].some(task => task.id === 'today'), false)
+  assert.equal(f.sections[moved.dateStr].filter(task => task.id === 'today').length, 1)
+  assert.equal(navigationReady, true)
+
+  // A concurrent change to the moved task preserves both versions and reports
+  // the conflict; it must never delete the user's newer text/steps/outcome.
+  f = fixture(); await f.render().load(); releaseMove = f.holdMove()
+  moving = f.render().carryForward('today'); await tick()
+  f.render().updateTaskText('today', 'My newer version')
+  releaseMove(); await assert.rejects(moving, /task changed while it was moving/)
+  await f.render().flushPendingSave()
+  assert.equal(f.sections['2026-10-21'].find(task => task.id === 'today').text, 'My newer version')
+  assert.equal(f.sections[f.moves[0].toDate].find(task => task.id === 'today').text, 'today')
+
+  // A failed destination leaves current edits and the source intact. A failed
+  // source cleanup leaves a retryable save, and retry never dispatches twice.
+  f = fixture(); await f.render().load(); releaseMove = f.holdMove(); f.failMove(true)
+  moving = f.render().carryForward('today'); await tick()
+  f.render().addTask('Capture despite destination failure')
+  releaseMove(); await assert.rejects(moving, /destination unavailable/)
+  await f.render().flushPendingSave()
+  assert.ok(f.sections['2026-10-21'].some(task => task.id === 'today'))
+  assert.ok(f.sections['2026-10-21'].some(task => task.text === 'Capture despite destination failure'))
+  f = fixture(); await f.render().load(); f.failDate('2026-10-21')
+  await assert.rejects(f.render().carryForward('today'), /Retry save to finish the move/)
+  assert.equal(f.render().saveError.date, '2026-10-21')
+  assert.equal(f.sections[f.moves[0].toDate].filter(task => task.id === 'today').length, 1)
+  f.failDate(null); await f.render().retrySave()
+  assert.equal(f.moves.length, 1)
+  assert.equal(f.sections['2026-10-21'].some(task => task.id === 'today'), false)
   console.log('Passed save recovery, deletion Undo, stale breakdown rejection, pending-read mutation guards and background archive editing')
+  console.log('Passed move captures, concurrent-edit conflict preservation, navigation drain and partial-write recovery')
 })().catch(error => { console.error(error); process.exitCode = 1 })

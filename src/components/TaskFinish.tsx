@@ -137,7 +137,7 @@ export function TaskFinish({ taskText, finish, selected, dateOpen, setDateOpen, 
             }} />
           <div className="outcome-editor-tools">
             <small>Enter saves · Esc cancels</small>
-            {!draft.trim() && <button type="button" onClick={() => void suggestOutcome()} disabled={suggesting}>
+            {!draft.trim() && <button type="button" onClick={() => void suggestOutcome()} aria-disabled={suggesting}>
               {suggesting ? 'Suggesting…' : suggestionFailed ? 'Retry suggestion' : 'Suggest outcome'}
             </button>}
           </div>

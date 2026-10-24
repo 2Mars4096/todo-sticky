@@ -92,7 +92,15 @@ function buildDebugTaskPack() {
 }
 
 export function useTasks(dateStr: string, isCurrentDay = false) {
-  const [tasks, setTasks] = useState<AggregatedTask[]>([])
+  const [tasks, setTaskState] = useState<AggregatedTask[]>([])
+  // Async moves must commit against the latest accepted edits, including an
+  // update queued in the same event before React has rendered it.
+  const tasksRef = useRef(tasks)
+  const setTasks = useCallback((update: AggregatedTask[] | ((previous: AggregatedTask[]) => AggregatedTask[])) => {
+    const next = typeof update === 'function' ? update(tasksRef.current) : update
+    tasksRef.current = next
+    setTaskState(next)
+  }, [])
   const [filePath, setFilePath] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<'cloud-only' | 'failed' | null>(null)
@@ -110,6 +118,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSave = useRef<Promise<void> | null>(null)
   const pendingSave = useRef<(() => Promise<void>) | null>(null)
+  const activeMove = useRef<Promise<ReturnType<typeof resolveTaskCarryForwardTarget> | undefined> | null>(null)
   const filePathRef = useRef<string | null>(null)
   const dateRef = useRef(dateStr)
   // A failed save may block navigation. Keep subsequent edits bound to the data
@@ -192,7 +201,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     }, 300)
   }, [])
 
-  const flushPendingSave = useCallback(async () => {
+  const flushPendingWrites = useCallback(async () => {
     if (saveTimer.current) {
       clearTimeout(saveTimer.current)
       saveTimer.current = null
@@ -203,6 +212,13 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     }
     await waitForPendingWrites()
   }, [])
+
+  const flushPendingSave = useCallback(async () => {
+    // Date/folder navigation and external reloads must not replace a move's
+    // source snapshot while its destination write is still running.
+    if (activeMove.current) await activeMove.current
+    await flushPendingWrites()
+  }, [flushPendingWrites])
 
   const retrySave = useCallback(async () => {
     setSaving(true)
@@ -419,73 +435,55 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   }, [undo, persist])
 
   const carryForward = useCallback(async (taskId: string, subtaskId?: string) => {
-    const target = resolveTaskCarryForwardTarget(dateStr)
+    if (activeMove.current || loadingRef.current || loadedDateRef.current !== dateStr) return
+    const sourceDate = loadedDateRef.current
+    const target = resolveTaskCarryForwardTarget(sourceDate)
+    const operation = (async () => {
+      await flushPendingWrites()
+      const source = tasksRef.current.find(task => task.id === taskId)
+      const snapshot = subtaskId
+        ? source?.todaySubtasks.find(step => step.id === subtaskId)
+        : source && flattenTasks([source])[0]
+      if (!source || !snapshot) return
+      const fingerprint = JSON.stringify(snapshot)
 
-    // Compute payload from current state BEFORE mutating
-    const currentTasks = tasks
-    let taskText = ''
-    let subtaskTexts: string[] = []
-    let parentTaskText: string | undefined
-
-    if (subtaskId) {
-      const parent = currentTasks.find(t => t.id === taskId)
-      const sub = parent?.todaySubtasks.find(s => s.id === subtaskId)
-      if (parent && sub) {
-        taskText = sub.text
-        parentTaskText = parent.text
-      }
-    } else {
-      const found = currentTasks.find(t => t.id === taskId)
-      if (found) {
-        taskText = found.text
-        subtaskTexts = found.todaySubtasks.map(s => s.text)
-      }
-    }
-
-    if (!taskText) return
-
-    await flushPendingSave()
-
-    setUndo(null)
-
-    // Remove from UI immediately
-    if (subtaskId) {
-      setTasks(prev => prev.map(t =>
-        t.id === taskId ? { ...t, todaySubtasks: t.todaySubtasks.filter(s => s.id !== subtaskId) } : t
-      ))
-    } else {
-      setTasks(prev => prev.filter(t => t.id !== taskId))
-    }
-
-    try {
-      if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; pendingSave.current = null }
-
-      // Append to the resolved current or future section.
+      // Keep the source visible and saved until the destination exists. Other
+      // captures/edits remain usable while this native request is pending.
       await api.pushTask({
-        fromDate: dateStr,
+        fromDate: sourceDate,
         toDate: target.dateStr,
-        taskText,
-        subtaskTexts,
-        parentTaskText,
-        taskSnapshot: subtaskId
-          ? currentTasks.find(t => t.id === taskId)?.todaySubtasks.find(s => s.id === subtaskId)
-          : flattenTasks(currentTasks.filter(t => t.id === taskId))[0],
-        parentSnapshot: subtaskId ? flattenTasks(currentTasks.filter(t => t.id === taskId))[0] : undefined,
+        taskText: snapshot.text,
+        subtaskTexts: snapshot.subtasks.map(step => step.text),
+        parentTaskText: subtaskId ? source.text : undefined,
+        taskSnapshot: snapshot,
+        parentSnapshot: subtaskId ? flattenTasks([source])[0] : undefined,
       })
 
-      const remaining = subtaskId
-        ? currentTasks.map(task => task.id === taskId ? { ...task, todaySubtasks: task.todaySubtasks.filter(sub => sub.id !== subtaskId) } : task)
-        : currentTasks.filter(task => task.id !== taskId)
-      persist(remaining)
-      await flushPendingSave()
+      const current = tasksRef.current.find(task => task.id === taskId)
+      const currentSnapshot = subtaskId
+        ? current?.todaySubtasks.find(step => step.id === subtaskId)
+        : current && flattenTasks([current])[0]
+      if (currentSnapshot && JSON.stringify(currentSnapshot) !== fingerprint) {
+        throw new Error(`The task changed while it was moving. Your edited task stays here; the earlier version was copied to ${target.actionLabel}. Review both before moving it again.`)
+      }
+      setUndo(null)
+      setTasks(latest => {
+        const remaining = subtaskId
+          ? latest.map(task => task.id === taskId ? { ...task, todaySubtasks: task.todaySubtasks.filter(step => step.id !== subtaskId) } : task)
+          : latest.filter(task => task.id !== taskId)
+        persist(remaining)
+        return remaining
+      })
+      try { await flushPendingWrites() }
+      catch {
+        throw new Error(`The task reached ${target.actionLabel}, but its original could not be removed from storage. Use Retry save to finish the move.`)
+      }
       return target
-    } catch (e) {
-      console.error('Failed to carry task forward:', e)
-      setTasks(currentTasks)
-      await load()
-      throw e
-    }
-  }, [dateStr, tasks, load, persist, flushPendingSave])
+    })()
+    activeMove.current = operation
+    try { return await operation }
+    finally { if (activeMove.current === operation) activeMove.current = null }
+  }, [dateStr, persist, flushPendingWrites, setTasks])
 
   const addSubtask = useCallback((taskId: string, text: string) => {
     const sub: Task = { id: newId(), text, status: 'todo', subtasks: [] }

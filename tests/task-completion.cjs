@@ -16,7 +16,9 @@ vm.runInNewContext(source, {
   clearTimeout: () => {},
   require: name => {
     if (name === 'react') return {
-      useState: initial => [initial, update => { if (typeof update === 'function') state = update(state) }],
+      useState: initial => [Array.isArray(initial) ? state : initial, update => {
+        if (Array.isArray(initial)) state = typeof update === 'function' ? update(state) : update
+      }],
       useCallback: fn => fn,
       useRef: current => ({ current }),
       useEffect: () => {},

@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-24 — Integrated review verification
+
+- [validation] Combine planning and reliability fixes on main. All 14 Node suites, TypeScript, production build and 33 native Rust tests pass; planning/settings and task-interaction browser checks use production assets and synthetic data. Existing installed binaries remain at their published release until an update is built.
+
+## 2026-10-24 — AI planning diagnostics
+
+- [fix] Show native provider errors in Plan instead of replacing every string rejection with an AI-settings warning. Failed generation still leaves tasks unchanged.
+- [ux] A successful connection test on an edited settings form explicitly asks the user to Save; fields remain stable while testing.
+- [reliability] Extract answer text after Anthropic/Gemini reasoning blocks, reject empty/truncated responses, explain invalid JSON, bound HTTP requests, and truncate connection previews by Unicode characters.
+- [security] Send Gemini API keys in the supported header and omit request URLs from network-error messages.
+- [validation] TypeScript, production build, 13 Node suites, focused planning/settings browser checks, and 30 native Rust tests pass with synthetic data. No live AI credentials or installed app were used; no release tag was created.
+
+## 2026-10-24 — Review reliability fixes
+
+- [fix] Keep new captures and unrelated edits made during a task move. Save the destination before source removal, preserve both versions on a moved-task edit conflict, drain moves before navigation, and retry failed source cleanup without redispatching.
+- [fix] Preserve unreadable goal data in a separate exact recovery copy before writing normalized state. Surface recovery and save failures; never overwrite a store that could not be read.
+- [fix] Clean up native file-change listeners that register after disposal, contain registration errors, reopen closed parents when unfinished moved steps arrive, and retain focus in the outcome editor during suggestion requests.
+- [validation] All 13 Node suites, full TypeScript, production build and production task-interaction browser regression pass. The added native tests await integration, tracked in [4-51](plans/4-51-review-reliability.md).
+
 ## 2026-10-23 — Verified release 2.1.15
 
 - [release] Publish [v2.1.15](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.15) as latest with earlier-task promotion and optional glass materials. All platform builds and publication succeed; manifest/download URLs validate for four targets and all three update packages pass Ed25519 verification.

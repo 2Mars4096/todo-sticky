@@ -384,7 +384,7 @@ export default function App() {
       presentNotice({
         kind: 'error',
         title: 'Could not move task',
-        message: 'The task was restored. Try again in a moment.',
+        message: error instanceof Error ? error.message : 'The task could not be moved. Your current edits are still here.',
       })
     }
   }, [tasks.carryForward, presentNotice])
@@ -445,6 +445,9 @@ export default function App() {
     <div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
       <WindowResizeHandles />
       <GoalsSidebar
+        storageError={goals.storageError}
+        recoveryNotice={goals.recoveryNotice}
+        onRetrySave={goals.retrySave}
         collapsed={goals.sidebarCollapsed}
         targets={goals.targets}
         recurring={goals.recurring}

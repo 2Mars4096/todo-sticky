@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { api } from '../api'
+import { aiErrorMessage } from '../aiErrors'
 import { useDialogFocus } from '../hooks/useDialogFocus'
 import { minutesOfDay, planningTaskKey, validateDayPlan, type DayPlan, type PlannedBlock, type PlanningContext } from '../taskPlanning'
 import type { AggregatedTask, AppSettings } from '../types'
@@ -54,7 +55,7 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
       setProposal({ result: validateDayPlan(result, context), context, taskKey })
     } catch (cause) {
       if (generation !== generationRef.current) return
-      setError(cause instanceof Error ? cause.message : 'Could not generate a plan. Check AI assistance in Settings and try again.')
+      setError(aiErrorMessage(cause, 'Could not generate a plan. Try again; your tasks have not changed.'))
     } finally {
       if (generation === generationRef.current) setLoading(false)
     }

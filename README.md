@@ -25,6 +25,8 @@ Open **Settings** to configure tools by purpose:
 
 For AI assistance, choose Moonshot, OpenRouter, OpenAI, Anthropic, Gemini, a custom OpenAI-compatible endpoint, or **Codex (ChatGPT login)**. API providers use their configured endpoint, key, and model. Codex reuses your existing local `codex login`; its model can be blank, and its executable defaults to `codex` with common install paths detected. Use **Test connection**, then save the settings.
 
+**If Plan fails after a successful connection test:** save the tested settings first. Test connection checks the current form with a short request (or the Codex login); planning uses the saved provider and asks for a longer structured response. Plan shows the actual provider error, including unavailable models, timeouts, empty/truncated replies and invalid JSON. Your tasks change only after a valid proposal is applied.
+
 The window appears after the app shell is ready; a short fallback keeps startup errors visible if frontend loading fails.
 
 On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Sticky Todo from an installer or automation tool cannot silently open a separate empty data store.
@@ -102,6 +104,12 @@ AI step suggestions use the outcome and date to propose bounded work including a
 Open **Plan** for the selected date, set your available **From / Until** times, and optionally select configured machines. **Generate proposal** shows chronological blocks and any tasks left unscheduled. Generating a proposal does not change your tasks.
 
 Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as they were. Replanning replaces unfinished generated blocks for that planning date while retaining manual and completed work. The confirmation offers **Undo**. If tasks or planning details change during review, generate a fresh proposal before applying it.
+
+### Recovering moves and saved goals
+
+Task moves keep the source until the destination is saved. You can continue capturing and editing unrelated work during a move. If you change the task being moved, the app keeps your newer local version and the earlier copied version at the destination, and explains the conflict. If the destination succeeds but source cleanup fails, **Retry save** finishes cleanup without sending the task again.
+
+Goals shows a notice when saved data cannot be read or written. Before replacing malformed goal data, it saves an exact recovery copy on the same device; if recovery storage is unavailable, the original is left untouched. New edits stay in the current window until a save succeeds.
 
 ## Development
 

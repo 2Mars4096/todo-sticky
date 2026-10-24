@@ -112,8 +112,14 @@ export const api = {
     invoke<string | null>('select_folder'),
 
   onFileChanged: (cb: () => void): (() => void) => {
+    let disposed = false
     let unlisten: UnlistenFn | null = null
-    listen('file-changed', () => cb()).then(fn_ => { unlisten = fn_ })
-    return () => { unlisten?.() }
+    void listen('file-changed', () => { if (!disposed) cb() }).then(fn_ => {
+      if (disposed) fn_()
+      else unlisten = fn_
+    }).catch(error => {
+      if (!disposed) console.error('Could not watch task file changes:', error)
+    })
+    return () => { disposed = true; unlisten?.(); unlisten = null }
   },
 }

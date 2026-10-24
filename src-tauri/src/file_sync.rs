@@ -226,6 +226,22 @@ fn normalized_task_text(text: &str) -> String {
         .join(" ")
 }
 
+fn append_moved_subtask(parent: &mut Task, subtask: Task) {
+    if !matches!(subtask.status.as_str(), "done" | "stopped") {
+        if matches!(parent.status.as_str(), "done" | "stopped") {
+            parent.status = "partial".into();
+        }
+        if let Some(finish) = parent
+            .finish
+            .as_mut()
+            .and_then(serde_json::Value::as_object_mut)
+        {
+            finish.insert("reviewReady".into(), serde_json::json!(false));
+        }
+    }
+    parent.subtasks.push(subtask);
+}
+
 fn merge_subtask_under_parent(tasks: &mut Vec<Task>, mut parent: Task, subtask: Task) {
     let parent_key = normalized_task_text(&parent.text);
     if let Some(existing_parent) = tasks
@@ -238,12 +254,12 @@ fn merge_subtask_under_parent(tasks: &mut Vec<Task>, mut parent: Task, subtask: 
             .iter()
             .any(|existing| normalized_task_text(&existing.text) == subtask_key)
         {
-            existing_parent.subtasks.push(subtask);
+            append_moved_subtask(existing_parent, subtask);
         }
         return;
     }
 
-    parent.subtasks.push(subtask);
+    append_moved_subtask(&mut parent, subtask);
     tasks.push(parent);
 }
 
@@ -332,5 +348,62 @@ mod tests {
         assert_eq!(tasks[0].subtasks.len(), 2);
         assert_eq!(tasks[0].subtasks[0].text, "Task 1.1");
         assert_eq!(tasks[0].subtasks[1].text, "Task 1.2");
+    }
+
+    #[test]
+    fn unfinished_moved_steps_reopen_closed_parents_and_clear_review() {
+        for status in ["done", "stopped", "todo", "partial", "question"] {
+            let mut parent = task("destination", "Task 1");
+            parent.status = status.into();
+            parent.finish = Some(
+                serde_json::json!({"doneWhen": "A usable result", "reviewReady": true}),
+            );
+            let mut tasks = vec![parent];
+            merge_subtask_under_parent(
+                &mut tasks,
+                task("source", "Task 1"),
+                task("step", "New work"),
+            );
+            assert_eq!(
+                tasks[0].status,
+                if matches!(status, "done" | "stopped") { "partial" } else { status }
+            );
+            assert_eq!(tasks[0].finish.as_ref().unwrap()["reviewReady"], false);
+            assert_eq!(tasks[0].finish.as_ref().unwrap()["doneWhen"], "A usable result");
+        }
+    }
+
+    #[test]
+    fn duplicate_and_finished_moved_steps_leave_parent_state_unchanged() {
+        for child_status in ["done", "stopped"] {
+            let mut parent = task("destination", "Task 1");
+            parent.status = "done".into();
+            parent.finish = Some(serde_json::json!({"reviewReady": true}));
+            let mut step = task("step", "Existing work");
+            step.status = child_status.into();
+            let mut tasks = vec![parent];
+            merge_subtask_under_parent(&mut tasks, task("source", "Task 1"), step);
+            assert_eq!(tasks[0].status, "done");
+            assert_eq!(tasks[0].finish.as_ref().unwrap()["reviewReady"], true);
+            merge_subtask_under_parent(
+                &mut tasks,
+                task("source", "Task 1"),
+                task("duplicate", " existing   work "),
+            );
+            assert_eq!(tasks[0].subtasks.len(), 1);
+            assert_eq!(tasks[0].status, "done");
+            assert_eq!(tasks[0].finish.as_ref().unwrap()["reviewReady"], true);
+        }
+    }
+
+    #[test]
+    fn a_new_destination_parent_is_reopened_for_unfinished_work() {
+        let mut parent = task("source", "Task 1");
+        parent.status = "stopped".into();
+        parent.finish = Some(serde_json::json!({"reviewReady": true}));
+        let mut tasks = Vec::new();
+        merge_subtask_under_parent(&mut tasks, parent, task("step", "New work"));
+        assert_eq!(tasks[0].status, "partial");
+        assert_eq!(tasks[0].finish.as_ref().unwrap()["reviewReady"], false);
     }
 }
