@@ -170,6 +170,20 @@ export function useGoals() {
     ))
   }, [])
 
+  const applyCloudGoals = useCallback((value: { targets: GoalItem[]; recurring: GoalItem[] }) => {
+    if (stored.readFailed || (stored.unreadable !== null && recoveryKey.current === null)) {
+      throw new Error('Recover the saved goals before applying cloud changes.')
+    }
+    if (!value || !Array.isArray(value.targets) || !Array.isArray(value.recurring)
+      || [...value.targets, ...value.recurring].some(item => !normalizeItem(item) || typeof item.done !== 'boolean')) {
+      throw new Error('The sync service returned invalid goals. Local goals are unchanged.')
+    }
+    const next = { ...state, targets: value.targets, recurring: value.recurring }
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    setState(next)
+    setStorageError(null)
+  }, [state, stored])
+
   return {
     storageError, recoveryNotice, retrySave: stored.readFailed ? undefined : save,
     sidebarCollapsed: state.sidebarCollapsed,
@@ -181,5 +195,6 @@ export function useGoals() {
     toggleGoal,
     toggleSidebar,
     setSidebarCollapsed,
+    applyCloudGoals,
   }
 }

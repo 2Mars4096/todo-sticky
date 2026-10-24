@@ -10,3 +10,9 @@ content/
 
 # Local browser verification artifacts
 output/playwright/
+
+# Optional cloud account service
+backend/.venv/
+backend/__pycache__/
+backend/tests/__pycache__/
+backend/env.yaml

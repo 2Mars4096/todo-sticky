@@ -14,6 +14,7 @@ import { ScheduleView } from './components/ScheduleView'
 import { WindowResizeHandles } from './components/WindowResizeHandles'
 import { useNoteMaterial } from './noteMaterial'
 import { useCalendar } from './hooks/useCalendar'
+import { useCloudSync } from './hooks/useCloudSync'
 import { useGoals } from './hooks/useGoals'
 import { STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS, useStarFocus } from './hooks/useStarFocus'
 import { useTasks } from './hooks/useTasks'
@@ -52,6 +53,7 @@ export default function App() {
   const goals = useGoals()
   const starFocus = useStarFocus(tasks.tasks)
   const [showSettings, setShowSettings] = useState(false)
+  const [settingsAccount, setSettingsAccount] = useState(false)
   const [showPlanner, setShowPlanner] = useState(false)
   const [settingsProvider, setSettingsProvider] = useState<Provider | undefined>()
   const [showTrackingStation, setShowTrackingStation] = useState(false)
@@ -74,6 +76,23 @@ export default function App() {
   currentDateRef.current = calendar.dateStr
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
+
+  const account = useCloudSync({
+    kbPath: aiSettings?.kbPath || '',
+    ready: Boolean(aiSettings) && !tasks.loading && !tasks.loadError && starFocus.hydrated,
+    blocked: Boolean(aiLoading || providerSwitching || tasks.saveError || goals.storageError || showPlanner || starFocus.activeSession),
+    changeKey: JSON.stringify([tasks.tasks, goals.targets, goals.recurring, starFocus.missionHistory]),
+    flush: tasks.flushPendingSave, reload: tasks.load,
+    goals: { targets: goals.targets, recurring: goals.recurring }, missions: starFocus.missionHistory,
+    applyGoals: goals.applyCloudGoals, applyMission: starFocus.applyCloudMission,
+  })
+  useEffect(() => {
+    if (!account.applying) return
+    const shell = document.querySelector<HTMLElement>('.app-shell')
+    const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    shell?.setAttribute('inert', '')
+    return () => { shell?.removeAttribute('inert'); if (focused?.isConnected) focused.focus() }
+  }, [account.applying])
 
   useEffect(() => {
     let revealed = false
@@ -127,6 +146,7 @@ export default function App() {
   }, [tasks.flushPendingSave, presentNotice])
 
   const openSettingsForProvider = useCallback((provider?: Provider) => {
+    setSettingsAccount(false)
     setSettingsProvider(provider)
     setShowSettings(true)
   }, [])
@@ -442,7 +462,7 @@ export default function App() {
   ])
 
   return (
-    <div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
+    <><div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
       <WindowResizeHandles />
       <GoalsSidebar
         storageError={goals.storageError}
@@ -635,6 +655,11 @@ export default function App() {
             Albums
           </button>
           <div className="spacer" />
+          {account.enabled && account.user && <button className="cloud-status-entry"
+            onClick={() => { setSettingsAccount(true); setSettingsProvider(undefined); setShowSettings(true) }}
+            title={account.error || account.message} aria-label="Account and sync status">
+            {account.busy ? 'Syncing…' : account.error || account.conflicts.length ? 'Sync needs attention' : account.lastSynced ? 'Synced' : 'Sync ready'}
+          </button>}
           {!isCompactWindow && <div
             className={`provider-quick-control ${
               aiSettings && isProviderConfigured(aiSettings, aiSettings.provider)
@@ -700,6 +725,8 @@ export default function App() {
         )}
         {showSettings && (
           <SettingsPanel
+            account={account}
+            initialAccount={settingsAccount}
             noteMaterial={noteMaterial.material}
             onNoteMaterial={noteMaterial.choose}
             materialSaveError={noteMaterial.error}
@@ -772,6 +799,6 @@ export default function App() {
           onResetOrbitMap={starFocus.resetOrbitMap}
         />
       )}
-    </div>
+    </div>{account.applying && <div className="cloud-sync-applying" role="status" aria-live="polite"><span>Updating your notes…</span></div>}</>
   )
 }

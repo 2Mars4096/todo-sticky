@@ -1,0 +1,8 @@
+.cloud-account .cloud-identity{display:flex;flex-direction:column;gap:3px;margin:18px 0 12px;overflow-wrap:anywhere}
+.cloud-account .cloud-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cloud-account .cloud-conflict{margin-top:16px;border-top:1px solid #b7a56a;padding-top:10px;font-size:12px}
+.cloud-account .cloud-conflict h4{margin:0 0 5px}
+.cloud-account .cloud-conflict pre{overflow:auto;max-height:180px;background:#fff9e8;padding:8px;font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere}
+.cloud-sync-applying{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;background:rgba(255,248,220,.78);color:#3d3520;font:14px system-ui}
+.cloud-sync-applying span{padding:14px 22px;background:#fff8dc;border:1px solid #b7a56a;border-radius:8px}
+@media(max-width:380px){.settings-panel.settings-refined .settings-section-nav{gap:2px}.settings-panel.settings-refined .settings-section-nav button{font-size:11px;padding-inline:3px;min-width:0;flex:1 1 auto}}

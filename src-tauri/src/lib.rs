@@ -1,4 +1,5 @@
 mod diane_credentials;
+mod cloud_sync;
 pub mod cli;
 mod commands;
 mod diane;
@@ -433,6 +434,9 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             frontend_ready,
+            cloud_sync::open_account_sign_in,
+            cloud_sync::cloud_apply_day,
+            cloud_sync::cloud_task_folder,
             diane_credentials::diane_credential_status,
             diane::diane_request,
             commands::get_tasks,

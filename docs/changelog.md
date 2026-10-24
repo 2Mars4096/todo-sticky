@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-24 — Android account integration verified
+
+- [account] Connect Flutter to the shared Google browser handoff and Firebase REST session lifecycle, with secure credentials, foreground sync, explicit account binding and recoverable conflict choices. Validate all downloaded records before local changes; upload completed sessions before applying retained cloud history.
+- [validation] Integrated phone analysis, all 44 tests, narrow/enlarged Account layouts and ARM64 debug APK signature checks pass. Test real documented custom-token/refresh response shapes, cancellation, old/new credential-write races, offline retries and malformed downloads. No live Firebase deployment or physical-device sign-in is claimed.
+
+## 2026-10-24 — Google account and sync branch
+
+- [account] Add system-browser Google sign-in through Firebase, one-time proof-bound handoff, optional per-folder syncing and account isolation.
+- [sync] Add authenticated Cloud Run/Firestore records, strict payload allowlists, revisions/tombstones, offline three-way reconciliation and explicit per-day conflict review with recovery export. Preserve Markdown via native content checks and preimage backups. Sync completed focus history only after explicit opt-in.
+- [validation] Merge main `4d78345`; TypeScript, frontend build, all 15 Node suites, 14 backend tests and 34 native tests pass in the account branch. Live Google/Firebase deployment and two-device acceptance remain pending. Compact 340px Account setup and failed-service containment checks pass. No cloud resources were created.
+
 ## 2026-10-24 — Android CI SDK bootstrap
 
 - [ci] Explicitly request platform-tools, Android platforms 35/36 and build-tools 36.0.0 so `setup-android@v3` no longer requests the removed `tools` package. Keep license acceptance while suppressing its full text. Verify the action's official v3 input schema/parser and workflow YAML; app code and the verified APK are unchanged.

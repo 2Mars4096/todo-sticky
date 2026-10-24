@@ -33,6 +33,13 @@ String textValue(Object? value, {int max = 20000}) {
   return value;
 }
 
+int integerValue(Object? value) {
+  if (value is! num || !value.isFinite || value != value.roundToDouble()) {
+    throw const FormatException('Invalid whole number');
+  }
+  return value.toInt();
+}
+
 enum TaskStatus { todo, done, partial, question, stopped }
 
 class FinishPromise {
@@ -49,8 +56,10 @@ class FinishPromise {
     List<Map<String, dynamic>>? deadlineChanges,
   }) : deadlineChanges = deadlineChanges ?? [];
   factory FinishPromise.fromJson(Map<String, dynamic> json) {
-    final by = json['by'] as String?;
-    final original = json['originalBy'] as String?;
+    final by = json['by'] == '' ? null : json['by'] as String?;
+    final original = json['originalBy'] == ''
+        ? null
+        : json['originalBy'] as String?;
     if (by != null) parseDate(by);
     if (original != null) parseDate(original);
     return FinishPromise(
@@ -197,7 +206,7 @@ class FocusSession {
   factory FocusSession.fromJson(Map<String, dynamic> j) => FocusSession(
     taskId: textValue(j['taskId']),
     taskText: textValue(j['taskText']),
-    durationMinutes: j['durationMinutes'] as int,
+    durationMinutes: integerValue(j['durationMinutes']),
     startedAt: j['startedAt'] as int,
     endsAt: j['endsAt'] as int,
     pausedAt: j['pausedAt'] as int?,
@@ -239,9 +248,9 @@ class MissionRecord {
     id: textValue(j['id']),
     taskId: textValue(j['taskId']),
     taskText: textValue(j['taskText']),
-    durationMinutes: j['durationMinutes'] as int,
-    completedAt: j['completedAt'] as int,
-    orbitIndex: j['orbitIndex'] as int,
+    durationMinutes: integerValue(j['durationMinutes']),
+    completedAt: integerValue(j['completedAt']),
+    orbitIndex: integerValue(j['orbitIndex']),
     vehicleCode: textValue(j['vehicleCode']),
     orbitLabel: textValue(j['orbitLabel']),
   );
