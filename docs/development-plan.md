@@ -1,5 +1,9 @@
 # Development Plan
 
+## Android and account work
+
+- Deliver the native phone implementation on `feature/flutter-android` through [7](plans/7-flutter-android.md), with full workflow parity and explicit desktop-only process/window boundaries. Google account and cross-platform synchronization remain on their separately reviewable branch and build on the local phone state contract.
+
 ## Current Integration Slice
 
 - [6-diane-handoff](plans/6-diane-handoff.md): Todo captures and dispatches one-off tasks; Diane owns execution, decisions, and follow-up. Todo handoff and credential fallback are reconciled and tested together for main; paired deployment and live acceptance remain pending.

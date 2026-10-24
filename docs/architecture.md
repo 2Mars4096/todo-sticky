@@ -1,5 +1,13 @@
 # Architecture
 
+## Flutter Android
+
+- `mobile/` is the native phone client. `models/` preserves Task/FinishPromise/Goal/Mission JSON contracts; `state/sticky_store.dart` owns independently usable local state and `services/persistence.dart` serializes atomic app-private saves with readable backups. API credentials use Android secure storage and never enter notebook exports or sync records.
+- `services/ai_service.dart` provides explicit HTTPS provider operations with real error diagnostics and strict plan validation; phone `screens/` and `widgets/` keep capture, proposals, completion review and recovery close to their task.
+- Android Kotlin handles only user-chosen file imports/exports through the Storage Access Framework. No broad external storage permission or local desktop bridge is introduced. The native Focus painter is a mobile visual adaptation, retaining lifecycle/history behavior.
+- `StickyStore.syncRecords()`, `applySyncRecord()`, per-account `syncMetadata`, and `StickyApp.accountBuilder` are the integration seam for the separate Google account/sync branch. Active timers, provider keys and device settings remain local.
+- `.github/workflows/flutter-android.yml` runs format/analyze/tests and builds an ARM64 debug review APK; release signing requires a locally supplied keystore.
+
 ## Diane Handoff
 
 - `connectDiane` is a native-persisted, default-off handoff preference. The provider mounts only when enabled; disabling retains stored receipts and hides controls. Settings identifies local Dear Diane and its selected project/folder. File-backed credential preference is separate.
