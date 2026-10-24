@@ -14,6 +14,7 @@
 - [x] Add Android native file picker/export and review APK CI; require explicit production signing.
 - [x] Verify domain and phone interaction tests; inspect 390×844 screenshots and 360px enlarged text.
 - [x] Complete final analyzer/APK verification and record results.
+- [x] Correct hosted CI SDK bootstrap to explicitly install supported packages instead of v3's removed `tools` default; validate official input syntax and workflow YAML.
 - [x] Verify Dear Diane's remote API against the Todo companion contract and document the concrete local-only restriction in [7-1](7-1-diane-remote-feasibility.md).
 - [ ] Perform physical Android acceptance with the user's provider configuration.
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-24 — Android CI SDK bootstrap
+
+- [ci] Explicitly request platform-tools, Android platforms 35/36 and build-tools 36.0.0 so `setup-android@v3` no longer requests the removed `tools` package. Keep license acceptance while suppressing its full text. Verify the action's official v3 input schema/parser and workflow YAML; app code and the verified APK are unchanged.
+
 ## 2026-10-24 — Diane phone protocol review
 
 - [docs] Inspect Dear Diane's authenticated remote APIs and verify that its separate Todo companion router still rejects remote hosts through `local_only`. Replace the vague relay limitation with the exact protocol restriction, current desktop control omission and required backend work. Preserve Copy agent prompt; no runtime or Dear Diane changes.

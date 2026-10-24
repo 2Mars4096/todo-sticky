@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## 2026-10-24: Android CI setup failure
+
+- GitHub CI stopped before Flutter because `android-actions/setup-android@v3` defaults to `tools platform-tools`; Android no longer serves `tools`. Override its space-separated `packages` input with platform-tools, platforms 35/36 and build-tools 36.0.0. Platform 35 is needed by a native dependency alongside the app's platform 36. The official [v3 input schema](https://github.com/android-actions/setup-android/blob/v3/action.yml) and [parser](https://github.com/android-actions/setup-android/blob/v3/src/main.ts) were inspected. This corrects SDK bootstrap only; a subsequent GitHub run verifies hosted execution.
+
 ## 2026-10-24: Remote Diane companion protocol boundary
 
 - Dear Diane has bearer-authenticated remote APIs, but `src/diane/server/routers/sticky_todo.py` at revision `2581669` applies `Depends(local_only)` to every companion route. Non-local client/URL hosts receive 403 independently of bearer validity. A phone URL/token setting or relay deployment does not by itself make this protocol remotely supported.
