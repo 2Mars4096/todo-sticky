@@ -11,6 +11,10 @@
 - [sync] Add authenticated Cloud Run/Firestore records, strict payload allowlists, revisions/tombstones, offline three-way reconciliation and explicit per-day conflict review with recovery export. Preserve Markdown via native content checks and preimage backups. Sync completed focus history only after explicit opt-in.
 - [validation] Merge main `4d78345`; TypeScript, frontend build, all 15 Node suites, 14 backend tests and 34 native tests pass in the account branch. Live Google/Firebase deployment and two-device acceptance remain pending. Compact 340px Account setup and failed-service containment checks pass. No cloud resources were created.
 
+## 2026-10-24 — Android CI SDK bootstrap
+
+- [ci] Explicitly request platform-tools, Android platforms 35/36 and build-tools 36.0.0 so `setup-android@v3` no longer requests the removed `tools` package. Keep license acceptance while suppressing its full text. Verify the action's official v3 input schema/parser and workflow YAML; app code and the verified APK are unchanged.
+
 ## 2026-10-24 — Diane phone protocol review
 
 - [docs] Inspect Dear Diane's authenticated remote APIs and verify that its separate Todo companion router still rejects remote hosts through `local_only`. Replace the vague relay limitation with the exact protocol restriction, current desktop control omission and required backend work. Preserve Copy agent prompt; no runtime or Dear Diane changes.
