@@ -1,5 +1,9 @@
 # Todo
 
+- [x] [7-flutter-android](plans/7-flutter-android.md) — native Android workflow, 22 tests, phone visual review and verified ARM64 debug APK complete on the feature branch; physical-device/provider acceptance remains explicit follow-up.
+- [x] [7-1-diane-remote-feasibility](plans/7-1-diane-remote-feasibility.md) — verify the companion API rejects remote hosts independently of bearer auth; retain prompt copy and document the backend protocol work needed for live phone handoff.
+- [x] Correct Android CI SDK package selection to remove the retired `tools` default; hosted rerun follows publication.
+
 - [x] [4-50-planning-diagnostics](plans/4-50-planning-diagnostics.md) — preserve native planning errors, clarify saved provider settings, and harden response handling; frontend, browser and 30 native tests pass.
 
 - [x] [4-51-review-reliability](plans/4-51-review-reliability.md) — preserve edits during moves, retain unreadable goals, clean up native listeners, reopen moved-step parents, and retain outcome-editor focus; all 14 Node suites and 33 native tests pass.

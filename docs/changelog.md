@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-24 — Android CI SDK bootstrap
+
+- [ci] Explicitly request platform-tools, Android platforms 35/36 and build-tools 36.0.0 so `setup-android@v3` no longer requests the removed `tools` package. Keep license acceptance while suppressing its full text. Verify the action's official v3 input schema/parser and workflow YAML; app code and the verified APK are unchanged.
+
+## 2026-10-24 — Diane phone protocol review
+
+- [docs] Inspect Dear Diane's authenticated remote APIs and verify that its separate Todo companion router still rejects remote hosts through `local_only`. Replace the vague relay limitation with the exact protocol restriction, current desktop control omission and required backend work. Preserve Copy agent prompt; no runtime or Dear Diane changes.
+- [validation] Apply the standard Dart formatter to existing phone source/tests so the exact CI formatting gate passes. Analyzer clean and all 22 tests pass; rebuild the standalone ARM64 debug APK from the final formatted source. The Diane review adds no runtime behavior or dependencies.
+
+## 2026-10-24 — Flutter Android review branch
+
+- [mobile] Add a native Flutter app with offline tasks, hierarchy, date/backlog/moves, finish promises, goals/routines, provider suggestions and validated planning, scoped Undo, album recommendations and reload-safe Focus.
+- [mobile] Adapt the warm note to phone navigation, large touch targets, explicit drafts, note materials and a native orbital route. Add Android file import/export, secure API keys and a documented cross-platform sync seam.
+- [validation] Flutter analysis is clean; all 22 domain/provider/phone tests plus optional visual capture pass. Inspect four phone screens, verify enlarged text, build ARM64 debug APK and verify its manifest/signature/native binary headers. Add Android review-build CI. Full feature matrix and desktop-specific boundaries are in `mobile/README.md`; physical-device/provider acceptance remains pending.
+
 ## 2026-10-24 — Integrated review verification
 
 - [validation] Combine planning and reliability fixes on main. All 14 Node suites, TypeScript, production build and 33 native Rust tests pass; planning/settings and task-interaction browser checks use production assets and synthetic data. Existing installed binaries remain at their published release until an update is built.

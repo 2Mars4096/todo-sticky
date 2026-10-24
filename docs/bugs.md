@@ -1,5 +1,22 @@
 # Bugs And Failed Approaches
 
+## 2026-10-24: Android CI setup failure
+
+- GitHub CI stopped before Flutter because `android-actions/setup-android@v3` defaults to `tools platform-tools`; Android no longer serves `tools`. Override its space-separated `packages` input with platform-tools, platforms 35/36 and build-tools 36.0.0. Platform 35 is needed by a native dependency alongside the app's platform 36. The official [v3 input schema](https://github.com/android-actions/setup-android/blob/v3/action.yml) and [parser](https://github.com/android-actions/setup-android/blob/v3/src/main.ts) were inspected. This corrects SDK bootstrap only; a subsequent GitHub run verifies hosted execution.
+
+## 2026-10-24: Remote Diane companion protocol boundary
+
+- Dear Diane has bearer-authenticated remote APIs, but `src/diane/server/routers/sticky_todo.py` at revision `2581669` applies `Depends(local_only)` to every companion route. Non-local client/URL hosts receive 403 independently of bearer validity. A phone URL/token setting or relay deployment does not by itself make this protocol remotely supported.
+- Generic `/api/v2/agent-runs` calls require separate project/execution inputs and do not expose the companion's saved defaults and immutable request receipts. Do not silently substitute that workflow or weaken the access guard. Android retains Copy agent prompt; [7-1](plans/7-1-diane-remote-feasibility.md) records the required remote companion work. The simplified desktop task row currently omits dispatch controls as documented in the desktop README.
+
+## 2026-10-24: Android build and phone validation
+
+- The build host provided a Java runtime without `javac`; use a full isolated JDK 17. Its default trust store lacked the host network issuer, so builds use the system Java certificate store with TLS verification enabled. The JNI dependency also requires Android platform 35 alongside app platform 36.
+- Phone widget verification exposed a Solar Route label overflow at 150% text. The label now expands/wraps within its row. Optional screenshot capture must load Material Icons and run image/file operations on the real async loop; otherwise icons render as boxes or capture waits indefinitely.
+- An incremental Android debug build emitted nonfatal `llvm-strip` warnings for temporary native-library files. The resulting APK built successfully, its v2 signature verified, and the packaged ARM64 Flutter library has valid ELF program/section headers. Physical execution remains part of device acceptance.
+- A restored Focus duration could be valid in stored state (1–240 minutes) but outside the phone slider (5–120). The control now uses the same 1–240 range, with a widget regression covering a restored 240-minute preference.
+- Android platform-specific acceptance (SAF picker, Keystore, lifecycle, IME/TalkBack and live provider access) still requires a physical device.
+
 - 2026-10-24: Plan hid every native `Err(String)` behind the generic “Check AI assistance in Settings” message. Native string errors now reach the dialog. Test connection uses the edited form while planning loads saved settings; successful unsaved tests now explicitly say Save. Final response text can follow reasoning blocks; adapters now collect answer text instead of reading only block zero. Empty/truncated/invalid JSON responses remain errors, never task mutations. The installed provider's exact failure remains unverified without its live response.
 
 - 2026-10-24: Carry-forward built source cleanup from its pre-request task list. A task captured while `push_task` was pending remained visible but disappeared from the saved date. Source cleanup now uses current state after destination success; edits to the moved task retain both versions with an explanation, and partial cleanup failure keeps Retry save.
