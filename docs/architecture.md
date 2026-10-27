@@ -265,3 +265,7 @@ Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and
 ## Optional cloud account boundary
 
 `backend/app.py` hosts Firebase-token-verified Cloud Run routes and transactional per-UID Firestore records. `src/cloudAccount.ts` owns the browser/PKCE Firebase handoff; `src/cloudSync.ts` holds deterministic three-way reconciliation; `useCloudSync` connects local snapshots, explicit account binding, retry metadata and conflict review. `AccountPanel` is the Settings surface. `src-tauri/src/cloud_sync.rs` applies downloaded dates only after task-content comparison and a local Markdown backup. The Android adapter uses the same schema. Existing local capture and AI never await cloud availability. Completed focus records may sync only after user opt-in; prior native-local defaults and active timers remain local. Credentials/paths are never payload fields. See [account-sync.md](account-sync.md).
+
+## Documentation recordings
+
+- `scripts/record-demos.cjs` drives the production frontend through disposable Playwright contexts using the synthetic test bridge. Fictional tasks and fixed AI responses stay browser-local. FFmpeg exports README GIF/MP4 assets to `demo/`; temporary recordings/screenshots live in ignored `output/playwright/`. See `demo/README.md` for reproduction and environment overrides.

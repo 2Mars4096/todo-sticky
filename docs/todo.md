@@ -1,8 +1,12 @@
 # Todo
 
+- [ ] [8-2-cloud-deployment](plans/8-2-cloud-deployment.md) — deferred by user pending billing-project quota increase; Firebase/Google sign-in setup exists, backend deployment remains.
+
+- [x] [8-1-local-install-and-apk](plans/8-1-local-install-and-apk.md) — integrate account sync, reinstall macOS and deliver the matching Android review APK.
+
 ## Optional accounts and sync
 
-- [ ] [8-google-account-sync](plans/8-google-account-sync.md) — desktop, Flutter and backend implementation verified on feature/google-account-sync; actual Firebase deployment and physical two-device acceptance remain pending.
+- [ ] [8-google-account-sync](plans/8-google-account-sync.md) — implementation integrated into local main; macOS installed and Android APK delivered. Cloud Run deployment waits for billing quota; physical two-device acceptance remains pending.
 
 - [x] [7-flutter-android](plans/7-flutter-android.md) — native Android workflow, 22 tests, phone visual review and verified ARM64 debug APK complete on the feature branch; physical-device/provider acceptance remains explicit follow-up.
 - [x] [7-1-diane-remote-feasibility](plans/7-1-diane-remote-feasibility.md) — verify the companion API rejects remote hosts independently of bearer auth; retain prompt copy and document the backend protocol work needed for live phone handoff.
@@ -19,6 +23,8 @@
 - [x] [4-47-equal-task-spacing-and-release-2-1-14](plans/4-47-equal-task-spacing-and-release-2-1-14.md) — equalize visible control gaps and publish the final spacing refinement.
 
 - [x] [4-46-checkbox-and-release-2-1-13](plans/4-46-checkbox-and-release-2-1-13.md) — align visible checkboxes with title text and publish the final updated release.
+
+- [x] [4-45-readme-demos](plans/4-45-readme-demos.md) — refresh README and five scenario GIFs/MP4s using isolated fictional tasks; add reproducible recording instructions.
 
 - [x] [4-45-publish-2-1-12](plans/4-45-publish-2-1-12.md) — publish UI refinements as the latest signed update.
 

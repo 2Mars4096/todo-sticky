@@ -1,6 +1,6 @@
 # Sticky Todo
 
-Cross-platform sticky note todo planner with AI task breakdown.
+A compact desktop planner for daily tasks, clear outcomes, and focused work. Tasks stay in local Markdown files; AI assistance is optional.
 
 ## Install
 
@@ -12,15 +12,16 @@ Download the latest installer from [Releases](https://github.com/2Mars4096/todo-
 | **Windows** | `.msi` or `.exe` |
 | **Linux** | `.deb` or `.AppImage` |
 
-First launch opens the task list with the **New task** field ready. Type a task and press **Enter** or **Add**. AI setup is optional and can wait until you need it.
+First launch opens the task list with the **What needs doing?** field ready. Type a task and press **Enter** or **Add**. AI setup is optional and can wait until you need it.
 
 Open **Settings** to configure tools by purpose:
 
 | Section | What it contains |
 |---------|------------------|
-| **Tasks & storage** | Current task folder and **Change task folder**. The default is `~/Documents/Sticky Todo`; task files live in `content/to-do/` inside it. |
-| **AI assistance** | Provider and key, with **Model and connection options** and **Scheduling machines (optional)** available on demand. |
+| **Storage** | Current task folder and **Change task folder**. The default is `~/Documents/Sticky Todo`; task files live in `content/to-do/` inside it. |
+| **AI** | Provider and key, with **Model and connection options** and **Scheduling machines (optional)** available on demand. |
 | **Integrations** | Optional Dear Diane task handoff and reuse of matching local Diane credentials. |
+| **Account** | Optional Google sign-in and task sync in the current source/local build; requires a deployed sync service. |
 | **Updates** | Check for, download, and install app updates. |
 
 For AI assistance, choose Moonshot, OpenRouter, OpenAI, Anthropic, Gemini, a custom OpenAI-compatible endpoint, or **Codex (ChatGPT login)**. API providers use their configured endpoint, key, and model. Codex reuses your existing local `codex login`; its model can be blank, and its executable defaults to `codex` with common install paths detected. Use **Test connection**, then save the settings.
@@ -35,7 +36,7 @@ If macOS or Dropbox has offloaded the Markdown archive, Sticky Todo reports **Ta
 
 By default, Todo uses Diane’s existing OpenRouter, OpenAI or Moonshot key on the same computer when the provider URL matches, then falls back to Todo’s own key. Diane does not need to be open. Turn off **Use Diane credentials when available** in **Settings → Integrations** to use Todo’s key exclusively. Existing `.env` files, keys and model choices are preserved; there is no Keychain access or cross-device sync. Launch an updated Diane once to advertise its file locations; older installs can use the existing `~/.dan/graphs_dir` marker.
 
-Each provider keeps its own API URL, key, and last-used model. Switch providers in **Settings → AI assistance**; wider windows also show a quick selector beside Settings. Choosing an unconfigured provider opens its setup.
+Each provider keeps its own API URL, key, and last-used model. Switch providers in **Settings → AI**; wider windows also show a quick selector beside Settings. Choosing an unconfigured provider opens its setup.
 
 > macOS Gatekeeper may warn about an unsigned app. Right-click → **Open** to bypass.
 
@@ -53,11 +54,51 @@ Run `npm run release` from a clean `main` branch after committing the changes. T
 
 The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY` and, for an encrypted key, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Keep a backup of the original signing key; replacing it breaks trust for existing installations. For a local release build, set `TAURI_SIGNING_PRIVATE_KEY` to the key file path and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` to its password (empty for the current key). Never commit the private key.
 
-## Demo
+## Demos
 
-<p align="center">
-  <img src="demo/demo.gif" width="600" alt="Demo">
-</p>
+Recorded from the **2.1.12 source UI** using fictional tasks in an isolated browser. AI steps and planning responses are fixed examples, not live model output. Native window behavior and file sync are not demonstrated here. [Download installers](https://github.com/2Mars4096/todo-sticky/releases).
+
+### Capture, break down, and move tasks
+
+Add a task, request suggested steps, then move unfinished work to tomorrow and navigate to that day. These are the original demo scenarios, refreshed for the current controls.
+
+<img src="demo/demo.gif" width="600" alt="Add picnic supplies, break a fictional postcard task into steps, and move library books to tomorrow">
+
+[Watch the MP4](demo/demo.mp4)
+
+### Preview a day plan
+
+Set available hours, generate a proposal, review its blocks, and apply it. **Undo** restores the previous tasks.
+
+<img src="demo/planning.gif" width="600" alt="Review a sample morning plan before applying it, then undo the change">
+
+[Watch the MP4](demo/planning.mp4)
+
+### Define an outcome and due date
+
+Record what finished means and save a due date. Both remain visible when you select another task.
+
+<img src="demo/outcomes.gif" width="600" alt="Set a print-ready postcard outcome and save its due date">
+
+[Watch the MP4](demo/outcomes.mp4)
+
+### Focus on one task
+
+Start a Star Focus session, pause and resume, then finish the session and return to your tasks. Finishing a session does not complete the task for you.
+
+<img src="demo/focus.gif" width="600" alt="Start, pause, resume and finish a Star Focus session for the fictional postcard task">
+
+[Watch the MP4](demo/focus.mp4)
+
+### Keep goals and settings close
+
+Add a long-term goal and a manually reset routine, then browse the compact Settings sections.
+
+<img src="demo/goals-settings.gif" width="600" alt="Add a drawing-club goal and desk-tidying routine, then browse Settings">
+
+[Watch the MP4](demo/goals-settings.mp4)
+
+See [demo/README.md](demo/README.md) to reproduce the recordings safely.
 
 ## Note materials and earlier tasks
 
@@ -206,7 +247,7 @@ Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stab
 
 ## Optional Google account and cross-platform sync
 
-The `feature/google-account-sync` branch adds **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Same-day conflicts are reviewed explicitly and both versions are retained for recovery; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in.
+The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Same-day conflicts are reviewed explicitly and both versions are retained for recovery; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching Android review APK is available; Cloud Run deployment is deferred pending a billing-project quota increase. The public v2.1.15 desktop release predates these account changes.
 
 ## Android app (Flutter)
 

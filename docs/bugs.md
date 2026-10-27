@@ -29,6 +29,8 @@
 
 - 2026-10-21: GitHub CLI status/cancellation hit the anonymous API rate limit during releases; optional custom-note edits still return HTTP 401. Public workflow HTML, release asset listings, downloads and signature verification remain usable. Verify older releases with the validator/package.json from their tag, because the validator intentionally compares against its local package version.
 
+- 2026-10-21: Full Chrome video capture on this Mac clipped the 720px viewport at 634px and padded the footer grey, despite correct page screenshots. Use Playwright headless Chromium for README recordings and inspect exported video frames, not screenshots alone. Close Goals explicitly before opening Settings; Escape inside its composer cancels the input first.
+
 - 2026-10-21: Native Ready revealed the WebView before React replaced the separate startup surface, allowing a different layout to flash on launch. Use a one-shot frontend-ready signal after commit/paint, plus a bounded native fallback so the prior invisible-window failure cannot recur.
 
 ## 2026-10-21: UI Refinement Worktree
@@ -152,3 +154,8 @@
 - A downloaded date tombstone becomes an empty local Markdown date. Reconciliation explicitly treats this as the same deletion, preventing repeated resurrection of empty records. Local focus-history retention must not erase cloud history.
 - Persist remote goals/focus successfully before acknowledging their sync baseline. Corrupt goals must be backed up or recovered before remote application. Never treat unreadable task archives as deletions.
 - FastAPI TestClient stalls inside this environment's default sandbox even for health checks; approved isolated execution completes the API test suite. This is a test-runtime constraint, not a production API timeout.
+
+- 2026-10-28: Local Flutter is Dart 3.11.5, below this app’s Dart 3.13 constraint. Reuse the verified account-enabled CI APK instead of changing the user’s SDK. GitHub CLI authentication returns 401; public API and digest-verified artifact retrieval remain available. The temporary Rust compiler was cleaned up; restore an isolated toolchain for desktop packaging.
+
+- 2026-10-28: New project `sticky-todo-20261028` was created, but linking the user-review billing account returned `FAILED_PRECONDITION: Cloud billing quota exceeded` (five currently billed projects). No existing project was unlinked.
+- 2026-10-28: First macOS package attempt hit a transient filesystem I/O failure and Rust 1.99.1 `rust-objcopy` LLVM lookup warning. Packaging retry succeeded; the isolated toolchain’s expected library location now links its existing libLLVM. Native tests and installed bundle verification pass.

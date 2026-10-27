@@ -31,3 +31,5 @@
 - Setup, protocol, security boundary and acceptance steps: [account-sync.md](../account-sync.md).
 - Desktop/backend integrated verification passed: 15 Node suites, 34 Rust tests, 14 Python backend tests, TypeScript/frontend build and the compact Account-panel browser check. Flutter analysis, 44 tests and the ARM64 debug APK build/signature checks pass; phone Account UI is verified at 360 px and 150% text. Live deployment and real Google authentication remain unverified.
 - A sandboxed ASGI TestClient stalls in this build environment; the isolated test suite runs successfully with approved local-process escalation.
+
+- 2026-10-28: User requested integration, local desktop reinstall and latest matching APK. Delivery tracked in [8-1](8-1-local-install-and-apk.md); deployment/live authentication remains a separate unfinished acceptance item.

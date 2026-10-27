@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-28 — Account integration and demo source checkpoint
+
+- [repository] Prepare the user-requested commit/push of integrated Android/account-sync source, local-install and deferred-cloud records, and preserved README/demo work. Clarify that current main includes accounts while the public v2.1.15 desktop release predates them.
+- [validation] Diff whitespace and demo recorder syntax checks pass; prior application/native/CI verification is recorded below. Downloaded APKs and local deployment artifacts remain ignored.
+
+## 2026-10-28 — Local delivery complete; cloud deferred
+
+- [decision] User chooses to use the installed desktop app and delivered Android APK locally while awaiting a billing-project quota increase. Preserve existing Google Drive Sync billing and all other projects. Backend deployment and live synchronization remain pending; no quota request has been submitted by this agent.
+- [verification] Recheck installed macOS signature and APK presence; record the resumption steps in [8-2](plans/8-2-cloud-deployment.md).
+
+## 2026-10-28 — Account-sync local integration and installation
+
+- [integration] Fast-forward local main to `57fad2d`, including Google account sync and Flutter Android, while preserving all unrelated demo work. Remote main is unchanged.
+- [android] Retrieve the account-enabled ARM64 review APK from successful CI run `40055668420`; verify GitHub’s artifact digest and the Android signature. Live syncing requires a configured Firebase/Cloud Run service.
+- [install] TypeScript, 15 Node suites, 35 native tests and optimized build pass. Reinstall and launch macOS account-sync build; strict signature/full bundle hashes verify, all 55 task files unchanged. App, WebKit, settings and tasks backed up; [delivery record](plans/8-1-local-install-and-apk.md).
+- [cloud] User authorizes a separate project and Google sign-in. Create `sticky-todo-20261028` and enable Firebase Google sign-in, register its Web app, create Singapore Firestore and deploy deny-all client rules; billing link rejected by Google’s billing-project quota. Await user’s resolution choice in [8-2](plans/8-2-cloud-deployment.md).
+
 ## 2026-10-24 — Android account integration verified
 
 - [account] Connect Flutter to the shared Google browser handoff and Firebase REST session lifecycle, with secure credentials, foreground sync, explicit account binding and recoverable conflict choices. Validate all downloaded records before local changes; upload completed sessions before applying retained cloud history.
@@ -76,6 +93,11 @@
 
 - [ui] Match visible checkbox dimensions to the task/step title font (14px/13px), align to the first text line and preserve 24px click targets. Compact/default browser geometry and completion-click checks, TypeScript and frontend build pass.
 - [release] Prepare 2.1.13 to include this requested follow-up after the already-running 2.1.12 build; preserve existing tags and make the final patch latest.
+
+## 2026-10-21 — README demo refresh
+
+- [docs] Refresh the README for the 2.1.12 interface, preserving capture/AI breakdown/tomorrow moves and day planning. Add outcomes/due dates, Star Focus and goals/settings walkthroughs with five GIFs and MP4 alternatives. All tasks are fictional; AI outputs are disclosed fixed samples.
+- [tooling] Add `scripts/record-demos.cjs` and `demo/README.md` for isolated production-browser capture, using no installed-app data or live AI. Build, recording interactions/page-error checks, GIF dimensions/link checks and visual frame review pass. Keep temporary media ignored; no app behavior or release changes.
 
 ## 2026-10-21 — Release 2.1.12
 

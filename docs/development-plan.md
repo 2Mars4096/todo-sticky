@@ -1,5 +1,11 @@
 # Development Plan
 
+## Authorized cloud deployment
+
+- Current delivery is local-only: macOS account-sync build installed and matching Android APK delivered. User chose to wait for a billing-project quota increase before backend deployment; no alternate billing account or existing-project deployment is selected.
+
+- Deploy Sticky Todo in a new Google Cloud/Firebase project on user-review’s billing account; enable Google sign-in and deliver the account-enabled desktop/Android apps. User authorized this on 2026-10-28. Track [8-2](plans/8-2-cloud-deployment.md).
+
 ## Authorized account and mobile expansion
 
 - Implement optional Firebase Google login and cross-platform task/goals/completed-focus sync on feature/google-account-sync, with Flutter Android on its own feature branch. Accounts must not become a dependency of local work. See [plan 8](plans/8-google-account-sync.md) and [setup](account-sync.md).
