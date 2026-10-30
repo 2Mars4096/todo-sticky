@@ -313,6 +313,17 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     })
   }, [persist])
 
+  const ensureRoutineTask = useCallback(async (id: string, text: string, expectedDate: string) => {
+    if (loadingRef.current || loadedDateRef.current !== expectedDate || dateRef.current !== expectedDate) return false
+    if (!tasksRef.current.some(task => task.id === id || task.originalId === id)) {
+      const next = [...tasksRef.current, { id, text, status: 'todo' as const, todaySubtasks: [], otherSubtasks: [] }]
+      setTasks(next)
+      persist(next)
+    }
+    await flushPendingSave()
+    return true
+  }, [persist, flushPendingSave, setTasks])
+
   const addTaskBundle = useCallback((text: string, subtaskTexts: string[]) => {
     const task: AggregatedTask = {
       id: newId(),
@@ -603,7 +614,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     flushPendingSave,
     saveError, saving, retrySave, undo, undoLastAction, dismissUndo: () => setUndo(null),
     tasks, loading, loadError, rolloverLoading, rolloverError, load, dataDate: loadedDateRef.current,
-    updateFinish, reviewTask, addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
+    ensureRoutineTask, updateFinish, reviewTask, addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, moveToToday, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,
   }

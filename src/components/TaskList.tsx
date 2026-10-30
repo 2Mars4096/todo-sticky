@@ -246,11 +246,11 @@ export function TaskList({
       {orderedTasks.map(task => (
         <Fragment key={task.id}>
           {task.id === firstCarriedId && <button
-            ref={earlierRef} type="button" className="carried-toggle" aria-expanded={carriedOpen}
+            ref={earlierRef} type="button" className="carried-toggle" aria-expanded={carriedOpen} title={`${carriedCount} unfinished tasks from earlier dates`}
             onClick={() => setCarriedOpen(open => !open)}
           >
             <span aria-hidden="true">{carriedOpen ? '▾' : '▸'}</span>
-            <span>Earlier tasks</span><span className="carried-rule" /><span>{carriedCount}</span>
+            <span>Earlier tasks</span>{!carriedOpen && <span className="carried-attention" aria-hidden="true" />}<span className="carried-rule" /><span>{carriedCount}</span>
           </button>}
           {(!task.sourceDate || carriedOpen) && <TaskItem
             id={task.id}

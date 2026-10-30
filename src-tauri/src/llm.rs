@@ -506,7 +506,7 @@ pub async fn schedule(
 Return ONLY valid JSON:
 {"plan":"A short summary, including deferred work if any","schedule":[{"time":"09:00","endTime":"09:45","taskId":"exact task id","parentTask":"exact task text","action":"specific action","assignedTo":"human or an available machine name"}]}
 
-Every taskId and parentTask must identify the same input task. Use 24-hour HH:MM times in chronological order, entirely inside the supplied time window. Do not overlap blocks assigned to the same person or machine. Only the human and explicitly available machines can receive work. Prior generated time blocks are replaceable planning suggestions, not additional tasks to duplicate."#.into(),
+Every taskId and parentTask must identify the same input task. Use 24-hour HH:MM times in chronological order, entirely inside the supplied time window. Do not overlap blocks assigned to the same person or machine. Only the human and explicitly available machines can receive work. Each task may include planning.preferenceOrder (lower comes first), planning.maximumMinutes (a total time budget for that task, null means estimate), and planning.unavailable (start/end HH:MM periods when no work may be scheduled). Respect these constraints. Use outcomes and deadlines to inform the order. Prior generated time blocks are replaceable planning suggestions, not additional tasks to duplicate; preserve manually edited commitments in the proposed timing."#.into(),
         },
         Message {
             role: "user".into(),

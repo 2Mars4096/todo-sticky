@@ -52,6 +52,7 @@ interface Props {
   onCancel: () => void
   onComplete: () => void
   onClearSelection: () => void
+  onReviewTask?: () => void
   onDismissCompletion: () => void
   onClearHistory: () => void
   onResetOrbitMap: () => void
@@ -157,6 +158,7 @@ export function TrackingStationOverlay({
   onCancel,
   onComplete,
   onClearSelection,
+  onReviewTask,
   onDismissCompletion,
   onClearHistory,
   onResetOrbitMap,
@@ -329,7 +331,8 @@ export function TrackingStationOverlay({
                     <span>{formatCompletedAt(latestCompletedMission.completedAt)}</span>
                   </div>
                   <p className="focus-outcome-note">Review the task outcome in your task list when you are ready.</p>
-                  <button className="focus-btn primary wide" onClick={onClose}>Back to tasks</button>
+                  {onReviewTask && <button className="focus-btn primary wide" onClick={onReviewTask}>Review task</button>}
+                  <button className="focus-cancel-btn" onClick={onClose}>Back to tasks</button>
                   <button className="focus-cancel-btn" onClick={onDismissCompletion}>Another session</button>
                 </div>
               ) : selectedTaskText ? (

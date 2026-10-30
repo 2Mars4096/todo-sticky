@@ -1,5 +1,10 @@
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { SyncProgressView } from './components/SyncProgressView'
+import { ArchivePage } from './components/ArchivePage'
+import { readTaskArchive } from './taskArchiveReader'
+import { archiveRows, type ArchiveRow } from './taskArchive'
+import './styles/workflow.css'
 import { DateHeader } from './components/DateHeader'
 import { TaskList } from './components/TaskList'
 import { DianeProvider } from './components/DianeAction'
@@ -15,6 +20,8 @@ import { WindowResizeHandles } from './components/WindowResizeHandles'
 import { useNoteMaterial } from './noteMaterial'
 import { useCalendar } from './hooks/useCalendar'
 import { useCloudSync } from './hooks/useCloudSync'
+import { useRoutines } from './hooks/useRoutines'
+import { format } from 'date-fns'
 import { useGoals } from './hooks/useGoals'
 import { STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS, useStarFocus } from './hooks/useStarFocus'
 import { useTasks } from './hooks/useTasks'
@@ -52,6 +59,10 @@ export default function App() {
   const tasks = useTasks(calendar.dateStr, calendar.isCurrentDay)
   const goals = useGoals()
   const starFocus = useStarFocus(tasks.tasks)
+  const [archivePage, setArchivePage] = useState<'search' | 'progress' | null>(null)
+  const [archiveQuery, setArchiveQuery] = useState('')
+  const [archiveTarget, setArchiveTarget] = useState<ArchiveRow | null>(null)
+  const archiveOpener = useRef<HTMLElement | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [settingsAccount, setSettingsAccount] = useState(false)
   const [showPlanner, setShowPlanner] = useState(false)
@@ -72,6 +83,9 @@ export default function App() {
   const restoredOverlaySessionRef = useRef<string | null>(null)
   const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const aiOperationRef = useRef(false)
+  const currentFolderRef = useRef(aiSettings?.kbPath ?? '')
+  currentFolderRef.current = aiSettings?.kbPath ?? ''
+  const navigationRequest = useRef(0)
   const currentDateRef = useRef(calendar.dateStr)
   currentDateRef.current = calendar.dateStr
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
@@ -86,6 +100,7 @@ export default function App() {
     goals: { targets: goals.targets, recurring: goals.recurring }, missions: starFocus.missionHistory,
     applyGoals: goals.applyCloudGoals, applyMission: starFocus.applyCloudMission,
   })
+  const routines = useRoutines(aiSettings?.kbPath ?? '', format(new Date(), 'yyyy-MM-dd'), calendar.isCurrentDay && !tasks.loading && !tasks.loadError && !tasks.saveError && !tasks.rolloverLoading && !tasks.rolloverError && !goals.storageError && !account.applying, goals.recurring, tasks.ensureRoutineTask)
   useEffect(() => {
     if (!account.applying) return
     const shell = document.querySelector<HTMLElement>('.app-shell')
@@ -139,11 +154,45 @@ export default function App() {
   }, [])
 
   const navigateAfterSave = useCallback(async (navigate: () => void) => {
-    try { await tasks.flushPendingSave(); navigate() }
+    const request = ++navigationRequest.current
+    try { await tasks.flushPendingSave(); if (request === navigationRequest.current) navigate() }
     catch {
       presentNotice({ kind: 'error', title: 'Date unchanged', message: 'Retry saving your changes before switching days.' })
     }
   }, [tasks.flushPendingSave, presentNotice])
+
+  const closeArchive = useCallback(() => {
+    navigationRequest.current++
+    setArchivePage(null)
+    requestAnimationFrame(() => archiveOpener.current?.focus())
+  }, [])
+  const openArchiveTask = useCallback(async (row: ArchiveRow) => {
+    const request = ++navigationRequest.current
+    const folder = currentFolderRef.current
+    await tasks.flushPendingSave()
+    if (request !== navigationRequest.current || folder !== currentFolderRef.current) return
+    setArchiveTarget(row)
+    calendar.goToDate(new Date(`${row.date}T12:00:00`))
+    setArchivePage(null)
+  }, [tasks.flushPendingSave, calendar.goToDate])
+  useEffect(() => {
+    if (!archiveTarget || tasks.loading || tasks.dataDate !== archiveTarget.date || calendar.dateStr !== archiveTarget.date) return
+    const root = document.querySelector<HTMLElement>(`[data-task-id="${CSS.escape(archiveTarget.rootId)}"]`)
+    if (!root) { if (!tasks.loadError) { presentNotice({ kind: 'error', title: 'Task is no longer on this date' }); setArchiveTarget(null) }; return }
+    const disclosure = root.querySelector<HTMLButtonElement>('.task-steps-toggle')
+    if (archiveTarget.task.id !== archiveTarget.rootId && disclosure?.getAttribute('aria-expanded') === 'false') disclosure.click()
+    const frame = requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>(`[data-task-id="${CSS.escape(archiveTarget.task.id)}"]`) ?? root
+      target.scrollIntoView({ block: 'center' })
+      target.querySelector<HTMLElement>('.task-text')?.focus()
+      setArchiveTarget(null)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [archiveTarget, tasks.loading, tasks.dataDate, tasks.loadError, tasks.tasks, calendar.dateStr, presentNotice])
+  const syncState = account.error || account.conflicts.length ? 'attention'
+    : !account.enabled || !account.user ? 'local'
+      : account.busy ? 'syncing' : account.upToDate && !tasks.saving ? 'synced' : 'waiting'
+  const syncLabel = { attention: 'Sync needs attention', local: 'Local only', syncing: 'Syncing', synced: 'Synced with cloud', waiting: 'Waiting to sync' }[syncState]
 
   const openSettingsForProvider = useCallback((provider?: Provider) => {
     setSettingsAccount(false)
@@ -390,6 +439,29 @@ export default function App() {
     }
   }, [starFocus.selectTask, starFocus.sidebarCollapsed])
 
+  const handleReviewFocus = useCallback(async () => {
+    const mission = starFocus.latestCompletedMission
+    if (!mission) return
+    const folder = currentFolderRef.current
+    const date = currentDateRef.current
+    const request = ++navigationRequest.current
+    setShowTrackingStation(false)
+    try {
+      await tasks.flushPendingSave()
+      const result = await readTaskArchive(folder)
+      if (folder !== currentFolderRef.current || date !== currentDateRef.current || request !== navigationRequest.current) return
+      const matches = archiveRows(result.dates).filter(row => row.task.id === mission.taskId || `${row.date}:${row.task.id}` === mission.taskId)
+      if (matches.length === 1) await openArchiveTask(matches[0])
+      else {
+        setArchiveQuery(mission.taskText)
+        setArchivePage('search')
+        presentNotice({ kind: 'error', title: matches.length ? 'Find the task by its date' : 'The focus task may have moved or been removed' })
+      }
+    } catch {
+      presentNotice({ kind: 'error', title: 'Could not open the task', message: 'Your focus session is saved. Retry from Focus when history is available.' })
+    }
+  }, [starFocus.latestCompletedMission, tasks.flushPendingSave, openArchiveTask, presentNotice])
+
   const handleCarryForward = useCallback(async (taskId: string, subtaskId?: string) => {
     try {
       const target = await tasks.carryForward(taskId, subtaskId)
@@ -465,6 +537,7 @@ export default function App() {
     <><div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
       <WindowResizeHandles />
       <GoalsSidebar
+        routines={routines}
         storageError={goals.storageError}
         recoveryNotice={goals.recoveryNotice}
         onRetrySave={goals.retrySave}
@@ -490,6 +563,8 @@ export default function App() {
       )}
 
       <div className="sticky-container">
+        {archivePage ? <ArchivePage key={`${archivePage}:${aiSettings?.kbPath}`} folder={aiSettings?.kbPath ?? ''} initialQuery={archiveQuery} mode={archivePage} date={calendar.dateStr}
+          flush={tasks.flushPendingSave} missions={starFocus.missionHistory} onBack={closeArchive} onOpen={openArchiveTask} /> : <>
         <DateHeader
           displayDate={calendar.displayDate}
           selectedDate={calendar.selectedDate}
@@ -606,6 +681,7 @@ export default function App() {
           </div>
         )}
 
+        </>}
         <div className="action-bar">
           {isDevMode && (
             <button
@@ -654,12 +730,17 @@ export default function App() {
           >
             Albums
           </button>
+          <button className="workflow-entry" aria-label="Search tasks" title="Search tasks" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setArchivePage('search') }}>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg>
+          </button>
+          <button className="workflow-entry" aria-label="Progress" title="Progress" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchivePage('progress') }}>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3v14h14M7 14V9m4 5V5m4 9v-7"/></svg>
+          </button>
           <div className="spacer" />
-          {account.enabled && account.user && <button className="cloud-status-entry"
-            onClick={() => { setSettingsAccount(true); setSettingsProvider(undefined); setShowSettings(true) }}
-            title={account.error || account.message} aria-label="Account and sync status">
-            {account.busy ? 'Syncing…' : account.error || account.conflicts.length ? 'Sync needs attention' : account.lastSynced ? 'Synced' : 'Sync ready'}
-          </button>}
+          <button className="sync-indicator" onClick={() => { setSettingsAccount(true); setSettingsProvider(undefined); setShowSettings(true) }}
+            title={`${syncLabel}. Open Account`} aria-label={`${syncLabel}. Open Account`}>
+            <span className={`sync-mark ${syncState}`} aria-hidden="true">{{ attention: '!', local: '−', syncing: '↻', synced: '✓', waiting: '·' }[syncState]}</span>
+          </button>
           {!isCompactWindow && <div
             className={`provider-quick-control ${
               aiSettings && isProviderConfigured(aiSettings, aiSettings.provider)
@@ -757,6 +838,7 @@ export default function App() {
         activeSession={starFocus.activeSession}
         activeSnapshot={starFocus.activeSnapshot}
         missionHistory={starFocus.missionHistory}
+        onReviewTask={handleReviewFocus}
         latestCompletedMission={starFocus.latestCompletedMission}
         restoredSession={starFocus.restoredSession}
         onToggleCollapse={handleToggleMissionSidebar}
@@ -783,7 +865,8 @@ export default function App() {
           activeSession={starFocus.activeSession}
           activeSnapshot={starFocus.activeSnapshot}
           missionHistory={starFocus.missionHistory}
-          latestCompletedMission={starFocus.latestCompletedMission}
+          onReviewTask={handleReviewFocus}
+        latestCompletedMission={starFocus.latestCompletedMission}
           restoredSession={starFocus.restoredSession}
           onClose={() => setShowTrackingStation(false)}
           onSelectDuration={starFocus.setSessionDuration}
@@ -799,6 +882,6 @@ export default function App() {
           onResetOrbitMap={starFocus.resetOrbitMap}
         />
       )}
-    </div>{account.applying && <div className="cloud-sync-applying" role="status" aria-live="polite"><span>Updating your notes…</span></div>}</>
+    </div>{account.applying && <div className="cloud-sync-applying"><div>{account.progress ? <SyncProgressView progress={account.progress} /> : 'Updating your notes…'}</div></div>}</>
   )
 }

@@ -244,7 +244,7 @@ export function TaskItem({
       }
     }}>
     <div ref={rowRef} onClick={() => setSelected(true)} onFocusCapture={() => settleLayout(() => setSelected(true))}
-      className={cls} data-reorder-id={sortable ? id : undefined}>
+      className={cls} data-task-id={id} data-reorder-id={sortable ? id : undefined}>
       {sortable && <button type="button" className="task-drag-handle"
         onPointerDown={sortable.onPointerDown} onPointerMove={sortable.onPointerMove} onPointerUp={sortable.onPointerUp}
         onPointerCancel={sortable.onCancel} onLostPointerCapture={sortable.onCancel} onDragStart={event => event.preventDefault()}
@@ -291,7 +291,7 @@ export function TaskItem({
           {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title="Add step" aria-label="Add step" onClick={openStepEntry}><AddStepIcon /></button>}
           {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? 'Preparing suggested steps…' : 'Suggest steps with AI'} disabled={breakingDown}
             onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /></button>}
-          {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={`Move to ${moveTargetLabel}`}
+          {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={`Move to ${moveTargetLabel} · due date stays unchanged`}
             onClick={() => { onPush() }} aria-label={`Move ${text} to ${moveTargetLabel}`}><PushIcon /></button>}
           {!isOtherDate && <button type="button" className="task-text-action task-icon-action task-delete-action" title="Delete"
             onClick={onDelete} aria-label={`Delete ${text}`}><DeleteIcon /></button>}

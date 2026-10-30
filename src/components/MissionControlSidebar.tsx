@@ -23,6 +23,7 @@ interface Props {
   onCancel: () => void
   onComplete: () => void
   onClearSelection: () => void
+  onReviewTask?: () => void
   onDismissCompletion: () => void
   onClearHistory: () => void
   onResetOrbitMap: () => void
@@ -85,6 +86,7 @@ export function MissionControlSidebar({
   onCancel,
   onComplete,
   onClearSelection,
+  onReviewTask,
   onDismissCompletion,
   onClearHistory,
   onResetOrbitMap,
@@ -227,6 +229,7 @@ export function MissionControlSidebar({
                   <button className="mission-btn primary" onClick={onDismissCompletion}>Another session</button>
                 </div>
                 <p className="focus-outcome-note">Review the task outcome in your task list when you are ready.</p>
+                {onReviewTask && <button className="mission-btn primary" onClick={onReviewTask}>Review task</button>}
               </div>
             ) : selectedTaskText ? (
               <div className="mission-status-card armed">

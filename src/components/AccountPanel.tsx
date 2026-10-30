@@ -1,37 +1,38 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { useCloudSync } from '../hooks/useCloudSync'
 import '../styles/cloud-account.css'
+import { SyncProgressView } from './SyncProgressView'
+import { ConflictReview } from './ConflictReview'
 
 export type CloudAccount = ReturnType<typeof useCloudSync>
 export function AccountPanel({ account }: { account: CloudAccount }) {
   const [url, setUrl] = useState(account.server)
+  const [review, setReview] = useState<'pending' | 'history' | null>(null)
+  const reviewButton = useRef<HTMLButtonElement>(null)
+  const restoreFocus = useRef(false)
   useEffect(() => setUrl(account.server), [account.server])
+  useEffect(() => { if (!review && restoreFocus.current) { reviewButton.current?.focus(); restoreFocus.current = false } }, [review])
+  const back = () => { restoreFocus.current = true; setReview(null) }
+  if (review) return <ConflictReview account={account} initialHistory={review === 'history'} onBack={back} />
   return <section className="settings-section cloud-account" aria-labelledby="account-heading">
-    <h3 className="section-title" id="account-heading">Your account</h3>
-    <p className="settings-description">Keep tasks, outcomes, goals, routines and completed focus sessions together across desktop and Android.</p>
-    <details open={!account.server || undefined} className="settings-details">
-      <summary>Sync service</summary>
-      <label htmlFor="cloud-url">Your Google Cloud service URL</label>
-      <input id="cloud-url" type="url" value={url} onChange={event => setUrl(event.target.value)} placeholder="https://sticky-sync-…run.app" disabled={account.busy || account.signingIn || Boolean(account.user)} />
-      <button type="button" onClick={() => account.configure(url)} disabled={!url || account.busy || account.signingIn || Boolean(account.user)}>Connect service</button>
-      <p className="hint">Use the service deployed for your Firebase project. Google sign-in opens in your browser.</p>
-    </details>
+    <header className="cloud-account-heading">
+      <div><h3 id="account-heading">{account.user?.displayName || (account.user ? 'Google account' : 'Account')}</h3>{account.user?.email && <p className="cloud-email">{account.user.email}</p>}</div>
+      {account.user && <button type="button" className="cloud-quiet" disabled={account.busy} onClick={() => { void account.logout() }}>Sign out</button>}
+    </header>
     {account.user ? <>
-      <p className="cloud-identity"><strong>{account.user.displayName || 'Google account'}</strong><span>{account.user.email}</span></p>
-      <label className="diane-credentials-choice"><input type="checkbox" checked={account.enabled} onChange={event => account.toggleEnabled(event.target.checked)} disabled={account.busy} /> Sync this task folder</label>
-      <p className="hint">Enabling sync links this device’s notes to this account. API keys, machine paths and active timers stay on the device. Sign-out keeps local notes.</p>
-      <div className="cloud-actions"><button type="button" onClick={() => { void account.sync() }} disabled={!account.enabled || account.busy}>{account.busy ? 'Syncing…' : 'Sync now'}</button><button type="button" onClick={() => { void account.logout() }} disabled={account.busy}>Sign out</button></div>
-      <button type="button" onClick={account.exportRecovery}>Export conflict recovery history</button>
-    </> : <div className="cloud-actions"><button type="button" className="primary" onClick={() => { void account.login() }} disabled={!account.connected || account.signingIn}>{account.signingIn ? 'Waiting for Google…' : 'Continue with Google'}</button>{account.signingIn && <button type="button" onClick={account.cancelSignIn}>Cancel sign-in</button>}</div>}
-    <p role="status" className="settings-status">{account.message}</p>
-    {account.lastSynced && <p className="hint">Last checked {new Date(account.lastSynced).toLocaleString()}</p>}
+      <div className="cloud-sync-controls">
+        <label className="cloud-sync-toggle"><input type="checkbox" checked={account.enabled} onChange={event => account.toggleEnabled(event.target.checked)} disabled={account.busy} />Sync this folder</label>
+        <button type="button" className="cloud-primary" onClick={() => { void account.sync() }} disabled={!account.enabled || account.busy}>{account.busy ? 'Syncing…' : 'Sync now'}</button>
+      </div>
+      {account.busy && account.progress ? <SyncProgressView progress={account.progress} /> : <p role="status" className="cloud-sync-status">{account.message}</p>}
+      {account.lastSynced && <time className="cloud-last-sync" title={new Date(account.lastSynced).toLocaleString()}>Checked {new Date(account.lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>}
+      <div className="cloud-review-launchers"><button ref={reviewButton} type="button" className={account.conflicts.length ? 'cloud-review-needed' : 'cloud-quiet'} onClick={() => setReview('pending')}>Conflicts <span>{account.conflicts.length}</span></button><button type="button" className="cloud-quiet" onClick={() => setReview('history')}>Saved copies <span>{account.recovery.length}</span></button></div>
+    </> : <div className="cloud-login-actions"><button type="button" className="cloud-primary" onClick={() => { void account.login() }} disabled={!account.connected || account.signingIn}>{account.signingIn ? 'Waiting for Google…' : 'Continue with Google'}</button>{account.signingIn && <button type="button" className="cloud-quiet" onClick={account.cancelSignIn}>Cancel</button>}</div>}
     {account.error && <p role="alert" className="settings-error">{account.error}</p>}
-    {account.conflicts.map(conflict => <article key={conflict.key} className="cloud-conflict">
-      <h4>{conflict.key.startsWith('day:') ? conflict.key.slice(4) : conflict.key === 'goals' ? 'Goals and routines' : 'Focus session'}</h4>
-      <p>Changed on both devices. Review the versions, then choose which to continue with. Both are saved in local recovery history before a choice is applied.</p>
-      <details><summary>This device</summary><pre>{JSON.stringify(conflict.local, null, 2)}</pre></details>
-      <details><summary>Cloud</summary><pre>{JSON.stringify(conflict.remote?.payload ?? null, null, 2)}</pre></details>
-      <div className="cloud-actions"><button type="button" disabled={account.busy} onClick={() => { void account.resolve(conflict.key, 'local') }}>Keep this device</button><button type="button" disabled={account.busy} onClick={() => { void account.resolve(conflict.key, 'cloud') }}>Use cloud version</button></div>
-    </article>)}
+    <details open={!account.server || undefined} className="cloud-connection">
+      <summary>Connection</summary>
+      <label htmlFor="cloud-url">Service URL</label>
+      <div className="cloud-connection-form"><input id="cloud-url" type="url" value={url} onChange={event => setUrl(event.target.value)} placeholder="https://…" disabled={account.busy || account.signingIn || Boolean(account.user)} /><button type="button" disabled={!url || account.busy || account.signingIn || Boolean(account.user)} onClick={() => account.configure(url)}>Connect</button></div>
+    </details>
   </section>
 }

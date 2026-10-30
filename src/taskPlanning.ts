@@ -6,6 +6,8 @@ export interface PlanningContext {
   end: string
   machines: AppSettings['machines']
   tasks: AggregatedTask[]
+  unavailable?: UnavailableTime[]
+  estimates?: Record<string, number>
 }
 
 export interface PlannedBlock {
@@ -44,6 +46,7 @@ export function validateDayPlan(raw: unknown, context: PlanningContext): DayPlan
   if (availableStart === null || availableEnd === null || availableEnd <= availableStart) {
     throw new Error('Choose an end time later than the start time.')
   }
+  if (!validUnavailable(context.unavailable ?? [])) throw new Error('Check your unavailable times.')
   const eligible = context.tasks.filter(task => task.status !== 'done' && task.status !== 'stopped')
   const assignees = new Set(['human', ...context.machines.map(machine => machine.name)])
   const schedule = result.schedule.map((value): PlannedBlock => {
@@ -63,6 +66,9 @@ export function validateDayPlan(raw: unknown, context: PlanningContext): DayPlan
     if (start === null || end === null || start < availableStart || end > availableEnd || end <= start) {
       throw new Error('The proposed times fall outside your available time. Generate another plan.')
     }
+    if ((context.unavailable ?? []).some(period => start < minutesOfDay(period.end)! && end > minutesOfDay(period.start)!)) {
+      throw new Error('The proposal uses unavailable time. Generate another plan.')
+    }
     const action = typeof entry.action === 'string' ? entry.action.trim() : ''
     if (!action || action.length > 1000) throw new Error('A proposed block needs a short, concrete action. Generate another plan.')
     const assignedTo = typeof entry.assignedTo === 'string' ? entry.assignedTo : 'human'
@@ -78,9 +84,31 @@ export function validateDayPlan(raw: unknown, context: PlanningContext): DayPlan
     }
     busyUntil.set(block.assignedTo, minutesOfDay(block.endTime)!)
   }
+  for (const [id, minutes] of Object.entries(context.estimates ?? {})) {
+    const total = schedule.filter(block => block.taskId === id).reduce((sum, block) => sum + minutesOfDay(block.endTime)! - minutesOfDay(block.time)!, 0)
+    if (!Number.isFinite(minutes) || minutes <= 0 || total > minutes) throw new Error('The proposal exceeds a task’s time budget. Adjust its estimate or generate another plan.')
+  }
   return { plan: typeof result.plan === 'string' ? result.plan.slice(0, 1200) : '', schedule }
 }
 
 export function planStepPrefix(date: string): string {
   return `plan_${date}_`
+}
+
+export interface UnavailableTime { start: string; end: string }
+export function validUnavailable(periods: UnavailableTime[]) {
+  return periods.every(period => {
+    const start = minutesOfDay(period.start), end = minutesOfDay(period.end)
+    return start !== null && end !== null && end > start
+  })
+}
+// Stored in generated IDs, so edited blocks remain recognizable across Markdown and sync.
+export function planTextHash(text: string): string {
+  let hash = 2166136261
+  for (let index = 0; index < text.length; index++) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619)
+  return (hash >>> 0).toString(36)
+}
+export function isReplaceablePlanStep(step: { id: string; text: string; status: string; subtasks?: unknown[]; finish?: unknown }, date: string) {
+  const hash = step.id.match(/_h([a-z0-9]+)$/)?.[1]
+  return step.id.startsWith(planStepPrefix(date)) && step.status === 'todo' && !step.finish && !step.subtasks?.length && Boolean(hash) && hash === planTextHash(step.text)
 }

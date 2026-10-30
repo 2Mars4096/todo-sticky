@@ -27,7 +27,7 @@ function createTsLoader() {
 const load = createTsLoader()
 const { deleteWithUndo, applyPlanWithUndo, restoreTaskChange } = load('src/taskHistory.ts')
 const { carriedTasks, mergeCarriedSection, flattenTasks } = load('src/taskRollover.ts')
-const { planStepPrefix } = load('src/taskPlanning.ts')
+const { planStepPrefix, planTextHash } = load('src/taskPlanning.ts')
 const plain = value => JSON.parse(JSON.stringify(value))
 const same = (actual, expected) => assert.deepEqual(plain(actual), plain(expected))
 function freeze(value) {
@@ -129,25 +129,22 @@ check('undo uses remaining neighbors, does not duplicate restored IDs, and ignor
   assert.equal(deleteWithUndo(initial, day, 'left', 'missing-step'), null)
 })
 
-check('replanning replaces only unfinished generated blocks for the selected date', () => {
+check('replanning preserves legacy steps and replaces only untouched generated suggestions', () => {
   const current = planStepPrefix(day)
-  const historical = planStepPrefix(oldDay)
-  const initial = freeze([
-    task('open', { finish: finish(), todaySubtasks: [step('manual'), step(current + 'old-pending'), step(current + 'old-partial', 'partial'), step(current + 'old-done', 'done'), step(current + 'old-stopped', 'stopped'), step(historical + 'old')] }),
-    task('not-planned', { todaySubtasks: [step('manual-other'), step(current + 'unused')] }),
-    task('complete', { status: 'done', todaySubtasks: [step(current + 'complete-parent-step')] }),
-    task('stopped', { status: 'stopped', todaySubtasks: [step(current + 'stopped-parent-step')] }),
-  ])
-  const change = applyPlanWithUndo(initial, day, [block('open', 'Show the draft')], 'batch-a')
-  assert.deepEqual(ids(change.tasks[0].todaySubtasks), ['manual', current + 'old-done', current + 'old-stopped', historical + 'old', current + 'batch-a_0'])
-  assert.deepEqual(ids(change.tasks[1].todaySubtasks), ['manual-other'])
-  assert.equal(change.tasks[0].finish.reviewReady, false)
-  same(change.tasks[2], initial[2])
-  same(change.tasks[3], initial[3])
-  const repeated = applyPlanWithUndo(change.tasks, day, [block('open', 'Show the draft')], 'batch-b')
-  assert.equal(repeated.tasks[0].todaySubtasks.length, change.tasks[0].todaySubtasks.length)
-  assert.ok(repeated.tasks[0].todaySubtasks.some(item => item.id === current + 'batch-b_0'))
-  assert.ok(!repeated.tasks[0].todaySubtasks.some(item => item.id === current + 'batch-a_0'))
+  const initial = freeze([task('open', { finish: finish(), todaySubtasks: [step('manual'), step(current + 'legacy')] })])
+  const first = applyPlanWithUndo(initial, day, [block('open', 'Show the draft')], 'batch-a')
+  assert.equal(first.tasks[0].todaySubtasks.length, 3)
+  assert.ok(first.tasks[0].todaySubtasks.some(item => item.id === current + 'legacy'))
+  const generated = first.tasks[0].todaySubtasks[2]
+  assert.ok(generated.id.endsWith('_h' + planTextHash(generated.text)))
+  const repeated = applyPlanWithUndo(first.tasks, day, [block('open', 'Show the draft')], 'batch-b')
+  assert.equal(repeated.tasks[0].todaySubtasks.length, 3)
+  assert.ok(!repeated.tasks[0].todaySubtasks.some(item => item.id === generated.id))
+  for (const edit of [{ text: 'My revised action' }, { status: 'partial' }, { status: 'done' }, { status: 'stopped' }, { subtasks: [step('nested')] }, { finish: finish() }]) {
+    const edited = first.tasks.map(root => ({ ...root, todaySubtasks: root.todaySubtasks.map(child => child.id === generated.id ? { ...child, ...edit } : child) }))
+    const replanned = applyPlanWithUndo(edited, day, [block('open', 'Different action')], 'batch-c')
+    assert.ok(replanned.tasks[0].todaySubtasks.some(item => item.id === generated.id), JSON.stringify(edit))
+  }
 })
 
 check('unmodified plan undo restores original steps, finish review state and order', () => {
@@ -164,18 +161,18 @@ check('plan undo preserves completed, edited and stopped blocks plus later unrel
   const change = applyPlanWithUndo(initial, day, schedule, 'batch')
   const later = change.tasks.map(item => item.id === 'task' ? {
     ...item, text: 'User renamed parent', finish: { ...item.finish, by: '2026-10-30' },
-    todaySubtasks: [...item.todaySubtasks.map(child => child.id.endsWith('batch_0') ? { ...child, status: 'done' }
-      : child.id.endsWith('batch_1') ? { ...child, text: 'User rewritten block', subtasks: [step('new-nested')] }
-      : child.id.endsWith('batch_2') ? { ...child, status: 'stopped' }
+    todaySubtasks: [...item.todaySubtasks.map(child => child.id.includes('batch_0_h') ? { ...child, status: 'done' }
+      : child.id.includes('batch_1_h') ? { ...child, text: 'User rewritten block', subtasks: [step('new-nested')] }
+      : child.id.includes('batch_2_h') ? { ...child, status: 'stopped' }
       : child.id === 'manual' ? { ...child, text: 'Edited manual step' } : child), step('later-manual')],
   } : { ...item, text: 'Unrelated title edit' })
   const restored = restoreTaskChange(later, change.undo)
   const children = restored[0].todaySubtasks
   assert.ok(children.some(child => child.id === current + 'previous'))
-  assert.equal(children.find(child => child.id.endsWith('batch_0')).status, 'done')
-  assert.equal(children.find(child => child.id.endsWith('batch_1')).subtasks[0].id, 'new-nested')
-  assert.equal(children.find(child => child.id.endsWith('batch_2')).status, 'stopped')
-  assert.ok(!children.some(child => child.id.endsWith('batch_3')))
+  assert.equal(children.find(child => child.id.includes('batch_0_h')).status, 'done')
+  assert.equal(children.find(child => child.id.includes('batch_1_h')).subtasks[0].id, 'new-nested')
+  assert.equal(children.find(child => child.id.includes('batch_2_h')).status, 'stopped')
+  assert.ok(!children.some(child => child.id.includes('batch_3_h')))
   assert.equal(children.find(child => child.id === 'manual').text, 'Edited manual step')
   assert.ok(children.some(child => child.id === 'later-manual'))
   assert.equal(restored[0].text, 'User renamed parent')
@@ -205,17 +202,18 @@ check('undoing a deleted unfinished step reopens a parent closed after the delet
 
 check('plan undo cannot leave restored unfinished blocks under a subsequently completed parent', () => {
   const current = planStepPrefix(day)
-  const initial = [task('parent', { todaySubtasks: [step(current + 'old')] })]
+  const oldId = current + 'old_h' + planTextHash('Old suggestion')
+  const initial = [task('parent', { todaySubtasks: [step(oldId, 'todo', { text: 'Old suggestion' })] })]
   const change = applyPlanWithUndo(initial, day, [block('parent', 'User completed this')], 'batch')
   const later = change.tasks.map(item => ({ ...item, status: 'done', todaySubtasks: item.todaySubtasks.map(child => ({ ...child, status: 'done' })) }))
   const restored = restoreTaskChange(later, change.undo)
-  assert.equal(restored[0].todaySubtasks.find(child => child.id.endsWith('batch_0')).status, 'done')
+  assert.equal(restored[0].todaySubtasks.find(child => child.id.includes('batch_0_h')).status, 'done')
   assert.equal(restored[0].status, 'done', 'the completed outcome remains closed')
-  assert.ok(!restored[0].todaySubtasks.some(child => child.id === current + 'old'), 'an obsolete unfinished plan must not reopen a completed outcome')
+  assert.ok(!restored[0].todaySubtasks.some(child => child.id === oldId), 'an obsolete unfinished plan must not reopen a completed outcome')
   const stopped = change.tasks.map(item => ({ ...item, status: 'stopped' }))
   const undoneStop = restoreTaskChange(stopped, change.undo)
   assert.equal(undoneStop[0].status, 'stopped')
-  assert.ok(!undoneStop[0].todaySubtasks.some(child => child.id === current + 'old'))
+  assert.ok(!undoneStop[0].todaySubtasks.some(child => child.id === oldId))
 })
 
 check('plan undo preserves closed review metadata after stopping a previously review-ready task', () => {

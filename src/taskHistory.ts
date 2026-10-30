@@ -1,6 +1,6 @@
 import type { AggregatedTask, Task } from './types'
 import type { PlannedBlock } from './taskPlanning'
-import { planStepPrefix } from './taskPlanning'
+import { planStepPrefix, planTextHash, isReplaceablePlanStep } from './taskPlanning'
 
 interface PositionedTask {
   task: AggregatedTask
@@ -58,7 +58,7 @@ export function applyPlanWithUndo(tasks: AggregatedTask[], date: string, schedul
   let sequence = 0
   const next = tasks.map(task => {
     if (task.status === 'done' || task.status === 'stopped') return task
-    const retained = task.todaySubtasks.filter(step => !step.id.startsWith(planStepPrefix(date)) || step.status === 'done' || step.status === 'stopped')
+    const retained = task.todaySubtasks.filter(step => !isReplaceablePlanStep(step, date))
     const blocks = schedule.filter(block => block.taskId === task.id)
     const planned: Task[] = []
     for (const block of blocks) {
@@ -66,7 +66,7 @@ export function applyPlanWithUndo(tasks: AggregatedTask[], date: string, schedul
       const text = `⏰ ${block.time}–${block.endTime}${who} ${block.action}`
       // Keep historical/user-authored equivalents rather than append the same block twice.
       if (retained.some(step => step.text === text)) continue
-      planned.push({ id: `${planStepPrefix(date)}${batchId}_${sequence++}`, text, status: 'todo', subtasks: [] })
+      planned.push({ id: `${planStepPrefix(date)}${batchId}_${sequence++}_h${planTextHash(text)}`, text, status: 'todo', subtasks: [] })
     }
     if (!planned.length && retained.length === task.todaySubtasks.length) return task
     return {

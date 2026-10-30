@@ -71,7 +71,7 @@ export function DateHeader({
             onClick={onToggleCalendar}
             aria-expanded={calendarOpen}
             aria-label={`${displayDate}. Open calendar`}
-            title={displayDate}
+            title={`Task list for ${displayDate}. Deadlines are shown on each task.`}
           >
             <span className="date-title-label">{isCurrentDay ? 'Today · ' : ''}{shortDate}</span>
             <span className="cal-chevron">{calendarOpen ? '▴' : '▾'}</span>

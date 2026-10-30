@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { nextOccurrence, type Cadence, type RoutineSchedules } from '../routines'
+import { format } from 'date-fns'
 import type { GoalCategory, GoalItem } from '../types'
 import '../styles/settings-navigation.css'
 
@@ -6,6 +8,7 @@ interface SidebarProps {
   storageError?: string | null
   recoveryNotice?: string | null
   onRetrySave?: () => void
+  routines?: { schedules: RoutineSchedules; error: string; available: boolean; configure: (id: string, cadence: Cadence | 'manual') => void; pause: (id: string) => void; skip: (id: string) => void; retry: () => void }
   collapsed: boolean
   targets: GoalItem[]
   recurring: GoalItem[]
@@ -17,6 +20,7 @@ interface SidebarProps {
 }
 
 interface SectionProps {
+  routines?: SidebarProps['routines']
   title: string
   category: GoalCategory
   items: GoalItem[]
@@ -28,6 +32,8 @@ interface SectionProps {
 }
 
 interface RowProps {
+  scheduled?: boolean
+  paused?: boolean
   category: GoalCategory
   item: GoalItem
   onUpdateGoal: SidebarProps['onUpdateGoal']
@@ -36,6 +42,7 @@ interface RowProps {
 }
 
 function GoalRow({
+  scheduled, paused,
   category,
   item,
   onUpdateGoal,
@@ -63,13 +70,13 @@ function GoalRow({
 
   return (
     <div className={`goal-row ${item.done ? 'done' : ''}`}>
-      <button
+      {scheduled ? <span className="routine-symbol" aria-hidden="true">↻</span> : <button
         className={`goal-toggle ${item.done ? 'done' : ''}`}
         onClick={() => onToggleGoal(category, item.id)}
-        title={item.done ? 'Mark active' : 'Mark done'}
-        aria-label={`${item.done ? 'Reactivate' : 'Complete'} ${item.text}`}
-        aria-pressed={item.done}
-      />
+        title={scheduled ? paused ? 'Resume routine' : 'Pause routine' : item.done ? 'Mark active' : 'Mark done'}
+        aria-label={`${scheduled ? paused ? 'Resume' : 'Pause' : item.done ? 'Reactivate' : 'Complete'} ${item.text}`}
+        aria-pressed={scheduled ? paused : item.done}
+      />}
       {editing ? (
         <textarea
           ref={inputRef}
@@ -118,6 +125,7 @@ function GoalRow({
 
 function GoalSection({
   title,
+  routines,
   category,
   items,
   placeholder,
@@ -127,7 +135,8 @@ function GoalSection({
   onToggleGoal,
 }: SectionProps) {
   const [draft, setDraft] = useState('')
-  const openCount = items.filter(item => !item.done).length
+  const scheduled = (id: string) => Boolean(routines?.schedules[id] && routines.schedules[id].cadence !== 'manual')
+  const openCount = items.filter(item => scheduled(item.id) ? !routines!.schedules[item.id].paused : !item.done).length
 
   const handleAdd = () => {
     if (!draft.trim()) return
@@ -141,18 +150,32 @@ function GoalSection({
         <h2>{title}</h2>
         {items.length > 0 && <span>{openCount} open</span>}
       </div>
-      {category === 'recurring' && <p className="goal-section-description">Reusable reminders you reset yourself.</p>}
+      {category === 'recurring' && <p className="goal-section-description">Schedules run on this device.</p>}
 
       <div className="goal-list">
         {items.map(item => (
-          <GoalRow
+          <div key={item.id}><GoalRow
             key={item.id}
             category={category}
-            item={item}
+            item={category === 'recurring' && scheduled(item.id) ? { ...item, done: false } : item}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}
-            onToggleGoal={onToggleGoal}
+            onToggleGoal={category === 'recurring' && scheduled(item.id) ? () => routines!.pause(item.id) : onToggleGoal}
+            scheduled={category === 'recurring' && scheduled(item.id)}
+            paused={routines?.schedules[item.id]?.paused}
           />
+          {category === 'recurring' && routines && <div className="routine-options">
+            <select aria-label={`Repeat ${item.text}`} disabled={!routines.available} value={routines.schedules[item.id]?.cadence ?? 'manual'}
+              onChange={event => routines.configure(item.id, event.target.value as Cadence | 'manual')}>
+              <option value="manual">Manual</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option>
+            </select>
+            {scheduled(item.id) && <>
+              <span>{routines.schedules[item.id].paused ? 'Paused' : `Next ${nextOccurrence(routines.schedules[item.id], format(new Date(), 'yyyy-MM-dd'))}`}</span>
+              <button onClick={() => routines!.pause(item.id)}>{routines.schedules[item.id].paused ? 'Resume' : 'Pause'}</button>
+              {!routines.schedules[item.id].paused && <button onClick={() => routines.skip(item.id)}>Skip next</button>}
+            </>}
+          </div>}
+          </div>
         ))}
       </div>
 
@@ -176,6 +199,7 @@ function GoalSection({
 }
 
 export function GoalsSidebar({
+  routines,
   storageError,
   recoveryNotice,
   onRetrySave,
@@ -189,7 +213,7 @@ export function GoalsSidebar({
   onToggleGoal,
 }: SidebarProps) {
   const openTargets = targets.filter(item => !item.done).length
-  const openRoutines = recurring.filter(item => !item.done).length
+  const openRoutines = recurring.filter(item => routines?.schedules[item.id] && routines.schedules[item.id].cadence !== 'manual' ? !routines.schedules[item.id].paused : !item.done).length
   return (
     <aside id="goals-panel" className={`goals-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Goals and routines">
       <div className="sidebar-top">
@@ -235,7 +259,9 @@ export function GoalsSidebar({
             onToggleGoal={onToggleGoal}
           />
 
+          {routines?.error && <p className="workflow-error" role="alert">{routines.error} <button onClick={routines.retry}>Retry</button></p>}
           <GoalSection
+            routines={routines}
             title="Routines"
             category="recurring"
             items={recurring}

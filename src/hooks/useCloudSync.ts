@@ -4,6 +4,8 @@ import { invoke } from '@tauri-apps/api/core'
 import { api, waitForPendingWrites } from '../api'
 import { connectAccount, googleSignIn, requestJson, signOut, type Auth, type User } from '../cloudAccount'
 import { canonical, reconcile, syncServerUrl, validateRecords, type CloudRecord, type SyncAction, type SyncBaseline, type SyncPayload } from '../cloudSync'
+import { nextSyncProgress, syncRecordLabel, yieldSyncUi, type SyncProgress } from '../syncProgress'
+import { preserveConflict, reviewedConflictMatches, type SyncRecoveryEntry } from '../syncConflicts'
 import type { GoalItem, StarFocusMissionRecord, Task } from '../types'
 
 const SERVER_KEY = 'todo-sticky-cloud-server-v1'
@@ -12,7 +14,7 @@ interface Metadata {
   enabled: boolean
   baseline: Record<string, SyncBaseline>
   pending: Record<string, { mutationId: string; fingerprint: string; expectedRevision: number }>
-  conflicts: { key: string; local: SyncPayload; remote: CloudRecord | null; at: string }[]
+  conflicts: SyncRecoveryEntry[]
 }
 interface Hooks {
   kbPath: string
@@ -45,12 +47,24 @@ export function useCloudSync(hooks: Hooks) {
   const [connectAttempt, setConnectAttempt] = useState(0)
   const [user, setUser] = useState<User | null>(null)
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState<SyncProgress | null>(null)
+  const progressRef = useRef<SyncProgress | null>(null)
+  const report = useCallback((stage: string, update: Partial<SyncProgress> = {}) => {
+    progressRef.current = nextSyncProgress(progressRef.current, stage, update)
+    setProgress(progressRef.current)
+  }, [])
+  const advance = useCallback(() => {
+    const current = progressRef.current
+    if (current) report(current.stage, { detail: current.detail, completed: current.completed + 1 })
+  }, [report])
   const [applying, setApplying] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [enabled, setEnabled] = useState(false)
-  const [message, setMessage] = useState('Sync is optional. Your notes work offline.')
+  const [message, setMessage] = useState('Not signed in')
   const [error, setError] = useState<string | null>(null)
   const [conflicts, setConflicts] = useState<SyncAction[]>([])
+  const [recovery, setRecovery] = useState<SyncRecoveryEntry[]>([])
+  const [acknowledged, setAcknowledged] = useState<{ key: string; change: string } | null>(null)
   const [lastSynced, setLastSynced] = useState<string | null>(null)
   const running = useRef(false)
   const signInController = useRef<AbortController | null>(null)
@@ -75,8 +89,8 @@ export function useCloudSync(hooks: Hooks) {
   useEffect(() => {
     epoch.current++
     setConflicts([])
-    if (!key) { setEnabled(false); return }
-    try { setEnabled(metadata(key).enabled) } catch (cause) { setError(String(cause)); setEnabled(false) }
+    if (!key) { setEnabled(false); setRecovery([]); return }
+    try { const saved = metadata(key); setEnabled(saved.enabled); setRecovery(saved.conflicts) } catch (cause) { setError(String(cause)); setEnabled(false) }
   }, [key])
 
   const configure = useCallback((value: string) => {
@@ -90,9 +104,9 @@ export function useCloudSync(hooks: Hooks) {
 
   const login = useCallback(async () => {
     if (!auth || signingIn) return
-    setSigningIn(true); setError(null); setMessage('Confirm your Google account in the browser.')
+    setSigningIn(true); setError(null); setMessage('Waiting for Google')
     const controller = new AbortController(); signInController.current = controller
-    try { await googleSignIn(server, auth, controller.signal); setMessage('Signed in. Enable sync when you are ready to link these notes.') }
+    try { await googleSignIn(server, auth, controller.signal); setMessage('Signed in') }
     catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
     finally { setSigningIn(false); signInController.current = null }
   }, [auth, signingIn, server])
@@ -102,7 +116,7 @@ export function useCloudSync(hooks: Hooks) {
     signInController.current?.abort()
     try {
       if (key) { const meta = metadata(key); meta.enabled = false; localStorage.setItem(key, JSON.stringify(meta)) }
-      await signOut(auth); setEnabled(false); setMessage('Signed out. Local notes remain on this device; syncing is paused.')
+      await signOut(auth); setEnabled(false); setMessage('Signed out')
     } catch (cause) { setError(String(cause)) }
   }, [auth, key])
 
@@ -115,12 +129,13 @@ export function useCloudSync(hooks: Hooks) {
       if (value) localStorage.setItem(OWNER_KEY, owner)
       const meta = metadata(key); meta.enabled = value
       localStorage.setItem(key, JSON.stringify(meta)); setEnabled(value); setError(null)
-      setMessage(value ? 'Sync enabled for this task folder.' : 'Sync paused. Local notes remain available.')
+      setMessage(value ? 'Sync on' : 'Sync paused')
     } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
   }, [key, owner])
 
-  const snapshot = useCallback(async () => {
+  const snapshot = useCallback(async (reading?: () => void) => {
     await hooksRef.current.flush(); await waitForPendingWrites()
+    reading?.()
     const data = await api.extractTaskApi({ all: true, canonicalDates: true })
     const local: Record<string, SyncPayload> = Object.fromEntries(data.dates.map(day => ['day:' + day.date, { date: day.date, tasks: day.tasks }]))
     local.goals = { targets: hooksRef.current.goals.targets, recurring: hooksRef.current.goals.recurring }
@@ -128,10 +143,12 @@ export function useCloudSync(hooks: Hooks) {
     return local
   }, [])
 
-  const synchronize = useCallback(async (resolution?: { key: string; choice: 'local' | 'cloud' }) => {
+  const synchronize = useCallback(async (resolution?: { key: string; choice: 'local' | 'cloud'; fingerprint: string }) => {
+    const changeAtStart = hooksRef.current.changeKey
     if (!user || !auth || !enabled || !key || running.current || !hooksRef.current.ready) return
-    if (hooksRef.current.blocked) { setMessage('Sync will resume after the current task operation.'); return }
+    if (hooksRef.current.blocked) { setMessage('Waiting for current task'); return }
     running.current = true; setBusy(true); setError(null)
+    progressRef.current = null; report('Checking account')
     const generation = epoch.current
     const assertCurrent = () => { if (generation !== epoch.current || keyRef.current !== key || auth.currentUser?.uid !== user.uid) throw new Error('Account or task folder changed; sync stopped safely.') }
     let pulled = false
@@ -142,11 +159,14 @@ export function useCloudSync(hooks: Hooks) {
       const token = await user.getIdToken()
       assertCurrent()
       const nativeKbPath = await invoke<string>('cloud_task_folder')
-      const local = await snapshot()
+      report('Saving local edits')
+      const local = await snapshot(() => report('Reading local history'))
       const cloud: CloudRecord[] = []
       let cursor: string | null = null
       const cursors = new Set<string>()
+      let pageNumber = 0
       do {
+        report('Reading cloud', { detail: `Page ${++pageNumber}` })
         const page = await requestJson(server, '/v1/sync' + (cursor ? '?after=' + encodeURIComponent(cursor) : ''), {}, token)
         assertCurrent()
         if (page.schemaVersion !== 1) throw new Error('The sync service version is incompatible.')
@@ -156,24 +176,36 @@ export function useCloudSync(hooks: Hooks) {
         if (cursor) cursors.add(cursor)
       } while (cursor)
       validateRecords(cloud)
+      report('Comparing changes')
       const actions = reconcile(local, cloud, meta.baseline)
       // Finish all HTTP writes before local changes lock the editor.
       actions.sort((a, b) => Number(a.kind === 'pull') - Number(b.kind === 'pull'))
+      const pendingConflicts = actions.filter(action => action.kind === 'conflict')
+      let preserved = false
+      for (const action of pendingConflicts) preserved = preserveConflict(meta.conflicts, action) || preserved
+      if (preserved) { persist(); setRecovery([...meta.conflicts]) }
+      setConflicts(pendingConflicts)
+      if (resolution && !reviewedConflictMatches(actions, resolution.key, resolution.fingerprint)) {
+        setConflicts(pendingConflicts)
+        throw new Error('Conflict changed. Review again.')
+      }
+      report('Comparing changes', { total: actions.length, completed: 0 })
       const unresolved: SyncAction[] = []
       for (const action of actions) {
         assertCurrent()
+        const detail = syncRecordLabel(action.key)
+        report('Checking changes', { detail })
         if (action.kind === 'conflict' && resolution?.key === action.key) {
-          // Preserve both choices before explicit resolution changes either side.
-          meta.conflicts.push({ key: action.key, local: action.local, remote: action.remote, at: new Date().toISOString() })
-          persist()
+          // Both reviewed copies were durably saved before any version is applied.
           action.kind = resolution.choice === 'local' ? 'push' : 'pull'
         }
-        if (action.kind === 'conflict') { unresolved.push(action); continue }
+        if (action.kind === 'conflict') { unresolved.push(action); advance(); continue }
         if (action.kind === 'ack') {
           if (action.remote) meta.baseline[action.key] = baseline(action.remote)
-          delete meta.pending[action.key]; persist(); continue
+          delete meta.pending[action.key]; persist(); advance(); continue
         }
         if (action.kind === 'push') {
+          report('Uploading', { detail })
           const fingerprint = canonical(action.local)
           const revision = action.remote?.revision ?? 0
           let pending = meta.pending[action.key]
@@ -187,12 +219,13 @@ export function useCloudSync(hooks: Hooks) {
           assertCurrent()
           const record = validateRecords([result])[0]
           if (record.key !== action.key || canonical(record.payload) !== fingerprint) throw new Error('The sync acknowledgement did not match the saved record.')
-          meta.baseline[action.key] = baseline(record); delete meta.pending[action.key]; persist()
+          meta.baseline[action.key] = baseline(record); delete meta.pending[action.key]; persist(); advance()
           continue
         }
         // Only the short local-apply phase locks interaction. Never lock during HTTP requests.
+        report('Applying downloads', { detail })
         setApplying(true)
-        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+        await yieldSyncUi()
         const latest = await snapshot()
         assertCurrent()
         if (canonical(latest[action.key] ?? null) !== canonical(action.local)) throw new Error('You edited this note during sync. Your edits are safe; sync again to reconcile them.')
@@ -204,33 +237,39 @@ export function useCloudSync(hooks: Hooks) {
         } else if (action.key === 'goals') {
           await hooksRef.current.applyGoals(value as unknown as Hooks['goals'] ?? { targets: [], recurring: [] })
         } else await hooksRef.current.applyMission(value as unknown as StarFocusMissionRecord | null, action.key.slice(6))
-        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+        await yieldSyncUi()
         await waitForPendingWrites()
         if (action.remote) meta.baseline[action.key] = baseline(action.remote)
         else delete meta.baseline[action.key]
         persist()
-        if (pulled) { await hooksRef.current.reload(); pulled = false }
+        if (pulled) { report('Refreshing notes', { detail }); await hooksRef.current.reload(); pulled = false }
+        advance()
         setApplying(false)
       }
       assertCurrent()
       setConflicts(unresolved)
       setLastSynced(new Date().toISOString())
-      setMessage(unresolved.length ? `${unresolved.length} ${unresolved.length === 1 ? 'record needs' : 'records need'} your choice. Both versions are preserved.` : 'Up to date across your devices.')
-    } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); setMessage('Local notes are safe. Retry sync when ready.') }
+      if (!unresolved.length && hooksRef.current.changeKey === changeAtStart) setAcknowledged({ key, change: changeAtStart })
+      setMessage(unresolved.length ? `${unresolved.length} conflicts` : 'Up to date')
+    } catch (cause) {
+      const step = progressRef.current as SyncProgress | null
+      setError(`${step?.stage ?? 'Sync'}${step?.detail ? ` (${step.detail})` : ''}: ${cause instanceof Error ? cause.message : String(cause)}`)
+      setMessage('Sync stopped')
+    }
     finally {
       // Reload even after a later failure, so the editor never holds a stale pre-pull snapshot.
       try { if (pulled) await hooksRef.current.reload() } catch (cause) { setError(String(cause)) }
-      setApplying(false); setBusy(false); running.current = false
+      setApplying(false); setBusy(false); running.current = false; setProgress(null); progressRef.current = null
     }
-  }, [user, auth, enabled, key, owner, server, snapshot])
+  }, [user, auth, enabled, key, owner, server, snapshot, report, advance])
 
-  const exportRecovery = useCallback(() => {
+  const exportRecovery = useCallback((filter?: { key: string; at?: string }) => {
     try {
       if (!key) return
-      const copies = metadata(key).conflicts
+      const copies = metadata(key).conflicts.filter(copy => !filter || (copy.key === filter.key && (!filter.at || copy.at === filter.at)))
       const blob = new Blob([JSON.stringify({ schemaVersion: 1, savedAt: new Date().toISOString(), conflicts: copies }, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
-      const link = document.createElement('a'); link.href = url; link.download = 'sticky-todo-sync-recovery.json'
+      const link = document.createElement('a'); link.href = url; link.download = filter ? `todo-sticky-conflict-${filter.key.replace(/[^a-zA-Z0-9_-]/g, '-')}.json` : 'todo-sticky-sync-recovery.json'
       link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch (cause) { setError(String(cause)) }
   }, [key])
@@ -249,6 +288,6 @@ export function useCloudSync(hooks: Hooks) {
     return () => { clearInterval(timer); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh) }
   }, [enabled])
 
-  return { server, configure, user, connected: Boolean(auth), busy, applying, signingIn, enabled, message, error, conflicts, lastSynced, login, logout, toggleEnabled, exportRecovery,
-    cancelSignIn: () => signInController.current?.abort(), sync: () => synchronize(), resolve: (key: string, choice: 'local' | 'cloud') => synchronize({ key, choice }) }
+  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready && !hooks.blocked, server, configure, user, connected: Boolean(auth), busy, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
+    cancelSignIn: () => signInController.current?.abort(), sync: () => synchronize(), resolve: (key: string, choice: 'local' | 'cloud', fingerprint: string) => synchronize({ key, choice, fingerprint }) }
 }

@@ -35,3 +35,8 @@ assert.throws(() => validateRecords([record({ date: '2026-10-24', tasks: [{ ...d
 assert.equal(validateRecords([record(day('valid'))]).length, 1)
 assert.equal(reconcile({ [key]: { date: '2026-10-24', tasks: [] } }, [record(null, 2, true)], { [key]: { payload: null, revision: 2, deleted: true } })[0].kind, 'ack')
 console.log('Cloud sync: three-way reconciliation, first-link safety, deletion conflicts, retention and origin validation passed')
+
+assert.equal(validateRecords([record(day(""))]).length, 1, "Preserve blank legacy checklist titles")
+assert.equal(validateRecords([record(day("  "))]).length, 1)
+assert.throws(() => validateRecords([record(day(12))]))
+assert.throws(() => validateRecords([record(day("a\nb"))]))
