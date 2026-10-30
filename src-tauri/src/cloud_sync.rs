@@ -6,21 +6,34 @@ use tauri::AppHandle;
 #[tauri::command]
 pub fn cloud_task_folder(app: AppHandle) -> String { config::get_kb_path(&app) }
 
-#[tauri::command]
-pub fn open_account_sign_in(url: String) -> Result<(), String> {
-    let parsed = reqwest::Url::parse(&url).map_err(|_| "Invalid sign-in URL")?;
+pub(crate) fn is_account_return_url(url: &str) -> bool {
+    matches!(url, "todo-sticky://account-return" | "todo-sticky://account-return/")
+}
+
+fn sign_in_url(url: &str, return_to_app: bool) -> Result<reqwest::Url, String> {
+    let mut parsed = reqwest::Url::parse(url).map_err(|_| "Invalid sign-in URL")?;
     let loopback = matches!(parsed.host_str(), Some("localhost" | "127.0.0.1" | "[::1]"));
     if (parsed.scheme() != "https" && !(parsed.scheme() == "http" && loopback))
         || !parsed.username().is_empty() || parsed.password().is_some() || parsed.path() != "/signin" {
         return Err("Sign-in requires a trusted HTTPS service".into());
     }
-    // Launch the OS browser with argument separation, never a shell command string.
+    if return_to_app {
+        let fragment = format!("returnTo=app&{}", parsed.fragment().unwrap_or(""));
+        parsed.set_fragment(Some(&fragment));
+    }
+    Ok(parsed)
+}
+
+#[tauri::command]
+pub fn open_account_sign_in(url: String) -> Result<(), String> {
+    let parsed = sign_in_url(&url, cfg!(target_os = "macos"))?;
+    // No credentials move into the return URI; it only focuses this app.
     #[cfg(target_os = "macos")]
-    let result = std::process::Command::new("open").arg(&url).spawn();
+    let result = std::process::Command::new("open").arg(parsed.as_str()).spawn();
     #[cfg(target_os = "windows")]
-    let result = std::process::Command::new("rundll32.exe").args(["url.dll,FileProtocolHandler", &url]).spawn();
+    let result = std::process::Command::new("rundll32.exe").args(["url.dll,FileProtocolHandler", parsed.as_str()]).spawn();
     #[cfg(not(any(target_os = "macos", target_os = "windows")))]
-    let result = std::process::Command::new("xdg-open").arg(&url).spawn();
+    let result = std::process::Command::new("xdg-open").arg(parsed.as_str()).spawn();
     result.map(|_| ()).map_err(|error| format!("Could not open your browser: {error}"))
 }
 
@@ -59,6 +72,23 @@ pub fn cloud_apply_day(date: String, tasks: Vec<Task>, expected_tasks: Value, ex
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn native_return_is_a_fixed_token_free_wakeup() {
+        assert!(is_account_return_url("todo-sticky://account-return"));
+        assert!(is_account_return_url("todo-sticky://account-return/"));
+        for url in ["https://account-return", "todo-sticky://other", "todo-sticky://account-return?token=bad", "todo-sticky://account-return#secret", "todo-sticky://user@account-return"] {
+            assert!(!is_account_return_url(url));
+        }
+        let url = "https://sync.example.test/signin#sessionId=session&challenge=proof";
+        let native = sign_in_url(url, true).unwrap();
+        assert_eq!(native.query(), None);
+        assert_eq!(native.fragment(), Some("returnTo=app&sessionId=session&challenge=proof"));
+        assert_eq!(sign_in_url(url, false).unwrap().as_str(), url);
+        assert!(sign_in_url("http://example.com/signin", true).is_err());
+        assert!(sign_in_url("https://user:secret@example.com/signin", true).is_err());
+    }
+
 
     #[test]
     fn stale_download_cannot_replace_a_local_edit() {

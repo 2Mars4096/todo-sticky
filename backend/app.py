@@ -87,8 +87,8 @@ def fields(value: Any, allowed: set[str], required: set[str]) -> dict:
     return value
 
 
-def text(value: Any, maximum: int = 5000, *, multiline: bool = False) -> None:
-    if not isinstance(value, str) or not value.strip() or len(value) > maximum:
+def text(value: Any, maximum: int = 5000, *, multiline: bool = False, allow_blank: bool = False) -> None:
+    if not isinstance(value, str) or (not allow_blank and not value.strip()) or len(value) > maximum:
         fail("Invalid text")
     if not multiline and ("\n" in value or "\r" in value):
         fail("Text must fit on one line")
@@ -132,7 +132,7 @@ def validate_payload(key: str, mutation: Mutation) -> None:
                 count[0] += 1
                 if count[0] > 2000 or not isinstance(item["status"], str) or item["status"] not in STATUS:
                     fail("Invalid task count or status")
-                text(item["text"])
+                text(item["text"], allow_blank=True)
                 finish = item.get("finish")
                 if finish is not None:
                     fields(finish, {"doneWhen", "by", "originalBy", "deadlineChanges", "reviewReady"}, set())
@@ -311,6 +311,7 @@ def create_app(store=None, verifier: Callable | None = None, mint: Callable | No
         response.headers["X-Frame-Options"] = "DENY"
         return response
 
+    @app.get("/v1/health")
     @app.get("/healthz")
     def health():
         return {"ok": True}

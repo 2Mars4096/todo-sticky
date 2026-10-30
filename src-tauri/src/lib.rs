@@ -464,6 +464,16 @@ pub fn run() {
         .expect("error while building Sticky Todo");
 
     app.run(|app, event| {
+        #[cfg(target_os = "macos")]
+        if let RunEvent::Opened { urls } = &event {
+            if urls.iter().any(|url| cloud_sync::is_account_return_url(url.as_str())) {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.unminimize().ok();
+                    show_window(&window, true);
+                }
+            }
+        }
+
         if let RunEvent::Ready = event {
             // Never wait indefinitely on JavaScript, archive reads or integrations.
             let handle = app.clone();

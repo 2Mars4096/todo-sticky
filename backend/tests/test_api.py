@@ -65,6 +65,15 @@ class SyncApiTests(unittest.TestCase):
             'payload': payload if payload is not None else None if deleted else {'date': '2026-10-24', 'tasks': [self.task]},
         })
 
+    def test_legacy_blank_checklist_titles_round_trip_without_dropping_children(self):
+        self.task['text'] = ''
+        self.task['subtasks'] = [{'id': 'blank_child', 'text': '  ', 'status': 'done', 'subtasks': []}]
+        self.assertEqual(self.write().status_code, 200)
+        saved = self.client.get('/v1/sync', headers={'Authorization': 'Bearer alice'}).json()['records'][0]
+        self.assertEqual(saved['payload']['tasks'], [self.task])
+        invalid = {'targets': [{'id': 'g', 'text': '', 'done': False}], 'recurring': []}
+        self.assertEqual(self.write(key='goals', payload=invalid).status_code, 422)
+
     def test_authentication_and_verified_account_required(self):
         self.assertEqual(self.client.get('/v1/sync').status_code, 401)
         self.assertEqual(self.write('expired').status_code, 401)
