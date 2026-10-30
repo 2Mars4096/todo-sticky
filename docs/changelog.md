@@ -1,8 +1,8 @@
 # Changelog
 
-## 2026-10-31 — Prepare reviewed source batches for publication
+## 2026-10-31 — Publish reviewed source in batches
 
-- [repository] Group account/native transport, desktop workflows, Android parity, Goals material and shared documentation into separate commits. Ignore local browser sessions and all review/delivery output, preserving artifacts on disk.
+- [repository] Commit account/native transport, desktop workflows, Android parity, Goals material and shared documentation in five separate batches, then push origin/main and verify remote HEAD. Ignore local browser sessions and all review/delivery output, preserving artifacts on disk.
 - [validation] 19 Node suites, TypeScript, 15 backend tests, Flutter formatting/analyzer and 60 Flutter tests pass; candidate-source scan finds no credential patterns or large artifacts. Publication receipt: [11](plans/11-batched-publication.md).
 
 ## 2026-10-30 — Goals follows the selected note material

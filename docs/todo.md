@@ -1,6 +1,6 @@
 # Todo
 
-- [ ] [11-batched-publication](plans/11-batched-publication.md) — verified source batches and artifact exclusions; commit/push in progress.
+- [x] [11-batched-publication](plans/11-batched-publication.md) — five coherent source batches pushed to origin/main and remote verified; generated/private artifacts excluded.
 
 ## User workflow refinement
 
