@@ -76,6 +76,35 @@ void main() {
     }
 
     await capture('notes');
+    final paragraph = store.addTask(
+      'Research revision\n\nThe mechanism section needs more evidence. I want to compare the alternative explanations before rewriting the introduction.\n\n- Check the sample window\n- Revisit Table 4',
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text(paragraph.text),
+      250,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await capture('paragraph');
+    await tester.tap(find.byTooltip('Show task actions and steps').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byTooltip('More task actions').last);
+    await tester.tap(find.byTooltip('More task actions').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit task'));
+    await tester.pumpAndSettle();
+    await capture('paragraph-editor');
+    await tester.ensureVisible(find.text('Cancel'));
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    store.deleteTask(store.selectedDate, paragraph.id);
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byTooltip('Show task actions and steps').first);
     await tester.pumpAndSettle();
     await capture('task-actions');

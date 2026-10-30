@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [12-paragraph-friendly-tasks](plans/12-paragraph-friendly-tasks.md) — paragraph capture/editing/storage and Mac/phone UI review complete; Mac reinstalled with data preserved, signed Android +8 delivered (no phone attached).
+
 - [x] [11-batched-publication](plans/11-batched-publication.md) — five coherent source batches pushed to origin/main and remote verified; generated/private artifacts excluded.
 
 ## User workflow refinement

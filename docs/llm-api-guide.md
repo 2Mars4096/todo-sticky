@@ -244,3 +244,8 @@ Desktop planning may attach `planning: { preferenceOrder, maximumMinutes, unavai
 
 
 Android uses the same `_h<original-text-hash>` replacement policy for generated plan steps received through sync. Its AI request carries `planning.estimates` keyed by `sourceDate/taskId` and `planning.unavailable` periods; validation enforces the same budgets and exclusions. Device-local routine schedules are not callable task-API or cloud records; their generated tasks use ordinary stable IDs and existing CRUD/sync contracts.
+
+
+## Paragraph text
+
+Task `text` may contain newlines and blank lines. Pass it as one JSON string or one quoted CLI argument; embedded checklist or date-heading text stays inside that task. Markdown writes use escaped `sticky-todo:text` JSON metadata before finish/ID comments when needed, with a readable first-line preview. Use the API to edit the complete text. Cloud sync retains its 5,000-character per-task limit.

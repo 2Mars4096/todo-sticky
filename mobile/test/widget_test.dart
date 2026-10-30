@@ -32,7 +32,7 @@ void main() {
       find.widgetWithText(TextField, 'Add a step'),
       'Write the outline',
     );
-    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.tap(find.byTooltip('Add step'));
     await tester.pumpAndSettle();
     expect(
       store.tasksFor(store.selectedDate).single.subtasks.single.text,
@@ -78,7 +78,7 @@ void main() {
     expect(find.byTooltip('Suggest steps with AI'), findsOneWidget);
     await tester.tap(find.byTooltip('More task actions'));
     await tester.pumpAndSettle();
-    expect(find.text('Edit title, outcome and due date'), findsOneWidget);
+    expect(find.text('Edit task'), findsOneWidget);
     expect(find.text('Delete task'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await store.flush();

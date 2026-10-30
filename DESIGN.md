@@ -244,3 +244,8 @@ Search and Progress occupy intentional routes, leaving Notes as the default. Too
 
 
 Goals and Routines must honor the selected note material in both compact overlay and wide sidebar layouts. Use the shared `--note-material-surface` instead of a fixed yellow background; retain the established Paper fallback. Material review includes opening Goals at 340, 460 and 1000px, not just inspecting the note and Settings preview.
+
+
+## Paragraph capture and editing
+
+Keep the current task/subtask hierarchy. Task capture, title edits and step inputs support wrapped paragraphs and blank lines. Enter inserts a new line; Add/Save or desktop Cmd/Ctrl+Enter commits. Editors grow then scroll within the window. Long task bodies use normal weight, with explicit action controls and preserved accessible names. Phone capture/steps reserve keyboard space by reducing visible lines when the keyboard opens. No standing shortcut hints or extra notebook navigation.

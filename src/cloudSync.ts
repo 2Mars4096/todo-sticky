@@ -89,7 +89,7 @@ function validPayload(key: string, payload: any): boolean {
     const ids = new Set<string>()
     let count = 0
     const tasks = (items: any, depth: number): boolean => Array.isArray(items) && depth <= 12 && items.every(item => {
-      if (!item || !validId(item.id) || ids.has(item.id) || (typeof item.text !== 'string' || item.text.length > 5000) || /[\r\n]/.test(item.text)
+      if (!item || !validId(item.id) || ids.has(item.id) || (typeof item.text !== 'string' || item.text.length > 5000)
         || !['todo', 'done', 'partial', 'question', 'stopped'].includes(item.status) || ++count > 2000) return false
       ids.add(item.id)
       const finish = item.finish

@@ -102,8 +102,6 @@ fn validate_text(text: &str) -> Result<String, String> {
     let text = text.trim();
     if text.is_empty() {
         Err("Task text cannot be empty".into())
-    } else if text.contains('\n') || text.contains('\r') {
-        Err("Task text must fit on one line".into())
     } else {
         Ok(text.into())
     }
@@ -519,10 +517,10 @@ mod tests {
             &kb_path,
             CreateTaskRequest {
                 date: "2026-08-16".into(),
-                text: "Draft API guide".into(),
+                text: "Draft API guide\n\n## 2026-11-01\n- [ ] prose".into(),
                 status: "todo".into(),
                 subtasks: vec![TaskDraft {
-                    text: "Add examples".into(),
+                    text: "Add examples\nMore detail".into(),
                     status: "todo".into(),
                 }],
                 parent_id: None,
@@ -541,6 +539,8 @@ mod tests {
         .expect("task should be extracted");
         assert_eq!(extracted.dates[0].tasks[0].id, created.task.id);
         assert_eq!(extracted.dates[0].tasks[0].subtasks.len(), 1);
+        assert_eq!(extracted.dates[0].tasks[0].text, created.task.text);
+        assert_eq!(extracted.dates[0].tasks[0].subtasks[0].text, "Add examples\nMore detail");
 
         let updated = update_task(
             &kb_path,

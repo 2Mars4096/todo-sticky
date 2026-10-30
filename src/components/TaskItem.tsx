@@ -1,3 +1,4 @@
+import { ParagraphInput } from './ParagraphInput'
 import { useState, useRef, useEffect, useId, type PointerEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
 import { TaskFinish } from './TaskFinish'
@@ -122,8 +123,8 @@ export function TaskItem({
   const groupRef = useRef<HTMLDivElement>(null)
   const rowRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLSpanElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const stepInputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const stepInputRef = useRef<HTMLTextAreaElement>(null)
   const titleEditActive = useRef(false)
   const pointerActive = useRef(false)
   const afterPointer = useRef<Array<() => void>>([])
@@ -226,7 +227,7 @@ export function TaskItem({
   const statusLabel = status === 'done' ? 'Complete' : status === 'stopped' ? 'Stopped'
     : finish?.reviewReady ? '' : status === 'partial' ? 'In progress' : status === 'question' ? 'Needs a decision' : ''
   const cls = [
-    'task-item', isSubtask ? 'subtask' : 'main-task', isOtherDate ? 'other-date' : '',
+    'task-item', isSubtask ? 'subtask' : 'main-task', text.length > 160 || /[\r\n]/.test(text) ? 'task-paragraph' : '', isOtherDate ? 'other-date' : '',
     isFocusSelected ? 'selected-for-focus' : '', selected ? 'task-selected' : '', sortable?.state ?? '',
   ].filter(Boolean).join(' ')
   const handleReorderKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -257,16 +258,17 @@ export function TaskItem({
         aria-label={`${text}. Status ${status}. Change status`} />
       <div className={`task-content-flow${isOtherDate ? '' : ' editable'}${editing ? ' editing' : ''}`}>
         <div className="task-title-line">
-          {editing ? <input ref={inputRef} aria-label={`Edit title: ${text}`} className="task-text-input task-inline-edit"
+          {editing ? <ParagraphInput ref={inputRef} aria-label={`Edit title: ${text}`} className="task-text-input task-inline-edit"
             value={editText} onChange={event => setEditText(event.target.value)} onBlur={() => commitEdit()}
             onKeyDown={event => {
               if (event.nativeEvent.isComposing) return
-              if (event.key === 'Enter') { event.preventDefault(); commitEdit(true) }
+              if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); commitEdit(true) }
               if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancelEdit() }
             }} /> : <span ref={titleRef} className={`task-text ${status === 'done' ? 'done' : ''}`}
               role={isOtherDate ? undefined : 'button'} tabIndex={isOtherDate ? undefined : 0}
               onClick={() => setSelected(true)} onDoubleClick={beginEditing} onKeyDown={isOtherDate ? undefined : handleTaskTextKeyDown}
               title={isOtherDate ? undefined : 'Select task. Double-click or press Enter to edit title.'}>{text}</span>}
+          {editing && <button type="button" className="task-text-action" onClick={() => commitEdit(true)}>Save</button>}
         </div>
         {(statusLabel || dateLabel) && <div className="task-state-line">
           {statusLabel && <span className={`task-state-label state-${status}`}>{statusLabel}</span>}
@@ -314,14 +316,15 @@ export function TaskItem({
         onToggle={() => {}} onDelete={() => {}} onPush={() => {}} onTextChange={() => {}} parentText={text} />)}
     </details>}
     {!isSubtask && !isOtherDate && !closed && onAddSubtask && (selected || addingStep || subInput) && <div className="task-step-composer">
-      <input ref={stepInputRef} className="task-text-input task-step-add-input" placeholder="Add a step…" aria-label={`New step for ${text}`}
+      <ParagraphInput ref={stepInputRef} className="task-text-input task-step-add-input" placeholder="Add a step…" aria-label={`New step for ${text}`}
         value={subInput} onChange={event => setSubInput(event.target.value)}
         onFocus={() => { setSelected(true); setAddingStep(true) }}
         onKeyDown={event => {
           if (event.nativeEvent.isComposing) return
-          if (event.key === 'Enter') { event.preventDefault(); handleSubAdd() }
+          if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); handleSubAdd() }
           if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setSubInput(''); setAddingStep(false); returnToTitle() }
         }} />
+      {subInput.trim() && <button type="button" className="task-text-action" onClick={handleSubAdd} aria-label="Add step">Add</button>}
     </div>}
   </div>
 }

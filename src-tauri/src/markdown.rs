@@ -85,6 +85,8 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
 
     let finish_re = Regex::new(r"\s*<!-- sticky-todo:finish=(.*?) -->\s*$").unwrap();
 
+    let text_re = Regex::new(r"\s*<!-- sticky-todo:text=(.*?) -->\s*$").unwrap();
+
     let mut root: Vec<Task> = Vec::new();
     let mut stack: Vec<(usize, usize)> = Vec::new(); // (indent, index into parent's subtasks or root)
 
@@ -114,6 +116,10 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
         let finish = finish_re.captures(&without_id)
             .and_then(|caps| serde_json::from_str(caps.get(1)?.as_str()).ok());
         let text = if finish.is_some() { finish_re.replace(&without_id, "").trim().to_string() } else { without_id };
+
+        let text = text_re.captures(&text)
+            .and_then(|caps| serde_json::from_str::<String>(caps.get(1)?.as_str()).ok())
+            .unwrap_or(text);
 
         let next_index = if stack.is_empty() {
             root.len()
@@ -192,9 +198,17 @@ pub fn serialize_tasks(tasks: &[Task], indent: usize) -> String {
             let json = value.to_string().replace('<', "\\u003c").replace('>', "\\u003e");
             format!(" <!-- sticky-todo:finish={} -->", json)
         }).unwrap_or_default();
+        // Keep paragraph text in escaped JSON so headings/checklists inside prose
+        // cannot become date sections or subtasks on the next read.
+        let text = if task.text.contains(['\n', '\r']) || task.text.contains("<!--") {
+            let json = serde_json::to_string(&task.text).unwrap()
+                .replace('<', "\\u003c").replace('>', "\\u003e");
+            let preview = task.text.lines().next().unwrap_or("").replace("<!--", "&lt;!--");
+            format!("{} <!-- sticky-todo:text={} -->", preview, json)
+        } else { task.text.clone() };
         result.push_str(&format!(
             "{}- [{}] {}{} <!-- sticky-todo:id={} -->\n",
-            pad, c, task.text, metadata, task.id
+            pad, c, text, metadata, task.id
         ));
         if !task.subtasks.is_empty() {
             result.push_str(&serialize_tasks(&task.subtasks, indent + 1));
@@ -349,4 +363,20 @@ title: Weekly Report
         assert_eq!(get_tasks_for_date(&loaded, "2026-10-21")[0].finish, parsed.date_sections[0].tasks[0].finish);
     }
 
+}
+
+#[cfg(test)]
+mod paragraph_tests {
+    use super::*;
+    #[test]
+    fn paragraph_roundtrip_preserves_tree_and_metadata() {
+        let text = "Long thought\n\n## 2026-11-01\n- [ ] This is prose, not a child\n中文 <!-- sticky-todo:id=fake -->";
+        let child = Task { id: "child".into(), text: "Step\nMore detail".into(), status: "todo".into(), finish: None, subtasks: vec![] };
+        let task = Task { id: "parent".into(), text: text.into(), status: "partial".into(), finish: Some(serde_json::json!({"doneWhen":"Enough"})), subtasks: vec![child] };
+        let serialized = serialize_date_section("2026-10-31", &[task.clone()]);
+        let parsed = parse_weekly_file(&serialized);
+        assert_eq!(parsed.date_sections.len(), 1);
+        assert_eq!(serde_json::to_value(&parsed.date_sections[0].tasks[0]).unwrap(), serde_json::to_value(task).unwrap());
+        assert_eq!(parsed.date_sections[0].tasks.len(), 1);
+    }
 }

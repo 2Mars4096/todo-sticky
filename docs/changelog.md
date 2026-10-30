@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-31 — Paragraph-friendly tasks on Mac and Android
+
+- [tasks] Replace single-line desktop capture/title/step editors with growing textareas, preserve paragraph whitespace in rows and soften long text weight. Enter inserts newlines; Add/Save or Cmd/Ctrl+Enter commits. Android capture and steps use newline keyboards and bounded scrolling with keyboard-aware height.
+- [review] Apply self-explanatory-ui to task capture/editing/actions: remove redundant prompts, shorten phone Edit task wording, preserve accessible names, explicit commit controls and consequential warnings. Verify compact/wide desktop and phone paragraph/editor layouts.
+- [storage] Preserve multiline/comment-containing text in escaped Markdown metadata on both clients; keep nested task identities and finish metadata intact. Native API and all sync validators accept paragraph strings. Deploy sync revision `sticky-todo-sync-00011-jbv` after backend regression checks.
+- [delivery] Final Mac bundle reinstalled and launched with all 56 task files/settings unchanged; installed CLI paragraph round trip passes. Same-key Android +8 APK delivered at `release/todo-sticky.apk`; no physical phone attached.
+- [validation] 19 Node suites, 37 native tests, 16 backend tests, TypeScript, desktop paragraph/action browser checks, and 64 Flutter tests with screenshots pass; Flutter analyzer is clean. Final delivery evidence and acceptance limits: [12](plans/12-paragraph-friendly-tasks.md).
+
+
 ## 2026-10-31 — Publish reviewed source in batches
 
 - [repository] Commit account/native transport, desktop workflows, Android parity, Goals material and shared documentation in five separate batches, then push origin/main and verify remote HEAD. Ignore local browser sessions and all review/delivery output, preserving artifacts on disk.

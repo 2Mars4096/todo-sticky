@@ -107,10 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
           child: TextField(
             controller: capture,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => add(),
+            textInputAction: TextInputAction.newline,
+            keyboardType: TextInputType.multiline,
             minLines: 1,
-            maxLines: 4,
+            maxLines: View.of(context).viewInsets.bottom > 0 ? 3 : 6,
             decoration: InputDecoration(
               hintText: 'What needs doing?',
               suffixIcon: IconButton(

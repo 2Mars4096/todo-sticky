@@ -33,7 +33,7 @@ The local release key is kept outside the repository under `~/.config/todo-stick
 
 ## Use
 
-- Capture at the top of Notes. Tap a task to reveal actions and steps; double tap the title to edit. Drag the six-dot grip to reorder daily root tasks; step arrows move children within their parent. Focus, Add step, Suggest and Move use icon buttons; horizontal dots open editing, copy, status and delete options.
+- Capture paragraphs at the top of Notes. Return inserts a new line; the + button adds the task or step. Fields grow and then scroll, with fewer visible lines while the keyboard is open. Tap a task to reveal actions and steps; double tap the title to edit. Drag the six-dot grip to reorder daily root tasks; step arrows move children within their parent. Focus, Add step, Suggest and Move use icon buttons; horizontal dots open editing, copy, status and delete options.
 - Check a task to finish it. Tasks with an Outcome ask **Complete / Revise / Stop**. Completing a parent completes its steps; completing all steps with an Outcome asks for outcome review.
 - Browse any date with the header. Today shows unfinished earlier work under **Earlier tasks**, without copying it. Move offers today/next day or a chosen date and keeps metadata. Matching tasks show read-only earlier steps.
 - **Plan** takes an explicit time window and optional machines. The preview lists blocks chronologically and names unscheduled work. Apply replaces only untouched generated suggestions for that date; edited, started and legacy steps remain; Undo preserves later edited/completed work. Suggestions remain proposals until accepted.

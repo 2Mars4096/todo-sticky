@@ -1,5 +1,13 @@
 # Bugs And Failed Approaches
 
+## 2026-10-31: Paragraph text and phone keyboard layout
+
+- Desktop Markdown wrote raw newlines, losing continuation prose and interpreting embedded date headings/checklists as structure. Android export flattened newlines. Both codecs now preserve the full string in escaped text metadata; nested round-trip tests cover prose that resembles Markdown structure.
+- Task sync validators rejected newlines even though JSON storage supports them. All clients and the backend now accept multiline task text while retaining existing size/type/tree limits.
+- A six-line phone composer overflowed by 35px at 360×740, 150% text and a 300px keyboard inset. Reduce the visible composer to three lines while the keyboard is open; longer text remains internally scrollable.
+- Local app-only Tauri build generated the bundle but failed the unused updater-signature step. Set `bundle.createUpdaterArtifacts=false` for local reinstall builds; do not infer app-bundle failure from missing public updater keys.
+
+
 ## 2026-10-30: Goals ignored the selected material
 
 - The note material styled the shell while both the base Goals sidebar and the higher-specificity compact override painted a fixed yellow-paper gradient. Update both declarations to consume the shared material surface, preserving Paper fallbacks. The material browser suite now opens Goals and checks/screenshots all three materials at 340/460/1000px.

@@ -320,3 +320,10 @@ Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and
 ## Shared note material surface
 
 `note-materials.css` defines `--note-material-surface` for Frosted/Liquid and uses it for the shell and swatches. Base and compact Goals backgrounds consume the same inherited token with their established Paper fallback. Material effects therefore remain consistent across the note, Goals and Routines without changing the saved preference, layout or native opacity.
+
+
+## Paragraph task text
+
+- `ParagraphInput` shares auto-growing, width-aware desktop textareas with bounded internal scrolling. Enter inserts newlines; explicit Add/Save or Cmd/Ctrl+Enter commits. Existing blur save and Escape cancellation remain. Paragraph task text uses preserved whitespace and quieter body weight.
+- Desktop and Android Markdown codecs preserve multiline or comment-containing task text in escaped JSON `sticky-todo:text` metadata before finish/ID markers, with a first-line preview. This prevents embedded headings/checklists from becoming new dates/tasks. Existing single-line serialization is unchanged. API and sync Task shapes retain their original string `text`; all three sync validators accept multiline strings within the existing 5,000-character limit.
+- Phone capture/steps use newline keyboards, six visible lines at most, and three while the keyboard is open to preserve space at enlarged text. The task editor remains scrollable.

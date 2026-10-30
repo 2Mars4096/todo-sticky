@@ -214,7 +214,7 @@ void validateSyncPayload(String key, Map<String, dynamic> payload) {
         if (!id(item['id']) ||
             !ids.add(item['id'] as String) ||
             ++count > 2000 ||
-            !text(item['text'], allowBlank: true) ||
+            !text(item['text'], allowBlank: true, multiline: true) ||
             !TaskStatus.values.any((status) => status.name == item['status'])) {
           invalid();
         }

@@ -132,7 +132,7 @@ def validate_payload(key: str, mutation: Mutation) -> None:
                 count[0] += 1
                 if count[0] > 2000 or not isinstance(item["status"], str) or item["status"] not in STATUS:
                     fail("Invalid task count or status")
-                text(item["text"], allow_blank=True)
+                text(item["text"], allow_blank=True, multiline=True)
                 finish = item.get("finish")
                 if finish is not None:
                     fields(finish, {"doneWhen", "by", "originalBy", "deadlineChanges", "reviewReady"}, set())

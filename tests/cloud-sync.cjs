@@ -39,4 +39,4 @@ console.log('Cloud sync: three-way reconciliation, first-link safety, deletion c
 assert.equal(validateRecords([record(day(""))]).length, 1, "Preserve blank legacy checklist titles")
 assert.equal(validateRecords([record(day("  "))]).length, 1)
 assert.throws(() => validateRecords([record(day(12))]))
-assert.throws(() => validateRecords([record(day("a\nb"))]))
+assert.equal(validateRecords([record(day("a\nb"))]).length, 1)

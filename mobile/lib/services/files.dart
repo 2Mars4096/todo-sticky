@@ -28,8 +28,15 @@ String markdownDay(String date, List<Task> tasks) {
     final metadata = task.finish == null
         ? ''
         : ' <!-- sticky-todo:finish=${jsonEncode(task.finish!.toJson()).replaceAll('<', r'\u003c').replaceAll('>', r'\u003e')} -->';
+    final needsText =
+        task.text.contains('\n') ||
+        task.text.contains('\r') ||
+        task.text.contains('<!--');
+    final text = needsText
+        ? '${task.text.split(RegExp(r"[\r\n]")).first.replaceAll("<!--", "&lt;!--")} <!-- sticky-todo:text=${jsonEncode(task.text).replaceAll('<', r'\u003c').replaceAll('>', r'\u003e')} -->'
+        : task.text;
     buffer.writeln(
-      '${'  ' * depth}- [${marks[task.status]}] ${task.text.replaceAll('\n', ' ')}$metadata <!-- sticky-todo:id=${task.id} -->',
+      '${'  ' * depth}- [${marks[task.status]}] $text$metadata <!-- sticky-todo:id=${task.id} -->',
     );
     for (final child in task.subtasks) {
       append(child, depth + 1);
@@ -53,6 +60,7 @@ List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
     r'\s*<!--\s*sticky-todo:id=([A-Za-z0-9_-]+)\s*-->\s*$',
   );
   final finishPattern = RegExp(r'\s*<!-- sticky-todo:finish=(.*?) -->\s*$');
+  final textPattern = RegExp(r'\s*<!-- sticky-todo:text=(.*?) -->\s*$');
   for (final line in markdown.split('\n')) {
     final match = taskPattern.firstMatch(line);
     if (match == null) continue;
@@ -64,6 +72,15 @@ List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
     if (metadata != null) {
       finish = FinishPromise.fromJson(object(jsonDecode(metadata)));
       text = text.replaceFirst(finishPattern, '');
+    }
+    final paragraph = textPattern.firstMatch(text)?[1];
+    if (paragraph != null) {
+      try {
+        final decoded = jsonDecode(paragraph);
+        if (decoded is String) text = decoded;
+      } on FormatException {
+        /* Preserve malformed text for recovery. */
+      }
     }
     if (text.trim().isEmpty) continue;
     final indent = match[1]!.replaceAll('\t', '  ').length;

@@ -1,7 +1,7 @@
 name: sticky_todo
 description: A warm working note for Android, with the full Sticky Todo workflow.
 publish_to: none
-version: 2.1.15+7
+version: 2.1.15+8
 environment:
   sdk: '>=3.13.0 <4.0.0'
   flutter: '>=3.47.0'

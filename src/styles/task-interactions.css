@@ -121,3 +121,20 @@
 }
 
 .task-entry .task-earlier-steps > summary { margin: 4px 12px 6px 56px; color: #706345; font-size: 11px; cursor: pointer; min-height: 24px; }
+
+/* Paragraph capture keeps one-line notes compact and long drafts readable. */
+.paragraph-input { display: block; box-sizing: border-box; width: 100%; min-width: 0; resize: none; max-height: min(40vh, 320px); overflow-y: auto; font: inherit; line-height: 1.5; color: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
+.task-entry .task-text { white-space: pre-wrap; line-height: 1.5; }
+
+.task-entry .task-inline-edit { flex-basis: 100%; }
+.task-step-add-row, .task-step-composer, .add-task-row { align-items: flex-start; }
+.task-step-composer { display: flex; gap: 6px; }
+.task-entry .task-step-composer .task-step-add-input { flex: 1; min-width: 0; }
+.add-task-row .paragraph-input { flex: 1; background: transparent; border: 1px solid var(--border-color, #e8d9a0); border-radius: 6px; padding: 8px; }
+.paragraph-input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+.task-entry .task-paragraph .task-title-line { font-weight: 400; }
+.task-entry .task-paragraph .task-text { display: block; }
+.task-entry .task-paragraph .task-text::first-line { font-weight: 550; }
+.task-add-row .task-text-action { flex: none; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; padding: 5px 8px; cursor: pointer; }
+.task-add-row .task-text-action:hover { background: rgba(166, 132, 43, .12); }

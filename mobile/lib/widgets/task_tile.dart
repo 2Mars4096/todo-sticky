@@ -79,10 +79,6 @@ class _TaskTileState extends State<TaskTile> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Review before adding to your note.',
-                style: TextStyle(color: mutedInk),
-              ),
               const SizedBox(height: 16),
               for (final text in result.steps)
                 Padding(
@@ -355,7 +351,10 @@ class _TaskTileState extends State<TaskTile> {
                             task.text,
                             style: TextStyle(
                               fontSize: widget.depth == 0 ? 16 : 15,
-                              fontWeight: widget.depth == 0
+                              fontWeight:
+                                  widget.depth == 0 &&
+                                      task.text.length <= 160 &&
+                                      !task.text.contains('\n')
                                   ? FontWeight.w600
                                   : FontWeight.w400,
                               color: task.closed ? mutedInk : ink,
@@ -556,7 +555,7 @@ class _TaskTileState extends State<TaskTile> {
                       itemBuilder: (_) => [
                         const PopupMenuItem(
                           value: 'edit',
-                          child: Text('Edit title, outcome and due date'),
+                          child: Text('Edit task'),
                         ),
                         const PopupMenuItem(
                           value: 'copy',
@@ -591,8 +590,10 @@ class _TaskTileState extends State<TaskTile> {
                   child: TextField(
                     controller: step,
                     autofocus: true,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => addStep(),
+                    textInputAction: TextInputAction.newline,
+                    keyboardType: TextInputType.multiline,
+                    minLines: 1,
+                    maxLines: View.of(context).viewInsets.bottom > 0 ? 3 : 6,
                     decoration: InputDecoration(
                       hintText: 'Add a step',
                       suffixIcon: IconButton(
@@ -760,7 +761,7 @@ class _TaskEditorState extends State<TaskEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Shape the task', style: Theme.of(context).textTheme.titleLarge),
+          Text('Edit task', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 20),
           TextField(
             controller: title,
@@ -771,10 +772,7 @@ class _TaskEditorState extends State<TaskEditor> {
           TextField(
             controller: outcome,
             maxLines: null,
-            decoration: const InputDecoration(
-              labelText: 'Done when…',
-              hintText: 'What would be enough?',
-            ),
+            decoration: const InputDecoration(labelText: 'Done when…'),
           ),
           const SizedBox(height: 4),
           TextButton.icon(

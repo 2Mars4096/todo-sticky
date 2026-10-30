@@ -113,7 +113,7 @@ class SyncApiTests(unittest.TestCase):
         self.assertEqual(self.write(payload={'date': '2026-10-24', 'tasks': [], 'apiKey': 'never-sync'}).status_code, 422)
         self.assertEqual(self.write(payload={'targets': [], 'recurring': [], 'kbPath': '/private'}, key='goals').status_code, 422)
         self.assertEqual(self.write(key='settings').status_code, 422)
-        bad = deepcopy(self.task); bad['text'] = 'Task\n## injected'
+        bad = deepcopy(self.task); bad['text'] = 'x' * 5001
         self.assertEqual(self.write(payload={'date': '2026-10-24', 'tasks': [bad]}).status_code, 422)
 
     def test_date_task_ids_and_status_are_validated(self):
@@ -163,6 +163,13 @@ class SyncApiTests(unittest.TestCase):
             for value in (0, False, [], {}):
                 bad = deepcopy(self.task); bad['finish'] = {field: value}
                 self.assertEqual(self.write(payload={'date': '2026-10-24', 'tasks': [bad]}).status_code, 422)
+
+    def test_multiline_task_and_step_roundtrip(self):
+        task = deepcopy(self.task)
+        task['text'] = 'Research\n\n## 2026-11-01\n- [ ] prose'
+        task['subtasks'] = [{**deepcopy(self.task), 'id': 'child', 'text': 'Step\nDetails', 'subtasks': []}]
+        result = self.write(payload={'date': '2026-10-24', 'tasks': [task]})
+        self.assertEqual(result.status_code, 200)
 
     def test_multiline_goals_remain_compatible_with_desktop(self):
         result = self.write(key='goals', payload={'targets': [{'id': 'g1', 'text': 'First line\nSecond line', 'done': False}], 'recurring': []})

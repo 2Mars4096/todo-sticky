@@ -55,3 +55,8 @@ Search and Progress are intentional secondary pages. Search opens the original d
 
 
 Android 2.1.15+7 now mirrors Search, Progress, optional routines, constrained planning, edited-step protection, focus review and compact sync status. Each platform retains local schedule definitions while generated tasks share compatible identities. The desktop build is installed locally; delivery evidence lives in docs/plans/10-2-review-install-and-android.md.
+
+
+## Paragraph capture and editing
+
+Keep the current task/subtask hierarchy. Task capture, title edits and step inputs support wrapped paragraphs and blank lines. Enter inserts a new line; Add/Save or desktop Cmd/Ctrl+Enter commits. Editors grow then scroll within the window. Long task bodies use normal weight, with explicit action controls and preserved accessible names. Phone capture/steps reserve keyboard space by reducing visible lines when the keyboard opens. No standing shortcut hints or extra notebook navigation.

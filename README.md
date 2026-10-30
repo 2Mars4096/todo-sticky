@@ -18,7 +18,7 @@ Download the latest installer from [Releases](https://github.com/2Mars4096/todo-
 | **Windows** | `.msi` or `.exe` |
 | **Linux** | `.deb` or `.AppImage` |
 
-First launch opens the task list with the **What needs doing?** field ready. Type a task and press **Enter** or **Add**. AI setup is optional and can wait until you need it.
+First launch opens the task list with the **What needs doing?** field ready. Write a task, then choose **Add** or press **Cmd/Ctrl+Enter**. Enter inserts a new line; paragraphs and blank lines stay with the task. AI setup is optional and can wait until you need it.
 
 Open **Settings** to configure tools by purpose:
 
@@ -114,9 +114,9 @@ Open **Settings → Style** to choose **Paper**, **Frosted glass**, or **Liquid 
 
 ## Features
 
-Click an unfinished task to select it. Icon buttons for **Focus**, **Add step**, **Suggest steps with AI**, **Move**, and **Delete** appear beside its details. Hover to see each action name. Double-click the title or press Enter while the title is focused to edit it. Enter saves; Escape cancels.
+Click an unfinished task to select it. Icon buttons for **Focus**, **Add step**, **Suggest steps with AI**, **Move**, and **Delete** appear beside its details. Hover to see each action name. Double-click the title or press Enter while the title is focused to edit it. Choose Save or press Cmd/Ctrl+Enter to save; Enter inserts a new line and Escape cancels.
 
-- **Persistent capture** — The top **New task** field stays visible. Add step opens a visible inline field for the selected task; Enter adds the step and Escape clears its draft.
+- **Persistent capture** — The top **New task** field stays visible. Add step opens a growing multiline field for the selected task; Add or Cmd/Ctrl+Enter adds the step and Escape clears its draft.
 - **Readable task hierarchy** — Titles lead, saved Outcome and Due details sit beneath them, and step groups collapse to a count and next-step summary. Expand a group to work through it.
 - **Task actions** — AI step suggestions and moving are available directly. Delete is also directly available; deletion offers Undo. Drag the six-dot handle to reorder tasks or steps within one task.
 - **Compact shell** — Named **Goals** and **Focus** controls replace idle side columns in small windows. The active Focus countdown stays visible; expanded tools overlay the note. Wider windows can show side panels.
@@ -236,7 +236,8 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 |----------|--------|
 | **⌥⌘T** / **Ctrl+Alt+T** (Windows) / **Ctrl+Shift+Alt+T** (Linux) | Show/hide window (global) |
 | **⌘Q** / **Ctrl+Q** | Quit (app/menu shortcut) |
-| **Enter** | Add task / submit subtask or goal / commit edit |
+| **Enter** | New line in task/step editors; submit goals and other single-line fields |
+| **Cmd/Ctrl+Enter** | Add a task/step or save its edited text |
 | **Escape** | Close a dialog or compact side panel; cancel a title, outcome, date, or step draft |
 | **Drag the six-dot handle** | Reorder a task with its steps, or a step within its parent; Escape cancels the drag |
 | **Arrow Up / Arrow Down** | Move a task or subtask after clicking or tabbing to its six-dot handle |

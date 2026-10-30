@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ParagraphInput } from './ParagraphInput'
 
 interface Props {
   onAdd: (text: string) => void
@@ -29,7 +30,7 @@ export function AddTask({
     return (
       <div className={`task-step-add-row task-add-row${text ? ' has-draft' : ''}`}>
         <span className="task-step-add-handle-space" aria-hidden="true" />
-        <input
+        <ParagraphInput
           className="task-text-input task-step-add-input"
           placeholder="Add task..."
           aria-label="New top-level task"
@@ -38,7 +39,7 @@ export function AddTask({
           onChange={event => setText(event.target.value)}
           onKeyDown={event => {
             if (event.nativeEvent.isComposing) return
-            if (event.key === 'Enter') { event.preventDefault(); handleSubmit() }
+            if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); handleSubmit() }
             if (event.key === 'Escape') {
               event.stopPropagation()
               setText('')
@@ -46,6 +47,7 @@ export function AddTask({
             }
           }}
         />
+        {text.trim() && <button type="button" className="task-text-action" onClick={handleSubmit} disabled={disabled} aria-label="Add task">Add</button>}
       </div>
     )
   }
@@ -58,17 +60,20 @@ export function AddTask({
         handleSubmit()
       }}
     >
-      <div className="add-task-heading">
-        <label htmlFor="quick-add-task">New task</label>
-      </div>
       <div className="add-task-row">
-        <input
+        <ParagraphInput
           id="quick-add-task"
+          aria-label="New task"
           placeholder="What needs doing?"
           value={text}
           onChange={e => setText(e.target.value)}
           disabled={disabled}
           autoFocus={autoFocus && !disabled}
+          onKeyDown={event => {
+            if (!event.nativeEvent.isComposing && event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+              event.preventDefault(); handleSubmit()
+            }
+          }}
         />
         <button type="submit" disabled={disabled || !text.trim()} aria-label="Add task">
           Add
