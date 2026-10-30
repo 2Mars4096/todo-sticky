@@ -90,9 +90,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => add(),
           decoration: InputDecoration(
-            hintText: routines
-                ? 'A routine to return to…'
-                : 'What are you working toward?',
+            hintText: routines ? 'Add a routine' : 'Add a goal',
             suffixIcon: IconButton(
               tooltip: routines ? 'Add routine' : 'Add goal',
               onPressed: add,
@@ -104,26 +102,52 @@ class _GoalsScreenState extends State<GoalsScreen> {
       if (routines)
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 12, 4),
-          child: Row(
+          child: Wrap(
+            spacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Expanded(
-                child: Text(
-                  'Reset whenever you’re ready.',
-                  style: TextStyle(color: mutedInk, fontSize: 12),
-                ),
+              const Text(
+                'Schedules run on this device.',
+                style: TextStyle(fontSize: 12, color: mutedInk),
               ),
-              TextButton(
-                onPressed: items.any((g) => g.done)
-                    ? () {
-                        for (final item in items) {
-                          item.done = false;
+              if (items.any(
+                (item) =>
+                    item.done &&
+                    (widget.store.routineSchedules[item.id]?.cadence ??
+                            'manual') ==
+                        'manual',
+              ))
+                TextButton(
+                  onPressed: items.any((g) => g.done)
+                      ? () {
+                          for (final item in items) {
+                            if (widget
+                                        .store
+                                        .routineSchedules[item.id]
+                                        ?.cadence ==
+                                    null ||
+                                widget
+                                        .store
+                                        .routineSchedules[item.id]
+                                        ?.cadence ==
+                                    'manual') {
+                              item.done = false;
+                            }
+                          }
+                          widget.store.changed();
                         }
-                        widget.store.changed();
-                      }
-                    : null,
-                child: const Text('Reset routines'),
-              ),
+                      : null,
+                  child: const Text('Reset routines'),
+                ),
             ],
+          ),
+        ),
+      if (routines && widget.store.routineError != null)
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            widget.store.routineError!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
           ),
         ),
       Expanded(
@@ -132,9 +156,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Text(
-                    routines
-                        ? 'Keep the small things you want to return to.'
-                        : 'Keep your longer horizon close to today.',
+                    routines ? 'No routines yet' : 'No goals yet',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 18, color: mutedInk),
                   ),
@@ -150,24 +172,95 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 },
                 itemBuilder: (context, index) {
                   final item = items[index];
+                  final schedule = routines
+                      ? widget.store.routineSchedules[item.id]
+                      : null;
+                  final scheduled =
+                      schedule != null && schedule.cadence != 'manual';
                   return ListTile(
                     key: ValueKey(item.id),
-                    leading: Checkbox(
-                      value: item.done,
-                      onChanged: (value) {
-                        item.done = value!;
-                        widget.store.changed();
-                      },
-                    ),
+                    leading: scheduled
+                        ? const Icon(Icons.repeat_rounded, color: mutedInk)
+                        : Checkbox(
+                            value: item.done,
+                            onChanged: (value) {
+                              item.done = value!;
+                              widget.store.changed();
+                            },
+                          ),
                     title: Text(
                       item.text,
                       style: TextStyle(
-                        decoration: item.done
+                        decoration: item.done && !scheduled
                             ? TextDecoration.lineThrough
                             : null,
-                        color: item.done ? mutedInk : ink,
+                        color: item.done && !scheduled ? mutedInk : ink,
                       ),
                     ),
+                    subtitle: !routines
+                        ? null
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              DropdownButton<String>(
+                                isExpanded: true,
+                                value: schedule?.cadence ?? 'manual',
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'manual',
+                                    child: Text('Manual'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'daily',
+                                    child: Text('Daily'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'weekdays',
+                                    child: Text('Weekdays'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'weekly',
+                                    child: Text('Weekly'),
+                                  ),
+                                ],
+                                onChanged: widget.store.routineError != null
+                                    ? null
+                                    : (value) => widget.store.configureRoutine(
+                                        item.id,
+                                        value!,
+                                      ),
+                              ),
+                              if (scheduled) ...[
+                                Text(
+                                  schedule.paused
+                                      ? 'Paused'
+                                      : 'Next ${schedule.next(widget.store.today)}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: mutedInk,
+                                  ),
+                                ),
+                                Wrap(
+                                  spacing: 4,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          widget.store.pauseRoutine(item.id),
+                                      child: Text(
+                                        schedule.paused ? 'Resume' : 'Pause',
+                                      ),
+                                    ),
+                                    if (!schedule.paused)
+                                      TextButton(
+                                        onPressed: () =>
+                                            widget.store.skipRoutine(item.id),
+                                        child: const Text('Skip next'),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
                     onTap: () => edit(item),
                     trailing: IconButton(
                       tooltip: 'Delete ${routines ? 'routine' : 'goal'}',

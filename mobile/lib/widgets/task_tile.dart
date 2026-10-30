@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 
 import '../app.dart';
@@ -18,6 +19,8 @@ class TaskTile extends StatefulWidget {
   final bool showDate;
   final int depth;
   final String? parentId;
+  final int? reorderIndex;
+  final String? revealId;
   const TaskTile({
     super.key,
     required this.store,
@@ -28,6 +31,8 @@ class TaskTile extends StatefulWidget {
     this.showDate = false,
     this.depth = 0,
     this.parentId,
+    this.reorderIndex,
+    this.revealId,
   });
   @override
   State<TaskTile> createState() => _TaskTileState();
@@ -35,6 +40,13 @@ class TaskTile extends StatefulWidget {
 
 class _TaskTileState extends State<TaskTile> {
   bool expanded = false;
+  @override
+  void initState() {
+    super.initState();
+    expanded =
+        widget.revealId != null && widget.task.find(widget.revealId!) != null;
+  }
+
   bool adding = false;
   bool busy = false;
   final step = TextEditingController();
@@ -247,6 +259,9 @@ class _TaskTileState extends State<TaskTile> {
   @override
   Widget build(BuildContext context) {
     final task = widget.task;
+    final storedIndex = widget.store
+        .tasksFor(widget.date)
+        .indexWhere((row) => row.id == task.id);
     final unfinished = task.subtasks.where((s) => !s.closed).length;
     final history = widget.depth == 0
         ? widget.store.historicalSteps(widget.date, task)
@@ -266,6 +281,41 @@ class _TaskTileState extends State<TaskTile> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (widget.reorderIndex != null)
+                  ReorderableDragStartListener(
+                    index: widget.reorderIndex!,
+                    child: Semantics(
+                      label: 'Reorder ${task.text}',
+                      customSemanticsActions: {
+                        const CustomSemanticsAction(label: 'Move up'): () =>
+                            widget.store.reorder(
+                              widget.date,
+                              null,
+                              storedIndex,
+                              storedIndex - 1,
+                            ),
+                        const CustomSemanticsAction(label: 'Move down'): () =>
+                            widget.store.reorder(
+                              widget.date,
+                              null,
+                              storedIndex,
+                              storedIndex + 2,
+                            ),
+                      },
+                      child: const Tooltip(
+                        message: 'Drag to reorder',
+                        child: SizedBox(
+                          width: 44,
+                          height: 52,
+                          child: Icon(
+                            Icons.drag_indicator,
+                            size: 18,
+                            color: mutedInk,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 SizedBox(
                   width: 44,
                   height: 52,
@@ -413,7 +463,8 @@ class _TaskTileState extends State<TaskTile> {
                   spacing: 4,
                   runSpacing: 2,
                   children: [
-                    TextButton.icon(
+                    IconButton(
+                      tooltip: 'Focus on task',
                       onPressed: widget.store.focus.activeSession != null
                           ? null
                           : () {
@@ -424,16 +475,18 @@ class _TaskTileState extends State<TaskTile> {
                               widget.openFocus();
                             },
                       icon: const Icon(Icons.nightlight_outlined, size: 18),
-                      label: const Text('Focus'),
                     ),
                     if (!task.closed)
-                      TextButton.icon(
+                      IconButton(
+                        tooltip: 'Add a step',
                         onPressed: () => setState(() => adding = !adding),
                         icon: const Icon(Icons.add, size: 18),
-                        label: const Text('Step'),
                       ),
                     if (!task.closed)
-                      TextButton.icon(
+                      IconButton(
+                        tooltip: busy
+                            ? 'Preparing suggested steps'
+                            : 'Suggest steps with AI',
                         onPressed: busy ? null : suggest,
                         icon: busy
                             ? const SizedBox(
@@ -444,27 +497,25 @@ class _TaskTileState extends State<TaskTile> {
                                 ),
                               )
                             : const Icon(Icons.auto_awesome_outlined, size: 18),
-                        label: const Text('Suggest'),
                       ),
                     IconButton(
-                      tooltip: 'Edit title, outcome and due date',
-                      onPressed: () => editTask(
-                        context,
-                        widget.store,
-                        widget.ai,
-                        widget.date,
-                        task,
-                      ),
-                      icon: const Icon(Icons.edit_outlined, size: 20),
-                    ),
-                    IconButton(
-                      tooltip: 'Move task',
+                      tooltip: 'Move task · due date stays unchanged',
                       onPressed: move,
                       icon: const Icon(Icons.arrow_forward, size: 20),
                     ),
                     PopupMenuButton<String>(
                       tooltip: 'More task actions',
+                      icon: const Icon(Icons.more_horiz, size: 20),
                       onSelected: (action) async {
+                        if (action == 'edit') {
+                          await editTask(
+                            context,
+                            widget.store,
+                            widget.ai,
+                            widget.date,
+                            task,
+                          );
+                        }
                         if (action == 'delete') {
                           widget.store.deleteTask(widget.date, task.id);
                         }
@@ -503,6 +554,10 @@ class _TaskTileState extends State<TaskTile> {
                         }
                       },
                       itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Edit title, outcome and due date'),
+                        ),
                         const PopupMenuItem(
                           value: 'copy',
                           child: Text('Copy as agent prompt'),
@@ -564,6 +619,7 @@ class _TaskTileState extends State<TaskTile> {
                           openFocus: widget.openFocus,
                           depth: widget.depth + 1,
                           parentId: task.id,
+                          revealId: widget.revealId,
                         ),
                       ),
                       if (task.subtasks.length > 1)

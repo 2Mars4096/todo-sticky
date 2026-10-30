@@ -40,7 +40,11 @@ class ScreenAccount extends CloudSyncController {
   }
 
   @override
-  Future<void> synchronize({String? resolveKey, bool useCloud = false}) async {
+  Future<void> synchronize({
+    String? resolveKey,
+    bool useCloud = false,
+    String? reviewedFingerprint,
+  }) async {
     resolutions.add((key: resolveKey, useCloud: useCloud));
   }
 }
@@ -299,11 +303,6 @@ void main() {
             )
             .onPressed,
         isNotNull,
-      );
-      await tester.scrollUntilVisible(
-        find.text('Saved locally first'),
-        180,
-        scrollable: accountScrollable(),
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);

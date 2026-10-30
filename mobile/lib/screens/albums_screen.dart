@@ -41,16 +41,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text(
-          'A soundtrack for the working atmosphere.',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Suggestions use your unfinished tasks. They stay on this screen.',
-          style: TextStyle(color: mutedInk),
-        ),
-        const SizedBox(height: 20),
         FilledButton.icon(
           onPressed: busy ? null : generate,
           icon: busy

@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+import '../models/workflow.dart';
 import '../services/persistence.dart';
 
 class StickyStore extends ChangeNotifier {
@@ -12,6 +13,9 @@ class StickyStore extends ChangeNotifier {
   final CredentialStore credentials;
   Map<String, List<Task>> days = {};
   Goals goals = Goals();
+  Map<String, RoutineSchedule> routineSchedules = {};
+  String? routineError;
+  Object? _routineRaw;
   FocusState focus = FocusState();
   Preferences preferences = Preferences();
   Map<String, dynamic> syncMetadata = {};
@@ -37,6 +41,7 @@ class StickyStore extends ChangeNotifier {
       }
       ready = true;
       loadError = null;
+      if (_materializeRoutines()) changed();
     } catch (_) {
       // An unreadable store is never treated as an empty notebook.
       loadError = 'Your saved notebook could not be read. Your files have not been replaced. Retry or restore an exported backup.';
@@ -59,6 +64,21 @@ class StickyStore extends ChangeNotifier {
     final parsedFocus = FocusState.fromJson(object(j['focus'] ?? {}));
     final parsedPrefs = Preferences.fromJson(object(j['preferences'] ?? {}));
     final parsedSyncMetadata = object(j['syncMetadata'] ?? {});
+    final rawSchedules = j['routineSchedules'];
+    final schedules = <String, RoutineSchedule>{};
+    String? scheduleError;
+    try {
+      for (final entry in object(rawSchedules ?? {}).entries) {
+        schedules[entry.key] = RoutineSchedule.fromJson(object(entry.value));
+      }
+    } catch (_) {
+      scheduleError =
+          'Routine schedules need recovery. Existing data has been kept.';
+      schedules.clear();
+    }
+    _routineRaw = rawSchedules;
+    routineError = scheduleError;
+    routineSchedules = schedules;
     days = parsed;
     goals = parsedGoals;
     focus = parsedFocus;
@@ -81,6 +101,11 @@ class StickyStore extends ChangeNotifier {
     'schemaVersion': 1,
     'days': days.map((k, v) => MapEntry(k, v.map((t) => t.toJson()).toList())),
     'goals': goals.toJson(),
+    'routineSchedules': routineError != null
+        ? _routineRaw
+        : routineSchedules.map(
+            (id, schedule) => MapEntry(id, schedule.toJson()),
+          ),
     'focus': focus.toJson(),
     'preferences': preferences.toJson(),
     if (includeSyncMetadata) 'syncMetadata': syncMetadata,
@@ -106,6 +131,7 @@ class StickyStore extends ChangeNotifier {
   }
 
   void changed() {
+    _materializeRoutines();
     revision++;
     final snapshot = object(jsonDecode(jsonEncode(toJson())));
     _writing = _writing.then((_) async {
@@ -146,8 +172,58 @@ class StickyStore extends ChangeNotifier {
     if (next != _today) {
       if (selectedDate == _today) selectedDate = next;
       _today = next;
+      if (_materializeRoutines()) changed();
       _notify();
     }
+  }
+
+  bool _materializeRoutines() {
+    if (!ready || routineError != null) return false;
+    var updated = false;
+    for (final goal in goals.recurring) {
+      final schedule = routineSchedules[goal.id];
+      if (schedule == null || schedule.next(today) != today) continue;
+      final id = routineTaskId(goal.id, today);
+      if (!days.values
+          .expand((list) => list)
+          .expand((task) => task.flattened)
+          .any((task) => task.id == id)) {
+        (days[today] ??= []).add(Task(id: id, text: goal.text));
+      }
+      // Task and occurrence marker are saved atomically in the same notebook snapshot.
+      schedule.handledThrough = today;
+      updated = true;
+    }
+    return updated;
+  }
+
+  void configureRoutine(String id, String cadence) {
+    if (routineError != null) throw StateError(routineError!);
+    if (!['manual', 'daily', 'weekdays', 'weekly'].contains(cadence)) return;
+    final handled = routineSchedules[id]?.handledThrough;
+    routineSchedules[id] = RoutineSchedule(
+      cadence: cadence,
+      anchor: today,
+      handledThrough: handled != null && handled.compareTo(today) > 0
+          ? today
+          : handled,
+    );
+    changed();
+  }
+
+  void pauseRoutine(String id) {
+    final schedule = routineSchedules[id];
+    if (schedule == null || routineError != null) return;
+    schedule.paused = !schedule.paused;
+    changed();
+  }
+
+  void skipRoutine(String id) {
+    final schedule = routineSchedules[id];
+    final next = schedule?.next(today);
+    if (next == null || routineError != null) return;
+    schedule!.handledThrough = next;
+    changed();
   }
 
   void selectDate(String value) {
@@ -433,19 +509,20 @@ class StickyStore extends ChangeNotifier {
       final parent = dated.task;
       final old = <({int index, Task task})>[
         for (var i = 0; i < parent.subtasks.length; i++)
-          if (parent.subtasks[i].id.startsWith(prefix) &&
-              !parent.subtasks[i].closed)
+          if (replaceablePlanStep(parent.subtasks[i], plan.date))
             (index: i, task: parent.subtasks[i].clone()),
       ];
       if (old.isNotEmpty) removed['${dated.date}/${parent.id}'] = old;
-      parent.subtasks.removeWhere((t) => t.id.startsWith(prefix) && !t.closed);
+      parent.subtasks.removeWhere((t) => replaceablePlanStep(t, plan.date));
       for (final block in plan.blocks.where(
         (b) => b.taskId == parent.id && b.sourceDate == dated.date,
       )) {
+        final text =
+            '${block.time}–${block.endTime} ${block.action}${block.assignedTo == 'human' ? '' : ' [${block.assignedTo}]'}';
+        if (parent.subtasks.any((step) => step.text == text)) continue;
         final step = Task(
-          id: '$prefix${newId()}',
-          text:
-              '${block.time}–${block.endTime} ${block.action}${block.assignedTo == 'human' ? '' : ' [${block.assignedTo}]'}',
+          id: '$prefix${newId()}_h${planTextHash(text)}',
+          text: text,
         );
         parent.subtasks.add(step);
         created[step.id] = jsonEncode(step.toJson());

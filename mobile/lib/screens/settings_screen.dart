@@ -73,7 +73,6 @@ class SettingsScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.account_circle_outlined),
               title: const Text('Account & sync'),
-              subtitle: const Text('Keep your notebook with you'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.push(
                 context,
@@ -98,7 +97,6 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.computer_outlined),
             title: const Text('Planning machines'),
-            subtitle: const Text('Optional resources for day planning'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.push(
               context,
@@ -160,9 +158,7 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.save_alt_rounded),
             title: const Text('Export a backup'),
-            subtitle: const Text(
-              'Tasks, goals and focus history · no API keys',
-            ),
+            subtitle: const Text('Excludes credentials'),
             onTap: () async {
               try {
                 await NativeFiles.write(
@@ -201,24 +197,15 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.content_paste_rounded),
-            title: const Text('Import a checklist'),
-            subtitle: const Text('Paste Markdown tasks and nested steps'),
+            title: const Text('Import Markdown checklist'),
             onTap: () =>
                 showNoteSheet<void>(context, ChecklistImporter(store: store)),
-          ),
-          const Divider(height: 20),
-          ListTile(
-            leading: const Icon(Icons.desktop_windows_outlined),
-            title: const Text('Working with Dear Diane'),
-            subtitle: const Text(
-              'Open a task’s actions and copy its agent prompt to send it to Diane. Desktop-only local connections and Codex sessions stay on your computer.',
-            ),
           ),
           const Divider(height: 20),
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('Sticky Todo for Android'),
-            subtitle: Text('2.1.15 · A working note, wherever you are.'),
+            subtitle: Text('2.1.15'),
           ),
         ],
       ),
@@ -348,15 +335,10 @@ class _ProviderEditorState extends State<ProviderEditor> {
       padding: const EdgeInsets.all(24),
       children: [
         const Text(
-          'Use your own provider',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'AI is optional. Task text is sent to the provider only when you request a suggestion. Keys are kept in Android’s secure storage.',
+          'Suggestions send task text to this provider.',
           style: TextStyle(color: mutedInk),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           initialValue: draft.provider,
           isExpanded: true,
@@ -608,11 +590,6 @@ class _MachinesScreenState extends State<MachinesScreen> {
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text(
-          'Add resources you can actually use. Select them when you make a plan.',
-          style: TextStyle(color: mutedInk),
-        ),
-        const SizedBox(height: 16),
         for (final machine in widget.store.preferences.machines)
           ListTile(
             contentPadding: EdgeInsets.zero,

@@ -185,9 +185,9 @@ void validateSyncPayload(String key, Map<String, dynamic> payload) {
 
   bool id(Object? value) =>
       value is String && RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(value);
-  bool text(Object? value, {bool multiline = false}) =>
+  bool text(Object? value, {bool multiline = false, bool allowBlank = false}) =>
       value is String &&
-      value.trim().isNotEmpty &&
+      (allowBlank || value.trim().isNotEmpty) &&
       value.length <= 5000 &&
       (multiline || !RegExp(r'[\r\n]').hasMatch(value));
   void date(Object? value) {
@@ -214,7 +214,7 @@ void validateSyncPayload(String key, Map<String, dynamic> payload) {
         if (!id(item['id']) ||
             !ids.add(item['id'] as String) ||
             ++count > 2000 ||
-            !text(item['text']) ||
+            !text(item['text'], allowBlank: true) ||
             !TaskStatus.values.any((status) => status.name == item['status'])) {
           invalid();
         }
@@ -414,6 +414,67 @@ class AccountSession {
   String get owner => '$projectId:$uid';
 }
 
+class CloudSyncProgress {
+  final String stage;
+  final String? detail;
+  final int completed;
+  final int? total;
+  final DateTime startedAt, updatedAt;
+  const CloudSyncProgress({
+    required this.stage,
+    this.detail,
+    required this.completed,
+    this.total,
+    required this.startedAt,
+    required this.updatedAt,
+  });
+}
+
+String syncConflictFingerprint(SyncAction action) => canonicalJson({
+  'key': action.key,
+  'local': action.local,
+  'remote': action.remote == null
+      ? null
+      : {
+          'revision': action.remote!.revision,
+          'deleted': action.remote!.deleted,
+          'payload': action.remote!.payload,
+        },
+});
+
+bool preserveSyncConflict(List<dynamic> copies, SyncAction action) {
+  final fingerprint = syncConflictFingerprint(action);
+  for (final raw in copies) {
+    final copy = object(raw),
+        remote = copy['remote'] == null ? null : object(copy['remote']);
+    if (canonicalJson({
+          'key': copy['key'],
+          'local': copy['local'],
+          'remote': remote == null
+              ? null
+              : {
+                  'revision': remote['revision'],
+                  'deleted': remote['deleted'],
+                  'payload': remote['payload'],
+                },
+        }) ==
+        fingerprint) {
+      return false;
+    }
+  }
+  copies.add(
+    jsonDecode(
+      jsonEncode({
+        'key': action.key,
+        'local': action.local,
+        'remote': action.remote?.toJson(),
+        'at': DateTime.now().toUtc().toIso8601String(),
+      }),
+    ),
+  );
+  return true;
+}
+
 class CloudSyncController extends ChangeNotifier {
   static const sessionKey = 'account-session-v1';
   final StickyStore store;
@@ -423,12 +484,43 @@ class CloudSyncController extends ChangeNotifier {
   final Duration pollInterval;
   AccountSession? session;
   String server = '';
-  String message =
-      'Sign in to keep your notes with you. Local work stays available offline.';
+  String message = '';
   String? error;
   bool busy = false, signingIn = false, ready = false;
+  CloudSyncProgress? progress;
+  void _report(String stage, {String? detail, int? completed, int? total}) {
+    final now = DateTime.now(), previous = progress;
+    progress = CloudSyncProgress(
+      stage: stage,
+      detail: detail,
+      completed: completed ?? previous?.completed ?? 0,
+      total: total ?? previous?.total,
+      startedAt: previous?.startedAt ?? now,
+      updatedAt: now,
+    );
+    _notify();
+  }
+
+  void _advance() {
+    final current = progress;
+    if (current != null) {
+      _report(
+        current.stage,
+        detail: current.detail,
+        completed: current.completed + 1,
+      );
+    }
+  }
+
   List<SyncAction> conflicts = [];
   String? lastSynced;
+  String? _acknowledgedContent, _acknowledgedOwner;
+  bool get upToDate =>
+      enabled &&
+      _acknowledgedOwner == session?.owner &&
+      _acknowledgedContent != null &&
+      _acknowledgedContent == canonicalJson(store.syncRecords()) &&
+      store.saveError == null;
   Timer? _debounce, _poll;
   bool _disposed = false, _applying = false, _active = true, _needsSync = false;
   int _epoch = 0;
@@ -504,7 +596,7 @@ class CloudSyncController extends ChangeNotifier {
       }
       if (session != null) {
         _meta;
-        message = 'Signed in as ${session!.email}.';
+        message = enabled ? 'Sync ready.' : 'Sync is off.';
       }
     } catch (_) {
       session = null;
@@ -553,6 +645,7 @@ class CloudSyncController extends ChangeNotifier {
     final next = canonicalJson(store.syncRecords());
     if (next == _lastObserved) return;
     _lastObserved = next;
+    _notify();
     if (_applying) return;
     if (busy) {
       _needsSync = true;
@@ -611,7 +704,7 @@ class CloudSyncController extends ChangeNotifier {
       await store.flush();
       server = origin;
       error = null;
-      message = 'Service connected. Continue with Google.';
+      message = 'Service connected.';
     } finally {
       busy = false;
       _notify();
@@ -650,7 +743,11 @@ class CloudSyncController extends ChangeNotifier {
         sha256.convert(utf8.encode(verifier)).bytes,
       ).replaceAll('=', '');
       final fragment = Uri(
-        queryParameters: {'sessionId': sessionId, 'challenge': challenge},
+        queryParameters: {
+          'sessionId': sessionId,
+          'challenge': challenge,
+          'returnTo': 'app',
+        },
       ).query;
       if (!await openBrowser(Uri.parse('$origin/signin#$fragment'))) {
         throw StateError('Could not open your browser. Try again.');
@@ -659,6 +756,9 @@ class CloudSyncController extends ChangeNotifier {
       while (epoch == _epoch && !_disposed && DateTime.now().isBefore(until)) {
         await Future<void>.delayed(pollInterval);
         if (epoch != _epoch || _disposed) return;
+        // Do not consume the one-time handoff while Android has backgrounded us.
+        // The browser's return link resumes this activity and polling continues.
+        if (!_active) continue;
         final exchange = await transport.request(
           Uri.parse('$origin/v1/auth/exchange'),
           method: 'POST',
@@ -714,9 +814,7 @@ class CloudSyncController extends ChangeNotifier {
           );
         }
         if (!await _persistSession(next, epoch)) return;
-        message = enabled
-            ? 'Signed in as ${next.email}.'
-            : 'Signed in as ${next.email}. Enable sync to link this notebook.';
+        message = enabled ? 'Sync ready.' : 'Sync is off.';
         _schedule();
         return;
       }
@@ -794,7 +892,7 @@ class CloudSyncController extends ChangeNotifier {
       if (!await _persistSession(null, epoch)) return;
       conflicts = [];
       error = null;
-      message = 'Signed out. Local notes remain on this device.';
+      message = 'Signed out. Local notes kept.';
     } finally {
       busy = false;
       _notify();
@@ -822,7 +920,11 @@ class CloudSyncController extends ChangeNotifier {
   Map<String, Map<String, dynamic>> _snapshot() =>
       object(jsonDecode(jsonEncode(store.syncRecords())))
           .map((key, value) => MapEntry(key, object(value)));
-  Future<void> synchronize({String? resolveKey, bool useCloud = false}) async {
+  Future<void> synchronize({
+    String? resolveKey,
+    bool useCloud = false,
+    String? reviewedFingerprint,
+  }) async {
     if (_disposed ||
         !ready ||
         !store.ready ||
@@ -842,10 +944,20 @@ class CloudSyncController extends ChangeNotifier {
       _notify();
       return;
     }
+    var expectedReview = reviewedFingerprint;
+    if (resolveKey != null && expectedReview == null) {
+      for (final conflict in conflicts) {
+        if (conflict.key == resolveKey) {
+          expectedReview = syncConflictFingerprint(conflict);
+        }
+      }
+    }
     busy = true;
+    _acknowledgedContent = null;
     _needsSync = false;
     error = null;
-    _notify();
+    progress = null;
+    _report('Saving local edits');
     final epoch = _epoch, owner = session!.owner, origin = session!.origin;
     void ensureCurrent() {
       if (_disposed || epoch != _epoch || session?.owner != owner) {
@@ -858,8 +970,10 @@ class CloudSyncController extends ChangeNotifier {
         throw StateError('Enable sync to link these notes to this account.');
       }
       await store.flush();
+      _report('Checking account');
       final token = await _token();
       ensureCurrent();
+      _report('Reading local history');
       final local = _snapshot(), meta = _meta;
       final baseline = object(meta['baseline']),
           pending = object(meta['pending']);
@@ -867,7 +981,9 @@ class CloudSyncController extends ChangeNotifier {
       meta['pending'] = pending;
       final records = <SyncRecord>[], keys = <String>{}, cursors = <String>{};
       String? cursor;
+      var pageNumber = 0;
       do {
+        _report('Reading cloud', detail: 'Page ${++pageNumber}');
         final uri = Uri.parse('$origin/v1/sync')
             .replace(queryParameters: {'pageSize': '20', 'after': ?cursor});
         final page = await transport.request(uri, token: token);
@@ -889,6 +1005,7 @@ class CloudSyncController extends ChangeNotifier {
           throw const FormatException('The service returned a repeated page.');
         }
       } while (cursor != null);
+      _report('Comparing changes');
       final actions = reconcileRecords(local, records, baseline);
       // Upload unsynced missions before incoming history can prune the local
       // display. An interrupted cycle must not lose an unuploaded session.
@@ -901,22 +1018,45 @@ class CloudSyncController extends ChangeNotifier {
         final order = (pulls(a) ? 1 : 0).compareTo(pulls(b) ? 1 : 0);
         return order != 0 ? order : a.key.compareTo(b.key);
       });
+      final pendingConflicts = actions
+          .where((action) => action.kind == SyncKind.conflict)
+          .toList();
+      var preserved = false;
+      for (final action in pendingConflicts) {
+        preserved =
+            preserveSyncConflict(meta['conflicts'] as List, action) ||
+            preserved;
+      }
+      if (preserved) {
+        await _saveMeta(meta);
+        ensureCurrent();
+      }
+      conflicts = pendingConflicts;
+      if (resolveKey != null &&
+          !pendingConflicts.any(
+            (action) =>
+                action.key == resolveKey &&
+                syncConflictFingerprint(action) == expectedReview,
+          )) {
+        conflicts = pendingConflicts;
+        throw StateError('Conflict changed. Review again.');
+      }
+      _report('Comparing changes', total: actions.length, completed: 0);
       final unresolved = <SyncAction>[];
       for (final action in actions) {
         ensureCurrent();
+        final detail = action.key.startsWith('day:')
+            ? action.key.substring(4)
+            : action.key == 'goals'
+            ? 'Goals and routines'
+            : 'Focus session';
+        _report('Checking changes', detail: detail);
         if (action.kind == SyncKind.conflict && resolveKey == action.key) {
-          (meta['conflicts'] as List).add({
-            'key': action.key,
-            'local': action.local,
-            'remote': action.remote?.toJson(),
-            'at': DateTime.now().toUtc().toIso8601String(),
-          });
-          await _saveMeta(meta);
-          ensureCurrent();
           action.kind = useCloud ? SyncKind.pull : SyncKind.push;
         }
         if (action.kind == SyncKind.conflict) {
           unresolved.add(action);
+          _advance();
           continue;
         }
         if (action.kind == SyncKind.ack) {
@@ -925,9 +1065,11 @@ class CloudSyncController extends ChangeNotifier {
           }
           pending.remove(action.key);
           await _saveMeta(meta);
+          _advance();
           continue;
         }
         if (action.kind == SyncKind.push) {
+          _report('Uploading', detail: detail);
           final fingerprint = canonicalJson(action.local),
               revision = action.remote?.revision ?? 0;
           var mutation = pending[action.key] == null
@@ -968,6 +1110,7 @@ class CloudSyncController extends ChangeNotifier {
           baseline[action.key] = record.baseline;
           pending.remove(action.key);
           await _saveMeta(meta);
+          _advance();
           continue;
         }
         // No await between the live-state comparison and synchronous model apply.
@@ -984,6 +1127,7 @@ class CloudSyncController extends ChangeNotifier {
             'You edited this note during sync. Your edits are safe; syncing will retry.',
           );
         }
+        _report('Applying downloads', detail: detail);
         _applying = true;
         try {
           await store.applySyncRecord(
@@ -1001,19 +1145,27 @@ class CloudSyncController extends ChangeNotifier {
           baseline.remove(action.key);
         }
         await _saveMeta(meta);
+        _advance();
       }
       conflicts = unresolved;
+      if (unresolved.isEmpty && !_needsSync) {
+        _acknowledgedContent = canonicalJson(store.syncRecords());
+        _acknowledgedOwner = owner;
+      }
       lastSynced = DateTime.now().toLocal().toIso8601String();
       message = unresolved.isEmpty
           ? 'Up to date across your devices.'
           : '${unresolved.length} notes need your choice. Both versions are preserved.';
     } catch (cause) {
       if (!_disposed) {
-        error = cause.toString().replaceFirst('Bad state: ', '');
-        message = 'Local notes are safe. Retry sync when ready.';
+        final step = progress;
+        error =
+            '${step?.stage ?? 'Sync'}${step?.detail == null ? '' : ' (${step!.detail})'}: ${cause.toString().replaceFirst('Bad state: ', '')}';
+        message = 'Sync stopped. Local notes are safe; retry when ready.';
       }
     } finally {
       busy = false;
+      progress = null;
       _notify();
       if (_needsSync && !_disposed) _schedule();
     }

@@ -253,8 +253,10 @@ class AiService {
     String date,
     String start,
     String end,
-    List<Map<String, dynamic>> machines,
-  ) async {
+    List<Map<String, dynamic>> machines, {
+    Map<String, int> estimates = const {},
+    List<Map<String, String>> unavailable = const [],
+  }) async {
     final startMin = minutesOfDay(start);
     final endMin = minutesOfDay(end);
     if (startMin == null || endMin == null || endMin <= startMin) {
@@ -263,22 +265,34 @@ class AiService {
     if (tasks.isEmpty) {
       throw const AiException('Add an unfinished task before planning.');
     }
+    validatePlanningConstraints(estimates, unavailable);
     final fingerprint = tasksFingerprint(tasks);
     final copy = tasks.map((t) => DatedTask(t.date, t.task.clone())).toList();
     final value = await jsonRequest(
       prefs,
-      'Make a realistic daily plan within the supplied date and time window. Use only unfinished tasks and selected machines. Never invent projects, occupations or machines. Allow breaks; leave work unscheduled if it cannot fit. Return {"plan":"brief summary including deferred work", "schedule":[{"taskId":"exact supplied composite ID", "time":"HH:mm", "endTime":"HH:mm", "action":"concrete action", "assignedTo":"human or exact machine name"}]}. No overlapping blocks per assignee. Times use 24-hour format.',
+      'Make a realistic daily plan within the supplied date and time window. Use only unfinished tasks and selected machines. Never invent projects, occupations or machines. Allow breaks; leave work unscheduled if it cannot fit. Return {"plan":"brief summary including deferred work", "schedule":[{"taskId":"exact supplied composite ID", "time":"HH:mm", "endTime":"HH:mm", "action":"concrete action", "assignedTo":"human or exact machine name"}]}. No overlapping blocks per assignee. Times use 24-hour format. Respect planning.estimates (total minute budgets by composite task ID) and planning.unavailable (start/end periods excluded for all assignees). List order guides priority. Preserve edited commitments and avoid duplicating prior generated suggestions.',
       {
         'date': date,
         'availableStart': start,
         'availableEnd': end,
         'machines': machines,
+        'planning': {'estimates': estimates, 'unavailable': unavailable},
         'tasks': copy
             .map((t) => {...t.task.toJson(), 'id': '${t.date}/${t.task.id}'})
             .toList(),
       },
     );
-    return validatePlan(value, copy, date, start, end, machines, fingerprint);
+    return validatePlan(
+      value,
+      copy,
+      date,
+      start,
+      end,
+      machines,
+      fingerprint,
+      estimates: estimates,
+      unavailable: unavailable,
+    );
   }
 
   static DayPlan validatePlan(
@@ -288,8 +302,11 @@ class AiService {
     String start,
     String end,
     List<Map<String, dynamic>> machines,
-    String fingerprint,
-  ) {
+    String fingerprint, {
+    Map<String, int> estimates = const {},
+    List<Map<String, String>> unavailable = const [],
+  }) {
+    validatePlanningConstraints(estimates, unavailable);
     final schedule = value['schedule'];
     if (schedule is! List || schedule.isEmpty || schedule.length > 100) {
       throw const AiException(
@@ -324,6 +341,15 @@ class AiService {
           'A proposed block falls outside your available time. Generate another plan.',
         );
       }
+      if (unavailable.any(
+        (period) =>
+            a < minutesOfDay(period['end']!)! &&
+            b > minutesOfDay(period['start']!)!,
+      )) {
+        throw const AiException(
+          'The proposal uses unavailable time. Generate another plan.',
+        );
+      }
       final action = (block['action'] as String? ?? '').trim();
       final assigned = block['assignedTo'] as String? ?? 'human';
       if (action.isEmpty ||
@@ -354,12 +380,41 @@ class AiService {
       }
       busy[b.assignedTo] = minutesOfDay(b.endTime)!;
     }
+    for (final estimate in estimates.entries) {
+      final total = blocks
+          .where((b) => '${b.sourceDate}/${b.taskId}' == estimate.key)
+          .fold<int>(
+            0,
+            (sum, b) => sum + minutesOfDay(b.endTime)! - minutesOfDay(b.time)!,
+          );
+      if (total > estimate.value) {
+        throw const AiException(
+          'The proposal exceeds a task time budget. Adjust it or generate another plan.',
+        );
+      }
+    }
     return DayPlan(
       summary: value['plan'] as String? ?? '',
       blocks: blocks,
       date: date,
       fingerprint: fingerprint,
     );
+  }
+
+  static void validatePlanningConstraints(
+    Map<String, int> estimates,
+    List<Map<String, String>> unavailable,
+  ) {
+    if (estimates.values.any((minutes) => minutes <= 0 || minutes > 1440)) {
+      throw const AiException('Choose a valid task time budget.');
+    }
+    for (final period in unavailable) {
+      final start = minutesOfDay(period['start'] ?? ''),
+          end = minutesOfDay(period['end'] ?? '');
+      if (start == null || end == null || end <= start) {
+        throw const AiException('Each break must end after it starts.');
+      }
+    }
   }
 
   Future<List<Map<String, dynamic>>> albums(

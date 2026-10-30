@@ -9,15 +9,19 @@ import '../state/sticky_store.dart';
 
 class FocusScreen extends StatefulWidget {
   final StickyStore store;
-  const FocusScreen({super.key, required this.store});
+  final void Function(String id, String text)? onReview;
+  const FocusScreen({super.key, required this.store, this.onReview});
   @override
   State<FocusScreen> createState() => _FocusScreenState();
 }
 
 class _FocusScreenState extends State<FocusScreen> {
   Timer? timer;
+  final scroll = ScrollController();
   String? selected;
   bool allHistory = false;
+  String? reviewId;
+  String? reviewText;
   @override
   void initState() {
     super.initState();
@@ -29,6 +33,7 @@ class _FocusScreenState extends State<FocusScreen> {
   @override
   void dispose() {
     timer?.cancel();
+    scroll.dispose();
     super.dispose();
   }
 
@@ -59,8 +64,18 @@ class _FocusScreenState extends State<FocusScreen> {
       'Earth',
     ][focus.lastOrbitIndex % 5];
     return ListView(
+      controller: scroll,
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
+        if (reviewId != null && session == null && widget.onReview != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => widget.onReview!(reviewId!, reviewText!),
+              icon: const Icon(Icons.checklist),
+              label: const Text('Review task'),
+            ),
+          ),
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -93,16 +108,18 @@ class _FocusScreenState extends State<FocusScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              Text(
-                session?.taskText ?? 'One thing at a time.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: paper,
-                  fontWeight: FontWeight.w600,
+              if (session != null) ...[
+                const SizedBox(height: 24),
+                Text(
+                  session.taskText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: paper,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
+              ],
               const SizedBox(height: 16),
               Semantics(
                 label:
@@ -117,43 +134,23 @@ class _FocusScreenState extends State<FocusScreen> {
                   ),
                 ),
               ),
-              Text(
-                session == null
-                    ? 'Choose your next small stretch.'
-                    : session.pausedAt != null
-                    ? 'Paused'
-                    : remaining == 0
-                    ? 'Ready to finish'
-                    : ratio < .15
-                    ? 'Ignition'
-                    : ratio < .35
-                    ? 'Ascent'
-                    : ratio < .55
-                    ? 'Heating'
-                    : ratio < .8
-                    ? 'Staging'
-                    : 'Orbit',
-                style: const TextStyle(color: Color(0xffd9c98b)),
-              ),
-              const SizedBox(height: 20),
-              Semantics(
-                label:
-                    'Solar route to $next, ${(ratio * 100).round()} percent complete',
-                child: SizedBox(
-                  height: 190,
-                  child: InteractiveViewer(
-                    minScale: 1,
-                    maxScale: 3,
-                    child: CustomPaint(
-                      size: const Size(double.infinity, 190),
-                      painter: SolarRoutePainter(
-                        progress: ratio,
-                        mission: focus.lastOrbitIndex,
-                      ),
-                    ),
-                  ),
+              if (session != null)
+                Text(
+                  session.pausedAt != null
+                      ? 'Paused'
+                      : remaining == 0
+                      ? 'Ready to finish'
+                      : ratio < .15
+                      ? 'Ignition'
+                      : ratio < .35
+                      ? 'Ascent'
+                      : ratio < .55
+                      ? 'Heating'
+                      : ratio < .8
+                      ? 'Staging'
+                      : 'Orbit',
+                  style: const TextStyle(color: Color(0xffd9c98b)),
                 ),
-              ),
               if (session != null) ...[
                 const SizedBox(height: 16),
                 Row(
@@ -177,12 +174,17 @@ class _FocusScreenState extends State<FocusScreen> {
                     Expanded(
                       child: FilledButton(
                         onPressed: () {
+                          setState(() {
+                            reviewId = session.taskId;
+                            reviewText = session.taskText;
+                          });
                           store.finishFocus();
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted && scroll.hasClients) scroll.jumpTo(0);
+                          });
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                'Session saved. Review the task outcome on your note.',
-                              ),
+                              content: Text('Session saved. Task unchanged.'),
                             ),
                           );
                         },
@@ -224,6 +226,25 @@ class _FocusScreenState extends State<FocusScreen> {
                   child: const Text('Discard session'),
                 ),
               ],
+              const SizedBox(height: 20),
+              Semantics(
+                label:
+                    'Solar route to $next, ${(ratio * 100).round()} percent complete',
+                child: SizedBox(
+                  height: 190,
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 3,
+                    child: CustomPaint(
+                      size: const Size(double.infinity, 190),
+                      painter: SolarRoutePainter(
+                        progress: ratio,
+                        mission: focus.lastOrbitIndex,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -303,10 +324,7 @@ class _FocusScreenState extends State<FocusScreen> {
         if (focus.missionHistory.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              'Your first completed session starts the journey.',
-              style: TextStyle(color: mutedInk),
-            ),
+            child: Text('No sessions yet', style: TextStyle(color: mutedInk)),
           ),
         for (final mission in focus.missionHistory.take(
           allHistory ? focus.missionHistory.length : 3,
@@ -344,10 +362,6 @@ class _FocusScreenState extends State<FocusScreen> {
               },
             ),
           ],
-        ),
-        const Text(
-          'The timer restores after closing the app. A focus session does not mark a task complete.',
-          style: TextStyle(fontSize: 12, color: mutedInk),
         ),
       ],
     );

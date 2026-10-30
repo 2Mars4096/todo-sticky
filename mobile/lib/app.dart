@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'state/sticky_store.dart';
 import 'services/ai_service.dart';
 import 'screens/home_screen.dart';
+import 'screens/archive_screen.dart';
+import 'models/workflow.dart';
 import 'screens/goals_screen.dart';
 import 'screens/focus_screen.dart';
 import 'screens/settings_screen.dart';
@@ -17,7 +19,13 @@ const mutedInk = Color(0xff756747);
 class StickyApp extends StatefulWidget {
   final StickyStore store;
   final Widget Function(StickyStore store)? accountBuilder;
-  const StickyApp({super.key, required this.store, this.accountBuilder});
+  final Widget Function(BuildContext context)? syncIndicatorBuilder;
+  const StickyApp({
+    super.key,
+    required this.store,
+    this.accountBuilder,
+    this.syncIndicatorBuilder,
+  });
   @override
   State<StickyApp> createState() => _StickyAppState();
 }
@@ -106,8 +114,53 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
         home: Builder(
           builder: (context) => Scaffold(
             appBar: AppBar(
-              title: Text(['Sticky Todo', 'Goals & routines', 'Focus'][tab]),
+              title: Text(
+                ['Sticky Todo', 'Goals & routines', 'Focus'][tab],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               actions: [
+                if (store.ready && tab == 0) ...[
+                  IconButton(
+                    tooltip: 'Search tasks',
+                    icon: const Icon(Icons.search),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => ArchiveScreen(
+                          store: store,
+                          ai: ai,
+                          openFocus: () {
+                            Navigator.of(context)
+                                .popUntil((route) => route.isFirst);
+                            setState(() => tab = 2);
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Progress',
+                    icon: const Icon(Icons.bar_chart_outlined),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => ArchiveScreen(
+                          store: store,
+                          ai: ai,
+                          progress: true,
+                          openFocus: () {
+                            Navigator.of(context)
+                                .popUntil((route) => route.isFirst);
+                            setState(() => tab = 2);
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                if (widget.syncIndicatorBuilder != null)
+                  widget.syncIndicatorBuilder!(context),
                 IconButton(
                   tooltip: 'Settings',
                   icon: const Icon(Icons.tune_rounded),
@@ -179,7 +232,42 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                           )
                         : switch (tab) {
                             1 => GoalsScreen(store: store),
-                            2 => FocusScreen(store: store),
+                            2 => FocusScreen(
+                              store: store,
+                              onReview: (id, text) {
+                                final matches = archiveRows(store.days)
+                                    .where(
+                                      (row) =>
+                                          row.task.id == id ||
+                                          '${row.date}:${row.task.id}' == id,
+                                    )
+                                    .toList();
+                                void focusFromRoute() {
+                                  Navigator.of(context)
+                                      .popUntil((route) => route.isFirst);
+                                  setState(() => tab = 2);
+                                }
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => matches.length == 1
+                                        ? TaskReviewScreen(
+                                            store: store,
+                                            ai: ai,
+                                            row: matches.single,
+                                            openFocus: focusFromRoute,
+                                          )
+                                        : ArchiveScreen(
+                                            store: store,
+                                            ai: ai,
+                                            initialQuery: text,
+                                            openFocus: focusFromRoute,
+                                          ),
+                                  ),
+                                );
+                              },
+                            ),
                             _ => HomeScreen(
                               store: store,
                               ai: ai,

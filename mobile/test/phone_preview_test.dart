@@ -18,7 +18,11 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final font = File('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf');
+    final font = File(
+      Platform.isMacOS
+          ? '/System/Library/Fonts/Supplemental/Arial.ttf'
+          : '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+    );
     if (font.existsSync()) {
       final loader = FontLoader('Roboto')
         ..addFont(Future.value(ByteData.sublistView(font.readAsBytesSync())));

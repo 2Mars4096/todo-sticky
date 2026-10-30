@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sticky_todo/models/models.dart';
+import 'package:sticky_todo/models/workflow.dart';
 import 'package:sticky_todo/services/files.dart';
 import 'package:sticky_todo/services/persistence.dart';
 import 'package:sticky_todo/state/sticky_store.dart';
@@ -166,7 +167,10 @@ void main() {
     final store = await notebook();
     final task = store.addTask('Paper');
     final date = store.selectedDate;
-    final prior = Task(id: 'plan_${date}_old', text: 'Old generated');
+    final prior = Task(
+      id: 'plan_${date}_old_h${planTextHash('Old generated')}',
+      text: 'Old generated',
+    );
     final completed = Task(
       id: 'plan_${date}_done',
       text: 'Done generated',

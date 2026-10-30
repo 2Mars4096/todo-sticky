@@ -351,6 +351,9 @@ class Preferences {
   String material;
   bool showEarlier;
   bool showCompleted;
+  String planningStart;
+  String planningEnd;
+  List<String> planningMachines;
   Preferences({
     this.provider = 'moonshot',
     Map<String, ProviderProfile>? profiles,
@@ -358,6 +361,9 @@ class Preferences {
     this.material = 'paper',
     this.showEarlier = false,
     this.showCompleted = true,
+    this.planningStart = '09:00',
+    this.planningEnd = '17:00',
+    this.planningMachines = const [],
   }) : profiles = profiles ?? {},
        machines = machines ?? [];
   ProviderProfile profile([String? name]) {
@@ -379,6 +385,20 @@ class Preferences {
         : 'paper',
     showEarlier: j['showEarlier'] == true,
     showCompleted: j['showCompleted'] != false,
+    planningStart:
+        j['planningStart'] is String &&
+            minutesOfDay(j['planningStart'] as String) != null
+        ? j['planningStart'] as String
+        : '09:00',
+    planningEnd:
+        j['planningEnd'] is String &&
+            minutesOfDay(j['planningEnd'] as String) != null
+        ? j['planningEnd'] as String
+        : '17:00',
+    planningMachines:
+        (j['planningMachines'] is List ? j['planningMachines'] as List : [])
+            .whereType<String>()
+            .toList(),
   );
   Map<String, dynamic> toJson() => {
     'provider': provider,
@@ -387,6 +407,9 @@ class Preferences {
     'material': material,
     'showEarlier': showEarlier,
     'showCompleted': showCompleted,
+    'planningStart': planningStart,
+    'planningEnd': planningEnd,
+    'planningMachines': planningMachines,
   };
 }
 

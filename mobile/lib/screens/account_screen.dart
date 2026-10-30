@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app.dart';
+import '../widgets/sync_progress.dart';
 import '../services/cloud_sync.dart';
 import '../services/files.dart';
 import '../state/sticky_store.dart';
@@ -53,6 +54,45 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
   Widget build(BuildContext context) => StickyApp(
     store: widget.store,
     accountBuilder: (_) => AccountScreen(account: account),
+    syncIndicatorBuilder: (context) => ListenableBuilder(
+      listenable: account,
+      builder: (context, _) {
+        final attention = account.error != null || account.conflicts.isNotEmpty;
+        final local = !account.enabled;
+        final label = attention
+            ? 'Sync needs attention'
+            : local
+            ? 'Local only'
+            : account.busy
+            ? 'Syncing'
+            : account.upToDate
+            ? 'Synced with cloud'
+            : 'Waiting to sync';
+        final icon = attention
+            ? Icons.error_outline
+            : local
+            ? Icons.cloud_off_outlined
+            : account.busy
+            ? Icons.sync
+            : account.upToDate
+            ? Icons.cloud_done_outlined
+            : Icons.cloud_queue_outlined;
+        return IconButton(
+          tooltip: '$label. Open Account',
+          icon: Icon(
+            icon,
+            size: 18,
+            color: attention ? Theme.of(context).colorScheme.error : mutedInk,
+          ),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => AccountScreen(account: account),
+            ),
+          ),
+        );
+      },
+    ),
   );
 }
 
@@ -144,35 +184,13 @@ class _AccountScreenState extends State<AccountScreen> {
         body: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  backgroundColor: Color(0xffe7ddb5),
-                  foregroundColor: ink,
-                  radius: 26,
-                  child: Icon(Icons.cloud_done_outlined, size: 28),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        account.session?.email ?? 'Your note, everywhere',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Tasks, goals and finished focus sessions stay together across your phone and computers.',
-                        style: TextStyle(height: 1.45),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+            if (account.session != null) ...[
+              Text(
+                account.session!.email,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 16),
+            ],
             if (account.session == null) ...[
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
@@ -241,8 +259,8 @@ class _AccountScreenState extends State<AccountScreen> {
                 title: const Text('Sync this notebook'),
                 subtitle: Text(
                   account.enabled
-                      ? 'Changes sync automatically while the app is open.'
-                      : 'Enable to link these local notes to your account.',
+                      ? 'Syncs while the app is open.'
+                      : 'Upload tasks, goals and completed sessions.',
                 ),
                 value: account.enabled,
                 onChanged: unavailable
@@ -279,14 +297,18 @@ class _AccountScreenState extends State<AccountScreen> {
                 ],
               ),
             ],
-            const SizedBox(height: 20),
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                account.message,
-                style: const TextStyle(color: mutedInk, height: 1.4),
+            if (account.busy && account.progress != null)
+              SyncProgressView(progress: account.progress!),
+            if (!account.busy && account.message.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  account.message,
+                  style: const TextStyle(color: mutedInk, height: 1.4),
+                ),
               ),
-            ),
+            ],
             if (account.error != null) ...[
               const SizedBox(height: 10),
               Semantics(
@@ -310,15 +332,9 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
             if (account.conflicts.isNotEmpty) ...[
               const Divider(height: 36),
-              Text(
-                'Choose which version to keep',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('Conflicts', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              const Text(
-                'Conflicts are grouped by day. Both versions are saved to a recovery copy before your choice is applied.',
-                style: TextStyle(height: 1.4),
-              ),
+              const Text('Both copies saved', style: TextStyle(height: 1.4)),
               for (final conflict in account.conflicts)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -372,6 +388,8 @@ class _AccountScreenState extends State<AccountScreen> {
                                 : () => run(
                                     () => account.synchronize(
                                       resolveKey: conflict.key,
+                                      reviewedFingerprint:
+                                          syncConflictFingerprint(conflict),
                                     ),
                                   ),
                             child: const Text('Keep device version'),
@@ -382,6 +400,8 @@ class _AccountScreenState extends State<AccountScreen> {
                                 : () => run(
                                     () => account.synchronize(
                                       resolveKey: conflict.key,
+                                      reviewedFingerprint:
+                                          syncConflictFingerprint(conflict),
                                       useCloud: true,
                                     ),
                                   ),
@@ -407,16 +427,6 @@ class _AccountScreenState extends State<AccountScreen> {
                 icon: const Icon(Icons.download_outlined),
                 label: const Text('Export conflict recovery copies'),
               ),
-            const Divider(height: 36),
-            const Text(
-              'Saved locally first',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'You can keep working offline. AI API keys, account tokens, device paths and running focus timers stay on this device. Signing out pauses sync and keeps your local notes.',
-              style: TextStyle(color: mutedInk, height: 1.5),
-            ),
           ],
         ),
       );

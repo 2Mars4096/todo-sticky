@@ -19,16 +19,28 @@ The installable **review APK** is `build/app/outputs/flutter-apk/app-debug.apk`.
 
 For distribution, create your release keystore, copy `android/key.properties.example` to the ignored `android/key.properties`, and fill its values locally. Then run `flutter build appbundle --release`. Release builds deliberately fail when a release key has not been supplied. Never commit a keystore or passwords.
 
+For a small sideloadable ARM64 APK, use the optimized release build rather than the CI debug artifact:
+
+```sh
+flutter build apk --release --target-platform android-arm64 --split-per-abi \
+  --dart-define=SYNC_SERVER_URL=https://sticky-todo-sync-507920948662.asia-southeast1.run.app
+```
+
+The output is `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`; the local delivery copy is `../release/todo-sticky.apk`. The verified 2.1.15+2 build is **19.36 MB** (18.46 MiB), compared with 86.82 MB for the earlier debug APK. Release mode uses AOT compilation, R8/resource shrinking and icon tree shaking. Keep the same signing key for subsequent updates. The earlier CI debug APK used a different certificate: export any existing notebook before uninstalling that debug app, then install the release and restore the export. Do not clear or uninstall a notebook to work around a signature mismatch without preserving its data first.
+
+The local release key is kept outside the repository under `~/.config/todo-sticky/android-release/`; ignored `android/key.properties` references it. Preserve that private directory for future updates; never add its contents to source control.
+
+
 ## Use
 
-- Capture at the top of Notes. Tap a task to reveal actions and steps; double tap the title to edit. Long press a root task to reorder; step arrows move children within their parent.
+- Capture at the top of Notes. Tap a task to reveal actions and steps; double tap the title to edit. Drag the six-dot grip to reorder daily root tasks; step arrows move children within their parent. Focus, Add step, Suggest and Move use icon buttons; horizontal dots open editing, copy, status and delete options.
 - Check a task to finish it. Tasks with an Outcome ask **Complete / Revise / Stop**. Completing a parent completes its steps; completing all steps with an Outcome asks for outcome review.
 - Browse any date with the header. Today shows unfinished earlier work under **Earlier tasks**, without copying it. Move offers today/next day or a chosen date and keeps metadata. Matching tasks show read-only earlier steps.
-- **Plan** takes an explicit time window and optional machines. The preview lists blocks chronologically and names unscheduled work. Apply replaces only unfinished generated blocks for that date; Undo preserves later edited/completed work. Suggestions remain proposals until accepted.
-- **Goals** holds long-term goals and manually reset routines. **Focus** starts, pauses, resumes, restores and finishes sessions; its travel log retains 6, 12 or 24 sessions. Finishing a session does not complete the task.
+- **Plan** takes an explicit time window and optional machines. The preview lists blocks chronologically and names unscheduled work. Apply replaces only untouched generated suggestions for that date; edited, started and legacy steps remain; Undo preserves later edited/completed work. Suggestions remain proposals until accepted.
+- **Goals** holds long-term goals and routines. Manual is the default; Daily/Weekdays/Weekly schedules offer Pause and Skip next on this device. **Focus** starts, pauses, resumes, restores and finishes sessions; its travel log retains 6, 12 or 24 sessions. Finishing a session does not complete the task.
 - **Settings → AI assistance** supports saved Moonshot, OpenRouter, OpenAI, Anthropic, Gemini and custom HTTPS OpenAI-compatible profiles. API keys live in Android secure storage and are excluded from exports and synchronization. Connection tests use the unsaved draft without changing saved settings. Provider errors retain the actual reason, including rate limits, unsupported models and malformed output.
 - The headphone action suggests a task-aware album list. A task’s menu copies a structured agent prompt for Diane or another assistant.
-- Export or restore a complete JSON notebook through Android’s file picker. Markdown day export preserves desktop task IDs, nested status markers and finish metadata. **Import a checklist** accepts pasted Markdown as new tasks, preserving hierarchy and finish metadata with fresh IDs.
+- Export or restore a complete JSON notebook through Android’s file picker. Markdown day export preserves desktop task IDs, nested status markers and finish metadata. **Import Markdown checklist** accepts pasted Markdown as new tasks, preserving hierarchy and finish metadata with fresh IDs.
 
 ## Data and recovery
 
@@ -54,7 +66,7 @@ The combined app passes **44 tests**: 22 standalone workflow checks, 20 account/
 | --- | --- |
 | Daily tasks, arbitrary nested steps, statuses, completion cascade | Implemented, with stable desktop-compatible JSON IDs |
 | Date navigation, Today rollover, original-date backlog, promotion | Implemented without daily duplicate copies |
-| Reorder roots and steps | Long press roots; accessible step up/down controls |
+| Reorder roots and steps | Drag root grips; accessible reorder actions and step up/down controls |
 | Outcomes, due dates, deadline history, Complete / Revise / Stop | Implemented with explicit draft save/cancel |
 | AI breakdown and outcome suggestions | Implemented with review/apply and stale task checks |
 | Day planning, time/machines, preview/apply/discard, unscheduled tasks | Implemented with schema/time/overlap validation and stale-plan checks |
@@ -94,3 +106,24 @@ STICKY_SCREENSHOTS=/tmp/sticky-phone flutter test test/phone_preview_test.dart
 The optional capture test renders 390×844 Notes, task actions, Goals and active Focus. It loads a local font for human review and does not add golden binaries to the repository. It is skipped in ordinary CI.
 
 Physical-device acceptance remains separate: keyboard/IME, TalkBack, Android file-picker behavior, credential persistence, lifecycle under OS termination, authenticated provider calls and production signing. No API keys or live account were used during automated verification.
+
+### Compact screen copy
+
+The 2.1.15+3 Android build removes repeated introductions, promotional subtitles and permanent instructional footers across Notes, Account, Settings, Goals, Focus, Music and Plan. Controls and current data lead each screen. Upload consent, backup/replacement warnings, conflicts and actionable errors remain visible when relevant. It uses the same release key as +2 and installs as an update.
+
+### Browser return
+
+Android 2.1.15+4 returns to the existing Account screen after Google sign-in. The hosted page completes the handoff directly after account selection; there is no second Connect this account step. If the browser blocks automatic opening, tap **Return to Sticky Todo**. Start a fresh sign-in after updating; older browser tabs do not contain the return flag. The return link carries no tokens and does not enable sync; turn on **Sync this notebook** after sign-in.
+
+### Sync progress and conflict safety
+
+The current local release is 2.1.15+7 (versionCode 2007), 19.49 MB. Account displays stage, count, elapsed and waiting status during sync. Legacy blank checklist entries are preserved. Both conflict versions are saved locally on detection, and a resolution is rejected if the reviewed data changes. The previous release key is retained for in-place updates.
+
+
+### Workflow improvements in 2.1.15+7
+
+- The Notes toolbar offers Search across dates/tasks/steps and a day/week Progress page. Results open the original task tree. Progress uses task-list dates, separates steps and stopped work, and labels retained focus minutes as planned.
+- Plan remembers the work window and machines. Optional time budgets and unavailable periods sit under Adjust task time & breaks. Generated proposals remain reviewable, and applying/replanning preserves manual edits, started work and older untracked suggestions.
+- Routines can generate daily, weekday or weekly tasks. Weekly anchors to the weekday configured; the device local calendar governs occurrences. Missed days do not generate a backlog flood. Schedule definitions stay on the device and are included in explicit notebook backups; generated tasks sync normally with compatible desktop IDs. Tasks and occurrence markers save together, including retry after failure.
+- Focus controls precede the map; after finishing, Review task opens the original task without completing it. Account status is a compact named icon, cleared back to waiting after local changes.
+- Reviewed at 360px with normal and 150% text; task actions, planning and routine controls wrap without overflow. Analysis and all 60 tests pass; synthetic visual captures cover Notes, Search, Progress, Routines, planning and focus review. Live provider/physical-phone acceptance remains separate.

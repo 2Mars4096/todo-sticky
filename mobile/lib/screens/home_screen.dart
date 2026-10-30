@@ -42,8 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final store = widget.store;
     final date = parseDate(store.selectedDate);
     final tasks = store.selectedTasks;
+    final visibleTasks = tasks
+        .where((row) => store.preferences.showCompleted || !row.task.closed)
+        .toList();
     final earlier = store.earlierTasks;
-    final completed = tasks.where((t) => t.task.closed).length;
+    final completed = tasks
+        .where((t) => t.task.status == TaskStatus.done)
+        .length;
     return Column(
       children: [
         Padding(
@@ -122,9 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: Text(
-                  tasks.isEmpty
-                      ? 'Your working note'
-                      : '$completed of ${tasks.length} complete',
+                  tasks.isEmpty ? '' : '$completed of ${tasks.length} complete',
                   style: const TextStyle(color: mutedInk),
                 ),
               ),
@@ -199,47 +202,39 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 12),
                         Text(
-                          'A little room to think.',
+                          'No tasks yet',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Capture anything above. Shape it into steps when you’re ready.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: mutedInk),
                         ),
                       ],
                     ),
                   ),
                 ),
               SliverReorderableList(
-                itemCount: tasks.length,
-                onReorderItem: (oldIndex, newIndex) => store.reorder(
-                  store.selectedDate,
-                  null,
-                  oldIndex,
-                  newIndex > oldIndex ? newIndex + 1 : newIndex,
-                ),
+                itemCount: visibleTasks.length,
+                onReorderItem: (oldIndex, newIndex) {
+                  final from = tasks.indexOf(visibleTasks[oldIndex]);
+                  final to = tasks.indexOf(visibleTasks[newIndex]);
+                  store.reorder(
+                    store.selectedDate,
+                    null,
+                    from,
+                    to > from ? to + 1 : to,
+                  );
+                },
                 itemBuilder: (context, index) {
-                  final row = tasks[index];
-                  return !store.preferences.showCompleted && row.task.closed
-                      ? SizedBox.shrink(
-                          key: ValueKey('${row.date}/${row.task.id}'),
-                        )
-                      : ReorderableDelayedDragStartListener(
-                          key: ValueKey('${row.date}/${row.task.id}'),
-                          index: index,
-                          child: TaskTile(
-                            store: store,
-                            ai: widget.ai,
-                            date: row.date,
-                            task: row.task,
-                            openFocus: widget.openFocus,
-                          ),
-                        );
+                  final row = visibleTasks[index];
+                  return TaskTile(
+                    key: ValueKey('${row.date}/${row.task.id}'),
+                    reorderIndex: index,
+                    store: store,
+                    ai: widget.ai,
+                    date: row.date,
+                    task: row.task,
+                    openFocus: widget.openFocus,
+                  );
                 },
               ),
               if (earlier.isNotEmpty)
@@ -250,11 +245,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Divider(),
                         ListTile(
-                          leading: const Icon(Icons.history_rounded),
-                          title: Text('Earlier tasks (${earlier.length})'),
-                          subtitle: const Text(
-                            'Unfinished work, kept on its original date',
+                          leading: Badge(
+                            isLabelVisible: !store.preferences.showEarlier,
+                            child: const Icon(Icons.history_rounded),
                           ),
+                          title: Text('Earlier tasks (${earlier.length})'),
                           trailing: Icon(
                             store.preferences.showEarlier
                                 ? Icons.expand_less

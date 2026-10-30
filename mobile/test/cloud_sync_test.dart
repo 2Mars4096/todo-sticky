@@ -199,6 +199,142 @@ Future<Rig> fixture(
 }
 
 void main() {
+  test(
+    'progress waits for upload acknowledgement and clears after completion',
+    () async {
+      final gate = Completer<void>();
+      var first = true;
+      final rig = await fixture((request) async {
+        if (request.method == 'GET') return page([]);
+        final body = object(jsonDecode(request.body));
+        if (first) {
+          first = false;
+          await gate.future;
+        }
+        final key = Uri.decodeComponent(request.url.pathSegments.last);
+        return jsonResponse(record(key, object(body['payload'])).toJson());
+      }, local: {dayKey: day('')});
+      final seen = <CloudSyncProgress>[];
+      rig.sync.addListener(() {
+        if (rig.sync.progress != null) seen.add(rig.sync.progress!);
+      });
+      final work = rig.sync.synchronize();
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      expect(rig.sync.progress?.stage, 'Uploading');
+      expect(rig.sync.progress?.detail, date);
+      expect(rig.sync.progress?.completed, 0);
+      expect(rig.sync.progress?.total, 2);
+      gate.complete();
+      await work;
+      expect(seen.map((p) => p.completed), containsAll([0, 1, 2]));
+      expect(rig.sync.error, isNull);
+      expect(rig.sync.progress, isNull);
+      expect(rig.sync.busy, isFalse);
+      expect(rig.sync.upToDate, isTrue);
+      rig.store.addTask('New local edit');
+      expect(rig.sync.upToDate, isFalse);
+      await rig.store.flush();
+      rig.sync.dispose();
+      rig.store.dispose();
+    },
+  );
+  test(
+    'blank legacy titles survive download validation and application',
+    () async {
+      final rig = await fixture((request) {
+        if (request.method == 'GET') return page([record(dayKey, day(''))]);
+        final body = object(jsonDecode(request.body));
+        return jsonResponse(record('goals', object(body['payload'])).toJson());
+      });
+      await rig.sync.synchronize();
+      expect(rig.sync.error, isNull);
+      expect(rig.store.tasksFor(date).single.text, '');
+      rig.sync.dispose();
+      rig.store.dispose();
+    },
+  );
+  test(
+    'failed upload reports its stage and date without counting it complete',
+    () async {
+      final rig = await fixture(
+        (request) => request.method == 'GET'
+            ? page([])
+            : jsonResponse({'detail': 'Fixture rejected'}, status: 422),
+        local: {dayKey: day('Local')},
+      );
+      final seen = <CloudSyncProgress>[];
+      rig.sync.addListener(() {
+        if (rig.sync.progress != null) seen.add(rig.sync.progress!);
+      });
+      await rig.sync.synchronize();
+      expect(rig.sync.error, contains('Uploading ($date)'));
+      expect(seen.every((p) => p.completed == 0), isTrue);
+      expect(rig.sync.progress, isNull);
+      rig.sync.dispose();
+      rig.store.dispose();
+    },
+  );
+
+  test('browser return resumes the same pending sign-in before consuming its handoff', () async {
+    late Rig rig;
+    Uri? opened;
+    var exchanges = 0;
+    rig = await fixture(
+      (request) {
+        if (request.url.path == '/v1/auth/exchange') exchanges++;
+        return firebaseResponse(request);
+      },
+      signedIn: false,
+      owner: null,
+      openBrowser: (uri) async {
+        opened = uri;
+        rig.sync.setActive(false);
+        return true;
+      },
+    );
+    final pending = rig.sync.signIn();
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(opened, isNotNull);
+    expect(Uri.splitQueryString(opened!.fragment)['returnTo'], 'app');
+    expect(exchanges, 0);
+    expect(rig.sync.signingIn, isTrue);
+    rig.sync.setActive(true);
+    await pending;
+    expect(exchanges, 1);
+    expect(rig.sync.session?.uid, uid);
+    expect(rig.sync.error, isNull);
+    rig.sync.dispose();
+    rig.store.dispose();
+  });
+
+  test('conflicts are saved once on detection and stale choices cannot replace notes', () async {
+    var remote = record(dayKey, day('Cloud version'), revision: 2);
+    final rig = await fixture(
+      (request) {
+        expect(request.method, 'GET');
+        return page([remote, record('goals', goals())]);
+      },
+      local: {dayKey: day('Local version')},
+      baseline: {dayKey: record(dayKey, day('Original')).baseline},
+    );
+    addTearDown(rig.dispose);
+    await rig.sync.synchronize();
+    final reviewed = syncConflictFingerprint(rig.sync.conflicts.single);
+    expect((rig.meta['conflicts'] as List).length, 1);
+    await rig.sync.synchronize();
+    expect((rig.meta['conflicts'] as List).length, 1);
+    remote = record(dayKey, day('Newer cloud edit'), revision: 3);
+    await rig.sync.synchronize(
+      resolveKey: dayKey,
+      useCloud: true,
+      reviewedFingerprint: reviewed,
+    );
+    expect(rig.sync.error, contains('Conflict changed'));
+    expect(rig.store.tasksFor(date).single.text, 'Local version');
+    expect((rig.meta['conflicts'] as List).length, 2);
+    expect(rig.sync.conflicts.single.remote!.revision, 3);
+  });
+
   group('three-way reconciliation', () {
     test(
       'first link preserves two independently edited versions as a conflict',

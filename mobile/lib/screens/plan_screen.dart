@@ -18,6 +18,24 @@ class _PlanScreenState extends State<PlanScreen> {
   TimeOfDay start = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay end = const TimeOfDay(hour: 17, minute: 0);
   final selectedMachines = <String>{};
+  final estimates = <String, int>{};
+  final unavailable = <Map<String, String>>[];
+  bool adjustmentsOpen = false;
+  final proposalKey = GlobalKey();
+  @override
+  void initState() {
+    super.initState();
+    final prefs = widget.store.preferences;
+    TimeOfDay parse(String value) {
+      final minutes = minutesOfDay(value)!;
+      return TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60);
+    }
+
+    start = parse(prefs.planningStart);
+    end = parse(prefs.planningEnd);
+    selectedMachines.addAll(prefs.planningMachines);
+  }
+
   bool busy = false;
   String? error;
   DayPlan? plan;
@@ -30,6 +48,10 @@ class _PlanScreenState extends State<PlanScreen> {
       plan = null;
     });
     try {
+      widget.store.preferences.planningStart = time(start);
+      widget.store.preferences.planningEnd = time(end);
+      widget.store.preferences.planningMachines = selectedMachines.toList();
+      widget.store.changed();
       final proposal = await widget.ai.plan(
         widget.store.preferences,
         widget.store.planningTasks,
@@ -39,8 +61,22 @@ class _PlanScreenState extends State<PlanScreen> {
         widget.store.preferences.machines
             .where((m) => selectedMachines.contains(m['name']))
             .toList(),
+        estimates: Map.of(estimates),
+        unavailable: unavailable
+            .map((period) => Map<String, String>.of(period))
+            .toList(),
       );
-      if (mounted) setState(() => plan = proposal);
+      if (mounted) {
+        setState(() {
+          plan = proposal;
+          adjustmentsOpen = false;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && proposalKey.currentContext != null) {
+            Scrollable.ensureVisible(proposalKey.currentContext!);
+          }
+        });
+      }
     } catch (e) {
       if (mounted) setState(() => error = e.toString());
     } finally {
@@ -74,7 +110,7 @@ class _PlanScreenState extends State<PlanScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '${tasks.length} unfinished tasks · You choose what to apply.',
+              'Unfinished: ${tasks.length}',
               style: const TextStyle(color: mutedInk),
             ),
             const SizedBox(height: 24),
@@ -123,6 +159,116 @@ class _PlanScreenState extends State<PlanScreen> {
                 ),
               ],
             ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Adjust task time & breaks'),
+              trailing: Icon(
+                adjustmentsOpen ? Icons.expand_less : Icons.expand_more,
+              ),
+              onTap: busy
+                  ? null
+                  : () => setState(() => adjustmentsOpen = !adjustmentsOpen),
+            ),
+            if (adjustmentsOpen) ...[
+              const Text(
+                'Time budget per task',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const Text(
+                'Auto lets AI estimate. List order guides priority.',
+                style: TextStyle(color: mutedInk, fontSize: 12),
+              ),
+              for (final task in tasks)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(task.task.text)),
+                      const SizedBox(width: 8),
+                      DropdownButton<int>(
+                        value: estimates['${task.date}/${task.task.id}'] ?? 0,
+                        items: [
+                          const DropdownMenuItem(value: 0, child: Text('Auto')),
+                          for (final n in [15, 30, 45, 60, 90, 120, 180, 240])
+                            DropdownMenuItem(value: n, child: Text('$n min')),
+                        ],
+                        onChanged: busy
+                            ? null
+                            : (value) => setState(() {
+                                final key = '${task.date}/${task.task.id}';
+                                if (value == 0) {
+                                  estimates.remove(key);
+                                } else {
+                                  estimates[key] = value!;
+                                }
+                                plan = null;
+                              }),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 12),
+              const Text(
+                'Unavailable time',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              for (var i = 0; i < unavailable.length; i++)
+                Wrap(
+                  spacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    for (final field in ['start', 'end'])
+                      TextButton(
+                        onPressed: busy
+                            ? null
+                            : () async {
+                                final minutes = minutesOfDay(
+                                  unavailable[i][field]!,
+                                )!;
+                                final picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: TimeOfDay(
+                                    hour: minutes ~/ 60,
+                                    minute: minutes % 60,
+                                  ),
+                                );
+                                if (mounted && picked != null) {
+                                  setState(() {
+                                    unavailable[i][field] = time(picked);
+                                    plan = null;
+                                  });
+                                }
+                              },
+                        child: Text(
+                          '${field == 'start' ? 'From' : 'Until'} ${unavailable[i][field]}',
+                        ),
+                      ),
+                    IconButton(
+                      tooltip: 'Remove break ${i + 1}',
+                      onPressed: busy
+                          ? null
+                          : () => setState(() {
+                              unavailable.removeAt(i);
+                              plan = null;
+                            }),
+                      icon: const Icon(Icons.close, size: 18),
+                    ),
+                  ],
+                ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: busy || unavailable.length >= 6
+                      ? null
+                      : () => setState(() {
+                          unavailable.add({'start': '12:00', 'end': '13:00'});
+                          plan = null;
+                        }),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add break'),
+                ),
+              ),
+            ],
             if (store.preferences.machines.isNotEmpty) ...[
               const SizedBox(height: 16),
               const Text(
@@ -162,7 +308,7 @@ class _PlanScreenState extends State<PlanScreen> {
                   : const Icon(Icons.auto_awesome),
               label: Text(
                 busy
-                    ? 'Making room for the work…'
+                    ? 'Generating…'
                     : proposal == null
                     ? 'Generate plan'
                     : 'Generate another plan',
@@ -178,8 +324,9 @@ class _PlanScreenState extends State<PlanScreen> {
               ),
             if (proposal != null) ...[
               const SizedBox(height: 28),
-              const Text(
+              Text(
                 'PROPOSED PLAN',
+                key: proposalKey,
                 style: TextStyle(
                   letterSpacing: 1.5,
                   fontSize: 12,
@@ -219,15 +366,7 @@ class _PlanScreenState extends State<PlanScreen> {
                           ],
                         ),
                       ),
-                      Container(
-                        width: 3,
-                        height: 48,
-                        margin: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xffc4a44a),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,7 +394,7 @@ class _PlanScreenState extends State<PlanScreen> {
               if (unscheduled.isNotEmpty) ...[
                 const Divider(height: 28),
                 const Text(
-                  'Left for another time',
+                  'Unscheduled',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 for (final task in unscheduled)
@@ -268,13 +407,15 @@ class _PlanScreenState extends State<PlanScreen> {
                   ),
               ],
               const SizedBox(height: 24),
-              Row(
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                alignment: WrapAlignment.end,
                 children: [
                   TextButton(
                     onPressed: () => setState(() => plan = null),
                     child: const Text('Discard'),
                   ),
-                  const Spacer(),
                   FilledButton(
                     onPressed: () {
                       try {
@@ -290,7 +431,7 @@ class _PlanScreenState extends State<PlanScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Only unfinished blocks generated for this date are replaced. Manual steps and completed work stay intact. Undo is available on your note.',
+                'Replaces untouched suggestions. Edited, started and older untracked steps stay. You can undo.',
                 style: TextStyle(fontSize: 12, color: mutedInk),
               ),
             ],
