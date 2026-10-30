@@ -31,6 +31,16 @@ async function drag(page, source, target, cancel = false) {
         await screenshot(page, `material-${material}-settings-${size.width}`)
         await page.getByRole('button', {name:'Close settings', exact:true}).click()
         await screenshot(page, `material-${material}-note-${size.width}`)
+        await page.getByRole('button', { name:size.width <= 760 ? 'Goals' : 'Open goals', exact:true }).click()
+        const surfaces = await page.evaluate(() => ({
+          note:getComputedStyle(document.querySelector('.app-shell')).backgroundImage,
+          goals:getComputedStyle(document.querySelector('.goals-sidebar')).backgroundImage,
+        }))
+        if(material !== 'paper') assert.equal(surfaces.goals,surfaces.note,'Goals must use the selected material in both compact and wide layouts')
+        else assert.match(surfaces.goals,/linear-gradient/)
+        await screenshot(page, `material-${material}-goals-${size.width}`)
+        await page.getByRole('button', {name:'Close goals',exact:true}).click()
+
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true)
         await page.reload()
         await page.locator('.app-shell').waitFor()
