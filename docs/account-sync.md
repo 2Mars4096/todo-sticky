@@ -1,6 +1,18 @@
 # Google accounts and cross-platform sync
 
-This feature is on `feature/google-account-sync`. It adds optional Google accounts and synchronization to the Tauri desktop app and the Flutter Android app under `mobile/`. The service must be deployed and configured before live sign-in works; this branch does not contain a deployed service URL or a Firebase project belonging to the user.
+The current `main` source includes optional Google accounts and synchronization for the Tauri desktop app and the Flutter Android app under `mobile/`. Both clients keep working locally without an account. The deployed personal service uses project `sticky-todo-20261028`.
+
+## Personal deployment
+
+Service origin: `https://sticky-todo-sync-507920948662.asia-southeast1.run.app`.
+
+The local macOS app was rebuilt and reinstalled on 2026-10-29 with this origin prefilled. Existing saved service overrides are preserved. See [installation verification](plans/8-3-backend-connected-macos-install.md).
+
+Use this exact origin in desktop **Settings → Account** or Android **Settings → Account & sync**, choose **Connect service**, then **Continue with Google**. The deployed service is restricted to the project owner’s Google account through the ignored `backend/env.yaml` allowlist. After confirming the account in your browser, explicitly enable **Sync this task folder** / **Sync this notebook**. Existing local files are not uploaded just by deploying the backend or signing in.
+
+The new dedicated billing account is linked to `sticky-todo-20261028`; Cloud Run and Firestore are in Singapore. `sticky-sync` is the runtime identity, with Firestore access, Firebase account-read permission and self-signing permission for the one-time handoff. The service scales to zero, with a three-instance revision maximum. Login handoff TTL is active. Direct Firestore clients remain denied.
+
+Public health checks use `/v1/health`: `/healthz` returned a Google frontend 404 despite functioning application routes. A Firebase Hosting rewrite to the same service also exists; retain the canonical Cloud Run origin above for stable client account bindings. Live browser Google sign-in and physical two-device acceptance still require the user's participation.
 
 ## What was reused from Dear Diane
 
@@ -9,10 +21,10 @@ The current `2Mars4096/dear-diane` main revision inspected was `2581669`. Its An
 ## User flow
 
 1. Open desktop **Settings → Account** or Android **Settings → Account & sync**. Enter the deployed HTTPS Cloud Run service origin and choose **Connect service**. Desktop builds can prefill it with `VITE_SYNC_SERVER_URL`; Android builds use the optional `--dart-define=SYNC_SERVER_URL=https://YOUR_SERVICE_HOST`.
-2. **Continue with Google** opens the operating system browser. Pick a Google account, then confirm **Connect this account**. Return to the app within five minutes to finish the handoff. No app deep link is required.
+2. **Continue with Google** opens the operating system browser. Pick a Google account. The page completes the app handoff immediately after Google succeeds; there is no second account-confirmation click. Updated Android/macOS apps return automatically; allow the browser to open Sticky Todo if asked, or use **Return to Sticky Todo**. Older clients must switch back manually. Finish within five minutes.
 3. Enable desktop **Sync this task folder** or Android **Sync this notebook**. Signing in alone does not upload existing notes. The first link asks for a choice when existing local and cloud versions differ.
 4. Both clients sync after edits and on app resume, with a periodic retry while open. **Sync now** provides an explicit retry. Android sync runs while the app is in the foreground; it is not a background delivery service. Desktop additionally retries on its online event.
-5. If the same day's data changed on two devices, the Account screen shows previews of both versions. Choose the device or account version. Before applying a choice, the app stores both complete copies in recovery history. Desktop **Export conflict recovery history** downloads JSON; Android **Export conflict recovery copies** opens the native save picker. Desktop pulls also save the previous Markdown file under `.sticky-sync-backups` in the task folder.
+5. If the same day's data changed on two devices, the Account screen shows previews of both versions. Choose the device or account version. Both complete copies are saved locally when a conflict is detected. Desktop **Conflicts** opens a readable comparison with a differences filter; select This Mac or Cloud and apply the choice. **Saved copies** browses local recovery snapshots, and **Export copies** downloads the full records. Android **Export conflict recovery copies** opens the native save picker. A choice is rejected if either reviewed version changes. Desktop pulls also save the previous Markdown file under `.sticky-sync-backups` in the task folder.
 6. Pausing sync or signing out keeps local notes available. Sign-out disables sync and clears the app's saved sign-in session. Local data remains bound to its original Firebase project and account; another account cannot upload those notes. Use a separate empty app data profile for a different owner.
 
 Desktop briefly prevents editing while it applies downloaded data and reloads the local view; active focus sessions and unfinished AI/planning operations delay its sync. Android defers sync while a text editor is active and rechecks the current local record immediately before applying a download. Failed local saves block sync on both platforms. Network failures leave local work available, with errors and retry controls in Account settings.
@@ -33,7 +45,7 @@ Task conflicts are intentionally **per date**, not a claim of automatic task-lev
 ## Architecture
 
 - Desktop uses Firebase Auth's client session and refresh lifecycle. Firebase's IndexedDB persistence keeps the desktop session; task baselines contain no tokens. Android exchanges the browser handoff through Firebase's REST custom-token endpoint, reads the authenticated user through `accounts:lookup`, and renews ID tokens through the Secure Token endpoint. Its ID/refresh tokens live in the existing `flutter_secure_storage` credential store, separately from notes, sync metadata and recovery exports.
-- Google OAuth runs in the system browser, avoiding embedded-WebView login restrictions. The app generates a 256-bit verifier and sends only its SHA-256 challenge in the sign-in URL fragment. The browser verifies Google identity, explicitly confirms the account and creates a five-minute handoff. Only the originating verifier can exchange it, once, for a Firebase custom token. No token is put in the URL or normal access logs.
+- Google OAuth runs in the system browser, avoiding embedded-WebView login restrictions. The app generates a 256-bit verifier and sends only its SHA-256 challenge in the sign-in URL fragment. After the user explicitly clicks Continue with Google and chooses an account, the browser verifies Google identity and creates a five-minute handoff without asking for a second confirmation. Only the originating verifier can exchange it, once, for a Firebase custom token. No token is put in the URL or normal access logs. Updated Android/macOS clients advertise `returnTo=app` in the sign-in fragment. After confirmation the page opens only the fixed `todo-sticky://account-return` URI and keeps an explicit return link available. That URI merely resumes the app; the secret verifier still authenticates the exchange. Android defers consuming the handoff until foregrounded.
 - Cloud Run verifies Firebase ID tokens, including revocation and verified email, on every data request. It derives user IDs from verified claims. The optional `ALLOWED_EMAILS` setting restricts a personal deployment.
 - Firestore stores `stickyUsers/{uid}/records/{key}`. Transactions enforce expected revisions and immediately repeated mutation IDs return the original result. A stale write returns HTTP 409 with the current record; it never overwrites silently.
 - Each client persists its last acknowledged payload/revision per server and account, with the desktop task folder also part of the scope. Three-way comparison distinguishes local-only edits, cloud-only edits and conflicts. Pending mutation IDs survive retry. Baselines advance after a successful server acknowledgement or durable local application. Server timestamps are descriptive; device clocks do not decide winners.
@@ -96,6 +108,7 @@ All data calls use `Authorization: Bearer <Firebase ID token>`. A Firebase custo
 
 | Request | Response |
 | --- | --- |
+| `GET /v1/health` | `{ok:true}`; public service health without account initialization. |
 | `GET /v1/config` | `{firebase:{apiKey,authDomain,projectId,appId},schemaVersion:1}`; public client config only. |
 | `POST /v1/auth/complete` | Google ID token plus `{sessionId,challenge}`; creates the one-time handoff. |
 | `POST /v1/auth/exchange` | `{sessionId,verifier}` → 202 `{pending:true}`, or `{customToken}`; consumed/expired links return 410. |
@@ -141,3 +154,7 @@ Neither mocked transport tests nor a successful APK build replace the live Fireb
 - [Firebase API keys and required API restrictions](https://firebase.google.com/docs/projects/api-keys)
 - [Cloud Run service identity and ADC](https://cloud.google.com/run/docs/securing/service-identity)
 - [Firestore TTL policies](https://firebase.google.com/docs/firestore/ttl)
+
+## Progress
+
+Account shows the active stage, current date/list, completed record count, elapsed time and a waiting indicator after 15 seconds without progress. Unknown totals stay indeterminate; counts advance after acknowledgement and durable local state. One record is a date, the goals/routines list or a completed focus session, not an individual task. Errors retain stage/date context. Legacy blank checklist entries remain intact.

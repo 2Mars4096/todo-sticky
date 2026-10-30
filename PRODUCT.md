@@ -10,7 +10,7 @@ Individuals who keep Sticky Todo visible beside their work and return to it repe
 
 ## Product Purpose
 
-Sticky Todo helps a person capture work, define what would be enough, take the next step, and make an explicit completion decision. Tasks are Markdown-backed. Optional AI, long-term goals, manually reset Routines, and timed Star Focus sessions support that daily workflow.
+Sticky Todo helps a person capture work, define what would be enough, take the next step, and make an explicit completion decision. Tasks are Markdown-backed. Optional AI, long-term goals, Routines with manual reset by default and optional device-local schedules, and timed Star Focus sessions support that daily workflow.
 
 ## Core Interaction
 
@@ -47,3 +47,11 @@ Calm, tactile, purposeful. The main surface should feel like a dependable workin
 ## Accessibility & Inclusion
 
 Target WCAG 2.2 AA for contrast, focus visibility, keyboard access, reduced-motion preferences, and non-color state cues. Use readable task text and reachable controls at the 340×440 minimum window size. Icon-only controls require accessible names. Essential actions work through selection and keyboard focus; dialogs contain focus and restore it on close. Focus graphics respect reduced motion and degrade to a usable map when rendering is unavailable.
+
+
+## Desktop workflow refinement
+
+Search and Progress are intentional secondary pages. Search opens the original dated task/step; Progress separates parent tasks, steps and retained planned focus time and never infers historical completion dates. Plan keeps optional budgets and breaks together and remembers the work window. Device-local routines generate ordinary tasks using the normal save/retry path. Compact sync status reports acknowledged current content. Goal linking, sequencing and task completion semantics are unchanged. See docs/plans/10-1-desktop-workflow.md for scope and validation.
+
+
+Android 2.1.15+7 now mirrors Search, Progress, optional routines, constrained planning, edited-step protection, focus review and compact sync status. Each platform retains local schedule definitions while generated tasks share compatible identities. The desktop build is installed locally; delivery evidence lives in docs/plans/10-2-review-install-and-android.md.

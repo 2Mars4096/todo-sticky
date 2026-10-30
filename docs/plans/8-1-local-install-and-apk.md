@@ -24,3 +24,7 @@
 - macOS optimized build installed at `/Applications/Sticky Todo.app`, strict signature and complete bundle hashes verified, process launch confirmed; all 55 task files unchanged. All 35 native tests passed. Backup: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-account-sync-20261028-001529` (includes stopped-app WebKit/settings/tasks snapshot).
 - APK: `output/account-sync/Sticky-Todo-2.1.15-account-sync-arm64.apk`; SHA-256 `92df297257d2f87d57771a50029aec5e8395133a1f0150c95cf6fdff18be5c3f`. Download/install notes and CI evidence are beside it.
 - User subsequently authorized cloud deployment and Google sign-in; follow [8-2](8-2-cloud-deployment.md).
+
+- 2026-10-29: Copy the verified APK to the shorter user-requested `release/todo-sticky.apk`; SHA-256 matches the original. Local release downloads are ignored by Git.
+
+- The short delivery path now contains the optimized 19.36 MB release build from [7-2](7-2-small-release-apk.md); the original CI debug artifact and its checksum above remain preserved under `output/account-sync/`.

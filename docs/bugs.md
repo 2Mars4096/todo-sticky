@@ -1,5 +1,29 @@
 # Bugs And Failed Approaches
 
+## 2026-10-30: Goals ignored the selected material
+
+- The note material styled the shell while both the base Goals sidebar and the higher-specificity compact override painted a fixed yellow-paper gradient. Update both declarations to consume the shared material surface, preserving Paper fallbacks. The material browser suite now opens Goals and checks/screenshots all three materials at 340/460/1000px.
+
+## 2026-10-30: Cross-platform workflow review and delivery
+
+- Android's earlier replanning policy would remove edited desktop-generated steps after sync. Both clients now use the same UTF-16 original-text fingerprint and preserve legacy/edited/started work; Unicode identity and replanning tests cover compatibility.
+- Desktop routine lookup previously inherited Object prototype entries for unusual goal IDs. Use null-prototype dictionaries through reading, editing and persistence; an inherited `constructor`/`__proto__` cannot be mistaken for a schedule.
+- The phone routines header squeezed its device-scope text beside Reset at enlarged text, causing vertical overflow. Use wrapping controls and show Reset only for completed manual routines. Plan Apply/Discard also wraps rather than overflowing horizontally.
+- A tall phone Focus map pushed completion controls below the first viewport, and completion could leave Review task above the current scroll position. Place controls before the graphic and return to the top after completion.
+- Flutter ListView tests must scroll to lazily built controls rather than call ensureVisible on a nonexistent widget. Keep real hit-testing and enlarged-text coverage; do not silence missed taps or overflow errors.
+
+## 2026-10-30: Workflow review findings
+
+- Replanning classified all unfinished `plan_` IDs as disposable, including manually edited steps. New generated IDs retain an original-text fingerprint; replace only matching untouched todo suggestions. Preserve legacy generated IDs because their original content cannot be reconstructed reliably.
+- New footer spacing initially lost to the later shell stylesheet, leaving Settings alone on a second row at 340px. Use a scoped compact selector with sufficient specificity; final production geometry is verified, including enlarged text.
+- Expanded planning inputs could leave a successful proposal below the viewport. Collapse optional adjustments after valid generation and focus/scroll the result heading, preserving explicit Apply/Discard.
+- The default Cargo shim attempted rustup setup in protected global storage. Run the existing `/private/tmp/todo-sync-rustup` compiler directly with explicit RUSTC/RUSTDOC and the offline cache. Native tests pass without modifying the user's toolchain.
+
+## 2026-10-30: Phone reorder verification
+
+- Avoid zero-height completed rows in the reorder sliver: use visible rows and map their positions to the full stored list. Continuous touch-drag regression covers hidden completed tasks without changing their status.
+- On this host the default Flutter is older than the phone SDK constraint. Use `/private/tmp/sticky-flutter-3.47.8`; screenshot tests load Arial on macOS to avoid test-font blocks.
+
 ## 2026-10-24: Android CI setup failure
 
 - GitHub CI stopped before Flutter because `android-actions/setup-android@v3` defaults to `tools platform-tools`; Android no longer serves `tools`. Override its space-separated `packages` input with platform-tools, platforms 35/36 and build-tools 36.0.0. Platform 35 is needed by a native dependency alongside the app's platform 36. The official [v3 input schema](https://github.com/android-actions/setup-android/blob/v3/action.yml) and [parser](https://github.com/android-actions/setup-android/blob/v3/src/main.ts) were inspected. This corrects SDK bootstrap only; a subsequent GitHub run verifies hosted execution.
@@ -159,3 +183,15 @@
 
 - 2026-10-28: New project `sticky-todo-20261028` was created, but linking the user-review billing account returned `FAILED_PRECONDITION: Cloud billing quota exceeded` (five currently billed projects). No existing project was unlinked.
 - 2026-10-28: First macOS package attempt hit a transient filesystem I/O failure and Rust 1.99.1 `rust-objcopy` LLVM lookup warning. Packaging retry succeeded; the isolated toolchain’s expected library location now links its existing libLLVM. Native tests and installed bundle verification pass.
+
+- 2026-10-29: The Cloud Run `/healthz` path returns a Google-generated 404 before reaching the container, in Singapore/Taiwan and from an internal Cloud Build probe. Actual `/v1/config` and `/signin` routes return 200 and protected `/v1/sync` returns 401. Use `/v1/health` for public health verification; do not infer a service-wide routing failure from `/healthz`. Explicit ingress/default-URL settings and Firebase Hosting routing did not change that path-specific behavior; temporary Taiwan diagnostic service removed after confirming primary routes.
+
+- 2026-10-29: Flutter SDK manifest downloads returned 404; cloning official tag 3.47.8 bootstrapped the exact SDK successfully. Initial Gradle release setup downloaded `com.android.tools.build:builder:8.13.2` very slowly. Parallel byte-range download from Google plus its published SHA-1 verified the complete jar, then the standard Gradle cache resumed packaging. No dependency versions changed.
+
+- 2026-10-29: Browser account confirmations succeeded (HTTP 200), but neither client registered a native return link. Users remained in the browser; phone background timers could stop polling. Fix with a fixed token-free native wakeup, existing-activity/window focus, visible browser fallback and foreground-only Android handoff consumption. No auth token or arbitrary redirect URL is accepted by the native return.
+
+- 2026-10-29: The native return fix did not address the extra post-Google `Connect this account` gate. Isolated Chrome reproduced a successful Google response with zero handoff submissions after one click. Comparing user-review’s immediate success callback and Diane’s native Firebase success flow exposed this unnecessary pause. Remove the gate, add single-action regressions, and reload on new app fragments so reused tabs cannot keep an old session/challenge. Previous endpoint/native callback tests alone did not establish the complete user flow.
+
+- 2026-10-30: Sync retries repeatedly failed with 422 because old Markdown contained blank checklist titles. Local read-only validation reproduced this without exposing task text; backend and both clients now preserve valid blank string titles. No notes are dropped to satisfy validation.
+- 2026-10-30: Mac sync awaited animation frames around local writes, which could remain suspended in a hidden WebKit window. A bounded render yield releases the UI wait while preserving serialized writes. Added measured progress and failure stage/date context.
+- 2026-10-30: Date-key-only conflict choices could apply a newer version than the one reviewed. Both clients now require the reviewed fingerprint/revision to match, save both copies on detection, and reject stale decisions.

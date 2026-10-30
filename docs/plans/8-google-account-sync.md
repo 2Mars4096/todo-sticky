@@ -14,7 +14,8 @@
 - [x] Merge the Flutter Android app and integrate Account & sync settings, system-browser Google login, secure REST session renewal, owner binding and foreground sync.
 - [x] Add phone conflict choices and recovery export using the shared versioned record contract and durable local persistence.
 - [x] Complete the integrated Flutter account analyzer, test and APK verification run and record results.
-- [ ] Deploy with the user's actual Firebase project/configuration and verify Google login and physical two-device sync.
+- [x] Deploy the actual Firebase/Cloud Run service and verify authenticated synthetic account synchronization.
+- [ ] Verify real Google browser login and physical two-device sync after explicit user sign-in and opt-in.
 
 ## Decisions
 

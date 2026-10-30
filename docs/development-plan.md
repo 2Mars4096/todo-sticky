@@ -1,10 +1,14 @@
 # Development Plan
 
+## User workflow improvement direction
+
+- [Plan 10](plans/10-user-workflow-improvements.md) records the 2026-10-30 functional feedback and reviewed design constraints. Prioritize awareness/retrieval, easier planning setup, optional recurrence and progress review. Preserve existing sequencing/subtask editing; hold goal linking and completion redesign. Desktop source implementation and UI/UX review are complete in [10-1](plans/10-1-desktop-workflow.md). Matching Android UI, second review, Mac installation and signed APK +7 delivery are complete in [10-2](plans/10-2-review-install-and-android.md). Schedule definitions remain local; optional shared schedules and physical-device/user studies are follow-on work.
+
 ## Authorized cloud deployment
 
-- Current delivery is local-only: macOS account-sync build installed and matching Android APK delivered. User chose to wait for a billing-project quota increase before backend deployment; no alternate billing account or existing-project deployment is selected.
+- Desktop and Android account-enabled builds are delivered. On 2026-10-29 the user supplied a dedicated billing account; the Firebase/Cloud Run backend is deployed. Real Google browser sign-in and physical two-device acceptance remain.
 
-- Deploy Sticky Todo in a new Google Cloud/Firebase project on user-review’s billing account; enable Google sign-in and deliver the account-enabled desktop/Android apps. User authorized this on 2026-10-28. Track [8-2](plans/8-2-cloud-deployment.md).
+- Deploy Sticky Todo in a new Google Cloud/Firebase project on the dedicated `todo-sticky` billing account supplied on 2026-10-29; enable Google sign-in and deliver the account-enabled desktop/Android apps. User authorized this on 2026-10-28. Track [8-2](plans/8-2-cloud-deployment.md).
 
 ## Authorized account and mobile expansion
 

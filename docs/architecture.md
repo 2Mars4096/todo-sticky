@@ -2,6 +2,8 @@
 
 ## Flutter Android
 
+- Daily phone rows expose a `ReorderableDragStartListener` grip; the sliver contains visible rows only and maps reorder positions back to the stored list so hidden completed tasks remain intact. Task actions use named icon buttons, with editing and secondary actions under horizontal dots.
+
 - `mobile/` is the native phone client. `models/` preserves Task/FinishPromise/Goal/Mission JSON contracts; `state/sticky_store.dart` owns independently usable local state and `services/persistence.dart` serializes atomic app-private saves with readable backups. API credentials use Android secure storage and never enter notebook exports or sync records.
 - `services/ai_service.dart` provides explicit HTTPS provider operations with real error diagnostics and strict plan validation; phone `screens/` and `widgets/` keep capture, proposals, completion review and recovery close to their task.
 - Android Kotlin handles only user-chosen file imports/exports through the Storage Access Framework. No broad external storage permission or local desktop bridge is introduced. The native Focus painter is a mobile visual adaptation, retaining lifecycle/history behavior.
@@ -28,6 +30,8 @@
 - [ ] Runtime or deployment targets: desktop app for macOS, Windows, and Linux.
 
 ## Repository Layout
+
+See [folder guide](folder-guide.md) for hidden directories, script purposes and safe cleanup boundaries. Local `.worktrees/` checkouts are ignored but must be managed through Git.
 
 - [ ] `src/`: React application shell, task UI components, hooks, API bridge, and global sticky-note styling.
 - [ ] `src-tauri/`: Rust commands, config, markdown/file-sync logic, tray/window behavior, and native app packaging.
@@ -213,7 +217,7 @@
 - Carried archive templates retain original positions, including hidden completed roots; a separate saved-content map suppresses unchanged writes. This permits deletion Undo after persistence without losing the original hierarchy, metadata, source date or order.
 - `src/taskHistory.ts` owns one-level deletion and plan Undo. It reverses the affected change while preserving later unrelated edits. Restoring an unfinished deleted step reopens a closed parent. Plan Undo retains subsequently completed, stopped or edited generated blocks. Undo expires on another undoable action, dismissal, successful reload, moving work or changing the task store; it is not a persistent cross-session history.
 - `src/taskPlanning.ts` validates provider output before mutation: known open task IDs, explicit time bounds, chronological blocks, selected machines and non-overlap per assignee. `ScheduleView` captures date, task fingerprint, time window and machine choices. Generation is a preview; Apply / Discard are explicit, and changed context invalidates the proposal.
-- Generated steps use `plan_<date>_<batch>_<sequence>` IDs in existing Markdown ID comments. Replanning replaces only unfinished generated steps for that planning date; manual, completed/stopped and other-date steps remain. Applying a plan records a targeted Undo.
+- New generated steps use `plan_<date>_<batch>_<sequence>_h<text-hash>` IDs in existing Markdown ID comments. Replanning replaces only unchanged todo suggestions with a matching original-text hash for that planning date; edited/started, legacy, manual, completed/stopped and other-date steps remain. Applying a plan records a targeted Undo.
 - Native `llm_schedule` accepts optional date/window/machine context for older callers, while the current frontend always sends it explicitly. No occupation, hardware inventory or work hours are invented. See `llm-api-guide.md` for the request/response contract.
 - Focus keeps session controls usable after construction, shader or WebGL context errors through projected SVG fallback and an explicit retry. Renderer resources/listeners/frames are cleaned up on exit; reduced motion redraws on relevant changes instead of continuously when idle. Finishing a focus session does not complete the task outcome.
 
@@ -269,3 +273,50 @@ Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and
 ## Documentation recordings
 
 - `scripts/record-demos.cjs` drives the production frontend through disposable Playwright contexts using the synthetic test bridge. Fictional tasks and fixed AI responses stay browser-local. FFmpeg exports README GIF/MP4 assets to `demo/`; temporary recordings/screenshots live in ignored `output/playwright/`. See `demo/README.md` for reproduction and environment overrides.
+
+## Account service deployment
+
+- The personal backend runs in project `sticky-todo-20261028`, Cloud Run service `sticky-todo-sync` in `asia-southeast1`, backed by the same-region Firestore database. A dedicated billed project and `sticky-sync` runtime identity keep it separate from user-review and Drive operations.
+- The public service uses application-level Firebase authentication, an owner email allowlist, direct-client-denying Firestore rules and active login-handoff expiry. `/v1/health` avoids the observed Google frontend interception of `/healthz`. Firebase Hosting also rewrites to the same service; clients use the canonical Cloud Run origin for stable account bindings. See [deployment and connection steps](account-sync.md#personal-deployment).
+
+- `release/` holds ignored local deliverables; the optimized ARM64 release APK is available at `release/todo-sticky.apk`. Original download and verification evidence remain under `output/account-sync/`.
+
+- Android local distribution uses an ARM64 release APK (AOT, R8/resource shrinking and icon tree shaking), with the sync-service origin supplied by `SYNC_SERVER_URL`. The private persistent signing key is outside the repo; ignored `mobile/android/key.properties` references it. CI debug artifacts remain review-only. See [release build instructions](../mobile/README.md).
+
+- Android screen copy prioritizes actions and current state over static explanations. `AccountScreen` renders a status region only when a message exists; signed-in identity, explicit upload scope and conflict recovery remain visible. The copy pass leaves the sync protocol and persistence unchanged.
+
+## Native account return
+
+- macOS registers `todo-sticky` in `src-tauri/Info.plist`; `RunEvent::Opened` accepts only the token-free `account-return` URI to show/focus the existing window. The native sign-in launcher adds `returnTo=app` to the fragment only on macOS.
+- Android registers the same host on its single-task activity, with Flutter route handling disabled so returning preserves the existing Account screen and pending controller. Handoff polling waits while backgrounded.
+- The browser confirms with the existing protected endpoint, then attempts native return and exposes a visible fallback link. It never accepts an arbitrary redirect destination or includes credentials in the return URI. Older clients keep manual-return instructions.
+
+- Browser Google sign-in now completes the handoff in the original button action after the account chooser resolves, matching user-review’s immediate success callback. There is no second account-confirmation gate. A new app fragment in a reused tab reloads the page to discard stale challenge state. Login never starts on page load, and cloud sync still requires app-side opt-in.
+
+## Sync progress and conflict workspace
+
+- `src/syncProgress.ts` and `SyncProgressView` provide indeterminate preparation stages, acknowledged record counts, elapsed/waiting time and a bounded UI-frame yield; the apply overlay shares the same display. Android uses `CloudSyncProgress` and `widgets/sync_progress.dart`. Neither progress model is persisted or treated as a write acknowledgement.
+- `src/syncConflicts.ts` owns detached, deduplicated local recovery snapshots, reviewed-version fingerprints and readable nested comparisons. `ConflictReview` provides a dedicated in-place workspace; Account keeps connection/export details secondary. Both clients persist both sides at detection and revalidate the displayed snapshot/revision before a chosen replacement. Recovery remains local; exports preserve full original records.
+- The task sync schema permits legacy blank string titles already supported by Markdown; type/size/tree/status checks remain. Empty goals and non-string titles remain invalid.
+
+
+## Desktop workflow additions
+
+- `taskArchive.ts` provides recursive date/root-aware search and honest list-date summaries; `taskArchiveReader.ts` shares only in-flight canonical native archive reads with bounded waits. `ArchivePage` mounts on demand for Search/Progress, reports partial coverage, renders batches and returns to the original task/step through save-gated App navigation.
+- `routines.ts` owns calendar cadence, strict schedule parsing and stable occurrence IDs. `useRoutines` persists folder-scoped schedules in device-local WebView storage, separate from synced GoalItem records. `useTasks.ensureRoutineTask` uses the ordinary pending-save/retry path; handled markers are committed only after task persistence. Schedules generate when Today and its archive are loaded, using the device local calendar, without missed-day backfill.
+- `ScheduleView` remembers device work-window/machine choices and collects optional task time budgets/unavailable periods together. Per-task `planning` data reaches the native prompt; `validateDayPlan` enforces budgets and excluded periods. New generated step IDs append `_h<original-text-hash>`; only unchanged todo suggestions without nested work/metadata are replaceable. Legacy IDs are conservatively retained.
+- App's compact Account indicator uses `useCloudSync.upToDate`, tied to the acknowledged context and editor change fingerprint. Concurrent/new edits invalidate it; conflicts/errors retain precedence. Task text never implies finer per-task sync precision.
+- `workflow.css` keeps secondary pages flat and bounded; minimum-window footer spacing preserves a single normal-text row and allows enlarged-text wrapping. Progress uses list-date states and retained planned focus minutes, never invented completion timestamps or actual work duration.
+
+
+## Android workflow parity (2026-10-30)
+
+- `mobile/lib/models/workflow.dart` shares desktop-compatible UTF-16 plan fingerprints and routine occurrence IDs, plus recursive archive rows/search. `ArchiveScreen` provides Search and day/week Progress; `TaskReviewScreen` edits the original dated tree and expands the matching step path. Both listen to the notebook rather than keeping a second task store.
+- `StickyStore` saves device-local `routineSchedules` alongside ordinary tasks in one atomic notebook snapshot. Initialization, local changes and day rollover generate only current due occurrences; Pause/Skip/Manual retain handled dates. Invalid schedules preserve their raw data and disable only scheduling. Generated tasks use existing sync; schedules remain excluded from sync records.
+- Preferences retain planning window/machines. `AiService` carries optional composite-ID budgets/unavailable periods and validates every response. Replanning replaces only matching untouched todo fingerprints, including steps received from desktop; legacy, edited, started and nested work remains.
+- `CloudSyncController.upToDate` compares the current sync payload against acknowledged content/owner and clears it on changes. An optional app-level indicator builder keeps account presentation outside standalone core startup. Phone Focus places controls before the route graphic and returns to the original task after finishing.
+
+
+## Shared note material surface
+
+`note-materials.css` defines `--note-material-surface` for Frosted/Liquid and uses it for the shell and swatches. Base and compact Goals backgrounds consume the same inherited token with their established Paper fallback. Material effects therefore remain consistent across the note, Goals and Routines without changing the saved preference, layout or native opacity.

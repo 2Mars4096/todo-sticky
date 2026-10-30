@@ -208,3 +208,39 @@ Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stab
 Paper remains the default. Settings → Style offers Frosted glass (soft warm-to-sage light and satin edges) and Liquid glass (curved specular highlights and a polished capture button). The material belongs to the note surface; task rows stay flat. Text retains warm graphite contrast. Effects are static, with no perpetual animation, and reduced transparency removes backdrop filtering from controls. The native window stays opaque.
 
 Settings navigation now reads Storage, Style, AI, Integrations, Updates in a single row. Style changes apply immediately and persist locally, separately from Save/Cancel for native settings.
+
+## Android copy density
+
+Lead with controls and current data. Omit promotional intros, repeated page headings, generic offline reassurance and permanent how-to footers. Empty states use a short status next to an obvious capture action. Keep concise upload consent, conflict recovery, replacement warnings, save failures and accessible control labels at the point of action.
+
+## Account and conflict controls
+
+Use short labels and current data. Identity and sign-out share one row; sync toggle/action share the next. Progress has a compact stage, bar, counts and elapsed time. Connection details stay collapsed. Conflict/recovery review is a separate in-place view, with paired readable versions, explicit selection, visible deletion states, local saved copies and contextual export. Avoid standing descriptive paragraphs and raw JSON previews.
+
+## Android task controls
+
+Daily root tasks expose a six-dot drag grip before the checkbox. Expanded actions use quiet, touch-sized Focus, Add step, Suggest and Move icons; horizontal dots disclose editing, copy, status and delete. Tooltips and accessible names retain action meaning without persistent text labels.
+
+## Workflow additions: preserve prior fixes
+
+The 2026-10-30 functional review is tracked in [plan 10](docs/plans/10-user-workflow-improvements.md). Apply these constraints to future additions:
+
+- Reuse task/subtask ordering and editing; put planning inputs together inline and remember useful defaults.
+- Keep Search and Progress intentional secondary destinations. Capture remains the launch surface; backlog awareness belongs at the existing Earlier tasks disclosure.
+- Preserve direct desktop action icons, phone drag grips, quiet copy, stable Settings dimensions and aligned Outcome/Due fields. Do not restore Enter-to-add hints, duplicate Edit commands, a global history checkbox or idle compact rails.
+- Keep task text/status styling intact. Use small, named status indicators at the granularity actually acknowledged by sync, with details available by keyboard, pointer and touch.
+- Never shift a click target during pointerdown/blur. Keep enlarged-text, compact footer and filtered-list reorder checks when adding controls.
+- Keep progress definitions honest: list date is not completion date, planned focus duration is not actual elapsed work, and incomplete history is not zero progress. Prefer readable totals and task lists over decorative metric cards.
+
+
+## Desktop workflow implementation review
+
+Search focuses its input immediately; Progress uses date/period selection, quiet totals and ordinary task lists. Both replace the center content on demand and offer Tasks to return. Keep new footer entries as named accessible icons and the account status as a small symbol; 340px normal-text production layout fits one row, with wrapping for enlarged text. Plan closes optional adjustments and brings a valid proposal into view. Scheduled routines have one Pause/Resume action and a noninteractive repeat symbol, avoiding a second checkbox-like action. Device-local scope is stated once beside Routines. Review evidence and remaining acceptance limits: [10-1](docs/plans/10-1-desktop-workflow.md).
+
+
+## Phone workflow review
+
+Search and Progress occupy intentional routes, leaving Notes as the default. Toolbar entries are accessible icons; account status opens details directly. Routine scope text and reset controls wrap, and Reset appears only for completed manual reminders. Planning Apply/Discard can wrap at enlarged text. Active Focus controls precede the orbital graphic; completion returns to the top so Review task is immediately reachable. Original-date task review expands the matching tree and preserves ordinary editing/Undo. Reviewed at 360px and 150% text with synthetic data.
+
+
+Goals and Routines must honor the selected note material in both compact overlay and wide sidebar layouts. Use the shared `--note-material-surface` instead of a fixed yellow background; retain the established Paper fallback. Material review includes opening Goals at 340, 460 and 1000px, not just inspecting the note and Settings preview.

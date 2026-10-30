@@ -183,7 +183,7 @@ The response is untrusted until `validateDayPlan` accepts it:
 
 Blocks must identify an open input task, stay inside the requested window, use human or a selected machine, and not overlap for one assignee. The frontend sorts accepted blocks chronologically. Exact task IDs take precedence; legacy title-only results are accepted only when the title identifies exactly one open task. Unknown/ambiguous targets and invalid blocks reject the whole proposal before any write.
 
-Generation does not mutate Markdown. Apply checks that the selected date, tasks and planning details still match the captured context. It replaces only unfinished generated blocks for that planning date, using `plan_<date>_<batch>_<sequence>` IDs through existing Markdown ID comments. Manual, completed/stopped and other-date steps remain. Discard makes no change; the desktop's one-level Undo reverses application without reverting later independent edits. This does not add CLI Undo or change task API schemas.
+Generation does not mutate Markdown. Apply checks that the selected date, tasks and planning details still match the captured context. New generated blocks use `plan_<date>_<batch>_<sequence>_h<original-text-hash>` IDs through existing Markdown ID comments. Replanning replaces only unchanged todo suggestions for that date with a matching hash and no added metadata/nested work. Edited, started, legacy, manual, completed/stopped and other-date steps remain. Discard makes no change; the desktop's one-level Undo reverses application without reverting later independent edits. This does not add CLI Undo or change task API schemas.
 
 ### Codex Background Provider
 
@@ -228,3 +228,19 @@ Desktop `push_task` accepts optional `taskSnapshot` and `parentSnapshot` Task ob
 Desktop `llm_breakdown` accepts optional `suggestFinish: true` to return `{ "finishSuggestion": "One short observable outcome", "subtasks": [] }` instead of steps. The UI treats it as unaccepted placeholder text until Tab acceptance; default breakdown behavior is unchanged.
 
 Internal desktop command `frontend_ready` accepts no arguments and acknowledges the committed shell for one-time window reveal; it does not read or mutate task data and is not a task API operation.
+
+## Optional cloud service
+
+The account-sync service and its versioned protocol are documented in [account-sync.md](account-sync.md). `GET /v1/health` is the public deployment health check; user-data endpoints require Firebase authentication. Local task API usage remains independent of the service.
+
+The browser sign-in fragment accepts optional `returnTo=app` from updated Android/macOS clients. This enables the fixed token-free `todo-sticky://account-return` wakeup after confirmation; it is not an authentication API and never accepts tokens or arbitrary return URLs. Proof-bound `/v1/auth/exchange` remains required.
+
+The hosted page now sends `/v1/auth/complete` immediately after the explicitly initiated Google account chooser succeeds; it does not require a second confirmation click. A fresh sign-in fragment in an existing tab resets the page to avoid using an older request. The identity/proof requirements and app-side sync opt-in are unchanged.
+
+Cloud date records retain legacy blank checklist titles as strings; task size/type/status/tree constraints still apply. Conflict resolution is based on the exact reviewed local payload and cloud revision/payload, not only the date key. Both original versions are saved locally before applying a choice.
+
+
+Desktop planning may attach `planning: { preferenceOrder, maximumMinutes, unavailable: [{ start, end }] }` to each task in the `llmSchedule` request. `maximumMinutes: null` permits an AI estimate; explicit budgets bound the total scheduled time for that task. Unavailable periods are excluded for all assignees. These are proposal inputs, not new persisted Task/CLI fields. Generation and application remain separate, with stale-context and Undo protections.
+
+
+Android uses the same `_h<original-text-hash>` replacement policy for generated plan steps received through sync. Its AI request carries `planning.estimates` keyed by `sourceDate/taskId` and `planning.unavailable` periods; validation enforces the same budgets and exclusions. Device-local routine schedules are not callable task-API or cloud records; their generated tasks use ordinary stable IDs and existing CRUD/sync contracts.

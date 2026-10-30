@@ -1,5 +1,95 @@
 # Changelog
 
+## 2026-10-31 — Prepare reviewed source batches for publication
+
+- [repository] Group account/native transport, desktop workflows, Android parity, Goals material and shared documentation into separate commits. Ignore local browser sessions and all review/delivery output, preserving artifacts on disk.
+- [validation] 19 Node suites, TypeScript, 15 backend tests, Flutter formatting/analyzer and 60 Flutter tests pass; candidate-source scan finds no credential patterns or large artifacts. Publication receipt: [11](plans/11-batched-publication.md).
+
+## 2026-10-30 — Goals follows the selected note material
+
+- [fix] Share the Frosted/Liquid surface with Goals and Routines, replacing both base and compact fixed-yellow overrides while preserving Paper defaults and the saved preference.
+- [verification] Existing material/promotion browser suite now checks open Goals for all three materials at 340/460/1000px; screenshots reviewed. Production/native builds pass; Mac reinstalled and launched with exact bundle/signature checks and all 56 task files/native settings unchanged. [Details](plans/10-3-goals-material.md).
+
+## 2026-10-30 — Workflow review, Mac installation and Android +7
+
+- [mobile] Add matching Search/Progress, optional local recurrence, remembered planning setup with time budgets/breaks, original-step fingerprint protection, focus-task review and compact account state. Generated task identities match desktop; routine definitions remain local.
+- [review] Harden desktop routine lookup; fix phone enlarged-text header/confirmation overflow, move Focus controls ahead of graphics and reveal Review task after completion. Stopped tasks no longer inflate completion counts.
+- [delivery] Install and launch the verified Mac bundle with all 56 task files/native settings unchanged. Deliver same-key ARM64 APK `release/todo-sticky.apk`, 2.1.15+7 / 2007, 19.49 MB. Isolated emulator update preserves notebook bytes and exposes new controls.
+- [validation] 19 Node suites/TypeScript/desktop browser workflows and 60 Flutter tests/analyzer pass; production builds/signatures and phone screenshots reviewed. Backup, hashes and acceptance boundaries: [10-2](plans/10-2-review-install-and-android.md). No public release/backend changes.
+
+## 2026-10-30 — Desktop workflow improvements and UI/UX review
+
+- [features] Add original-date task/step Search, a day/week Progress page, quiet Earlier tasks awareness, device-local optional recurrence, inline plan budgets/breaks, remembered planning window/machines, post-focus task review and a compact truthful sync indicator.
+- [recovery] Retain edited/started/legacy plan steps when replanning; validate unavailable time and budgets; acknowledge routine occurrences only after task save, deduplicate retries, and preserve unreadable schedules. History reads remain lazy, bounded and shared while pending.
+- [review] Inspect compact/default/wide screenshots and user flows. Fix hidden plan proposals, duplicate pause controls, internal status labels, invalid date display and footer wrapping. Keep capture, manual completion, independent goals and task ordering intact.
+- [validation] TypeScript/build, 19 Node suites, 36 native tests and four production browser suites pass. See [10-1](plans/10-1-desktop-workflow.md). Desktop source only; Android UI, installed apps, releases and live user data unchanged.
+
+## 2026-10-30 — Functional improvement scope and design safeguards
+
+- [planning] Reconcile all twelve review points with user feedback in [plan 10](plans/10-user-workflow-improvements.md). Reuse task/subtask ordering and applied-plan editing; hold goal linking and completion redesign. Specify quiet backlog awareness, search, optional recurrence, inline planning inputs, clearer dates, post-focus review, Progress and minimal sync status.
+- [review] Check previous compact-layout, direct-action, copy, startup, date-editor, archive-loading and conflict-recovery fixes. Record truthful dashboard/date metrics and date-level sync indicators as design gates.
+- [scope] Documentation only; no app implementation, deployment, installation or user-data changes. Platform/delivery scope remains open.
+
+## 2026-10-30 — Phone drag grips and icon actions
+
+- [mobile] Add a visible six-dot grip for immediate daily task reordering; preserve hidden completed tasks through visible-to-stored index mapping. Focus, Add step, Suggest and Move use icon buttons; horizontal dots reveal editing, copy, status and delete.
+- [validation] Flutter analysis and all 52 tests pass, including drag/reload, filtered reorder, 360px layouts and enlarged text. Optional phone screenshots render successfully and the expanded task layout was visually reviewed. Physical-phone interaction remains unverified.
+- [delivery] Build Android 2.1.15+6 / versionCode 2006 with the existing release key and configured sync service; delivery at `release/todo-sticky.apk`. See [7-4](plans/7-4-phone-task-controls.md).
+
+## 2026-10-30 — Account workspace, conflict recovery and sync progress
+
+- [ui] Replace Account descriptions and prominent export controls with compact identity/sync rows, aligned buttons and visible stage/count/elapsed progress. Add in-place Conflicts & recovery with readable task trees, differences-only filtering, version selection, saved-copy browsing and scoped export.
+- [safety] Preserve both versions on conflict detection, deduplicate copies, and reject choices if the reviewed contents or cloud revision changed. Android uses the same protection; no user conflicts were resolved automatically.
+- [sync] Accept legacy blank checklist titles across the backend and both clients, preserving older notes. Replace Mac frame-only waits with a bounded fallback; error context identifies the stage/date. Deployed backend revision `sticky-todo-sync-00010-62k`; live uploads now succeed.
+- [delivery] Reinstall Mac with all 56 task files/settings unchanged; deliver signed Android +5 at `release/todo-sticky.apk` (19.43 MB, same key). TypeScript, 18 Node suites, 15 backend tests, Flutter analysis/50 tests, browser layout/interaction checks and emulator update pass. [Progress](plans/8-6-sync-progress.md), [workspace](plans/8-7-account-conflict-workspace.md).
+
+## 2026-10-29 — Finish sign-in directly after Google
+
+- [fix] Match user-review’s immediate post-Google completion: the user’s original sign-in click now submits the protected handoff after account selection, without a second Connect this account gate. Keep explicit account choice and separate sync opt-in; clarify retry/cancellation and prevent duplicate submissions.
+- [fix] Reload fresh app fragments in a reused sign-in tab so an earlier session/challenge cannot remain active. Browser cleanup no longer blocks return.
+- [validation] Reproduce the old zero-handoff/second-button behavior in isolated Chrome, then verify single-click completion and fresh-request reuse locally and on the hosted page using synthetic identity responses. All 16 Node suites pass. Deploy revision `sticky-todo-sync-00009-zz6` and verify exact served source/no-store/auth rejection. No app reinstall or user-data changes. [Record](plans/8-5-single-step-google-signin.md).
+
+## 2026-10-29 — Return to app after Google confirmation
+
+- [fix] Register a fixed token-free `todo-sticky://account-return` callback on macOS/Android. Successful browser confirmation attempts return and exposes a fallback link; older clients retain manual-switch instructions. Android consumes the protected handoff only after returning to the foreground.
+- [delivery] Deploy web revision `sticky-todo-sync-00008-mr2`, install the verified Mac build with 56 task files/settings unchanged, and replace `release/todo-sticky.apk` with signed 19.36 MB Android +4.
+- [validation] 16 Node suites, 36 native tests, 45 Flutter tests, analysis and 14 backend tests pass. Actual native callbacks retain the same Mac process and Android Account screen; deployed files match source and unauthenticated sync remains denied. [Details](plans/8-4-browser-return-handoff.md).
+
+## 2026-10-29 — Concise Android screen copy
+
+- [ui] Remove repetitive intros, slogans and permanent instruction blocks across Notes, Account, Settings, AI, Machines, Goals/Routines, Focus, Music and Plan. Keep current data, accessible control names, upload consent, conflicts/recovery, replacement warnings and errors.
+- [delivery] Rebuild `release/todo-sticky.apk` as 2.1.15+3 / 2003, still 19.36 MB, with the same release key and prefilled sync URL. Preserve the previous release in ignored local artifacts.
+- [validation] Flutter analysis and all 44 tests pass, including narrow/enlarged-text cases. Review ten Android surfaces and verify in-place update preserves the synthetic notebook. Final package signature passes; [record](plans/7-3-concise-mobile-copy.md).
+
+## 2026-10-29 — Backend-connected macOS reinstall
+
+- [delivery] Rebuild and install `/Applications/Sticky Todo.app` with the deployed sync origin prefilled through `VITE_SYNC_SERVER_URL`. Preserve saved overrides, account consent and local data; Google login and folder-sync opt-in remain explicit.
+- [validation] Live public Firebase config, TypeScript and 15 Node suites pass; optimized native build, strict signature, installed bundle hashes and launch verify. Back up app/settings/WebKit/tasks; all 56 task files and native settings unchanged after launch. Details: [8-3](plans/8-3-backend-connected-macos-install.md).
+
+## 2026-10-29 — 19.36 MB Android release APK
+
+- [delivery] Replace `release/todo-sticky.apk` with optimized ARM64 2.1.15+2 (versionCode 2002), reducing the APK from 86.82 MB to 19.36 MB (77.7%). Retain all features and prefill the deployed sync URL. Persistent release signing stays outside Git; prior debug installs require export/reinstall/import because their certificate differs.
+- [validation] Flutter analysis, all 44 tests, APK signature/ABI/debug-content checks, and isolated Android emulator launch/task persistence/account configuration checks pass. Runtime error log is empty; original debug download retained. Details: [7-2](plans/7-2-small-release-apk.md).
+
+## 2026-10-29 — Safe repository folder cleanup
+
+- [maintenance] Remove reproducible Rust compiler caches, backend bytecode, selected Finder metadata and the empty `.cursor/`; retain native binaries, bundles, rollback copies, task data, private configuration, dependencies and delivery evidence.
+- [documentation] Add the folder/script guide and ignore local linked checkouts. Preserve the unmerged `today-first-planning` worktree and existing deployment/APK changes. Native rebuilds will take longer after cache removal.
+
+## 2026-10-29 — Correct APK filename
+
+- [delivery] Rename the local APK to `release/todo-sticky.apk` and update its documentation to match the repository name.
+
+## 2026-10-29 — Short local APK path
+
+- [delivery] Copy the verified Android APK to `release/sticky-todo.apk`, confirm matching SHA-256 and ignore local release downloads in Git.
+
+## 2026-10-29 — Live account-sync backend
+
+- [deployment] Link `sticky-todo-20261028` to the user’s new dedicated billing account and deploy the Singapore Cloud Run backend with its dedicated runtime, owner-only access and active login-handoff TTL. Authorize the service hostname in Firebase Google sign-in; document the desktop/Android service URL.
+- [fix] Add `/v1/health` after observing Google frontend 404 responses specifically for `/healthz`; actual configuration/sign-in/sync routes work. Remove the temporary Taiwan diagnostic service.
+- [validation] All 14 backend tests and 27 live synthetic checks pass, including runtime-signed handoff, Firebase exchange, conflict/idempotency/pagination, isolation and direct Firestore denial. Restore owner-only access and delete all disposable accounts/records. No real notes uploaded; real Google browser login and physical two-device acceptance remain.
+
 ## 2026-10-28 — Account integration and demo source checkpoint
 
 - [repository] Prepare the user-requested commit/push of integrated Android/account-sync source, local-install and deferred-cloud records, and preserved README/demo work. Clarify that current main includes accounts while the public v2.1.15 desktop release predates them.

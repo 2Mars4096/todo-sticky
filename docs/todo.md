@@ -1,12 +1,41 @@
 # Todo
 
-- [ ] [8-2-cloud-deployment](plans/8-2-cloud-deployment.md) — deferred by user pending billing-project quota increase; Firebase/Google sign-in setup exists, backend deployment remains.
+- [ ] [11-batched-publication](plans/11-batched-publication.md) — verified source batches and artifact exclusions; commit/push in progress.
 
-- [x] [8-1-local-install-and-apk](plans/8-1-local-install-and-apk.md) — integrate account sync, reinstall macOS and deliver the matching Android review APK.
+## User workflow refinement
+
+- [x] [10-3-goals-material](plans/10-3-goals-material.md) — Goals/Routines now honor the selected material in compact and wide layouts; all three materials verified and Mac reinstalled with data/settings preserved.
+
+- [x] [10-2-review-install-and-android](plans/10-2-review-install-and-android.md) — second review and Android parity complete; Mac installed with 56 task files/settings unchanged; signed APK +7 delivered and emulator update verified.
+
+- [x] [10-user-workflow-improvements](plans/10-user-workflow-improvements.md) — desktop/Android workflows implemented, reviewed and locally delivered. Schedules remain device-local; physical-device/user studies and optional shared schedule definitions are follow-on work. Goal linking and completion redesign stay on hold.
+  - [x] [10-1-desktop-workflow](plans/10-1-desktop-workflow.md) — backlog cue, Search, constrained Plan, safe recurrence, Progress, focus review and compact sync status; automated and browser checks pass.
+
+- [x] [7-4-phone-task-controls](plans/7-4-phone-task-controls.md) — visible drag grips, icon-only task actions and horizontal more menu; signed Android +6.
+
+- [x] [8-7-account-conflict-workspace](plans/8-7-account-conflict-workspace.md) — refine Account controls and add concise conflict/recovery review, preserving both copies and guarding stale choices.
+
+- [x] [8-6-sync-progress](plans/8-6-sync-progress.md) — show desktop/phone sync progress, fix blank historical checklist rejection, reinstall and rebuild.
+
+- [x] [8-5-single-step-google-signin](plans/8-5-single-step-google-signin.md) — compare working reference flows, remove the second confirmation and stale-tab state, and deploy the verified hosted fix.
+
+- [x] [8-4-browser-return-handoff](plans/8-4-browser-return-handoff.md) — deploy confirmation-gated return, reinstall Mac, and deliver Android +4; existing-window/activity return verified on both.
+
+- [x] [8-3-backend-connected-macos-install](plans/8-3-backend-connected-macos-install.md) — installed and launched desktop with live sync URL prefilled; 56 task files/settings unchanged.
+
+- [x] [7-3-concise-mobile-copy](plans/7-3-concise-mobile-copy.md) — remove repetitive Android descriptions; deliver verified 19.36 MB +3 APK with the same update-compatible release key.
+
+- [x] [9-folder-cleanup](plans/9-folder-cleanup.md) — remove disposable caches; preserve unmerged work/data and document hidden folders and scripts.
+
+- [x] [7-2-small-release-apk](plans/7-2-small-release-apk.md) — deliver verified 19.36 MB ARM64 release at `release/todo-sticky.apk`, with live sync URL prefilled.
+
+- [x] [8-2-cloud-deployment](plans/8-2-cloud-deployment.md) — new billing linked; Singapore backend deployed; 14 backend tests and 27 live synthetic checks pass. User Google sign-in/two-device acceptance remains in plan 8.
+
+- [x] [8-1-local-install-and-apk](plans/8-1-local-install-and-apk.md) — integrate account sync, reinstall macOS and deliver the matching Android review APK at `release/todo-sticky.apk`.
 
 ## Optional accounts and sync
 
-- [ ] [8-google-account-sync](plans/8-google-account-sync.md) — implementation integrated into local main; macOS installed and Android APK delivered. Cloud Run deployment waits for billing quota; physical two-device acceptance remains pending.
+- [ ] [8-google-account-sync](plans/8-google-account-sync.md) — implementation integrated into local main; macOS installed and Android APK delivered. Cloud Run backend is deployed and verified with synthetic accounts; real Google sign-in and physical two-device acceptance remain pending.
 
 - [x] [7-flutter-android](plans/7-flutter-android.md) — native Android workflow, 22 tests, phone visual review and verified ARM64 debug APK complete on the feature branch; physical-device/provider acceptance remains explicit follow-up.
 - [x] [7-1-diane-remote-feasibility](plans/7-1-diane-remote-feasibility.md) — verify the companion API rejects remote hosts independently of bearer auth; retain prompt copy and document the backend protocol work needed for live phone handoff.

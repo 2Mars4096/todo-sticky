@@ -19,3 +19,13 @@ backend/env.yaml
 
 # Downloaded local installation artifacts
 output/account-sync/
+
+# Local release downloads
+/release/
+
+# Local linked checkouts (managed with git worktree)
+/.worktrees/
+
+# Local browser sessions, review data and delivery verification
+/.playwright-cli/
+/output/

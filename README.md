@@ -2,7 +2,13 @@
 
 A compact desktop planner for daily tasks, clear outcomes, and focused work. Tasks stay in local Markdown files; AI assistance is optional.
 
+Repository files: [folder and script guide](docs/folder-guide.md), including hidden directories and safe cleanup rules.
+
 ## Install
+
+Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed workflow improvements and deployed sync service URL (2026-10-30). Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
+
+Local Android release build: `release/todo-sticky.apk` (ARM64, 19.49 MB, release-signed, sync URL prefilled). The local `release/` folder is excluded from Git.
 
 Download the latest installer from [Releases](https://github.com/2Mars4096/todo-sticky/releases):
 
@@ -104,7 +110,7 @@ See [demo/README.md](demo/README.md) to reproduce the recordings safely.
 
 Drag an earlier task's six-dot handle above the **Earlier tasks** divider to place it among Today's tasks. An empty Today has its own drop area. The full task, steps, outcome and deadline move together. You can also select the earlier task and use **Move to today**, or press Arrow Up on the first handle within its source date. Escape cancels a drag.
 
-Open **Settings → Style** to choose **Paper**, **Frosted glass**, or **Liquid glass**. Choices apply immediately and are remembered on this device. The glass materials are drawn inside the opaque app window. Paper remains the default.
+Open **Settings → Style** to choose **Paper**, **Frosted glass**, or **Liquid glass**. Choices apply immediately to the note and Goals/Routines panel and are remembered on this device. The glass materials are drawn inside the opaque app window. Paper remains the default.
 
 ## Features
 
@@ -125,8 +131,8 @@ Click an unfinished task to select it. Icon buttons for **Focus**, **Add step**,
 - **AI assistance** — Explicitly request outcome suggestions, step breakdowns, or a proposed day plan when useful. Selecting a task does not make an AI request.
 - **Codex background provider** — Run breakdowns, schedules, and album picks through the locally authenticated Codex CLI in an ephemeral read-only workspace, without adding an OpenAI API key
 - **Task-aware albums** — Find four albums suited to the concentration, energy, and atmosphere of the work, in a compact list with musical reasons and listening-mood cues (requires a configured AI provider)
-- **Goals and Routines** — Keep long-term goals and reusable reminders in flat lists. Routines are reset manually; they do not create tasks on a schedule. Type and press Enter to add, double-click or press Enter on a focused item to edit, and Escape to cancel.
-- **Star Focus** — Select a task, choose a duration, then **Start focus**. **Pause**, **Resume**, and **Finish session** control the timer. Sessions travel the Solar Route and enter a native-local log with `6` / `12` / `24` retention presets. Session completion leaves task-outcome review to you. A simplified map keeps controls working if 3D rendering is unavailable, and **Try 3D again** retries it.
+- **Goals and Routines** — Keep long-term goals and reusable reminders in flat lists. Manual reset remains the default. Routines on both platforms can optionally create daily, weekday or weekly tasks, with Pause and Skip next. Schedules run on this device; generated tasks use ordinary task sync. Type and press Enter to add, double-click or press Enter on a focused item to edit, and Escape to cancel.
+- **Star Focus** — Select a task, choose a duration, then **Start focus**. **Pause**, **Resume**, and **Finish session** control the timer. Sessions travel the Solar Route and enter a native-local log with `6` / `12` / `24` retention presets. Session completion leaves task-outcome review to you; **Review task** returns to its original entry. A simplified map keeps controls working if 3D rendering is unavailable, and **Try 3D again** retries it.
 - **Undo and save recovery** — Deleting a task or applying a day plan offers **Undo**. Failed writes keep edits in memory and show a persistent **Changes not saved** notice with **Retry save**. Pending saves must finish before switching dates or task folders.
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
 - **Always on top** — Sticky window stays visible; runs in the menu bar with a tray icon
@@ -142,9 +148,19 @@ AI step suggestions use the outcome and date to propose bounded work including a
 
 ### Review a day plan before applying it
 
-Open **Plan** for the selected date, set your available **From / Until** times, and optionally select configured machines. **Generate proposal** shows chronological blocks and any tasks left unscheduled. Generating a proposal does not change your tasks.
+Open **Plan** for the selected date, set your available **From / Until** times, and optionally select configured machines. The desktop remembers these choices. **Adjust task time & breaks** offers optional time budgets and unavailable periods together; Auto lets AI estimate. **Generate proposal** shows chronological blocks and any tasks left unscheduled. Generating a proposal does not change your tasks.
 
-Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as they were. Replanning replaces unfinished generated blocks for that planning date while retaining manual and completed work. The confirmation offers **Undo**. If tasks or planning details change during review, generate a fresh proposal before applying it.
+Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as they were. Desktop replanning replaces untouched todo suggestions for that planning date while retaining edited, started, manual and completed work. Older generated steps without original-text fingerprints are retained too. The confirmation offers **Undo**. If tasks or planning details change during review, generate a fresh proposal before applying it.
+
+### Search, progress and routines
+
+The magnifying-glass button opens **Search** across task dates, including completed/stopped tasks and steps. Results show their date and parent context; selecting one opens the original task. The chart button opens **Progress** for a day or week. Task counts describe the current states on those dates' lists, not when completion occurred. Steps are separate, and focus totals use retained sessions and planned minutes. Unavailable archive files are reported rather than counted as empty history.
+
+The small account indicator opens Account details. Its symbol and tooltip distinguish local-only, waiting, syncing, cloud-acknowledged and attention states. Editing a task clears the prior synced indication until the current content is acknowledged.
+
+Under **Goals → Routines**, Manual remains unchanged. Daily, Weekdays and Weekly generate one ordinary task on eligible dates when Today is loaded. Weekly uses the weekday you configure it; the device's local calendar controls dates. Schedules are stored on this device for the current task folder, while generated tasks can sync normally. Missed days are not backfilled. **Pause** leaves existing tasks intact; **Skip next** skips the next ungenerated occurrence. Changing a schedule affects future generation, not existing task text. A failed task save leaves the occurrence pending for Retry without duplicating it.
+
+The reviewed desktop build is installed locally. Android 2.1.15+7 adds matching Search, Progress, routine scheduling, planning constraints and focus review. Download the local signed APK from `release/todo-sticky.apk`; it updates the prior release without uninstalling. Schedule definitions remain device-local on both platforms.
 
 ### Recovering moves and saved goals
 
@@ -247,10 +263,10 @@ Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stab
 
 ## Optional Google account and cross-platform sync
 
-The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Same-day conflicts are reviewed explicitly and both versions are retained for recovery; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching Android review APK is available; Cloud Run deployment is deferred pending a billing-project quota increase. The public v2.1.15 desktop release predates these account changes.
+The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Account shows sync progress and a dedicated Conflicts & recovery view. Same-day conflicts are compared as readable versions, with both copies retained locally and stale choices blocked; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching optimized Android release APK is available; The personal Cloud Run service is deployed; see [connection steps](docs/account-sync.md#personal-deployment). Updated macOS/Android builds return from browser confirmation to the app, with a **Return to Sticky Todo** fallback button. The public v2.1.15 desktop release predates these account changes.
 
 ## Android app (Flutter)
 
-The native phone app lives in [`mobile/`](mobile/README.md). It carries task capture, nested steps, outcomes/deadlines, goals/routines, AI planning, music suggestions and Focus into a phone layout, with offline persistence and secure provider keys. See the mobile README for build instructions, feature parity, account integration and platform-specific boundaries. The Flutter Android workflow produces an installable review APK; production distribution requires your release signing key.
+The native phone app lives in [`mobile/`](mobile/README.md). Daily tasks have visible drag grips for reordering and icon-only actions with a horizontal dots menu. It carries task capture, nested steps, outcomes/deadlines, goals/routines, AI planning, music suggestions and Focus into a phone layout, with offline persistence and secure provider keys. See the mobile README for build instructions, feature parity, account integration and platform-specific boundaries. The Flutter Android workflow produces an installable review APK; production distribution requires your release signing key.
 
 Live Diane companion handoff remains a known phone gap: Dear Diane's `/api/sticky-todo` protocol explicitly enforces local-only access independently of its remote bearer authentication. Android retains Copy agent prompt. The [protocol review](mobile/README.md#dear-diane-companion-protocol-review) identifies the backend work required for remote support.
