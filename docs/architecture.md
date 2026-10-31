@@ -3,6 +3,7 @@
 ## Flutter Android
 
 - Daily phone rows expose a `ReorderableDragStartListener` grip; the sliver contains visible rows only and maps reorder positions back to the stored list so hidden completed tasks remain intact. Task actions use named icon buttons, with editing and secondary actions under horizontal dots.
+- Earlier rows expose a separate handle-only `Draggable`. Today provides header, empty-list and row insertion targets; edge scrolling keeps the source row alive until drop/cancel. `StickyStore.moveTask(beforeId:)` performs the full-tree date move, preserving IDs and hidden completed rows.
 
 - `mobile/` is the native phone client. `models/` preserves Task/FinishPromise/Goal/Mission JSON contracts; `state/sticky_store.dart` owns independently usable local state and `services/persistence.dart` serializes atomic app-private saves with readable backups. API credentials use Android secure storage and never enter notebook exports or sync records.
 - `services/ai_service.dart` provides explicit HTTPS provider operations with real error diagnostics and strict plan validation; phone `screens/` and `widgets/` keep capture, proposals, completion review and recovery close to their task.
@@ -10,6 +11,15 @@
 - `StickyStore.syncRecords()`, `applySyncRecord()`, per-account `syncMetadata`, and `StickyApp.accountBuilder` are the integration seam for the separate Google account/sync branch. Active timers, provider keys and device settings remain local.
 - `.github/workflows/flutter-android.yml` runs format/analyze/tests and builds an ARM64 debug review APK; release signing requires a locally supplied keystore.
 - Remote Diane handoff is not part of the phone implementation: Dear Diane's companion router enforces `local_only` even behind remote bearer authentication. Its generic run API does not provide the companion defaults/receipt contract. See [7-1](plans/7-1-diane-remote-feasibility.md); no agent links or bearer tokens enter notebook/sync records.
+
+## Linked goal plans
+
+- `GoalItem.plan` holds bounded `{id, text}` steps. `Task.goalId` and optional `goalStepId` connect actual daily work to its goal. Plan steps have no copied dates/statuses; scheduling uses the step ID as the task ID and scans all dates to prevent duplicate scheduling.
+- `GoalPlanScreen` provides manual steps, editable AI proposals and selected scheduling to Today or a chosen date. `GoalProgress` derives completion from every dated fragment of a step; all must be done. The goal's own completion remains manual. `ArchiveScreen` filters dated task statistics by goal while displaying lifetime plan progress separately.
+- `StickyStore` validates the whole schedule batch before a single atomic notebook save, and checks the goal fingerprint before accepting an AI proposal. Removing a plan step retains its existing daily work and goal association. Nested additions, daily plans and moves preserve provenance; text-based history/parent matching cannot merge separate goals.
+- JSON exports retain plans and links. Dart and Rust Markdown codecs place escaped `sticky-todo:goal` metadata after optional text metadata and before finish/ID markers. Pasting new tasks keeps the goal link but drops plan-step identity. Desktop task transforms and goal normalization preserve the shared fields.
+- The backend advertises `goalPlanning:true` and payload schemas `[1,2]` under protocol 1. Updated clients request/write schema 2; legacy readers receive a projection, and matching legacy edits retain stored metadata. Same-revision v1 baselines recover hidden metadata before acknowledging the upgrade. Clients with linked data stop sync safely against an old service. See [account-sync.md](account-sync.md).
+- An explicit Gradle `stickyReviewBuild=true` creates a separate optimized preview application ID and debug signature. `STICKY_PREVIEW=true` uses manual browser return. Default release builds still require the original production keystore; preview data is isolated from the installed production application.
 
 ## Diane Handoff
 

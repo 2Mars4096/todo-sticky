@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-31 — Goal plans and Earlier dragging on Android
+
+- [mobile] Add handle-only Earlier-to-Today dragging with row/header/empty targets, insertion feedback, edge scrolling and cancellation. Full task trees retain identity, metadata and persistence; daily reordering still handles hidden completed rows.
+- [goals] Add a flat goal plan editor with manual steps, editable AI proposals and selected scheduling to Today or a chosen date. Scheduled steps open their actual daily task; goal badges and Progress filters retain the connection across moves and completion. Repeat scheduling is idempotent, and all dated fragments must finish before a plan step counts as complete.
+- [storage] Preserve bounded plan/link metadata in JSON, Markdown, desktop transforms and backend validation. Negotiate payload schema 2 with legacy projections, metadata-preserving legacy edits and safe baseline upgrades. Goal-bearing notebooks pause sync against the existing old service; the compatible backend source is prepared but not deployed.
+- [review] Keep rows flat and actions concise, with tooltips/accessibility names and consequential warnings. Responsive wrapping fixes wide/enlarged text; phone workflow, AI review and simulated keyboard layouts were reviewed at 360 px and 100%/150% text.
+- [validation] Flutter formatting/analyzer clean; 86 Flutter tests pass, plus opt-in real-font goal screenshots. Also pass 20 Node suites, TypeScript, frontend build, 19 backend tests and 16 native module tests. No physical-phone or live-provider acceptance is claimed.
+- [delivery] Publish verified source to main and upload version 2.1.15+9 to Dropbox as a separately installable optimized ARM64 **Sticky Todo Preview** APK (19,622,467 bytes); signature, ZIP and alignment checks pass. The original release key is unavailable here, so the production APK is preserved. Details and remaining backend/production-signing steps: [13](plans/13-goal-planning-and-mobile-drag.md).
+
 ## 2026-10-31 — Paragraph-friendly tasks on Mac and Android
 
 - [tasks] Replace single-line desktop capture/title/step editors with growing textareas, preserve paragraph whitespace in rows and soften long text weight. Enter inserts newlines; Add/Save or Cmd/Ctrl+Enter commits. Android capture and steps use newline keyboards and bounded scrolling with keyboard-aware height.

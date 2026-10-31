@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn stale_download_cannot_replace_a_local_edit() {
         let dir = tempfile::tempdir().unwrap();
-        let task = Task { id: "task_a".into(), text: "Local work".into(), status: "todo".into(), finish: None, subtasks: vec![] };
+        let task = Task { id: "task_a".into(), text: "Local work".into(), status: "todo".into(), finish: None, goal_id: None, goal_step_id: None, subtasks: vec![] };
         apply_day(dir.path(), "2026-10-24", vec![task.clone()], serde_json::json!([])).unwrap();
         assert!(apply_day(dir.path(), "2026-10-24", vec![], serde_json::json!([])).is_err());
         let tasks = serde_json::to_value(vec![task]).unwrap();

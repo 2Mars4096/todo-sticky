@@ -28,6 +28,9 @@ String markdownDay(String date, List<Task> tasks) {
     final metadata = task.finish == null
         ? ''
         : ' <!-- sticky-todo:finish=${jsonEncode(task.finish!.toJson()).replaceAll('<', r'\u003c').replaceAll('>', r'\u003e')} -->';
+    final goal = task.goalId == null
+        ? ''
+        : ' <!-- sticky-todo:goal=${jsonEncode({"goalId": task.goalId, if (task.goalStepId != null) "goalStepId": task.goalStepId}).replaceAll('<', r'\u003c').replaceAll('>', r'\u003e')} -->';
     final needsText =
         task.text.contains('\n') ||
         task.text.contains('\r') ||
@@ -36,7 +39,7 @@ String markdownDay(String date, List<Task> tasks) {
         ? '${task.text.split(RegExp(r"[\r\n]")).first.replaceAll("<!--", "&lt;!--")} <!-- sticky-todo:text=${jsonEncode(task.text).replaceAll('<', r'\u003c').replaceAll('>', r'\u003e')} -->'
         : task.text;
     buffer.writeln(
-      '${'  ' * depth}- [${marks[task.status]}] $text$metadata <!-- sticky-todo:id=${task.id} -->',
+      '${'  ' * depth}- [${marks[task.status]}] $text$goal$metadata <!-- sticky-todo:id=${task.id} -->',
     );
     for (final child in task.subtasks) {
       append(child, depth + 1);
@@ -60,6 +63,7 @@ List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
     r'\s*<!--\s*sticky-todo:id=([A-Za-z0-9_-]+)\s*-->\s*$',
   );
   final finishPattern = RegExp(r'\s*<!-- sticky-todo:finish=(.*?) -->\s*$');
+  final goalPattern = RegExp(r'\s*<!-- sticky-todo:goal=(.*?) -->\s*$');
   final textPattern = RegExp(r'\s*<!-- sticky-todo:text=(.*?) -->\s*$');
   for (final line in markdown.split('\n')) {
     final match = taskPattern.firstMatch(line);
@@ -72,6 +76,15 @@ List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
     if (metadata != null) {
       finish = FinishPromise.fromJson(object(jsonDecode(metadata)));
       text = text.replaceFirst(finishPattern, '');
+    }
+    String? goalId, goalStepId;
+    final goalMetadata = goalPattern.firstMatch(text)?[1];
+    if (goalMetadata != null) {
+      final goal = object(jsonDecode(goalMetadata));
+      goalId = goalLinkId(goal['goalId']);
+      goalStepId = goalLinkId(goal['goalStepId']);
+      if (goalId == null) throw const FormatException('Invalid goal link');
+      text = text.replaceFirst(goalPattern, '');
     }
     final paragraph = textPattern.firstMatch(text)?[1];
     if (paragraph != null) {
@@ -94,6 +107,9 @@ List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
       id: keepIds ? id : null,
       text: text.trim(),
       finish: finish,
+      goalId: goalId,
+      // A pasted copy is new work under the goal, not a second plan instance.
+      goalStepId: keepIds ? goalStepId : null,
       status: switch (match[2]) {
         'x' || 'X' => TaskStatus.done,
         '~' => TaskStatus.partial,

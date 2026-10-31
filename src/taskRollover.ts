@@ -8,6 +8,8 @@ export function completeTree(task: Task): Task {
 export function flattenTasks(tasks: AggregatedTask[]): Task[] {
   return tasks.map(task => ({
     finish: task.finish, id: task.originalId ?? task.id, text: task.text, status: task.status, subtasks: task.todaySubtasks,
+    ...(task.goalId ? { goalId: task.goalId } : {}),
+    ...(task.goalStepId ? { goalStepId: task.goalStepId } : {}),
   }))
 }
 
@@ -17,6 +19,8 @@ export function carriedTasks(dates: ExtractedTaskDate[], today: string): Aggrega
     .flatMap(section => section.tasks.filter(task => task.status !== 'done' && task.status !== 'stopped').map(task => ({
       id: `${section.date}:${task.id}`, originalId: task.id,
       finish: task.finish, text: task.text, status: task.status, sourceDate: section.date,
+      ...(task.goalId ? { goalId: task.goalId } : {}),
+      ...(task.goalStepId ? { goalStepId: task.goalStepId } : {}),
       todaySubtasks: task.subtasks, otherSubtasks: [],
     })))
 }
@@ -51,6 +55,8 @@ export function moveCarriedToToday(
   const moved = unique(flattenTasks([source])[0])
   const promoted: AggregatedTask = {
     id: moved.id, text: moved.text, status: moved.status, finish: moved.finish,
+    ...(moved.goalId ? { goalId: moved.goalId } : {}),
+    ...(moved.goalStepId ? { goalStepId: moved.goalStepId } : {}),
     todaySubtasks: moved.subtasks, otherSubtasks: source.otherSubtasks,
   }
   const index = targetId ? today.findIndex(task => task.id === targetId) + (position === 'after' ? 1 : 0) : today.length

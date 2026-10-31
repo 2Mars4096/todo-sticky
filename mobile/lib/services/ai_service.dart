@@ -247,6 +247,41 @@ class AiService {
     return (steps: steps, outcome: outcome);
   }
 
+  Future<List<String>> planGoal(Preferences prefs, GoalItem goal) async {
+    final value = await jsonRequest(
+      prefs,
+      'Break the supplied long-term goal into a concise ordered plan of concrete daily-sized actions. '
+      'Each action should have a visible result and be small enough for one work session. '
+      'Respect the goal scope and existing steps. Do not invent dates, promises, occupations or resources. '
+      'Return {"steps":[{"text":"action and concrete result"}]}, with 3 to 12 steps. '
+      'Do not repeat existing steps. These are suggestions for review, not scheduled tasks.',
+      goal.toJson(),
+    );
+    final raw = value['steps'];
+    if (raw is! List || raw.isEmpty || raw.length > 12) {
+      throw const AiException(
+        'The provider did not return a usable goal plan. Try again.',
+      );
+    }
+    final known = goal.plan.map((step) => step.text.trim()).toSet();
+    final steps = <String>[];
+    for (final item in raw) {
+      final text = item is Map ? item['text'] : item;
+      if (text is! String || text.trim().isEmpty || text.length > 5000) {
+        throw const AiException(
+          'The provider returned an invalid step. Try again.',
+        );
+      }
+      if (known.add(text.trim())) steps.add(text.trim());
+    }
+    if (steps.isEmpty) {
+      throw const AiException(
+        'The provider repeated the existing plan. Try again.',
+      );
+    }
+    return steps;
+  }
+
   Future<DayPlan> plan(
     Preferences prefs,
     List<DatedTask> tasks,

@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+import '../models/goal_progress.dart';
 import '../models/workflow.dart';
 import '../services/persistence.dart';
 
@@ -251,11 +252,14 @@ class StickyStore extends ChangeNotifier {
   List<DatedTask> historicalSteps(String date, Task task) {
     final matches = <DatedTask>[];
     final normalized = task.text.trim().toLowerCase();
+    final goalId = goalIdForTask(task);
     for (final entry in days.entries) {
       if (entry.key.compareTo(date) >= 0) continue;
       for (final root in entry.value) {
-        if (root.id == task.id ||
-            root.text.trim().toLowerCase() == normalized) {
+        if (goalIdForTask(root) == goalId &&
+            (root.id == task.id ||
+                (root.goalStepId == task.goalStepId &&
+                    root.text.trim().toLowerCase() == normalized))) {
           matches.addAll(
             root.subtasks.map((step) => DatedTask(entry.key, step)),
           );
@@ -274,6 +278,195 @@ class StickyStore extends ChangeNotifier {
       if (found != null) return found;
     }
     return null;
+  }
+
+  GoalItem? findGoal(String id) =>
+      goals.targets.where((goal) => goal.id == id).firstOrNull;
+
+  String? _ownGoalId(Task task) {
+    if (task.goalId != null) return task.goalId;
+    // The stable task ID also recovers provenance after a legacy client move.
+    for (final goal in goals.targets) {
+      if (goal.plan.any((step) => step.id == task.id)) return goal.id;
+    }
+    return null;
+  }
+
+  String? goalIdForTask(Task task) {
+    final own = _ownGoalId(task);
+    if (own != null) return own;
+    String? visit(Task candidate, String? inherited) {
+      final goalId = _ownGoalId(candidate) ?? inherited;
+      if (identical(candidate, task) || candidate.id == task.id) return goalId;
+      for (final child in candidate.subtasks) {
+        final found = visit(child, goalId);
+        if (found != null) return found;
+      }
+      return null;
+    }
+
+    for (final root in days.values.expand((list) => list)) {
+      final found = visit(root, null);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
+  List<DatedTask> goalStepTasks(String goalId, String stepId) {
+    final matches = <DatedTask>[];
+    for (final entry in days.entries) {
+      for (final task in entry.value.expand((root) => root.flattened)) {
+        if ((task.goalId == goalId && task.goalStepId == stepId) ||
+            (task.goalStepId == null &&
+                task.id == stepId &&
+                (task.goalId == null || task.goalId == goalId))) {
+          matches.add(DatedTask(entry.key, task));
+        }
+      }
+    }
+    matches.sort((a, b) {
+      final state = (a.task.closed ? 1 : 0).compareTo(b.task.closed ? 1 : 0);
+      return state != 0 ? state : a.date.compareTo(b.date);
+    });
+    return matches;
+  }
+
+  GoalProgress goalProgress(GoalItem goal) {
+    final byStep = {for (final step in goal.plan) step.id: <DatedTask>[]};
+    // One archive pass per goal, even when the plan contains many steps.
+    for (final entry in days.entries) {
+      for (final task in entry.value.expand((root) => root.flattened)) {
+        final matches = byStep[task.goalStepId ?? task.id];
+        if (matches != null &&
+            (task.goalId == goal.id ||
+                (task.goalId == null && task.goalStepId == null))) {
+          matches.add(DatedTask(entry.key, task));
+        }
+      }
+    }
+    return GoalProgress(
+      goal,
+      goal.plan
+          .map((step) => GoalStepProgress(step, byStep[step.id]!))
+          .toList(),
+    );
+  }
+
+  List<DatedTask> tasksForGoal(String goalId, {String? from, String? until}) {
+    final matches = <DatedTask>[];
+    void visit(String date, Task task, String? parentGoal) {
+      final linkedGoal = _ownGoalId(task) ?? parentGoal;
+      // A root and its descendants are one unit of work for goal totals.
+      if (linkedGoal == goalId && parentGoal != goalId) {
+        matches.add(DatedTask(date, task));
+      }
+      for (final child in task.subtasks) {
+        visit(date, child, linkedGoal);
+      }
+    }
+
+    for (final entry in days.entries) {
+      if (from != null && entry.key.compareTo(from) < 0) continue;
+      if (until != null && entry.key.compareTo(until) > 0) continue;
+      for (final root in entry.value) {
+        visit(entry.key, root, null);
+      }
+    }
+    matches.sort((a, b) => b.date.compareTo(a.date));
+    return matches;
+  }
+
+  GoalItem _editableGoal(String id) {
+    if (!ready) throw StateError('Notebook is loading');
+    final goal = findGoal(id);
+    if (goal == null) throw StateError('This goal was removed.');
+    if (goal.done) {
+      throw StateError('Reopen this goal before changing its plan.');
+    }
+    return goal;
+  }
+
+  void addGoalSteps(String goalId, List<String> texts, {String? fingerprint}) {
+    final goal = _editableGoal(goalId);
+    if (fingerprint != null && jsonEncode(goal.toJson()) != fingerprint) {
+      throw StateError('This goal changed. Generate a fresh plan.');
+    }
+    final known = goal.plan.map((step) => step.text.trim()).toSet();
+    final additions = <GoalPlanStep>[];
+    for (final raw in texts) {
+      final text = raw.trim();
+      if (text.isEmpty || text.length > 5000) {
+        throw ArgumentError('Steps must contain 1–5,000 characters.');
+      }
+      if (known.add(text)) additions.add(GoalPlanStep(text: text));
+    }
+    if (goal.plan.length + additions.length > 200) {
+      throw StateError('A goal can contain up to 200 steps.');
+    }
+    if (additions.isEmpty) return;
+    goal.plan.addAll(additions);
+    changed();
+  }
+
+  void updateGoalStep(String goalId, String stepId, String text) {
+    final goal = _editableGoal(goalId);
+    final step = goal.plan.where((step) => step.id == stepId).firstOrNull;
+    if (step == null) throw StateError('This step was removed.');
+    if (goalStepTasks(goalId, stepId).isNotEmpty) {
+      throw StateError('Edit this step in its daily task.');
+    }
+    if (text.trim().isEmpty || text.trim().length > 5000) {
+      throw ArgumentError('Steps must contain 1–5,000 characters.');
+    }
+    step.text = text.trim();
+    changed();
+  }
+
+  void removeGoalStep(String goalId, String stepId) {
+    final goal = _editableGoal(goalId);
+    if (!goal.plan.any((step) => step.id == stepId)) return;
+    for (final dated in goalStepTasks(goalId, stepId)) {
+      dated.task.goalId = goalId;
+      dated.task.goalStepId = null;
+    }
+    goal.plan.removeWhere((step) => step.id == stepId);
+    changed();
+  }
+
+  int scheduleGoalSteps(String goalId, Iterable<String> stepIds, String date) {
+    final goal = _editableGoal(goalId);
+    if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(goalId)) {
+      throw StateError(
+        'This older goal cannot be linked safely. Create a new goal before scheduling its steps.',
+      );
+    }
+    parseDate(date);
+    final selected = stepIds.toSet();
+    if (!selected.every((id) => goal.plan.any((step) => step.id == id))) {
+      throw StateError('The selected plan changed. Select the steps again.');
+    }
+    final additions = <Task>[];
+    for (final step in goal.plan.where((step) => selected.contains(step.id))) {
+      if (goalStepTasks(goalId, step.id).isNotEmpty) continue;
+      if (days.values
+          .expand((list) => list)
+          .expand((root) => root.flattened)
+          .any((task) => task.id == step.id)) {
+        throw StateError(
+          'A task with this identity already exists. No steps were scheduled.',
+        );
+      }
+      additions.add(
+        Task(id: step.id, text: step.text, goalId: goalId, goalStepId: step.id),
+      );
+    }
+    if (additions.isEmpty) return 0;
+    (days[date] ??= []).addAll(additions);
+    // All selected tasks and their links share one atomic notebook snapshot.
+    _undo = null;
+    undoLabel = null;
+    changed();
+    return additions.length;
   }
 
   List<Task>? _siblings(String date, String id) {
@@ -322,6 +515,7 @@ class StickyStore extends ChangeNotifier {
       if (parent == null || parent.status == TaskStatus.stopped) {
         throw StateError('This task is no longer available');
       }
+      task.goalId = goalIdForTask(parent);
       parent.subtasks.add(task);
       if (parent.status == TaskStatus.done) parent.status = TaskStatus.partial;
       parent.finish?.reviewReady = false;
@@ -412,7 +606,7 @@ class StickyStore extends ChangeNotifier {
     changed();
   }
 
-  void moveTask(String fromDate, String id, String toDate) {
+  void moveTask(String fromDate, String id, String toDate, {String? beforeId}) {
     parseDate(toDate);
     if (fromDate == toDate) return;
     final original = findTask(fromDate, id);
@@ -429,15 +623,38 @@ class StickyStore extends ChangeNotifier {
       }
     }
     final task = original.clone();
+    task.goalId ??= goalIdForTask(original);
+    final destinationIds = destination
+        .expand((root) => root.flattened)
+        .map((item) => item.id)
+        .toSet();
+    if (task.flattened.any((item) => destinationIds.contains(item.id))) {
+      throw StateError(
+        'This task or one of its steps already exists on the destination date',
+      );
+    }
     // Copies retain identity across dates. A collision merges child moves instead of duplicating IDs.
     if (parent == null) {
       if (destination.any((t) => t.id == task.id)) {
         throw StateError('This task already exists on the destination date');
       }
-      destination.add(task);
+      final index = beforeId == null
+          ? -1
+          : destination.indexWhere((item) => item.id == beforeId);
+      if (index < 0) {
+        destination.add(task);
+      } else {
+        destination.insert(index, task);
+      }
     } else {
       var target = destination
-          .where((t) => t.id == parent!.id || t.text == parent.text)
+          .where(
+            (t) =>
+                t.id == parent!.id ||
+                (t.text == parent.text &&
+                    goalIdForTask(parent) == null &&
+                    goalIdForTask(t) == null),
+          )
           .firstOrNull;
       if (target == null) {
         target = Task(
@@ -446,6 +663,8 @@ class StickyStore extends ChangeNotifier {
           finish: parent.finish == null
               ? null
               : FinishPromise.fromJson(parent.finish!.toJson()),
+          goalId: goalIdForTask(parent),
+          goalStepId: parent.goalStepId,
         );
         destination.add(target);
       }
@@ -487,7 +706,7 @@ class StickyStore extends ChangeNotifier {
     }
     for (final text in steps) {
       if (!task.subtasks.any((s) => s.text.trim() == text.trim())) {
-        task.subtasks.add(Task(text: text.trim()));
+        task.subtasks.add(Task(text: text.trim(), goalId: goalIdForTask(task)));
       }
     }
     if (task.status == TaskStatus.done) task.status = TaskStatus.partial;
@@ -523,6 +742,7 @@ class StickyStore extends ChangeNotifier {
         final step = Task(
           id: '$prefix${newId()}_h${planTextHash(text)}',
           text: text,
+          goalId: goalIdForTask(parent),
         );
         parent.subtasks.add(step);
         created[step.id] = jsonEncode(step.toJson());

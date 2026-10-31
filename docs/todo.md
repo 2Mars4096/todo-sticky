@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] [13-goal-planning-and-mobile-drag](plans/13-goal-planning-and-mobile-drag.md) — Earlier-to-Today grips and goal-plan-to-daily-task tracking implemented and verified; main source and preview APK delivered. Remaining: authenticated backend deployment and a production update using the original signing key.
+
 - [x] [12-paragraph-friendly-tasks](plans/12-paragraph-friendly-tasks.md) — paragraph capture/editing/storage and Mac/phone UI review complete; Mac reinstalled with data preserved, signed Android +8 delivered (no phone attached).
 
 - [x] [11-batched-publication](plans/11-batched-publication.md) — five coherent source batches pushed to origin/main and remote verified; generated/private artifacts excluded.
@@ -10,7 +12,7 @@
 
 - [x] [10-2-review-install-and-android](plans/10-2-review-install-and-android.md) — second review and Android parity complete; Mac installed with 56 task files/settings unchanged; signed APK +7 delivered and emulator update verified.
 
-- [x] [10-user-workflow-improvements](plans/10-user-workflow-improvements.md) — desktop/Android workflows implemented, reviewed and locally delivered. Schedules remain device-local; physical-device/user studies and optional shared schedule definitions are follow-on work. Goal linking and completion redesign stay on hold.
+- [x] [10-user-workflow-improvements](plans/10-user-workflow-improvements.md) — desktop/Android workflows implemented, reviewed and locally delivered. Schedules remain device-local; physical-device/user studies and optional shared schedule definitions are follow-on work. Goal linking was subsequently activated in plan 13; completion redesign remains deferred.
   - [x] [10-1-desktop-workflow](plans/10-1-desktop-workflow.md) — backlog cue, Search, constrained Plan, safe recurrence, Progress, focus review and compact sync status; automated and browser checks pass.
 
 - [x] [7-4-phone-task-controls](plans/7-4-phone-task-controls.md) — visible drag grips, icon-only task actions and horizontal more menu; signed Android +6.

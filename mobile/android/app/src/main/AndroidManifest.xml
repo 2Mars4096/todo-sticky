@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="Sticky Todo"
+        android:label="${appLabel}"
         android:allowBackup="false"
         android:usesCleartextTraffic="false"
         android:name="${applicationName}"
@@ -29,7 +29,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="todo-sticky" android:host="account-return" />
+                <data android:scheme="${accountReturnScheme}" android:host="account-return" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

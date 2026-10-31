@@ -226,6 +226,10 @@ fn normalized_task_text(text: &str) -> String {
         .join(" ")
 }
 
+fn same_goal_link(left: &Task, right: &Task) -> bool {
+    left.goal_id == right.goal_id && left.goal_step_id == right.goal_step_id
+}
+
 fn append_moved_subtask(parent: &mut Task, subtask: Task) {
     if !matches!(subtask.status.as_str(), "done" | "stopped") {
         if matches!(parent.status.as_str(), "done" | "stopped") {
@@ -246,13 +250,15 @@ fn merge_subtask_under_parent(tasks: &mut Vec<Task>, mut parent: Task, subtask: 
     let parent_key = normalized_task_text(&parent.text);
     if let Some(existing_parent) = tasks
         .iter_mut()
-        .find(|task| normalized_task_text(&task.text) == parent_key)
+        .find(|task| same_goal_link(task, &parent)
+            && (task.id == parent.id || normalized_task_text(&task.text) == parent_key))
     {
         let subtask_key = normalized_task_text(&subtask.text);
         if !existing_parent
             .subtasks
             .iter()
-            .any(|existing| normalized_task_text(&existing.text) == subtask_key)
+            .any(|existing| same_goal_link(existing, &subtask)
+                && (existing.id == subtask.id || normalized_task_text(&existing.text) == subtask_key))
         {
             append_moved_subtask(existing_parent, subtask);
         }
@@ -310,6 +316,8 @@ mod tests {
     fn task(id: &str, text: &str) -> Task {
         Task {
             finish: None,
+            goal_id: None,
+            goal_step_id: None,
             id: id.into(),
             text: text.into(),
             status: "todo".into(),
@@ -405,5 +413,22 @@ mod tests {
         merge_subtask_under_parent(&mut tasks, parent, task("step", "New work"));
         assert_eq!(tasks[0].status, "partial");
         assert_eq!(tasks[0].finish.as_ref().unwrap()["reviewReady"], false);
+    }
+
+    #[test]
+    fn moved_steps_do_not_merge_into_another_goals_same_named_parent() {
+        let mut existing = task("first", "Research draft");
+        existing.goal_id = Some("goal_a".into());
+        existing.goal_step_id = Some("step_a".into());
+        let mut incoming = task("second", "Research draft");
+        incoming.goal_id = Some("goal_b".into());
+        incoming.goal_step_id = Some("step_b".into());
+        let mut child = task("detail", "Review the evidence");
+        child.goal_id = Some("goal_b".into());
+        let mut tasks = vec![existing];
+        merge_subtask_under_parent(&mut tasks, incoming, child);
+        assert_eq!(tasks.len(), 2);
+        assert!(tasks[0].subtasks.is_empty());
+        assert_eq!(tasks[1].subtasks[0].goal_id.as_deref(), Some("goal_b"));
     }
 }

@@ -33,8 +33,8 @@ Desktop briefly prevents editing while it applies downloaded data and reloads th
 
 | Data | Behavior |
 | --- | --- |
-| Tasks and nested steps | One record per calendar date, preserving IDs, order, statuses, Outcome, Due and deadline history. Completed tasks remain in the record. |
-| Goals and routines | One record containing target and recurring arrays. Routine resets are ordinary changes. |
+| Tasks and nested steps | One record per calendar date, preserving IDs, order, statuses, Outcome, Due, deadline history and optional goal/plan-step links. Completed tasks remain in the record. |
+| Goals and routines | One record containing target and recurring arrays, including each goal's optional plan. Routine resets are ordinary changes. |
 | Completed focus sessions | One record per mission ID. Separate device completions coexist. Local history pruning does not delete the cloud archive. |
 | Active timer, selection and window state | Device-local. |
 | AI provider keys, Diane tokens and machine/task-folder paths | Device-local; rejected by the cloud payload allowlist. |
@@ -102,20 +102,30 @@ flutter build apk --debug --dart-define=SYNC_SERVER_URL=https://YOUR_SERVICE_HOS
 
 The URL is optional at build time. Without it, the app starts as a local notebook and the service can be configured later. Android's release manifest blocks cleartext HTTP; use an HTTPS service that the phone can reach. No Firebase token or service-account credential belongs in a Dart define or APK source. Android packaging, signing and the rest of the phone feature setup are described in [mobile/README.md](../mobile/README.md).
 
-## API contract, version 1
+## API contract, protocol 1
 
 All data calls use `Authorization: Bearer <Firebase ID token>`. A Firebase custom token must first be exchanged by Firebase Auth; it is not a valid bearer token for the data API.
 
 | Request | Response |
 | --- | --- |
 | `GET /v1/health` | `{ok:true}`; public service health without account initialization. |
-| `GET /v1/config` | `{firebase:{apiKey,authDomain,projectId,appId},schemaVersion:1}`; public client config only. |
+| `GET /v1/config` | `{firebase:{apiKey,authDomain,projectId,appId},schemaVersion:1,payloadSchemaVersions:[1,2],goalPlanning:true}`; public client config and supported payload versions. Older deployments omit the capability fields. |
 | `POST /v1/auth/complete` | Google ID token plus `{sessionId,challenge}`; creates the one-time handoff. |
 | `POST /v1/auth/exchange` | `{sessionId,verifier}` → 202 `{pending:true}`, or `{customToken}`; consumed/expired links return 410. |
-| `GET /v1/sync?after=<key>&pageSize=200` | `{records:[...],nextCursor:string|null,schemaVersion:1}`. Continue until cursor is null. |
-| `PUT /v1/sync/{key}` | `{expectedRevision,mutationId,deleted,payload}` → saved record; 409 `{error:'conflict',current:record|null}`. |
+| `GET /v1/sync?after=<key>&pageSize=200&schemaVersion=2` | `{records:[...],nextCursor:string|null,schemaVersion:1,payloadSchemaVersion:2}`. Continue until cursor is null. Omitting the query version returns the legacy payload projection. |
+| `PUT /v1/sync/{key}` | `{expectedRevision,mutationId,deleted,payload,schemaVersion:2}` → saved record; 409 `{error:'conflict',current:record|null}`. Omitted mutation version means payload schema 1. |
 
 A record has `{key,revision,deleted,payload,updatedAt,mutationId}`. Keys are `day:YYYY-MM-DD`, `goals` or `focus:<missionId>`. Day payloads are `{date,tasks:[{id,text,status,subtasks,finish?}]}`. IDs are 1–128 ASCII letters/digits/underscore/hyphen and unique per day; both platforms retain stable IDs. Deletes have `deleted:true,payload:null`. Unknown fields are rejected. Each record is limited to 600 KB and 2,000 tasks/goals; a task tree is at most 12 levels deep. HTTP bodies are limited to 700 KB while streaming.
+
+### Goal plans and older clients
+
+Payload schema 2 adds optional `goalId` and `goalStepId` to tasks; a step link requires a goal link. A goal can contain `plan:[{id,text}]`, with at most 200 steps and 5,000 characters per step. Scheduled tasks use their plan step's stable ID. Dates and completion remain properties of actual daily tasks, not duplicate state inside the plan.
+
+The service retains full metadata in storage. Its schema-1 reads, acknowledgements and conflict responses omit new fields so older strict readers continue working. An older client's edit retains stored goal links and plans for matching IDs within the same record; deleting an item still deletes it. Schema-2 clients can deliberately remove metadata. Native Markdown stores goal links in a separate escaped `sticky-todo:goal` comment and preserves them during edits and moves.
+
+Updated clients negotiate payload schema 2 only after the service advertises support. If the deployed service has not been updated and the notebook or sync baseline contains goal metadata, sync stops before writes/download application and keeps local work available. Deploy the compatible backend before enabling cross-device use of goal plans.
+
+On a client upgrade, an old schema-1 baseline may lack metadata that was already present at the same cloud revision. The client restores only metadata absent from both that baseline and the local item, preserving locally authored links/plans and deleted items. It saves the restored local record before marking the baseline as schema 2. Later cloud revisions keep ordinary pull/conflict behavior. This prevents pending edits made in an older app from being mistaken for a request to erase a hidden plan.
 
 ## Verification and remaining live acceptance
 

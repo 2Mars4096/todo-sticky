@@ -209,13 +209,26 @@ void validateSyncPayload(String key, Map<String, dynamic> payload) {
         fields(
           item,
           {'id', 'text', 'status', 'subtasks'},
-          {'id', 'text', 'status', 'subtasks', 'finish'},
+          {
+            'id',
+            'text',
+            'status',
+            'subtasks',
+            'finish',
+            'goalId',
+            'goalStepId',
+          },
         );
         if (!id(item['id']) ||
             !ids.add(item['id'] as String) ||
             ++count > 2000 ||
             !text(item['text'], allowBlank: true, multiline: true) ||
             !TaskStatus.values.any((status) => status.name == item['status'])) {
+          invalid();
+        }
+        if (item.containsKey('goalId') && !id(item['goalId'])) invalid();
+        if (item.containsKey('goalStepId') &&
+            (!id(item['goalStepId']) || !id(item['goalId']))) {
           invalid();
         }
         if (item['finish'] != null) {
@@ -270,12 +283,26 @@ void validateSyncPayload(String key, Map<String, dynamic> payload) {
       final ids = <String>{};
       for (final raw in items) {
         final item = object(raw);
-        fields(item, {'id', 'text', 'done'}, {'id', 'text', 'done'});
+        fields(item, {'id', 'text', 'done'}, {'id', 'text', 'done', 'plan'});
         if (!id(item['id']) ||
             !ids.add(item['id'] as String) ||
             !text(item['text'], multiline: true) ||
             item['done'] is! bool) {
           invalid();
+        }
+        if (item.containsKey('plan')) {
+          final plan = item['plan'];
+          if (plan is! List || plan.length > 200) invalid();
+          final stepIds = <String>{};
+          for (final rawStep in plan) {
+            final step = object(rawStep);
+            fields(step, {'id', 'text'}, {'id', 'text'});
+            if (!id(step['id']) ||
+                !stepIds.add(step['id'] as String) ||
+                !text(step['text'], multiline: true)) {
+              invalid();
+            }
+          }
         }
       }
     }
@@ -316,6 +343,113 @@ class SyncAction {
   final Map<String, dynamic>? local;
   final SyncRecord? remote;
   SyncAction(this.key, this.kind, this.local, this.remote);
+}
+
+bool containsGoalMetadata(Object? value) {
+  if (value is List) return value.any(containsGoalMetadata);
+  if (value is! Map) return false;
+  if (value.containsKey('goalId') ||
+      value.containsKey('goalStepId') ||
+      value.containsKey('plan')) {
+    return true;
+  }
+  return value.values.any(containsGoalMetadata);
+}
+
+/// Restore fields a v1 client could never see, without overwriting its edits.
+/// Equal revisions are essential: newer cloud edits still need normal conflict
+/// review. Deleted items and fields the baseline already knew stay deleted.
+({Map<String, dynamic>? local, Map<String, dynamic> baseline})?
+migrateGoalMetadata(
+  Map<String, dynamic>? local,
+  SyncRecord remote,
+  Map<String, dynamic>? baseline,
+) {
+  if (baseline == null ||
+      baseline['payloadSchemaVersion'] == 2 ||
+      baseline['revision'] != remote.revision ||
+      baseline['deleted'] == true ||
+      remote.deleted ||
+      baseline['payload'] is! Map ||
+      remote.payload == null) {
+    return null;
+  }
+  final previous = object(baseline['payload']);
+  Map<String, dynamic> restore(Map<String, dynamic> candidate) {
+    final copy = object(jsonDecode(jsonEncode(candidate)));
+    void restoreItems(
+      List<dynamic> items,
+      List<dynamic> cloud,
+      List<dynamic> old, {
+      required bool tasks,
+    }) {
+      Map<String, Map<String, dynamic>> index(List<dynamic> values) {
+        final result = <String, Map<String, dynamic>>{};
+        void visit(List<dynamic> list) {
+          for (final item in list.whereType<Map>()) {
+            if (item['id'] is String) {
+              result[item['id'] as String] = object(item);
+            }
+            if (tasks && item['subtasks'] is List) {
+              visit(item['subtasks'] as List);
+            }
+          }
+        }
+
+        visit(values);
+        return result;
+      }
+
+      final cloudById = index(cloud), oldById = index(old);
+      void visit(List<dynamic> list) {
+        for (final raw in list.whereType<Map>()) {
+          final source = cloudById[raw['id']], known = oldById[raw['id']];
+          if (source != null && known != null) {
+            for (final field in tasks ? ['goalId', 'goalStepId'] : ['plan']) {
+              if (!raw.containsKey(field) &&
+                  !known.containsKey(field) &&
+                  source.containsKey(field) &&
+                  (field != 'goalStepId' ||
+                      raw['goalId'] == source['goalId'])) {
+                raw[field] = jsonDecode(jsonEncode(source[field]));
+              }
+            }
+          }
+          if (tasks && raw['subtasks'] is List) visit(raw['subtasks'] as List);
+        }
+      }
+
+      visit(items);
+    }
+
+    if (remote.key.startsWith('day:')) {
+      restoreItems(
+        copy['tasks'] as List,
+        remote.payload!['tasks'] as List,
+        previous['tasks'] as List,
+        tasks: true,
+      );
+    } else if (remote.key == 'goals') {
+      for (final category in ['targets', 'recurring']) {
+        restoreItems(
+          copy[category] as List,
+          remote.payload![category] as List,
+          previous[category] as List,
+          tasks: false,
+        );
+      }
+    }
+    return copy;
+  }
+
+  return (
+    local: local == null ? null : restore(local),
+    baseline: {
+      ...baseline,
+      'payload': restore(previous),
+      'payloadSchemaVersion': 2,
+    },
+  );
 }
 
 bool emptyRecord(String key, Map<String, dynamic>? payload) {
@@ -746,7 +880,7 @@ class CloudSyncController extends ChangeNotifier {
         queryParameters: {
           'sessionId': sessionId,
           'challenge': challenge,
-          'returnTo': 'app',
+          if (!const bool.fromEnvironment('STICKY_PREVIEW')) 'returnTo': 'app',
         },
       ).query;
       if (!await openBrowser(Uri.parse('$origin/signin#$fragment'))) {
@@ -979,17 +1113,41 @@ class CloudSyncController extends ChangeNotifier {
           pending = object(meta['pending']);
       meta['baseline'] = baseline;
       meta['pending'] = pending;
+      final config = await transport.request(Uri.parse('$origin/v1/config'));
+      ensureCurrent();
+      final versions = config['payloadSchemaVersions'];
+      final supportsGoals =
+          config['schemaVersion'] == 1 &&
+          config['goalPlanning'] == true &&
+          versions is List &&
+          versions.contains(2);
+      if (!supportsGoals &&
+          (containsGoalMetadata(local) || containsGoalMetadata(baseline))) {
+        throw StateError(
+          'The sync service needs the goal-planning update. Your notebook is saved on this device; no cloud notes were replaced.',
+        );
+      }
       final records = <SyncRecord>[], keys = <String>{}, cursors = <String>{};
       String? cursor;
       var pageNumber = 0;
       do {
         _report('Reading cloud', detail: 'Page ${++pageNumber}');
-        final uri = Uri.parse('$origin/v1/sync')
-            .replace(queryParameters: {'pageSize': '20', 'after': ?cursor});
+        final uri = Uri.parse('$origin/v1/sync').replace(
+          queryParameters: {
+            'pageSize': '20',
+            'after': ?cursor,
+            if (supportsGoals) 'schemaVersion': '2',
+          },
+        );
         final page = await transport.request(uri, token: token);
         ensureCurrent();
         if (page['schemaVersion'] != 1 || page['records'] is! List) {
           throw const FormatException('Incompatible sync response.');
+        }
+        if (supportsGoals && page['payloadSchemaVersion'] != 2) {
+          throw const FormatException(
+            'The sync service did not return goal-aware notes. No local data was changed.',
+          );
         }
         for (final value in page['records'] as List) {
           final record = SyncRecord.fromJson(object(value));
@@ -1005,6 +1163,46 @@ class CloudSyncController extends ChangeNotifier {
           throw const FormatException('The service returned a repeated page.');
         }
       } while (cursor != null);
+      if (supportsGoals) {
+        for (final record in records) {
+          final original = local[record.key];
+          final upgraded = migrateGoalMetadata(
+            original,
+            record,
+            baseline[record.key] is Map ? object(baseline[record.key]) : null,
+          );
+          if (upgraded == null) continue;
+          if (canonicalJson(upgraded.local) != canonicalJson(original)) {
+            if (isEditing() ||
+                canonicalJson(_snapshot()[record.key]) !=
+                    canonicalJson(original)) {
+              _needsSync = true;
+              throw StateError(
+                'You edited this note during sync. Your edits are safe; syncing will retry.',
+              );
+            }
+            _applying = true;
+            try {
+              await store.applySyncRecord(
+                record.key,
+                upgraded.local,
+                deleted: upgraded.local == null,
+              );
+            } finally {
+              _applying = false;
+            }
+            ensureCurrent();
+            if (upgraded.local == null) {
+              local.remove(record.key);
+            } else {
+              local[record.key] = upgraded.local!;
+            }
+          }
+          baseline[record.key] = upgraded.baseline;
+        }
+        await _saveMeta(meta);
+        ensureCurrent();
+      }
       _report('Comparing changes');
       final actions = reconcileRecords(local, records, baseline);
       // Upload unsynced missions before incoming history can prune the local
@@ -1061,7 +1259,10 @@ class CloudSyncController extends ChangeNotifier {
         }
         if (action.kind == SyncKind.ack) {
           if (action.remote != null) {
-            baseline[action.key] = action.remote!.baseline;
+            baseline[action.key] = {
+              ...action.remote!.baseline,
+              'payloadSchemaVersion': supportsGoals ? 2 : 1,
+            };
           }
           pending.remove(action.key);
           await _saveMeta(meta);
@@ -1092,6 +1293,7 @@ class CloudSyncController extends ChangeNotifier {
             method: 'PUT',
             token: token,
             body: {
+              if (supportsGoals) 'schemaVersion': 2,
               'expectedRevision': revision,
               'mutationId': mutation['mutationId'],
               'deleted': action.local == null,
@@ -1107,7 +1309,10 @@ class CloudSyncController extends ChangeNotifier {
               'The sync acknowledgement did not match your note.',
             );
           }
-          baseline[action.key] = record.baseline;
+          baseline[action.key] = {
+            ...record.baseline,
+            'payloadSchemaVersion': supportsGoals ? 2 : 1,
+          };
           pending.remove(action.key);
           await _saveMeta(meta);
           _advance();
@@ -1140,7 +1345,10 @@ class CloudSyncController extends ChangeNotifier {
         }
         ensureCurrent();
         if (action.remote != null) {
-          baseline[action.key] = action.remote!.baseline;
+          baseline[action.key] = {
+            ...action.remote!.baseline,
+            'payloadSchemaVersion': supportsGoals ? 2 : 1,
+          };
         } else {
           baseline.remove(action.key);
         }

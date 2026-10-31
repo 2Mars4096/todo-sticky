@@ -8,10 +8,13 @@ plugins {
 
 val releaseKeys = Properties()
 val releaseKeysFile = rootProject.file("key.properties")
+val isReviewBuild = providers.gradleProperty("stickyReviewBuild")
+    .map { it == "true" }
+    .getOrElse(false)
 if (releaseKeysFile.exists()) {
     releaseKeysFile.inputStream().use { releaseKeys.load(it) }
 }
-if (gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) } && !releaseKeysFile.exists()) {
+if (gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) } && !releaseKeysFile.exists() && !isReviewBuild) {
     throw GradleException("Release signing is not configured. Copy android/key.properties.example to android/key.properties and supply your own release keystore. Use --debug for a review APK.")
 }
 
@@ -26,7 +29,13 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.twomars4096.sticky_todo"
+        applicationId = if (isReviewBuild) {
+            "io.github.twomars4096.sticky_todo.preview"
+        } else {
+            "io.github.twomars4096.sticky_todo"
+        }
+        manifestPlaceholders["appLabel"] = if (isReviewBuild) "Sticky Todo Preview" else "Sticky Todo"
+        manifestPlaceholders["accountReturnScheme"] = if (isReviewBuild) "todo-sticky-preview" else "todo-sticky"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -51,7 +60,11 @@ android {
     }
     buildTypes {
         release {
-            if (releaseKeysFile.exists()) signingConfig = signingConfigs.getByName("release")
+            if (isReviewBuild) {
+                signingConfig = signingConfigs.getByName("debug")
+            } else if (releaseKeysFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

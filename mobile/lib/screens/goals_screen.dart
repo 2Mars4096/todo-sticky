@@ -2,11 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../app.dart';
 import '../models/models.dart';
+import '../services/ai_service.dart';
 import '../state/sticky_store.dart';
+import 'goal_plan_screen.dart';
 
 class GoalsScreen extends StatefulWidget {
   final StickyStore store;
-  const GoalsScreen({super.key, required this.store});
+  final AiService ai;
+  final VoidCallback openFocus;
+  final ValueChanged<String> openDay;
+  const GoalsScreen({
+    super.key,
+    required this.store,
+    required this.ai,
+    required this.openFocus,
+    required this.openDay,
+  });
   @override
   State<GoalsScreen> createState() => _GoalsScreenState();
 }
@@ -106,9 +117,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
             spacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Text(
-                'Schedules run on this device.',
-                style: TextStyle(fontSize: 12, color: mutedInk),
+              const Tooltip(
+                message: 'Schedules run on this device.',
+                child: Icon(Icons.info_outline, size: 18, color: mutedInk),
               ),
               if (items.any(
                 (item) =>
@@ -177,9 +188,19 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       : null;
                   final scheduled =
                       schedule != null && schedule.cadence != 'manual';
+                  final progress = routines
+                      ? null
+                      : widget.store.goalProgress(item);
                   return ListTile(
                     key: ValueKey(item.id),
-                    leading: scheduled
+                    leading: !routines
+                        ? Icon(
+                            item.done
+                                ? Icons.check_circle_outline
+                                : Icons.flag_outlined,
+                            color: item.done ? mutedInk : amber,
+                          )
+                        : scheduled
                         ? const Icon(Icons.repeat_rounded, color: mutedInk)
                         : Checkbox(
                             value: item.done,
@@ -198,7 +219,15 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       ),
                     ),
                     subtitle: !routines
-                        ? null
+                        ? Text(
+                            progress!.total == 0
+                                ? 'Plan'
+                                : '${progress.completed}/${progress.total} completed${progress.scheduled > progress.completed ? ' · ${progress.scheduled - progress.completed} scheduled' : ''}',
+                            style: const TextStyle(
+                              color: mutedInk,
+                              fontSize: 12,
+                            ),
+                          )
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -261,34 +290,111 @@ class _GoalsScreenState extends State<GoalsScreen> {
                               ],
                             ],
                           ),
-                    onTap: () => edit(item),
-                    trailing: IconButton(
-                      tooltip: 'Delete ${routines ? 'routine' : 'goal'}',
-                      onPressed: () async {
-                        final remove = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Delete this item?'),
-                            content: Text(item.text),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Keep'),
+                    onTap: () => routines
+                        ? edit(item)
+                        : Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => GoalPlanScreen(
+                                store: widget.store,
+                                ai: widget.ai,
+                                goalId: item.id,
+                                openFocus: widget.openFocus,
+                                openDay: widget.openDay,
                               ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text('Delete'),
+                            ),
+                          ),
+                    trailing: !routines
+                        ? PopupMenuButton<String>(
+                            tooltip: 'Goal actions',
+                            icon: const Icon(Icons.more_horiz),
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                await edit(item);
+                                return;
+                              }
+                              if (value == 'done') {
+                                item.done = !item.done;
+                                widget.store.changed();
+                              }
+                              if (value == 'delete') {
+                                final remove = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Delete this goal?'),
+                                    content: const Text(
+                                      'Its plan will be removed. Daily tasks will remain.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text('Keep'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (remove == true) {
+                                  widget.store.goals.targets.removeWhere(
+                                    (goal) => goal.id == item.id,
+                                  );
+                                  widget.store.changed();
+                                }
+                              }
+                            },
+                            itemBuilder: (_) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Text('Edit goal'),
+                              ),
+                              PopupMenuItem(
+                                value: 'done',
+                                child: Text(
+                                  item.done
+                                      ? 'Reopen goal'
+                                      : 'Mark goal complete',
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Delete goal'),
                               ),
                             ],
+                          )
+                        : IconButton(
+                            tooltip: 'Delete ${routines ? 'routine' : 'goal'}',
+                            onPressed: () async {
+                              final remove = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Delete this item?'),
+                                  content: Text(item.text),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('Keep'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (remove == true) {
+                                items.removeWhere((g) => g.id == item.id);
+                                widget.store.changed();
+                              }
+                            },
+                            icon: const Icon(Icons.close, size: 18),
                           ),
-                        );
-                        if (remove == true) {
-                          items.removeWhere((g) => g.id == item.id);
-                          widget.store.changed();
-                        }
-                      },
-                      icon: const Icon(Icons.close, size: 18),
-                    ),
                   );
                 },
               ),

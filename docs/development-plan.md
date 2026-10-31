@@ -1,8 +1,12 @@
 # Development Plan
 
+## Goal planning and phone task movement
+
+- The 2026-10-31 request activates goal linking and daily scheduling previously deferred in plan 10. Implement the Android path from long-term goal through editable plan to linked daily tasks and goal progress, plus Earlier-to-Today drag handles. Commit and push to main and deliver the latest APK to Dropbox. Track implementation, compatibility and delivery boundaries in [plan 13](plans/13-goal-planning-and-mobile-drag.md).
+
 ## User workflow improvement direction
 
-- [Plan 10](plans/10-user-workflow-improvements.md) records the 2026-10-30 functional feedback and reviewed design constraints. Prioritize awareness/retrieval, easier planning setup, optional recurrence and progress review. Preserve existing sequencing/subtask editing; hold goal linking and completion redesign. Desktop source implementation and UI/UX review are complete in [10-1](plans/10-1-desktop-workflow.md). Matching Android UI, second review, Mac installation and signed APK +7 delivery are complete in [10-2](plans/10-2-review-install-and-android.md). Schedule definitions remain local; optional shared schedules and physical-device/user studies are follow-on work.
+- [Plan 10](plans/10-user-workflow-improvements.md) records the 2026-10-30 functional feedback and reviewed design constraints. Prioritize awareness/retrieval, easier planning setup, optional recurrence and progress review. Preserve existing sequencing/subtask editing; goal linking is now active in plan 13, while completion redesign remains deferred. Desktop source implementation and UI/UX review are complete in [10-1](plans/10-1-desktop-workflow.md). Matching Android UI, second review, Mac installation and signed APK +7 delivery are complete in [10-2](plans/10-2-review-install-and-android.md). Schedule definitions remain local; optional shared schedules and physical-device/user studies are follow-on work.
 
 ## Authorized cloud deployment
 

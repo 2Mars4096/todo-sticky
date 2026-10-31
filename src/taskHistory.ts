@@ -66,7 +66,9 @@ export function applyPlanWithUndo(tasks: AggregatedTask[], date: string, schedul
       const text = `⏰ ${block.time}–${block.endTime}${who} ${block.action}`
       // Keep historical/user-authored equivalents rather than append the same block twice.
       if (retained.some(step => step.text === text)) continue
-      planned.push({ id: `${planStepPrefix(date)}${batchId}_${sequence++}_h${planTextHash(text)}`, text, status: 'todo', subtasks: [] })
+      planned.push({ id: `${planStepPrefix(date)}${batchId}_${sequence++}_h${planTextHash(text)}`, text, status: 'todo', subtasks: [],
+        ...(task.goalId ? { goalId: task.goalId } : {}),
+      })
     }
     if (!planned.length && retained.length === task.todaySubtasks.length) return task
     return {

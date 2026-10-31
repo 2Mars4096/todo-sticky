@@ -14,6 +14,7 @@ class ArchiveScreen extends StatefulWidget {
   final VoidCallback openFocus;
   final bool progress;
   final String initialQuery;
+  final String? initialGoalId;
   const ArchiveScreen({
     super.key,
     required this.store,
@@ -21,6 +22,7 @@ class ArchiveScreen extends StatefulWidget {
     required this.openFocus,
     this.progress = false,
     this.initialQuery = '',
+    this.initialGoalId,
   });
   @override
   State<ArchiveScreen> createState() => _ArchiveScreenState();
@@ -30,6 +32,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   late final query = TextEditingController(text: widget.initialQuery);
   late String selected = widget.store.selectedDate;
   String status = 'all';
+  late String? goalId = widget.initialGoalId;
   bool week = false;
   int limit = 40;
   @override
@@ -42,7 +45,16 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: widget.store,
     builder: (context, _) {
-      final rows = archiveRows(widget.store.days);
+      final allRows = archiveRows(widget.store.days);
+      final rows = goalId == null
+          ? allRows
+          : allRows
+                .where((row) => widget.store.goalIdForTask(row.task) == goalId)
+                .toList();
+      final goal = goalId == null ? null : widget.store.findGoal(goalId!);
+      final goalProgress = goal == null
+          ? null
+          : widget.store.goalProgress(goal);
       final date = parseDate(selected);
       final start = week
           ? DateTime(date.year, date.month, date.day - date.weekday + 1)
@@ -57,14 +69,32 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 row.date.compareTo(from) >= 0 && row.date.compareTo(until) <= 0,
           )
           .toList();
-      final roots = range.where((row) => row.parents.isEmpty).toList();
+      final linkedRoots = goalId == null
+          ? null
+          : widget.store
+                .tasksForGoal(goalId!, from: from, until: until)
+                .map((row) => '${row.date}/${row.task.id}')
+                .toSet();
+      final roots = range
+          .where(
+            (row) => linkedRoots == null
+                ? row.parents.isEmpty
+                : linkedRoots.contains('${row.date}/${row.task.id}'),
+          )
+          .toList();
       final done = roots
           .where((row) => row.task.status == TaskStatus.done)
           .length;
       final stopped = roots
           .where((row) => row.task.status == TaskStatus.stopped)
           .length;
-      final steps = range.where((row) => row.parents.isNotEmpty).toList();
+      final steps = range
+          .where(
+            (row) => linkedRoots == null
+                ? row.parents.isNotEmpty
+                : !linkedRoots.contains('${row.date}/${row.task.id}'),
+          )
+          .toList();
       final sessions = widget.store.focus.missionHistory.where((session) {
         final day = dateKey(
           DateTime.fromMillisecondsSinceEpoch(session.completedAt),
@@ -105,7 +135,11 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                               Icons.calendar_today_outlined,
                               size: 18,
                             ),
-                            label: Text(DateFormat('d MMM y').format(date)),
+                            label: Text(
+                              week
+                                  ? '${DateFormat('d MMM').format(start)} – ${DateFormat('d MMM y').format(parseDate(until))}'
+                                  : DateFormat('d MMM y').format(date),
+                            ),
                             onPressed: () async {
                               final picked = await showDatePicker(
                                 context: context,
@@ -138,35 +172,102 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                               limit = 40;
                             }),
                           ),
-                        ],
-                      ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: DropdownButton<String>(
-                        value: status,
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'all',
-                            child: Text('All states'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'open',
-                            child: Text('Unfinished'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'done',
-                            child: Text('Completed'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'stopped',
-                            child: Text('Stopped'),
+                          const Tooltip(
+                            message: 'Tasks are grouped by their list date, not their completion date. Focus totals include retained sessions and planned duration.',
+                            child: Icon(
+                              Icons.info_outline,
+                              size: 18,
+                              color: mutedInk,
+                            ),
                           ),
                         ],
-                        onChanged: (value) => setState(() {
-                          status = value!;
-                          limit = 40;
-                        }),
                       ),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Semantics(
+                            label: 'Filter by goal',
+                            child: DropdownButton<String>(
+                              key: const ValueKey('goal-filter'),
+                              isExpanded: true,
+                              value: goalId ?? '',
+                              items: [
+                                const DropdownMenuItem(
+                                  value: '',
+                                  child: Text(
+                                    'All goals',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                for (final item in widget.store.goals.targets)
+                                  DropdownMenuItem(
+                                    value: item.id,
+                                    child: Text(
+                                      item.text,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                if (goalId != null && goal == null)
+                                  DropdownMenuItem(
+                                    value: goalId,
+                                    child: const Text(
+                                      'Removed goal',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                              ],
+                              onChanged: (value) => setState(() {
+                                goalId = value?.isEmpty == true ? null : value;
+                                limit = 40;
+                              }),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 2,
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: status,
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'all',
+                                child: Text(
+                                  'All states',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              DropdownMenuItem(
+                                value: 'open',
+                                child: Text(
+                                  'Unfinished',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              DropdownMenuItem(
+                                value: 'done',
+                                child: Text(
+                                  'Completed',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              DropdownMenuItem(
+                                value: 'stopped',
+                                child: Text(
+                                  'Stopped',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                            onChanged: (value) => setState(() {
+                              status = value!;
+                              limit = 40;
+                            }),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -176,38 +277,54 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                   children: [
                     if (widget.progress) ...[
-                      Text(
-                        '${from == until ? from : '$from to $until'} · by task list date',
-                        style: const TextStyle(color: mutedInk, fontSize: 12),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '$done completed · ${roots.length - done - stopped} unfinished · $stopped stopped',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 12),
-                      LinearProgressIndicator(
-                        value: roots.isEmpty ? 0 : done / roots.length,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '${steps.where((row) => row.task.status == TaskStatus.done).length}/${steps.length} steps completed',
-                      ),
-                      Text(
-                        '${sessions.length} focus sessions · ${sessions.fold<int>(0, (sum, session) => sum + session.durationMinutes)} planned minutes',
-                      ),
-                      const ExpansionTile(
-                        tilePadding: EdgeInsets.zero,
-                        title: Text(
-                          'About these totals',
-                          style: TextStyle(fontSize: 13, color: mutedInk),
+                      if (goalProgress != null && goalProgress.total > 0) ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Goal plan · ${goalProgress.completed}/${goalProgress.total} completed',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const Tooltip(
+                              message: 'Plan progress includes linked tasks across all dates. A stopped task is not completed.',
+                              child: Icon(
+                                Icons.info_outline,
+                                size: 18,
+                                color: mutedInk,
+                              ),
+                            ),
+                          ],
                         ),
-                        children: [
-                          Text(
-                            'Tasks are grouped by their list date, not when they were completed. Steps are separate. Focus totals include only retained sessions and planned duration.',
-                          ),
-                        ],
-                      ),
+                        const SizedBox(height: 12),
+                        LinearProgressIndicator(value: goalProgress.fraction),
+                        const SizedBox(height: 24),
+                      ],
+                      if (roots.isNotEmpty) ...[
+                        Text(
+                          '$done completed · ${roots.length - done - stopped} unfinished · $stopped stopped',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 12),
+                        LinearProgressIndicator(
+                          value: roots.isEmpty ? 0 : done / roots.length,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      if (steps.isNotEmpty)
+                        Text(
+                          '${steps.where((row) => row.task.status == TaskStatus.done).length}/${steps.length} steps completed',
+                        ),
+                      if (goalId == null && sessions.isNotEmpty)
+                        Text(
+                          '${sessions.length} focus sessions · ${sessions.fold<int>(0, (sum, session) => sum + session.durationMinutes)} planned minutes',
+                        ),
+                      if (roots.isNotEmpty ||
+                          steps.isNotEmpty ||
+                          (goalId == null && sessions.isNotEmpty))
+                        const SizedBox(height: 20),
                     ],
                     Text(
                       results.isEmpty
@@ -216,7 +333,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       style: const TextStyle(color: mutedInk),
                     ),
                     for (final row in results.take(limit)) ...[
-                      const Divider(),
+                      const SizedBox(height: 8),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(

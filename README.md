@@ -10,6 +10,8 @@ Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed 
 
 Local Android release build: `release/todo-sticky.apk` (ARM64, 19.49 MB, release-signed, sync URL prefilled). The local `release/` folder is excluded from Git.
 
+Android source 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The separately installable preview is used when the original production signing key is unavailable. New goal-plan data stays on the device until the compatible sync backend is deployed; existing production APKs remain available.
+
 Download the latest installer from [Releases](https://github.com/2Mars4096/todo-sticky/releases):
 
 | Platform | File |

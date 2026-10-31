@@ -231,7 +231,21 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                                   ),
                           )
                         : switch (tab) {
-                            1 => GoalsScreen(store: store),
+                            1 => GoalsScreen(
+                              store: store,
+                              ai: ai,
+                              openFocus: () {
+                                Navigator.of(context)
+                                    .popUntil((route) => route.isFirst);
+                                setState(() => tab = 2);
+                              },
+                              openDay: (date) {
+                                store.selectDate(date);
+                                Navigator.of(context)
+                                    .popUntil((route) => route.isFirst);
+                                setState(() => tab = 0);
+                              },
+                            ),
                             2 => FocusScreen(
                               store: store,
                               onReview: (id, text) {

@@ -102,5 +102,16 @@ function goalsFixture(raw, { failRecovery = false, failRead = false } = {}) {
   assert.equal(f.writes.length, 0, 'An unreadable store cannot be assumed empty')
   assert.ok(state.storageError.includes('not been replaced'))
   assert.equal(state.retrySave, undefined)
+
+  const planned = { targets: [{ id: 'goal_one', text: 'Original objective', done: false,
+    plan: [{ id: 'step_one', text: 'Read the evidence\nWrite a synthesis' }] }], recurring: [] }
+  f = goalsFixture(JSON.stringify(planned)); f.render(); state = f.render()
+  assert.deepEqual(JSON.parse(JSON.stringify(state.targets[0].plan)), planned.targets[0].plan)
+  state.updateGoal('targets', 'goal_one', 'Revised objective'); f.render(); state = f.render()
+  state.toggleGoal('targets', 'goal_one'); f.render(); state = f.render()
+  const persisted = JSON.parse(f.storage.get(key)).targets[0]
+  assert.equal(persisted.text, 'Revised objective')
+  assert.equal(persisted.done, true)
+  assert.deepEqual(persisted.plan, planned.targets[0].plan, 'Ordinary desktop goal edits retain the phone plan')
   console.log('Passed native listener cleanup, rejected registration, goals recovery-copy ordering and unreadable-storage preservation')
 })().catch(error => { console.error(error); process.exitCode = 1 })

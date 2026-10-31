@@ -37,7 +37,11 @@ export function conflictRows(key: string, payload: SyncPayload): ConflictRow[] {
     })
     tasks(payload.tasks)
   } else if (key === 'goals') {
-    for (const [field, title] of [['targets', 'Goals'], ['recurring', 'Routines']]) list(payload[field]).forEach((item, index) => add(item, 0, title, `${field}/${index}`))
+    for (const [field, title] of [['targets', 'Goals'], ['recurring', 'Routines']]) list(payload[field]).forEach((item, index) => {
+      const path = `${field}/${index}`
+      add(item, 0, title, path)
+      list(item.plan).forEach((step, stepIndex) => add(step, 1, title, `${path}/plan/${stepIndex}`))
+    })
   } else {
     const p = object(payload), date = new Date(Number(p.completedAt))
     add(p, 0, '', 'focus', [`${p.durationMinutes} min planned`, `Route: ${p.orbitLabel}`, `Vehicle: ${p.vehicleCode}`, Number.isNaN(date.getTime()) ? '' : date.toLocaleString()].filter(Boolean))

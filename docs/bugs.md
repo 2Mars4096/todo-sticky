@@ -1,5 +1,15 @@
 # Bugs And Failed Approaches
 
+## 2026-10-31: Goal identity, moves and sync upgrades
+
+- A title-only parent/history match could combine steps belonging to different goals. Linked work now matches goal identity, with plan-step identity checked for title-based history; a partial child move cannot falsely finish the original plan step.
+- A moved subtree could collide with an existing descendant ID at its destination. Check all subtree IDs before mutation, preserving both dates on rejection.
+- Historical goal IDs may contain characters that task-link validation rejects. Scheduling now validates the goal ID before creating or saving work, preventing an unreadable notebook after reload.
+- A legacy sync baseline lacks goal fields even when the same server revision contains them. Upgrading without repairing that baseline would treat hidden metadata as a deletion. Restore only fields absent from both the baseline and matching local item, preserving local edits, explicit known-field removals and newer-revision conflict handling.
+- The currently deployed service does not advertise goal-plan payloads. The new client blocks sync of goal-bearing notebooks rather than allowing rejected/stripped metadata. Backend source is ready, but deployment requires the existing authenticated Google Cloud environment.
+- The existing production APK's signing key is unavailable on this build host. The preview uses its own application ID/label and cannot replace the production notebook. Keep the original keystore for the later in-place update; do not weaken the normal release-signing guard.
+- Fixed goal-header and proposal-footer rows overflowed with enlarged, wide text. Responsive wrapping preserves the single-row layout when it fits and keeps controls usable at narrow widths. Run ordinary-font widget tests as well as real-font screenshot checks; screenshot-only font metrics missed this case.
+
 ## 2026-10-31: Paragraph text and phone keyboard layout
 
 - Desktop Markdown wrote raw newlines, losing continuation prose and interpreting embedded date headings/checklists as structure. Android export flattened newlines. Both codecs now preserve the full string in escaped text metadata; nested round-trip tests cover prose that resembles Markdown structure.

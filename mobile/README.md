@@ -30,17 +30,32 @@ The output is `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`; the loc
 
 The local release key is kept outside the repository under `~/.config/todo-sticky/android-release/`; ignored `android/key.properties` references it. Preserve that private directory for future updates; never add its contents to source control.
 
+### Separate preview build
+
+When the original production key is unavailable, build an optimized preview that installs alongside the existing app:
+
+```sh
+ORG_GRADLE_PROJECT_stickyReviewBuild=true flutter build apk \
+  --release --target-platform android-arm64 --split-per-abi \
+  --dart-define=STICKY_PREVIEW=true \
+  --dart-define=SYNC_SERVER_URL=https://sticky-todo-sync-507920948662.asia-southeast1.run.app
+```
+
+Both preview flags are required. The package is `io.github.twomars4096.sticky_todo.preview`, labelled **Sticky Todo Preview**, and uses the Android debug signing key with release optimization. Its notebook is separate. Browser sign-in requires returning manually to the preview. This APK cannot update the production installation; a production update still requires the original key. Use a distinct delivery filename such as `todo-sticky-preview-2.1.15-9.apk`.
+
 
 ## Use
 
 - Capture paragraphs at the top of Notes. Return inserts a new line; the + button adds the task or step. Fields grow and then scroll, with fewer visible lines while the keyboard is open. Tap a task to reveal actions and steps; double tap the title to edit. Drag the six-dot grip to reorder daily root tasks; step arrows move children within their parent. Focus, Add step, Suggest and Move use icon buttons; horizontal dots open editing, copy, status and delete options.
 - Check a task to finish it. Tasks with an Outcome ask **Complete / Revise / Stop**. Completing a parent completes its steps; completing all steps with an Outcome asks for outcome review.
-- Browse any date with the header. Today shows unfinished earlier work under **Earlier tasks**, without copying it. Move offers today/next day or a chosen date and keeps metadata. Matching tasks show read-only earlier steps.
+- Browse any date with the header. Today shows unfinished earlier work under **Earlier tasks**, without copying it. Drag an Earlier task's grip into Today, including an empty Today list, or drop between rows to choose its position. The screen scrolls near its edges. Move also offers today/next day or a chosen date and keeps metadata. Matching tasks show read-only earlier steps.
 - **Plan** takes an explicit time window and optional machines. The preview lists blocks chronologically and names unscheduled work. Apply replaces only untouched generated suggestions for that date; edited, started and legacy steps remain; Undo preserves later edited/completed work. Suggestions remain proposals until accepted.
-- **Goals** holds long-term goals and routines. Manual is the default; Daily/Weekdays/Weekly schedules offer Pause and Skip next on this device. **Focus** starts, pauses, resumes, restores and finishes sessions; its travel log retains 6, 12 or 24 sessions. Finishing a session does not complete the task.
+- **Goals → a long-term goal** opens its plan. Add steps manually or choose **Generate plan**, edit/select the suggestions and choose **Add steps**. Select unscheduled steps, then choose **Add to Today** or the calendar for another date. A scheduled step opens its actual daily task; moving or completing that task updates the same goal plan. Repeating the scheduling action does not create duplicates.
+- Daily tasks show their linked goal. **Progress** can filter by goal; the plan's completion covers all dates, while task totals follow the selected date/week. All dated fragments of a plan step must be completed before the step counts as done; stopped work remains separate.
+- **Goals** also holds routines. Manual is the default; Daily/Weekdays/Weekly schedules offer Pause and Skip next on this device. **Focus** starts, pauses, resumes, restores and finishes sessions; its travel log retains 6, 12 or 24 sessions. Finishing a session does not complete the task.
 - **Settings → AI assistance** supports saved Moonshot, OpenRouter, OpenAI, Anthropic, Gemini and custom HTTPS OpenAI-compatible profiles. API keys live in Android secure storage and are excluded from exports and synchronization. Connection tests use the unsaved draft without changing saved settings. Provider errors retain the actual reason, including rate limits, unsupported models and malformed output.
 - The headphone action suggests a task-aware album list. A task’s menu copies a structured agent prompt for Diane or another assistant.
-- Export or restore a complete JSON notebook through Android’s file picker. Markdown day export preserves desktop task IDs, nested status markers and finish metadata. **Import Markdown checklist** accepts pasted Markdown as new tasks, preserving hierarchy and finish metadata with fresh IDs.
+- Export or restore a complete JSON notebook through Android's file picker. JSON includes goal plans and links; Markdown day export preserves desktop task IDs, nested status markers, finish metadata and goal provenance. **Import Markdown checklist** accepts pasted Markdown as new tasks, preserving hierarchy and goal association with fresh IDs; pasted tasks do not become a second instance of a plan step.
 
 ## Data and recovery
 
@@ -54,11 +69,13 @@ The separate `feature/google-account-sync` branch builds on this app. `StickySto
 
 ## Account and sync in this branch
 
-`feature/google-account-sync` includes the optional account client. Open **Settings → Account & sync**, connect the deployed HTTPS service, sign in with Google in the system browser, then enable **Sync this notebook**. The app remains usable offline; signing in alone does not upload notes. Tasks, goals and completed focus sessions use the same protocol as desktop, with explicit conflict choices and recovery export. AI keys, Diane credentials, device preferences and active timers remain local.
+The main branch includes the optional account client. Open **Settings → Account & sync**, connect the deployed HTTPS service, sign in with Google in the system browser, then enable **Sync this notebook**. The app remains usable offline; signing in alone does not upload notes. Tasks, goals and completed focus sessions use the same protocol as desktop, with explicit conflict choices and recovery export. AI keys, Diane credentials, device preferences and active timers remain local.
+
+Goal plans and linked tasks require the backend's `goalPlanning:true` / payload-schema-2 capability. If an older service is configured and the notebook contains this metadata, sync pauses with a visible message and preserves local data. The 2026-10-31 client/source delivery does not deploy the backend; deploy `backend/` from the authenticated Google Cloud environment before expecting new goal data to sync.
 
 The service URL can be entered in Settings or prefilled with `--dart-define=SYNC_SERVER_URL=https://YOUR_SERVICE_HOST`. A configured Firebase Web app and Cloud Run backend are required. No `google-services.json` or native Android OAuth registration is needed for this browser handoff. See [account setup and deployment](../docs/account-sync.md).
 
-The combined app passes **44 tests**: 22 standalone workflow checks, 20 account/protocol checks, and two Account-screen checks at 360 px with 150% text. Analysis is clean and the account-enabled ARM64 debug APK is built and signature-verified. Live Firebase and physical-device acceptance remain pending.
+Current verification and delivery evidence is tracked in [goal planning and mobile drag](../docs/plans/13-goal-planning-and-mobile-drag.md). Live Firebase and physical-device acceptance remain separate from local protocol/widget tests.
 
 ## Feature parity and platform boundaries
 
@@ -72,6 +89,7 @@ The combined app passes **44 tests**: 22 standalone workflow checks, 20 account/
 | Day planning, time/machines, preview/apply/discard, unscheduled tasks | Implemented with schema/time/overlap validation and stale-plan checks |
 | Delete and plan Undo; recoverable saves | Implemented; Undo does not overwrite later edits |
 | Goals and manually reset routines | Implemented |
+| Long-term goal plans, selected daily scheduling and goal progress | Android plan editor with manual/AI drafts; actual daily tasks retain goal/step IDs, and desktop storage preserves the metadata |
 | Focus controls, restore, route, history and retention | Implemented; the phone uses a native orbital route with pinch/pan rather than the desktop WebGL renderer |
 | AI profiles, connection test, album suggestions | Implemented for all HTTP API providers |
 | Clipboard and Markdown task interchange | Native clipboard, agent prompt, checklist import and Markdown day export |

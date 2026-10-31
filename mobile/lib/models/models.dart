@@ -89,12 +89,16 @@ class Task {
   TaskStatus status;
   List<Task> subtasks;
   FinishPromise? finish;
+  String? goalId;
+  String? goalStepId;
   Task({
     String? id,
     required this.text,
     this.status = TaskStatus.todo,
     List<Task>? subtasks,
     this.finish,
+    this.goalId,
+    this.goalStepId,
   }) : id = id ?? newId(),
        subtasks = subtasks ?? [];
   bool get closed => status == TaskStatus.done || status == TaskStatus.stopped;
@@ -110,6 +114,11 @@ class Task {
     if (children is! List || children.length > 10000) {
       throw const FormatException('Invalid task steps');
     }
+    final goalId = goalLinkId(json['goalId']);
+    final goalStepId = goalLinkId(json['goalStepId']);
+    if (goalStepId != null && goalId == null) {
+      throw const FormatException('A goal step needs its goal');
+    }
     return Task(
       id: id,
       text: textValue(json['text']),
@@ -120,6 +129,8 @@ class Task {
       finish: json['finish'] == null
           ? null
           : FinishPromise.fromJson(object(json['finish'])),
+      goalId: goalId,
+      goalStepId: goalStepId,
     );
   }
   Map<String, dynamic> toJson() => {
@@ -128,6 +139,8 @@ class Task {
     'status': status.name,
     'subtasks': subtasks.map((t) => t.toJson()).toList(),
     if (finish != null) 'finish': finish!.toJson(),
+    if (goalId != null) 'goalId': goalId,
+    if (goalStepId != null) 'goalStepId': goalStepId,
   };
   Task clone() => Task.fromJson(object(jsonDecode(jsonEncode(toJson()))));
   void completeTree() {
@@ -154,18 +167,63 @@ class Task {
   }
 }
 
+String? goalLinkId(Object? value) {
+  if (value == null) return null;
+  if (value is! String || !RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(value)) {
+    throw const FormatException('Invalid goal link');
+  }
+  return value;
+}
+
+class GoalPlanStep {
+  final String id;
+  String text;
+  GoalPlanStep({String? id, required this.text}) : id = id ?? newId();
+  factory GoalPlanStep.fromJson(Map<String, dynamic> json) {
+    final id = goalLinkId(json['id']);
+    final text = textValue(json['text'], max: 5000);
+    if (id == null || text.trim().isEmpty) {
+      throw const FormatException('Invalid goal step');
+    }
+    return GoalPlanStep(id: id, text: text);
+  }
+  Map<String, dynamic> toJson() => {'id': id, 'text': text};
+}
+
 class GoalItem {
   final String id;
   String text;
   bool done;
-  GoalItem({String? id, required this.text, this.done = false})
-    : id = id ?? newId();
-  factory GoalItem.fromJson(Map<String, dynamic> j) => GoalItem(
-    id: textValue(j['id'], max: 300),
-    text: textValue(j['text']),
-    done: j['done'] == true,
-  );
-  Map<String, dynamic> toJson() => {'id': id, 'text': text, 'done': done};
+  List<GoalPlanStep> plan;
+  GoalItem({
+    String? id,
+    required this.text,
+    this.done = false,
+    List<GoalPlanStep>? plan,
+  }) : id = id ?? newId(),
+       plan = plan ?? [];
+  factory GoalItem.fromJson(Map<String, dynamic> j) {
+    final raw = j['plan'] ?? [];
+    if (raw is! List || raw.length > 200) {
+      throw const FormatException('Invalid goal plan');
+    }
+    final plan = raw.map((v) => GoalPlanStep.fromJson(object(v))).toList();
+    if (plan.map((step) => step.id).toSet().length != plan.length) {
+      throw const FormatException('Duplicate goal step IDs');
+    }
+    return GoalItem(
+      id: textValue(j['id'], max: 300),
+      text: textValue(j['text']),
+      done: j['done'] == true,
+      plan: plan,
+    );
+  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'text': text,
+    'done': done,
+    if (plan.isNotEmpty) 'plan': plan.map((step) => step.toJson()).toList(),
+  };
 }
 
 class Goals {

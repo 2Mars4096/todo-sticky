@@ -20,11 +20,21 @@ function normalizeItem(item: unknown): GoalItem | null {
 
   const candidate = item as Partial<GoalItem>
   if (typeof candidate.id !== 'string' || typeof candidate.text !== 'string') return null
+  if (candidate.plan !== undefined) {
+    if (!Array.isArray(candidate.plan) || candidate.plan.length > 200) return null
+    const ids = new Set<string>()
+    for (const step of candidate.plan) {
+      if (!step || typeof step.id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(step.id)
+        || ids.has(step.id) || typeof step.text !== 'string' || !step.text.trim() || step.text.length > 5000) return null
+      ids.add(step.id)
+    }
+  }
 
   return {
     id: candidate.id,
     text: candidate.text,
     done: Boolean(candidate.done),
+    ...(candidate.plan !== undefined ? { plan: candidate.plan.map(step => ({ id: step.id, text: step.text })) } : {}),
   }
 }
 

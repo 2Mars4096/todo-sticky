@@ -352,8 +352,10 @@ pub fn create_task(
         &request.date,
         request.expected_revision.as_deref(),
     )?;
-    let task = Task {
+    let mut task = Task {
         finish: None,
+        goal_id: None,
+        goal_step_id: None,
         id: new_task_id(),
         text: validate_text(&request.text)?,
         status: validate_status(&request.status)?,
@@ -363,6 +365,8 @@ pub fn create_task(
             .map(|draft| {
                 Ok(Task {
                     finish: None,
+                    goal_id: None,
+                    goal_step_id: None,
                     id: new_task_id(),
                     text: validate_text(&draft.text)?,
                     status: validate_status(&draft.status)?,
@@ -374,6 +378,8 @@ pub fn create_task(
     if let Some(parent_id) = request.parent_id.as_deref() {
         let parent = find_task_mut(&mut tasks, parent_id)
             .ok_or_else(|| format!("Task '{parent_id}' was not found on {}", request.date))?;
+        task.goal_id = parent.goal_id.clone();
+        for step in &mut task.subtasks { step.goal_id = parent.goal_id.clone(); }
         parent.subtasks.push(task.clone());
     } else {
         tasks.push(task.clone());
@@ -508,6 +514,31 @@ mod tests {
         assert_eq!(result.dates[0].tasks[0].text, "Available task");
         assert_eq!(result.unavailable_files.len(), 1);
         assert_eq!(fs::read(todo.join("2026-10-05/index.md")).unwrap(), [0xff]);
+    }
+
+    #[test]
+    fn native_edits_preserve_plan_identity_and_new_steps_inherit_the_goal() {
+        let kb = tempfile::tempdir().unwrap();
+        let directory = kb.path().join("content/to-do/2026-10-26");
+        fs::create_dir_all(&directory).unwrap();
+        fs::write(directory.join("index.md"), "## 2026-10-31\n- [ ] Research draft <!-- sticky-todo:goal={\"goalId\":\"goal_a\",\"goalStepId\":\"step_a\"} --> <!-- sticky-todo:id=step_a -->\n").unwrap();
+        let edited = update_task(kb.path(), UpdateTaskRequest {
+            date: "2026-10-31".into(), id: "step_a".into(), text: Some("Revised draft".into()),
+            status: None, expected_revision: None,
+        }).unwrap();
+        assert_eq!(edited.task.goal_id.as_deref(), Some("goal_a"));
+        assert_eq!(edited.task.goal_step_id.as_deref(), Some("step_a"));
+        let child = create_task(kb.path(), CreateTaskRequest {
+            date: "2026-10-31".into(), text: "Check the table".into(), status: "todo".into(),
+            subtasks: vec![TaskDraft { text: "Reproduce totals".into(), status: "todo".into() }],
+            parent_id: Some("step_a".into()), expected_revision: Some(edited.revision),
+        }).unwrap();
+        assert_eq!(child.task.goal_id.as_deref(), Some("goal_a"));
+        assert_eq!(child.task.subtasks[0].goal_id.as_deref(), Some("goal_a"));
+        assert_eq!(child.task.goal_step_id, None);
+        let saved = extract_tasks(kb.path(), ExtractTasksRequest { date: Some("2026-10-31".into()), ..Default::default() }).unwrap();
+        assert_eq!(saved.dates[0].tasks[0].goal_step_id.as_deref(), Some("step_a"));
+        assert_eq!(saved.dates[0].tasks[0].subtasks[0].goal_id.as_deref(), Some("goal_a"));
     }
 
     #[test]

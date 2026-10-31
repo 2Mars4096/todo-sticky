@@ -59,11 +59,87 @@ class SyncApiTests(unittest.TestCase):
         self.task = {'id': 'task_a', 'text': 'Write paper', 'status': 'todo', 'subtasks': [],
                      'finish': {'doneWhen': 'The draft is ready', 'by': '2026-10-30', 'reviewReady': False}}
 
-    def write(self, uid='alice', revision=0, mutation='mutation-000000000001', payload=None, key='day:2026-10-24', deleted=False):
+    def write(self, uid='alice', revision=0, mutation='mutation-000000000001', payload=None, key='day:2026-10-24', deleted=False, schema=1):
         return self.client.put('/v1/sync/' + key, headers={'Authorization': 'Bearer ' + uid}, json={
             'expectedRevision': revision, 'mutationId': mutation, 'deleted': deleted,
+            'schemaVersion': schema,
             'payload': payload if payload is not None else None if deleted else {'date': '2026-10-24', 'tasks': [self.task]},
         })
+
+    def test_goal_payload_negotiation_and_legacy_task_updates_preserve_links(self):
+        self.task.update(goalId='goal_a', goalStepId='step_a')
+        self.task['subtasks'] = [{'id': 'child_a', 'text': 'Check evidence', 'status': 'todo',
+                                 'subtasks': [], 'goalId': 'goal_a'}]
+        self.assertEqual(self.write(schema=2).status_code, 200)
+        legacy = self.client.get('/v1/sync', headers={'Authorization': 'Bearer alice'}).json()
+        self.assertEqual(legacy['payloadSchemaVersion'], 1)
+        stripped = legacy['records'][0]['payload']
+        self.assertNotIn('goalId', stripped['tasks'][0])
+        self.assertNotIn('goalId', stripped['tasks'][0]['subtasks'][0])
+        modern = self.client.get('/v1/sync?schemaVersion=2', headers={'Authorization': 'Bearer alice'}).json()
+        self.assertEqual(modern['payloadSchemaVersion'], 2)
+        self.assertEqual(modern['records'][0]['payload']['tasks'][0]['goalStepId'], 'step_a')
+        stripped['tasks'][0]['text'] = 'Revised on an older app'
+        stripped['tasks'][0]['subtasks'][0]['status'] = 'done'
+        response = self.write(revision=1, mutation='legacy-mutation-0001', payload=stripped)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('goalId', response.json()['payload']['tasks'][0])
+        stored = self.store.data[('alice', 'day:2026-10-24')]['payload']['tasks'][0]
+        self.assertEqual(stored['text'], 'Revised on an older app')
+        self.assertEqual(stored['goalId'], 'goal_a')
+        self.assertEqual(stored['goalStepId'], 'step_a')
+        self.assertEqual(stored['subtasks'][0]['goalId'], 'goal_a')
+        self.assertEqual(stored['subtasks'][0]['status'], 'done')
+        retry = self.write(revision=1, mutation='legacy-mutation-0001', payload=stripped)
+        self.assertEqual(response.json(), retry.json(), 'Legacy idempotence compares the retained metadata')
+        stale = self.write(revision=1, mutation='stale-mutation-0001', payload=stripped)
+        self.assertEqual(stale.status_code, 409)
+        self.assertNotIn('goalId', stale.json()['current']['payload']['tasks'][0])
+        removed = self.write(revision=2, mutation='modern-remove-00001', payload=stripped, schema=2)
+        self.assertEqual(removed.status_code, 200)
+        self.assertNotIn('goalId', self.store.data[('alice', 'day:2026-10-24')]['payload']['tasks'][0])
+
+    def test_goal_plan_survives_legacy_edit_and_can_be_removed_by_v2(self):
+        plan = [{'id': 'step_a', 'text': 'Read evidence\nWrite a short synthesis'}]
+        payload = {'targets': [{'id': 'goal_a', 'text': 'Publish research', 'done': False, 'plan': plan}], 'recurring': []}
+        saved = self.write(key='goals', payload=payload, schema=2)
+        self.assertEqual(saved.status_code, 200)
+        legacy = deepcopy(payload)
+        legacy['targets'][0].pop('plan')
+        legacy['targets'][0]['text'] = 'Publish the revised research'
+        legacy['targets'][0]['done'] = True
+        ack = self.write(key='goals', revision=1, mutation='legacy-goal-000001', payload=legacy)
+        self.assertEqual(ack.status_code, 200)
+        self.assertNotIn('plan', ack.json()['payload']['targets'][0])
+        stored = self.store.data[('alice', 'goals')]['payload']['targets'][0]
+        self.assertEqual(stored['plan'], plan)
+        self.assertTrue(stored['done'])
+        removed = self.write(key='goals', revision=2, mutation='modern-goal-000001', payload=legacy, schema=2)
+        self.assertEqual(removed.status_code, 200)
+        self.assertNotIn('plan', self.store.data[('alice', 'goals')]['payload']['targets'][0])
+
+    def test_goal_links_and_plans_are_bounded_and_validated(self):
+        config = self.client.get('/v1/config').json()
+        self.assertEqual(config['schemaVersion'], 1)
+        self.assertEqual(config['payloadSchemaVersions'], [1, 2])
+        self.assertTrue(config['goalPlanning'])
+        for extra in [{'goalStepId': 'step_a'}, {'goalId': ''}, {'goalId': 'a/b'}, {'goalId': 12},
+                      {'goalId': 'goal_a', 'goalStepId': None}]:
+            bad = {**self.task, **extra}
+            with self.subTest(extra=extra):
+                self.assertEqual(self.write(payload={'date': '2026-10-24', 'tasks': [bad]}, schema=2).status_code, 422)
+        good = {'id': 'goal_a', 'text': 'Goal', 'done': False, 'plan': [{'id': 'step_a', 'text': 'One step'}]}
+        self.assertEqual(self.write(key='goals', payload={'targets': [good], 'recurring': []}).status_code, 422)
+        for plan in [None, [{'id': 'a', 'text': ''}], [{'id': 'a', 'text': 'x', 'apiKey': 'no'}],
+                     [{'id': 'a', 'text': 'x'}, {'id': 'a', 'text': 'y'}],
+                     [{'id': f'step_{i}', 'text': 'x'} for i in range(201)]]:
+            with self.subTest(plan=plan):
+                self.assertEqual(self.write(key='goals', payload={'targets': [{**good, 'plan': plan}], 'recurring': []}, schema=2).status_code, 422)
+        task = {**self.task, 'goalId': 'goal_a', 'goalStepId': 'step_a', 'id': 'step_a'}
+        self.assertEqual(self.write(payload={'date': '2026-10-24', 'tasks': [task]}, schema=2).status_code, 200)
+        moved = self.write(key='day:2026-10-25', payload={'date': '2026-10-25', 'tasks': [task]}, schema=2)
+        self.assertEqual(moved.status_code, 200)
+        self.assertEqual(moved.json()['payload']['tasks'][0]['goalStepId'], 'step_a')
 
     def test_legacy_blank_checklist_titles_round_trip_without_dropping_children(self):
         self.task['text'] = ''

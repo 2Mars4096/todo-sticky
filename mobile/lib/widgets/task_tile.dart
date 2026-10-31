@@ -9,6 +9,7 @@ import '../app.dart';
 import '../models/models.dart';
 import '../state/sticky_store.dart';
 import '../services/ai_service.dart';
+import '../screens/goal_plan_screen.dart';
 
 class TaskTile extends StatefulWidget {
   final StickyStore store;
@@ -20,6 +21,7 @@ class TaskTile extends StatefulWidget {
   final int depth;
   final String? parentId;
   final int? reorderIndex;
+  final Widget? dragHandle;
   final String? revealId;
   const TaskTile({
     super.key,
@@ -32,6 +34,7 @@ class TaskTile extends StatefulWidget {
     this.depth = 0,
     this.parentId,
     this.reorderIndex,
+    this.dragHandle,
     this.revealId,
   });
   @override
@@ -255,6 +258,8 @@ class _TaskTileState extends State<TaskTile> {
   @override
   Widget build(BuildContext context) {
     final task = widget.task;
+    final goalId = widget.store.goalIdForTask(task);
+    final goal = goalId == null ? null : widget.store.findGoal(goalId);
     final storedIndex = widget.store
         .tasksFor(widget.date)
         .indexWhere((row) => row.id == task.id);
@@ -277,7 +282,9 @@ class _TaskTileState extends State<TaskTile> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.reorderIndex != null)
+                if (widget.dragHandle != null)
+                  widget.dragHandle!
+                else if (widget.reorderIndex != null)
                   ReorderableDragStartListener(
                     index: widget.reorderIndex!,
                     child: Semantics(
@@ -376,6 +383,7 @@ class _TaskTileState extends State<TaskTile> {
                             ),
                           if (task.finish?.by != null ||
                               widget.showDate ||
+                              (widget.depth == 0 && goal != null) ||
                               task.status == TaskStatus.stopped ||
                               task.finish?.reviewReady == true)
                             Padding(
@@ -384,6 +392,55 @@ class _TaskTileState extends State<TaskTile> {
                                 spacing: 12,
                                 runSpacing: 4,
                                 children: [
+                                  if (widget.depth == 0 && goal != null)
+                                    Semantics(
+                                      button: true,
+                                      label: 'Open goal ${goal.text}',
+                                      child: Tooltip(
+                                        message: 'Open goal plan',
+                                        child: InkWell(
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder: (_) => GoalPlanScreen(
+                                                store: widget.store,
+                                                ai: widget.ai,
+                                                goalId: goal.id,
+                                                openFocus: widget.openFocus,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.flag_outlined,
+                                                  size: 14,
+                                                  color: mutedInk,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Flexible(
+                                                  child: Text(
+                                                    goal.text,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      color: mutedInk,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   if (task.finish?.by != null)
                                     Text(
                                       'Due ${DateFormat('d MMM').format(parseDate(task.finish!.by!))}',

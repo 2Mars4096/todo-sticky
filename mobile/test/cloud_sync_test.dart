@@ -157,6 +157,7 @@ Future<Rig> fixture(
   CredentialStore? credentials,
   Future<bool> Function(Uri)? openBrowser,
   bool Function()? isEditing,
+  Map<String, dynamic>? serviceConfig,
 }) async {
   final secure = credentials ?? MemoryCredentials();
   if (signedIn) {
@@ -188,7 +189,12 @@ Future<Rig> fixture(
   final sync = CloudSyncController(
     store: store,
     transport: CloudTransport(
-      client: MockClient((request) async => await respond(request)),
+      client: MockClient((request) async {
+        if (signedIn && request.url.path == '/v1/config') {
+          return jsonResponse(serviceConfig ?? config());
+        }
+        return await respond(request);
+      }),
     ),
     openBrowser: openBrowser ?? (_) async => true,
     isEditing: isEditing,
@@ -199,6 +205,180 @@ Future<Rig> fixture(
 }
 
 void main() {
+  test('legacy sync upgrade preserves pending edits and previously hidden goal metadata', () async {
+    final oldGoal = goals('Original goal');
+    final localGoal = goals('My edited goal');
+    final remoteGoal = goals('Original goal');
+    (remoteGoal['targets'] as List).single['plan'] = [
+      {'id': 'task-1', 'text': 'Original work'},
+    ];
+    final oldDay = day('Original work');
+    final remoteDay = day('Original work');
+    (remoteDay['tasks'] as List).single.addAll({
+      'goalId': 'goal-1',
+      'goalStepId': 'task-1',
+    });
+    final pushed = <String, Map<String, dynamic>>{};
+    final rig = await fixture(
+      (request) async {
+        if (request.method == 'GET') {
+          return jsonResponse({
+            'schemaVersion': 1,
+            'payloadSchemaVersion': 2,
+            'records': [
+              record('goals', remoteGoal).toJson(),
+              record(dayKey, remoteDay).toJson(),
+            ],
+            'nextCursor': null,
+          });
+        }
+        final body = object(jsonDecode(request.body));
+        final key = Uri.decodeComponent(request.url.pathSegments.last);
+        pushed[key] = object(body['payload']);
+        return jsonResponse(
+          record(key, object(body['payload']), revision: 2).toJson(),
+        );
+      },
+      local: {'goals': localGoal, dayKey: day('My edited work')},
+      baseline: {
+        'goals': record('goals', oldGoal).baseline,
+        dayKey: record(dayKey, oldDay).baseline,
+      },
+      serviceConfig: {
+        ...config(),
+        'goalPlanning': true,
+        'payloadSchemaVersions': [1, 2],
+      },
+    );
+    addTearDown(rig.dispose);
+    await rig.sync.synchronize();
+    expect(rig.sync.error, isNull);
+    expect(rig.store.goals.targets.single.text, 'My edited goal');
+    expect(rig.store.goals.targets.single.plan.single.id, 'task-1');
+    expect(rig.store.tasksFor(date).single.text, 'My edited work');
+    expect(rig.store.tasksFor(date).single.goalId, 'goal-1');
+    expect((pushed[dayKey]!['tasks'] as List).single['goalStepId'], 'task-1');
+    expect(object(rig.meta['baseline'])['goals']['payloadSchemaVersion'], 2);
+  });
+
+  test('metadata upgrade respects deletions, known removals and newer cloud revisions', () {
+    final remote = day('Old');
+    (remote['tasks'] as List).single['goalId'] = 'goal-1';
+    final original = day('Old');
+    final knownBase = record(dayKey, remote).baseline;
+    final removed = migrateGoalMetadata(
+      day('Edited'),
+      record(dayKey, remote),
+      knownBase,
+    )!;
+    expect(
+      (removed.local!['tasks'] as List).single.containsKey('goalId'),
+      false,
+    );
+    final gone = migrateGoalMetadata(
+      {'date': date, 'tasks': []},
+      record(dayKey, remote),
+      record(dayKey, original).baseline,
+    )!;
+    expect(gone.local!['tasks'], isEmpty);
+    expect(
+      migrateGoalMetadata(
+        day('Edited'),
+        record(dayKey, remote, revision: 2),
+        record(dayKey, original).baseline,
+      ),
+      isNull,
+    );
+    final v2Base = {...knownBase, 'payloadSchemaVersion': 2};
+    expect(
+      migrateGoalMetadata(day('Edited'), record(dayKey, remote), v2Base),
+      isNull,
+    );
+  });
+
+  test('old services cannot strip a local goal plan or its baseline', () async {
+    final linked = goals('Research')
+      ..['targets'][0]['plan'] = [
+        {'id': 'step-1', 'text': 'Read one paper'},
+      ];
+    var syncRequests = 0;
+    final rig = await fixture((request) async {
+      syncRequests++;
+      return page([]);
+    }, local: {'goals': linked});
+    addTearDown(rig.dispose);
+    await rig.sync.synchronize();
+    expect(rig.sync.error, contains('goal-planning update'));
+    expect(syncRequests, 0);
+    expect(rig.store.goals.targets.single.plan.single.id, 'step-1');
+    expect(rig.store.saveError, isNull);
+  });
+
+  test(
+    'goal-aware sync negotiates reads and acknowledges complete metadata',
+    () async {
+      final linked = goals('Research')
+        ..['targets'][0]['plan'] = [
+          {'id': 'step-1', 'text': 'Read one paper'},
+        ];
+      final dated = day('Read one paper', id: 'step-1');
+      (dated['tasks'] as List).single.addAll({
+        'goalId': 'goal-1',
+        'goalStepId': 'step-1',
+      });
+      final pushed = <String>{};
+      final rig = await fixture(
+        (request) async {
+          if (request.method == 'GET') {
+            expect(request.url.queryParameters['schemaVersion'], '2');
+            return jsonResponse({
+              'schemaVersion': 1,
+              'payloadSchemaVersion': 2,
+              'records': <dynamic>[],
+              'nextCursor': null,
+            });
+          }
+          final body = object(jsonDecode(request.body));
+          expect(body['schemaVersion'], 2);
+          final key = Uri.decodeComponent(request.url.pathSegments.last);
+          pushed.add(key);
+          return jsonResponse(record(key, object(body['payload'])).toJson());
+        },
+        local: {'goals': linked, dayKey: dated},
+        serviceConfig: {
+          ...config(),
+          'goalPlanning': true,
+          'payloadSchemaVersions': [1, 2],
+        },
+      );
+      addTearDown(rig.dispose);
+      await rig.sync.synchronize();
+      expect(rig.sync.error, isNull);
+      expect(pushed, {'goals', dayKey});
+      expect(rig.sync.upToDate, true);
+      expect(rig.store.tasksFor(date).single.goalStepId, 'step-1');
+    },
+  );
+
+  test(
+    'downgraded goal-aware response is rejected before local replacement',
+    () async {
+      final rig = await fixture(
+        (request) async => page([record(dayKey, day('Cloud'))]),
+        local: {dayKey: day('Keep local')},
+        serviceConfig: {
+          ...config(),
+          'payloadSchemaVersions': [1, 2],
+          'goalPlanning': true,
+        },
+      );
+      addTearDown(rig.dispose);
+      await rig.sync.synchronize();
+      expect(rig.sync.error, contains('goal-aware'));
+      expect(rig.store.tasksFor(date).single.text, 'Keep local');
+    },
+  );
+
   test(
     'progress waits for upload acknowledgement and clears after completion',
     () async {

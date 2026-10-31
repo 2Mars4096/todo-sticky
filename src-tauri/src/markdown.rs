@@ -21,6 +21,10 @@ pub struct Task {
     pub status: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub finish: Option<serde_json::Value>,
+    #[serde(default, rename = "goalId", skip_serializing_if = "Option::is_none")]
+    pub goal_id: Option<String>,
+    #[serde(default, rename = "goalStepId", skip_serializing_if = "Option::is_none")]
+    pub goal_step_id: Option<String>,
     pub subtasks: Vec<Task>,
 }
 
@@ -31,6 +35,10 @@ pub struct DatedTask {
     pub status: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub finish: Option<serde_json::Value>,
+    #[serde(default, rename = "goalId", skip_serializing_if = "Option::is_none")]
+    pub goal_id: Option<String>,
+    #[serde(default, rename = "goalStepId", skip_serializing_if = "Option::is_none")]
+    pub goal_step_id: Option<String>,
     pub subtasks: Vec<Task>,
     #[serde(rename = "sourceDate")]
     pub source_date: String,
@@ -43,6 +51,10 @@ pub struct AggregatedTask {
     pub status: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub finish: Option<serde_json::Value>,
+    #[serde(default, rename = "goalId", skip_serializing_if = "Option::is_none")]
+    pub goal_id: Option<String>,
+    #[serde(default, rename = "goalStepId", skip_serializing_if = "Option::is_none")]
+    pub goal_step_id: Option<String>,
     #[serde(rename = "todaySubtasks")]
     pub today_subtasks: Vec<Task>,
     #[serde(rename = "otherSubtasks")]
@@ -85,6 +97,8 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
 
     let finish_re = Regex::new(r"\s*<!-- sticky-todo:finish=(.*?) -->\s*$").unwrap();
 
+    let goal_re = Regex::new(r"\s*<!-- sticky-todo:goal=(.*?) -->\s*$").unwrap();
+
     let text_re = Regex::new(r"\s*<!-- sticky-todo:text=(.*?) -->\s*$").unwrap();
 
     let mut root: Vec<Task> = Vec::new();
@@ -117,6 +131,21 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
             .and_then(|caps| serde_json::from_str(caps.get(1)?.as_str()).ok());
         let text = if finish.is_some() { finish_re.replace(&without_id, "").trim().to_string() } else { without_id };
 
+        let goal = goal_re.captures(&text)
+            .and_then(|caps| serde_json::from_str::<serde_json::Value>(caps.get(1)?.as_str()).ok())
+            .filter(|value| {
+                let valid_id = |id: &str| !id.is_empty() && id.len() <= 128
+                    && id.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-');
+                value.as_object().map_or(false, |fields| {
+                    fields.keys().all(|key| key == "goalId" || key == "goalStepId")
+                        && fields.get("goalId").and_then(|v| v.as_str()).map_or(false, valid_id)
+                        && fields.get("goalStepId").map_or(true, |v| v.as_str().map_or(false, valid_id))
+                })
+            });
+        let goal_id = goal.as_ref().and_then(|value| value["goalId"].as_str()).map(String::from);
+        let goal_step_id = goal.as_ref().and_then(|value| value["goalStepId"].as_str()).map(String::from);
+        let text = if goal.is_some() { goal_re.replace(&text, "").trim().to_string() } else { text };
+
         let text = text_re.captures(&text)
             .and_then(|caps| serde_json::from_str::<String>(caps.get(1)?.as_str()).ok())
             .unwrap_or(text);
@@ -133,6 +162,8 @@ fn parse_task_lines(lines: &[&str], date: &str) -> Vec<Task> {
             text,
             status,
             finish,
+            goal_id,
+            goal_step_id,
             subtasks: Vec::new(),
         };
 
@@ -198,6 +229,12 @@ pub fn serialize_tasks(tasks: &[Task], indent: usize) -> String {
             let json = value.to_string().replace('<', "\\u003c").replace('>', "\\u003e");
             format!(" <!-- sticky-todo:finish={} -->", json)
         }).unwrap_or_default();
+        let goal_metadata = task.goal_id.as_ref().map(|goal_id| {
+            let mut value = serde_json::json!({ "goalId": goal_id });
+            if let Some(step_id) = &task.goal_step_id { value["goalStepId"] = step_id.clone().into(); }
+            let json = value.to_string().replace('<', "\\u003c").replace('>', "\\u003e");
+            format!(" <!-- sticky-todo:goal={} -->", json)
+        }).unwrap_or_default();
         // Keep paragraph text in escaped JSON so headings/checklists inside prose
         // cannot become date sections or subtasks on the next read.
         let text = if task.text.contains(['\n', '\r']) || task.text.contains("<!--") {
@@ -207,8 +244,8 @@ pub fn serialize_tasks(tasks: &[Task], indent: usize) -> String {
             format!("{} <!-- sticky-todo:text={} -->", preview, json)
         } else { task.text.clone() };
         result.push_str(&format!(
-            "{}- [{}] {}{} <!-- sticky-todo:id={} -->\n",
-            pad, c, text, metadata, task.id
+            "{}- [{}] {}{}{} <!-- sticky-todo:id={} -->\n",
+            pad, c, text, goal_metadata, metadata, task.id
         ));
         if !task.subtasks.is_empty() {
             result.push_str(&serialize_tasks(&task.subtasks, indent + 1));
@@ -229,6 +266,14 @@ fn normalize_task_text(text: &str) -> String {
         .join(" ")
 }
 
+fn task_history_key(task: &Task) -> String {
+    match (&task.goal_id, &task.goal_step_id) {
+        (Some(goal), Some(step)) => format!("\0goal-step:{}:{}", goal, step),
+        (Some(goal), None) => format!("\0goal-text:{}:{}", goal, normalize_task_text(&task.text)),
+        _ => normalize_task_text(&task.text),
+    }
+}
+
 pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<AggregatedTask> {
     use std::collections::HashMap;
 
@@ -241,7 +286,7 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
 
     for section in &parsed.date_sections {
         for task in &section.tasks {
-            let key = normalize_task_text(&task.text);
+            let key = task_history_key(task);
             let entry = index.entry(key.clone()).or_insert_with(|| Entry {
                 dates: HashMap::new(),
                 status: task.status.clone(),
@@ -260,7 +305,7 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
 
     if let Some(section) = today_section {
         for task in &section.tasks {
-            let key = normalize_task_text(&task.text);
+            let key = task_history_key(task);
             let mut other_subtasks = Vec::new();
 
             if let Some(entry) = index.get(&key) {
@@ -274,6 +319,8 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
                             text: sub.text.clone(),
                             status: sub.status.clone(),
                             finish: sub.finish.clone(),
+                            goal_id: sub.goal_id.clone(),
+                            goal_step_id: sub.goal_step_id.clone(),
                             subtasks: sub.subtasks.clone(),
                             source_date: date.clone(),
                         });
@@ -286,6 +333,8 @@ pub fn get_tasks_for_date(parsed: &ParsedFile, target_date: &str) -> Vec<Aggrega
                 text: task.text.clone(),
                 status: task.status.clone(),
                 finish: task.finish.clone(),
+                goal_id: task.goal_id.clone(),
+                goal_step_id: task.goal_step_id.clone(),
                 today_subtasks: task.subtasks.clone(),
                 other_subtasks,
             });
@@ -371,12 +420,30 @@ mod paragraph_tests {
     #[test]
     fn paragraph_roundtrip_preserves_tree_and_metadata() {
         let text = "Long thought\n\n## 2026-11-01\n- [ ] This is prose, not a child\n中文 <!-- sticky-todo:id=fake -->";
-        let child = Task { id: "child".into(), text: "Step\nMore detail".into(), status: "todo".into(), finish: None, subtasks: vec![] };
-        let task = Task { id: "parent".into(), text: text.into(), status: "partial".into(), finish: Some(serde_json::json!({"doneWhen":"Enough"})), subtasks: vec![child] };
+        let child = Task { id: "child".into(), text: "Step\nMore detail".into(), status: "todo".into(), finish: None, goal_id: None, goal_step_id: None, subtasks: vec![] };
+        let task = Task { id: "parent".into(), text: text.into(), status: "partial".into(), finish: Some(serde_json::json!({"doneWhen":"Enough"})), goal_id: Some("goal_a".into()), goal_step_id: Some("step_a".into()), subtasks: vec![child] };
         let serialized = serialize_date_section("2026-10-31", &[task.clone()]);
         let parsed = parse_weekly_file(&serialized);
         assert_eq!(parsed.date_sections.len(), 1);
         assert_eq!(serde_json::to_value(&parsed.date_sections[0].tasks[0]).unwrap(), serde_json::to_value(task).unwrap());
         assert_eq!(parsed.date_sections[0].tasks.len(), 1);
+    }
+
+    #[test]
+    fn history_does_not_mix_same_named_tasks_from_different_goals() {
+        let mut parsed = parse_weekly_file("## 2026-10-30\n- [ ] Prepare draft\n  - [x] Prior evidence\n\n## 2026-10-31\n- [ ] Prepare draft\n");
+        parsed.date_sections[0].tasks[0].goal_id = Some("goal_a".into());
+        parsed.date_sections[0].tasks[0].goal_step_id = Some("step_a".into());
+        parsed.date_sections[0].tasks[0].subtasks[0].goal_id = Some("goal_a".into());
+        parsed.date_sections[1].tasks[0].goal_id = Some("goal_b".into());
+        parsed.date_sections[1].tasks[0].goal_step_id = Some("step_b".into());
+        let tasks = get_tasks_for_date(&parsed, "2026-10-31");
+        assert!(tasks[0].other_subtasks.is_empty());
+        assert_eq!(tasks[0].goal_id.as_deref(), Some("goal_b"));
+        parsed.date_sections[1].tasks[0].goal_id = Some("goal_a".into());
+        parsed.date_sections[1].tasks[0].goal_step_id = Some("step_a".into());
+        let tasks = get_tasks_for_date(&parsed, "2026-10-31");
+        assert_eq!(tasks[0].other_subtasks.len(), 1);
+        assert_eq!(tasks[0].other_subtasks[0].goal_id.as_deref(), Some("goal_a"));
     }
 }

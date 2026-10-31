@@ -500,7 +500,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     const sub: Task = { id: newId(), text, status: 'todo', subtasks: [] }
     setTasks(prev => {
       const next = prev.map(t =>
-        t.id === taskId ? { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, status: t.status === 'done' || t.status === 'stopped' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, sub] } : t
+        t.id === taskId ? { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, status: t.status === 'done' || t.status === 'stopped' ? 'partial' : t.status, todaySubtasks: [...t.todaySubtasks, { ...sub, ...(t.goalId ? { goalId: t.goalId } : {}) }] } : t
       )
       persist(next)
       return next
@@ -580,6 +580,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           text: s.text,
           status: 'todo' as const,
           subtasks: [],
+          ...(t.goalId ? { goalId: t.goalId } : {}),
         }))
         return { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
       })

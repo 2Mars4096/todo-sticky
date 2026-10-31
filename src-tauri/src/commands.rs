@@ -164,6 +164,8 @@ pub fn push_task(
     } else if let Some(parent_text) = parent_task_text {
         let parent = Task {
             finish: None,
+            goal_id: None,
+            goal_step_id: None,
             id: format!("push_parent_{}", now),
             text: parent_text,
             status: "todo".into(),
@@ -171,6 +173,8 @@ pub fn push_task(
         };
         let subtask = Task {
             finish: None,
+            goal_id: None,
+            goal_step_id: None,
             id: format!("push_sub_{}", now),
             text: task_text,
             status: "todo".into(),
@@ -180,6 +184,8 @@ pub fn push_task(
     } else {
         let task = Task {
             finish: None,
+            goal_id: None,
+            goal_step_id: None,
             id: format!("push_{}", now),
             text: task_text,
             status: "todo".into(),
@@ -188,6 +194,8 @@ pub fn push_task(
                 .enumerate()
                 .map(|(i, t)| Task {
                     finish: None,
+                    goal_id: None,
+                    goal_step_id: None,
                     id: format!("push_sub_{}_{}", now, i),
                     text: t.clone(),
                     status: "todo".into(),

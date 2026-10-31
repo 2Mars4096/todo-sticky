@@ -8,6 +8,8 @@ export interface FinishPromise {
 
 export interface Task {
   finish?: FinishPromise
+  goalId?: string
+  goalStepId?: string
   id: string
   text: string
   status: 'todo' | 'done' | 'partial' | 'question' | 'stopped'
@@ -20,6 +22,8 @@ export interface DatedTask extends Task {
 
 export interface AggregatedTask {
   finish?: FinishPromise
+  goalId?: string
+  goalStepId?: string
   sourceDate?: string
   originalId?: string
   id: string
@@ -83,10 +87,16 @@ export interface AlbumRecommendationResult {
   albums: AlbumRecommendation[]
 }
 
+export interface GoalPlanStep {
+  id: string
+  text: string
+}
+
 export interface GoalItem {
   id: string
   text: string
   done: boolean
+  plan?: GoalPlanStep[]
 }
 
 export interface GoalsState {

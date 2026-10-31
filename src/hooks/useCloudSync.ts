@@ -3,7 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { invoke } from '@tauri-apps/api/core'
 import { api, waitForPendingWrites } from '../api'
 import { connectAccount, googleSignIn, requestJson, signOut, type Auth, type User } from '../cloudAccount'
-import { canonical, reconcile, syncServerUrl, validateRecords, type CloudRecord, type SyncAction, type SyncBaseline, type SyncPayload } from '../cloudSync'
+import { canonical, reconcile, syncServerUrl, validateRecords, goalPlanningSupported, hasGoalPlanningMetadata, migrateGoalMetadata, type CloudRecord, type SyncAction, type SyncBaseline, type SyncPayload } from '../cloudSync'
 import { nextSyncProgress, syncRecordLabel, yieldSyncUi, type SyncProgress } from '../syncProgress'
 import { preserveConflict, reviewedConflictMatches, type SyncRecoveryEntry } from '../syncConflicts'
 import type { GoalItem, StarFocusMissionRecord, Task } from '../types'
@@ -36,8 +36,8 @@ function metadata(key: string): Metadata {
   if (!value || typeof value.enabled !== 'boolean' || !value.baseline || !value.pending || !Array.isArray(value.conflicts)) throw new Error('Sync metadata needs recovery. Local tasks have not been changed.')
   return value
 }
-function baseline(record: CloudRecord): SyncBaseline {
-  return { revision: record.revision, payload: record.payload, deleted: record.deleted }
+function baseline(record: CloudRecord, payloadSchemaVersion: number): SyncBaseline {
+  return { revision: record.revision, payload: record.payload, deleted: record.deleted, payloadSchemaVersion }
 }
 
 export function useCloudSync(hooks: Hooks) {
@@ -158,24 +158,63 @@ export function useCloudSync(hooks: Hooks) {
       const persist = () => { assertCurrent(); localStorage.setItem(key, JSON.stringify(meta)) }
       const token = await user.getIdToken()
       assertCurrent()
+      const serviceConfig = await requestJson(server, '/v1/config')
+      const payloadSchemaVersion = goalPlanningSupported(serviceConfig) ? 2 : 1
+      assertCurrent()
       const nativeKbPath = await invoke<string>('cloud_task_folder')
       report('Saving local edits')
       const local = await snapshot(() => report('Reading local history'))
+      if (payloadSchemaVersion === 1 && (Object.values(local).some(hasGoalPlanningMetadata)
+        || Object.values(meta.baseline).some(item => hasGoalPlanningMetadata(item.payload)))) {
+        throw new Error('Update the sync service to sync goal plans. Your goals and tasks remain saved on this device.')
+      }
       const cloud: CloudRecord[] = []
       let cursor: string | null = null
       const cursors = new Set<string>()
       let pageNumber = 0
       do {
         report('Reading cloud', { detail: `Page ${++pageNumber}` })
-        const page = await requestJson(server, '/v1/sync' + (cursor ? '?after=' + encodeURIComponent(cursor) : ''), {}, token)
+        const parameters = new URLSearchParams()
+        if (cursor) parameters.set('after', cursor)
+        if (payloadSchemaVersion === 2) parameters.set('schemaVersion', '2')
+        const query = parameters.toString()
+        const page = await requestJson(server, '/v1/sync' + (query ? '?' + query : ''), {}, token)
         assertCurrent()
         if (page.schemaVersion !== 1) throw new Error('The sync service version is incompatible.')
+        if (payloadSchemaVersion === 2 && page.payloadSchemaVersion !== 2) throw new Error('The sync service did not return goal plans. Sync stopped before changing local data.')
         cloud.push(...validateRecords(page.records))
         cursor = page.nextCursor ?? null
         if (cursor && (typeof cursor !== 'string' || cursors.has(cursor))) throw new Error('The sync service returned an invalid page cursor.')
         if (cursor) cursors.add(cursor)
       } while (cursor)
       validateRecords(cloud)
+      if (payloadSchemaVersion === 2) {
+        for (const remote of cloud) {
+          const original = local[remote.key] ?? null
+          const migrated = migrateGoalMetadata(original, remote, meta.baseline[remote.key])
+          if (migrated.baseline === meta.baseline[remote.key]) continue
+          if (canonical(migrated.local) !== canonical(original)) {
+            report('Restoring goal links', { detail: syncRecordLabel(remote.key) })
+            setApplying(true)
+            await yieldSyncUi()
+            const latest = await snapshot()
+            assertCurrent()
+            if (canonical(latest[remote.key] ?? null) !== canonical(original)) throw new Error('You edited this note during sync. Your edits are safe; sync again to reconcile them.')
+            if (remote.key.startsWith('day:')) {
+              await invoke('cloud_apply_day', { date: remote.key.slice(4), tasks: migrated.local!.tasks,
+                expectedTasks: original?.tasks ?? [], expectedKbPath: nativeKbPath })
+              pulled = true
+            } else if (remote.key === 'goals') {
+              await hooksRef.current.applyGoals(migrated.local as unknown as Hooks['goals'])
+            }
+            await yieldSyncUi(); await waitForPendingWrites()
+            if (pulled) { await hooksRef.current.reload(); pulled = false }
+            local[remote.key] = migrated.local
+            setApplying(false)
+          }
+          if (migrated.baseline) { meta.baseline[remote.key] = migrated.baseline; persist() }
+        }
+      }
       report('Comparing changes')
       const actions = reconcile(local, cloud, meta.baseline)
       // Finish all HTTP writes before local changes lock the editor.
@@ -201,7 +240,7 @@ export function useCloudSync(hooks: Hooks) {
         }
         if (action.kind === 'conflict') { unresolved.push(action); advance(); continue }
         if (action.kind === 'ack') {
-          if (action.remote) meta.baseline[action.key] = baseline(action.remote)
+          if (action.remote) meta.baseline[action.key] = baseline(action.remote, payloadSchemaVersion)
           delete meta.pending[action.key]; persist(); advance(); continue
         }
         if (action.kind === 'push') {
@@ -214,12 +253,14 @@ export function useCloudSync(hooks: Hooks) {
             meta.pending[action.key] = pending; persist()
           }
           const result = await requestJson(server, '/v1/sync/' + encodeURIComponent(action.key), {
-            method: 'PUT', body: JSON.stringify({ expectedRevision: revision, mutationId: pending.mutationId, deleted: action.local === null, payload: action.local }),
+            method: 'PUT', body: JSON.stringify({ expectedRevision: revision, mutationId: pending.mutationId, deleted: action.local === null, payload: action.local,
+              ...(payloadSchemaVersion === 2 ? { schemaVersion: 2 } : {}),
+            }),
           }, token)
           assertCurrent()
           const record = validateRecords([result])[0]
           if (record.key !== action.key || canonical(record.payload) !== fingerprint) throw new Error('The sync acknowledgement did not match the saved record.')
-          meta.baseline[action.key] = baseline(record); delete meta.pending[action.key]; persist(); advance()
+          meta.baseline[action.key] = baseline(record, payloadSchemaVersion); delete meta.pending[action.key]; persist(); advance()
           continue
         }
         // Only the short local-apply phase locks interaction. Never lock during HTTP requests.
@@ -239,7 +280,7 @@ export function useCloudSync(hooks: Hooks) {
         } else await hooksRef.current.applyMission(value as unknown as StarFocusMissionRecord | null, action.key.slice(6))
         await yieldSyncUi()
         await waitForPendingWrites()
-        if (action.remote) meta.baseline[action.key] = baseline(action.remote)
+        if (action.remote) meta.baseline[action.key] = baseline(action.remote, payloadSchemaVersion)
         else delete meta.baseline[action.key]
         persist()
         if (pulled) { report('Refreshing notes', { detail }); await hooksRef.current.reload(); pulled = false }
