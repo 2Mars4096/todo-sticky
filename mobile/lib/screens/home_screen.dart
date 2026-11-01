@@ -10,6 +10,7 @@ import '../models/models.dart';
 import '../state/sticky_store.dart';
 import '../services/ai_service.dart';
 import '../widgets/task_tile.dart';
+import '../widgets/task_grip.dart';
 import 'plan_screen.dart';
 import 'albums_screen.dart';
 
@@ -157,10 +158,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      childWhenDragging: const SizedBox(
-        width: 44,
-        height: 52,
-        child: Icon(Icons.drag_indicator, size: 18, color: Colors.transparent),
+      childWhenDragging: TaskGrip(
+        height: taskControlHeight(context),
+        visible: false,
       ),
       child: Semantics(
         label: 'Move ${row.task.text} to Today',
@@ -168,13 +168,9 @@ class _HomeScreenState extends State<HomeScreen> {
           const CustomSemanticsAction(label: 'Move to Today'): () =>
               _moveEarlier(data),
         },
-        child: const Tooltip(
+        child: Tooltip(
           message: 'Drag to Today',
-          child: SizedBox(
-            width: 44,
-            height: 52,
-            child: Icon(Icons.drag_indicator, size: 18, color: mutedInk),
-          ),
+          child: TaskGrip(height: taskControlHeight(context)),
         ),
       ),
     );

@@ -249,3 +249,8 @@ Goals and Routines must honor the selected note material in both compact overlay
 ## Paragraph capture and editing
 
 Keep the current task/subtask hierarchy. Task capture, title edits and step inputs support wrapped paragraphs and blank lines. Enter inserts a new line; Add/Save or desktop Cmd/Ctrl+Enter commits. Editors grow then scroll within the window. Long task bodies use normal weight, with explicit action controls and preserved accessible names. Phone capture/steps reserve keyboard space by reducing visible lines when the keyboard opens. No standing shortcut hints or extra notebook navigation.
+
+
+## Task control spacing
+
+Preserve equal visible gaps separately from touch targets. Desktop grip/checkbox use fixed 24px flex slots; title padding/margins must not differ for paragraph display. Phone daily and Earlier handles share TaskGrip, with 44px targets and a fixed optical right edge. Checkbox icons use explicit 24px sizing and title padding; control centers follow the first text line at enlarged sizes. Nested rows keep the same checkbox-to-text rule and intentional indentation. Expanded actions/history align to the actual title column.

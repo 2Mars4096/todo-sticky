@@ -6,6 +6,7 @@ import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 
 import '../app.dart';
+import 'task_grip.dart';
 import '../models/models.dart';
 import '../state/sticky_store.dart';
 import '../services/ai_service.dart';
@@ -19,6 +20,7 @@ class TaskTile extends StatefulWidget {
   final VoidCallback openFocus;
   final bool showDate;
   final int depth;
+  final double leadingInset;
   final String? parentId;
   final int? reorderIndex;
   final Widget? dragHandle;
@@ -32,6 +34,7 @@ class TaskTile extends StatefulWidget {
     required this.openFocus,
     this.showDate = false,
     this.depth = 0,
+    this.leadingInset = 12,
     this.parentId,
     this.reorderIndex,
     this.dragHandle,
@@ -263,6 +266,9 @@ class _TaskTileState extends State<TaskTile> {
     final storedIndex = widget.store
         .tasksFor(widget.date)
         .indexWhere((row) => row.id == task.id);
+    final controlHeight = taskControlHeight(context, depth: widget.depth);
+    final hasHandle = widget.dragHandle != null || widget.reorderIndex != null;
+    final contentInset = (hasHandle ? 88.0 : 44.0) + 4;
     final unfinished = task.subtasks.where((s) => !s.closed).length;
     final history = widget.depth == 0
         ? widget.store.historicalSteps(widget.date, task)
@@ -273,7 +279,7 @@ class _TaskTileState extends State<TaskTile> {
           : Colors.transparent,
       child: Padding(
         padding: EdgeInsets.only(
-          left: widget.depth == 0 ? 12 : 12,
+          left: widget.leadingInset,
           right: widget.depth == 0 ? 12 : 0,
         ),
         child: Column(
@@ -305,24 +311,18 @@ class _TaskTileState extends State<TaskTile> {
                               storedIndex + 2,
                             ),
                       },
-                      child: const Tooltip(
+                      child: Tooltip(
                         message: 'Drag to reorder',
-                        child: SizedBox(
-                          width: 44,
-                          height: 52,
-                          child: Icon(
-                            Icons.drag_indicator,
-                            size: 18,
-                            color: mutedInk,
-                          ),
-                        ),
+                        child: TaskGrip(height: controlHeight),
                       ),
                     ),
                   ),
                 SizedBox(
                   width: 44,
-                  height: 52,
+                  height: controlHeight,
                   child: IconButton(
+                    padding: EdgeInsets.zero,
+                    iconSize: 24,
                     tooltip: task.closed ? 'Reopen task' : 'Complete task',
                     onPressed: finish,
                     icon: Icon(
@@ -350,7 +350,7 @@ class _TaskTileState extends State<TaskTile> {
                       task,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.fromLTRB(4, 14, 0, 14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -358,6 +358,7 @@ class _TaskTileState extends State<TaskTile> {
                             task.text,
                             style: TextStyle(
                               fontSize: widget.depth == 0 ? 16 : 15,
+                              height: 1.4,
                               fontWeight:
                                   widget.depth == 0 &&
                                       task.text.length <= 160 &&
@@ -514,7 +515,7 @@ class _TaskTileState extends State<TaskTile> {
             ),
             if (expanded) ...[
               Padding(
-                padding: const EdgeInsets.only(left: 44),
+                padding: EdgeInsets.only(left: contentInset),
                 child: Wrap(
                   spacing: 4,
                   runSpacing: 2,
@@ -676,6 +677,7 @@ class _TaskTileState extends State<TaskTile> {
                           task: task.subtasks[i],
                           openFocus: widget.openFocus,
                           depth: widget.depth + 1,
+                          leadingInset: hasHandle ? 56 : 12,
                           parentId: task.id,
                           revealId: widget.revealId,
                         ),
@@ -725,7 +727,7 @@ class _TaskTileState extends State<TaskTile> {
             ],
             if (expanded && history.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(left: 44),
+                padding: EdgeInsets.only(left: contentInset),
                 child: ExpansionTile(
                   tilePadding: EdgeInsets.zero,
                   title: Text(

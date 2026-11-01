@@ -3,7 +3,7 @@
 .task-entry > .task-item {
   --task-title-size: 14px;
   padding: 8px 10px;
-  gap: 3px;
+  column-gap: 3px;
 }
 .task-entry > .task-item.task-selected {
   background: rgba(196, 164, 74, .08);
@@ -15,11 +15,11 @@
 .task-entry .task-title-line { min-width: 0; line-height: 1.5; }
 .task-entry .main-task .task-title-line { font-size: var(--task-title-size); font-weight: 550; }
 .task-entry .subtask .task-title-line { font-size: var(--task-title-size); font-weight: 400; }
-.task-entry .task-text { cursor: pointer; }
+.task-entry .task-text { cursor: pointer; padding: 0; margin: 0; }
 .task-entry .task-text.done { color: #706345; }
 .task-entry .task-inline-edit { width: 100%; min-height: 26px; box-sizing: border-box; }
 .task-entry .task-drag-handle {
-  position: relative; flex-basis: 24px; width: 24px; height: 24px;
+  position: relative; flex: 0 0 24px; box-sizing: border-box; width: 24px; height: 24px;
   margin: calc((var(--task-title-size) * 1.5 - 24px) / 2) 0 0 -8px;
   opacity: .85; color: #796a47;
 }
@@ -27,7 +27,7 @@
   position: absolute; right: -2px; top: 50%; transform: translateY(-50%); margin: 0;
 }
 .task-entry .task-checkbox {
-  position: relative; width: 24px; height: 24px;
+  position: relative; flex: 0 0 24px; box-sizing: border-box; width: 24px; height: 24px;
   margin-top: calc((var(--task-title-size) * 1.5 - 24px) / 2);
   border: 0; background: transparent;
 }
