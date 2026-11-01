@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-11-01 — Publish local spacing and deployment records
+
+- [repository] Fetch origin/main and confirm it matches ba07999; no incoming changes need merging. Publish the local spacing fix, production deployment evidence and clarified project-goal planning scope in separate source/documentation commits.
+- [delivery] Rebuild the original-key Android +10 APK from the committed source; delivery evidence is tracked in [14](plans/14-task-control-spacing.md). Local outputs, notebooks and signing credentials remain excluded from Git.
+
+## 2026-11-01 — Consistent task controls and project-goal clarification
+
+- [ui] Preserve equal desktop grip/checkbox/title gaps across paragraph and short titles. Share phone daily/Earlier grip geometry, explicit checkbox size and first-line scaled alignment; expanded actions and nested rows follow the parent title column.
+- [validation] Desktop geometry and screenshots at 340/460/1000px pass; Flutter analyzer/all 86 tests pass, with normal/enlarged screenshots. Mac rebuilt/installed with data preserved; Android +10 packaging tracked in [14](plans/14-task-control-spacing.md).
+- [direction] Record the user's clarified project-based long-term goals, attribution of existing work, schedulable project steps and multi-day AI planning in [15](plans/15-project-goals-and-multiday-planning.md). This is the next scope, not part of the spacing build.
+
+## 2026-11-01 — Deploy goal-plan sync and rebuild production apps
+
+- [backend] Deploy source ba07999 to Cloud Run revision `sticky-todo-sync-00012-z9w` at 100% traffic. Verify payload schemas 1/2 and goal planning, health, rejected anonymous/invalid tokens and unchanged environment/runtime/scaling settings; no user records accessed.
+- [desktop] Rebuild and install the signed Mac app with goal-metadata compatibility. Launch and exact bundle verification pass; all 56 task files/native settings unchanged, with a verified rollback backup.
+- [android] Build original-key production 2.1.15+9 / 2009 at `release/todo-sticky.apk` (19.62 MB). Signature, package and 16 KB alignment verified; dedicated emulator update preserves notebook bytes. This updates production, unlike the separate preview.
+- [validation] 19 backend tests, 20 Node suites, TypeScript, 40 native tests, Flutter formatting/analyzer and 86 Flutter tests pass; desktop paragraph workflows checked in production assets. Evidence and hashes: [13-1](plans/13-1-production-deployment.md).
+
 ## 2026-10-31 — Goal plans and Earlier dragging on Android
 
 - [mobile] Add handle-only Earlier-to-Today dragging with row/header/empty targets, insertion feedback, edge scrolling and cancellation. Full task trees retain identity, metadata and persistence; daily reordering still handles hidden completed rows.

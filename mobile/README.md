@@ -135,7 +135,7 @@ Android 2.1.15+4 returns to the existing Account screen after Google sign-in. Th
 
 ### Sync progress and conflict safety
 
-The current local release is 2.1.15+7 (versionCode 2007), 19.49 MB. Account displays stage, count, elapsed and waiting status during sync. Legacy blank checklist entries are preserved. Both conflict versions are saved locally on detection, and a resolution is rejected if the reviewed data changes. The previous release key is retained for in-place updates.
+The current local production release is 2.1.15+10 (versionCode 2010), 19.62 MB, signed with the original release key. Account displays stage, count, elapsed and waiting status during sync. Legacy blank checklist entries are preserved. Both conflict versions are saved locally on detection, and a resolution is rejected if the reviewed data changes. The previous release key is retained for in-place updates.
 
 
 ### Workflow improvements in 2.1.15+7
@@ -145,3 +145,11 @@ The current local release is 2.1.15+7 (versionCode 2007), 19.49 MB. Account disp
 - Routines can generate daily, weekday or weekly tasks. Weekly anchors to the weekday configured; the device local calendar governs occurrences. Missed days do not generate a backlog flood. Schedule definitions stay on the device and are included in explicit notebook backups; generated tasks sync normally with compatible desktop IDs. Tasks and occurrence markers save together, including retry after failure.
 - Focus controls precede the map; after finishing, Review task opens the original task without completing it. Account status is a compact named icon, cleared back to waiting after local changes.
 - Reviewed at 360px with normal and 150% text; task actions, planning and routine controls wrap without overflow. Analysis and all 60 tests pass; synthetic visual captures cover Notes, Search, Progress, Routines, planning and focus review. Live provider/physical-phone acceptance remains separate.
+
+
+### Production goal-plan delivery — 2026-11-01
+
+The compatible schema-2 backend is live and the original signing key was available for the production build. `../release/todo-sticky.apk` is now the normal **Sticky Todo** package, 2.1.15+9 / 2009, 19.62 MB; it updates an existing original-key release in place. The separate Preview APK remains a different app and notebook. Analysis and 86 tests pass; signature/alignment and a dedicated emulator update preserve the previous notebook. [Delivery evidence](../docs/plans/13-1-production-deployment.md).
+
+
+Android +10 aligns the six-dot grip, checkbox and task text with consistent visible gaps while retaining 44px touch targets. Daily and Earlier handles share the same visual; nested steps and expanded controls follow the parent title column. First-line alignment adapts to enlarged text.

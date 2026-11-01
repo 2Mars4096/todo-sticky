@@ -1,5 +1,9 @@
 # Development Plan
 
+## Production goal-workflow delivery
+
+- [13-1](plans/13-1-production-deployment.md) is complete: compatible backend deployed, Mac rebuilt/installed, and original-key Android +9 delivered. The old-service/signing-key blockers from the preview environment are resolved. Physical-phone/live-user acceptance remains separate.
+
 ## Goal planning and phone task movement
 
 - The 2026-10-31 request activates goal linking and daily scheduling previously deferred in plan 10. Implement the Android path from long-term goal through editable plan to linked daily tasks and goal progress, plus Earlier-to-Today drag handles. Commit and push to main and deliver the latest APK to Dropbox. Track implementation, compatibility and delivery boundaries in [plan 13](plans/13-goal-planning-and-mobile-drag.md).

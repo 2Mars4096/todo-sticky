@@ -1,6 +1,10 @@
 # Todo
 
-- [ ] [13-goal-planning-and-mobile-drag](plans/13-goal-planning-and-mobile-drag.md) — Earlier-to-Today grips and goal-plan-to-daily-task tracking implemented and verified; main source and preview APK delivered. Remaining: authenticated backend deployment and a production update using the original signing key.
+- [ ] [15-project-goals-and-multiday-planning](plans/15-project-goals-and-multiday-planning.md) — clarified project-based goals, attribution of existing tasks and multi-day AI planning; implementation pending.
+- [x] [14-task-control-spacing](plans/14-task-control-spacing.md) — consistent visible gaps and first-line/nested alignment verified; Mac installed with data preserved, signed Android +10 rebuilt.
+
+- [x] [13-goal-planning-and-mobile-drag](plans/13-goal-planning-and-mobile-drag.md) — goal workflows and dragging delivered; schema-2 backend deployed, Mac rebuilt/installed, original-key production Android +9 delivered.
+  - [x] [13-1-production-deployment](plans/13-1-production-deployment.md) — live capability/auth checks pass; Mac data preserved; Android same-key emulator update verified.
 
 - [x] [12-paragraph-friendly-tasks](plans/12-paragraph-friendly-tasks.md) — paragraph capture/editing/storage and Mac/phone UI review complete; Mac reinstalled with data preserved, signed Android +8 delivered (no phone attached).
 

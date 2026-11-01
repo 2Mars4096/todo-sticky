@@ -337,3 +337,13 @@ Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and
 - `ParagraphInput` shares auto-growing, width-aware desktop textareas with bounded internal scrolling. Enter inserts newlines; explicit Add/Save or Cmd/Ctrl+Enter commits. Existing blur save and Escape cancellation remain. Paragraph task text uses preserved whitespace and quieter body weight.
 - Desktop and Android Markdown codecs preserve multiline or comment-containing task text in escaped JSON `sticky-todo:text` metadata before finish/ID markers, with a first-line preview. This prevents embedded headings/checklists from becoming new dates/tasks. Existing single-line serialization is unchanged. API and sync Task shapes retain their original string `text`; all three sync validators accept multiline strings within the existing 5,000-character limit.
 - Phone capture/steps use newline keyboards, six visible lines at most, and three while the keyboard is open to preserve space at enlarged text. The task editor remains scrollable.
+
+
+## Deployed goal payload capability
+
+As of 2026-11-01 the personal Cloud Run service runs `sticky-todo-sync-00012-z9w` with payload schemas 1/2 and goal planning enabled. Existing environment, IAM runtime identity and resource/scaling configuration are retained. The installed Mac build preserves the shared metadata contract; Android production +9 provides goal-plan UI and Earlier-to-Today dragging. Deployment/package evidence is in plan 13-1.
+
+
+## Task control geometry
+
+`mobile/lib/widgets/task_grip.dart` owns the six-dot visual, 44px drag slot and text-scaled first-line control height, shared by daily reorder and Earlier drag. TaskTile derives action/history insets from whether a grip exists. Desktop task controls retain fixed 24px flex sizing and text has zero decorative horizontal padding/margin, keeping paragraph and short-title geometry consistent.

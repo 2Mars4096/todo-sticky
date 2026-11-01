@@ -6,7 +6,7 @@ The current `main` source includes optional Google accounts and synchronization 
 
 Service origin: `https://sticky-todo-sync-507920948662.asia-southeast1.run.app`.
 
-The local macOS app was rebuilt and reinstalled on 2026-10-29 with this origin prefilled. Existing saved service overrides are preserved. See [installation verification](plans/8-3-backend-connected-macos-install.md).
+On 2026-11-01 the compatible backend was deployed as `sticky-todo-sync-00012-z9w`, advertising payload schemas `[1,2]` and `goalPlanning:true`. The Mac app was rebuilt/reinstalled and original-key Android 2.1.15+9 delivered with this origin prefilled. Existing configuration and consent are preserved. See [deployment and installation verification](plans/13-1-production-deployment.md).
 
 Use this exact origin in desktop **Settings → Account** or Android **Settings → Account & sync**, choose **Connect service**, then **Continue with Google**. The deployed service is restricted to the project owner’s Google account through the ignored `backend/env.yaml` allowlist. After confirming the account in your browser, explicitly enable **Sync this task folder** / **Sync this notebook**. Existing local files are not uploaded just by deploying the backend or signing in.
 

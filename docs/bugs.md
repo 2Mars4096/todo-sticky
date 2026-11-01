@@ -1,5 +1,10 @@
 # Bugs And Failed Approaches
 
+## 2026-11-01: Uneven task control spacing
+
+- Phone grips used a centered narrow glyph in a 44px target, followed by a larger checkbox and text with no inset; visible gaps differed despite equal target widths. Daily and Earlier now share the same painted grip geometry, explicit checkbox size and text inset.
+- Desktop paragraph titles became block elements while retaining negative margins/inline padding. Remove those decorative offsets and keep handle/checkbox flex slots fixed; verify equal visible edges at compact/default/wide widths.
+
 ## 2026-10-31: Goal identity, moves and sync upgrades
 
 - A title-only parent/history match could combine steps belonging to different goals. Linked work now matches goal identity, with plan-step identity checked for title-based history; a partial child move cannot falsely finish the original plan step.

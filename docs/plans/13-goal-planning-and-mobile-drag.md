@@ -1,6 +1,6 @@
 # 13: Goal planning and mobile drag
 
-**Status:** in-progress
+**Status:** completed
 **Goal:** Move Earlier work into Today from its grip, and turn long-term goals into linked daily work with truthful progress.
 
 ## Tasks
@@ -14,8 +14,8 @@
 - [x] 7. Verify persistence, moves, goal identity collisions, legacy sync upgrades and the phone workflow at normal/enlarged text.
 - [x] 8. Review the phone screens and build/sign a separately installable preview APK.
 - [x] 9. Commit and push the verified source to main, and deliver the APK in Dropbox.
-- [ ] 10. Deploy the compatible Cloud Run backend when authenticated deployment access is available.
-- [ ] 11. Build a production in-place update with the original signing key when available.
+- [x] 10. Deploy the compatible Cloud Run backend; completed in [13-1](13-1-production-deployment.md).
+- [x] 11. Build and verify the original-key production update, rebuild/install Mac; completed in [13-1](13-1-production-deployment.md).
 
 ## Decisions
 
@@ -27,7 +27,7 @@
 - Updated clients negotiate payload schema 2. The service projects schema 1 for old readers and preserves hidden metadata on matching legacy writes. A client refuses to sync goal-bearing records to an old service rather than dropping metadata. Unchanged-revision legacy baselines migrate metadata without replacing local edits.
 - Android is the requested interaction surface. Desktop changes preserve the shared data contract; no desktop app installation is part of this delivery.
 
-## Delivery constraints
+## Original preview environment constraints
 
 - This execution environment has no original Android release keystore. The existing signed APK remains untouched. An explicit `stickyReviewBuild` opt-in creates optimized `io.github.twomars4096.sticky_todo.preview` with a separate label and signing identity; ordinary production release builds still fail without the real key.
 - The preview's browser sign-in uses manual return, preventing the production app from receiving the preview handoff.
@@ -48,3 +48,8 @@
 - Size: 19,622,467 bytes. SHA-256: `87b6f0f10a05d5c32f099b87bf7a70f42ade0363069cad4e55e38a0d7c8cafc0`.
 - APK v2 signature, ZIP integrity and 16 KB alignment verified. All 43 Android/Dart build input hashes matched after the final build. Existing production APK was not replaced. Physical installation was not tested here.
 - Dropbox upload completed at `/projects/todo-sticky/release/todo-sticky-preview-2.1.15-9.apk`; returned size matches the verified local artifact. Implementation and preview delivery are complete; this plan remains open for the authenticated backend deployment and same-key production update above.
+
+
+## Production completion — 2026-11-01
+
+The local Mac environment has authenticated deployment access and the original release key. [13-1](13-1-production-deployment.md) supersedes the preview-only constraints above: backend schema-2 support is live on revision `sticky-todo-sync-00012-z9w`, Mac is rebuilt/installed with data preserved, and `release/todo-sticky.apk` is the original-key production 2.1.15+9 update (19.62 MB). Existing preview artifacts remain separate and unchanged.

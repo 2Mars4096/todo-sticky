@@ -6,11 +6,11 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed workflow improvements and deployed sync service URL (2026-10-30). Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
+Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed workflow improvements and goal-metadata compatibility and deployed sync service URL (2026-11-01). Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
 
-Local Android release build: `release/todo-sticky.apk` (ARM64, 19.49 MB, release-signed, sync URL prefilled). The local `release/` folder is excluded from Git.
+Local Android release build: `release/todo-sticky.apk` (2.1.15+10, ARM64, 19.62 MB, original release signature, sync URL prefilled). The local `release/` folder is excluded from Git.
 
-Android source 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The separately installable preview is used when the original production signing key is unavailable. New goal-plan data stays on the device until the compatible sync backend is deployed; existing production APKs remain available.
+Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
 Download the latest installer from [Releases](https://github.com/2Mars4096/todo-sticky/releases):
 
