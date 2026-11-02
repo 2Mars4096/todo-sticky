@@ -5,7 +5,7 @@
 - [desktop] Open long-term goal titles to view/edit their existing descriptions and steps. Add manual or reviewed AI steps, schedule selected work, open linked tasks, assign existing tasks to projects and filter Progress. Add editable multi-day project proposals with date/budget/weekday validation.
 - [recovery] Preserve the shared goal/task schema; journal cross-file writes, compare before replacing dates and retain backups. Retry skips acknowledged dates; removing a step or discarding remaining writes keeps daily work. Stale/duplicate proposals are rejected before mutation.
 - [ui] Apply self-explanatory-ui with flat lists, direct title entry, concise actions, accessible labels and contextual deletion/recovery consequences. Preserve selected texture and existing paragraph/drag behavior.
-- [delivery] Mac rebuilt, signed, installed and reopened, including pending sync efficiency. All 56 task files/settings unchanged. 22 Node suites, TypeScript, 40 native tests, production browser workflows and existing 100 Android tests pass. [15-3](plans/15-3-mac-project-planning.md).
+- [delivery] Mac rebuilt, signed, installed and reopened, including pending sync efficiency. Android, sync, Mac and documentation source batches pushed to main and remote verified. All 56 task files/settings unchanged. 22 Node suites, TypeScript, 40 native tests, production browser workflows and existing 100 Android tests pass. [15-3](plans/15-3-mac-project-planning.md).
 
 ## 2026-11-01 — Faster, quieter client sync
 
