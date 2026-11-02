@@ -28,6 +28,10 @@ interface Hooks {
   applyGoals: (value: { targets: GoalItem[]; recurring: GoalItem[] }) => void | Promise<void>
   applyMission: (value: StarFocusMissionRecord | null, id: string) => Promise<void>
 }
+function hasDraftEditor(): boolean {
+  const editor = document.querySelector<HTMLInputElement | HTMLTextAreaElement>('textarea:focus,input:not([type=checkbox]):not([type=radio]):focus,[contenteditable=true]:focus')
+  return Boolean(editor && (editor.value ?? editor.textContent ?? '').trim())
+}
 function stored(key: string): string { try { return localStorage.getItem(key) ?? '' } catch { return '' } }
 function metadata(key: string): Metadata {
   const raw = localStorage.getItem(key)
@@ -66,7 +70,11 @@ export function useCloudSync(hooks: Hooks) {
   const [recovery, setRecovery] = useState<SyncRecoveryEntry[]>([])
   const [acknowledged, setAcknowledged] = useState<{ key: string; change: string } | null>(null)
   const [lastSynced, setLastSynced] = useState<string | null>(null)
+  const acknowledgedRef = useRef(acknowledged); acknowledgedRef.current = acknowledged
   const running = useRef(false)
+  const waitingForEdit = useRef(false)
+  const followUp = useRef(false)
+  const followUpTimer = useRef<ReturnType<typeof setTimeout> | undefined>()
   const signInController = useRef<AbortController | null>(null)
   const epoch = useRef(0)
   const key = auth && user ? `todo-sticky-cloud-v1:${auth.app.options.projectId}:${user.uid}:${server}:${hooks.kbPath}` : ''
@@ -133,10 +141,12 @@ export function useCloudSync(hooks: Hooks) {
     } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
   }, [key, owner])
 
-  const snapshot = useCallback(async (reading?: () => void) => {
+  const snapshot = useCallback(async (reading?: () => void, recordKey?: string) => {
     await hooksRef.current.flush(); await waitForPendingWrites()
     reading?.()
-    const data = await api.extractTaskApi({ all: true, canonicalDates: true })
+    const data = !recordKey || recordKey.startsWith('day:')
+      ? await api.extractTaskApi({ ...(recordKey ? { date: recordKey.slice(4) } : { all: true }), canonicalDates: true })
+      : { dates: [] }
     const local: Record<string, SyncPayload> = Object.fromEntries(data.dates.map(day => ['day:' + day.date, { date: day.date, tasks: day.tasks }]))
     local.goals = { targets: hooksRef.current.goals.targets, recurring: hooksRef.current.goals.recurring }
     for (const mission of hooksRef.current.missions) local['focus:' + mission.id] = { ...mission }
@@ -145,8 +155,12 @@ export function useCloudSync(hooks: Hooks) {
 
   const synchronize = useCallback(async (resolution?: { key: string; choice: 'local' | 'cloud'; fingerprint: string }) => {
     const changeAtStart = hooksRef.current.changeKey
-    if (!user || !auth || !enabled || !key || running.current || !hooksRef.current.ready) return
+    if (!user || !auth || !enabled || !key || !hooksRef.current.ready) return
+    if (running.current) { followUp.current = true; return }
     if (hooksRef.current.blocked) { setMessage('Waiting for current task'); return }
+    if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+    waitingForEdit.current = false
+    followUp.current = false
     running.current = true; setBusy(true); setError(null)
     progressRef.current = null; report('Checking account')
     const generation = epoch.current
@@ -155,7 +169,12 @@ export function useCloudSync(hooks: Hooks) {
     try {
       if (localStorage.getItem(OWNER_KEY) !== owner) throw new Error('Enable sync to link these notes to this account.')
       const meta = metadata(key)
-      const persist = () => { assertCurrent(); localStorage.setItem(key, JSON.stringify(meta)) }
+      let savedMetadata = JSON.stringify(meta)
+      const persist = () => {
+        assertCurrent()
+        const value = JSON.stringify(meta)
+        if (value !== savedMetadata) { localStorage.setItem(key, value); savedMetadata = value }
+      }
       const token = await user.getIdToken()
       assertCurrent()
       const serviceConfig = await requestJson(server, '/v1/config')
@@ -194,10 +213,11 @@ export function useCloudSync(hooks: Hooks) {
           const migrated = migrateGoalMetadata(original, remote, meta.baseline[remote.key])
           if (migrated.baseline === meta.baseline[remote.key]) continue
           if (canonical(migrated.local) !== canonical(original)) {
+            if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
             report('Restoring goal links', { detail: syncRecordLabel(remote.key) })
             setApplying(true)
             await yieldSyncUi()
-            const latest = await snapshot()
+            const latest = await snapshot(undefined, remote.key)
             assertCurrent()
             if (canonical(latest[remote.key] ?? null) !== canonical(original)) throw new Error('You edited this note during sync. Your edits are safe; sync again to reconcile them.')
             if (remote.key.startsWith('day:')) {
@@ -208,13 +228,14 @@ export function useCloudSync(hooks: Hooks) {
               await hooksRef.current.applyGoals(migrated.local as unknown as Hooks['goals'])
             }
             await yieldSyncUi(); await waitForPendingWrites()
-            if (pulled) { await hooksRef.current.reload(); pulled = false }
             local[remote.key] = migrated.local
-            setApplying(false)
           }
-          if (migrated.baseline) { meta.baseline[remote.key] = migrated.baseline; persist() }
+          if (migrated.baseline) meta.baseline[remote.key] = migrated.baseline
         }
       }
+      persist()
+      if (pulled) { await hooksRef.current.reload(); pulled = false }
+      setApplying(false)
       report('Comparing changes')
       const actions = reconcile(local, cloud, meta.baseline)
       // Finish all HTTP writes before local changes lock the editor.
@@ -228,9 +249,16 @@ export function useCloudSync(hooks: Hooks) {
         setConflicts(pendingConflicts)
         throw new Error('Conflict changed. Review again.')
       }
-      report('Comparing changes', { total: actions.length, completed: 0 })
+      // Already-equal records only need a checkpoint when their baseline changed.
+      for (const action of actions.filter(item => item.kind === 'ack')) {
+        if (action.remote) meta.baseline[action.key] = baseline(action.remote, payloadSchemaVersion)
+        delete meta.pending[action.key]
+      }
+      persist()
+      const changes = actions.filter(action => action.kind !== 'ack')
+      report('Comparing changes', { total: changes.length, completed: 0 })
       const unresolved: SyncAction[] = []
-      for (const action of actions) {
+      for (const action of changes) {
         assertCurrent()
         const detail = syncRecordLabel(action.key)
         report('Checking changes', { detail })
@@ -239,10 +267,6 @@ export function useCloudSync(hooks: Hooks) {
           action.kind = resolution.choice === 'local' ? 'push' : 'pull'
         }
         if (action.kind === 'conflict') { unresolved.push(action); advance(); continue }
-        if (action.kind === 'ack') {
-          if (action.remote) meta.baseline[action.key] = baseline(action.remote, payloadSchemaVersion)
-          delete meta.pending[action.key]; persist(); advance(); continue
-        }
         if (action.kind === 'push') {
           report('Uploading', { detail })
           const fingerprint = canonical(action.local)
@@ -264,10 +288,11 @@ export function useCloudSync(hooks: Hooks) {
           continue
         }
         // Only the short local-apply phase locks interaction. Never lock during HTTP requests.
+        if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
         report('Applying downloads', { detail })
         setApplying(true)
         await yieldSyncUi()
-        const latest = await snapshot()
+        const latest = await snapshot(undefined, action.key)
         assertCurrent()
         if (canonical(latest[action.key] ?? null) !== canonical(action.local)) throw new Error('You edited this note during sync. Your edits are safe; sync again to reconcile them.')
         const value = action.remote?.deleted ? null : action.remote?.payload ?? null
@@ -283,15 +308,13 @@ export function useCloudSync(hooks: Hooks) {
         if (action.remote) meta.baseline[action.key] = baseline(action.remote, payloadSchemaVersion)
         else delete meta.baseline[action.key]
         persist()
-        if (pulled) { report('Refreshing notes', { detail }); await hooksRef.current.reload(); pulled = false }
         advance()
-        setApplying(false)
       }
       assertCurrent()
       setConflicts(unresolved)
       setLastSynced(new Date().toISOString())
       if (!unresolved.length && hooksRef.current.changeKey === changeAtStart) setAcknowledged({ key, change: changeAtStart })
-      setMessage(unresolved.length ? `${unresolved.length} conflicts` : 'Up to date')
+      setMessage(unresolved.length ? `${unresolved.length} conflicts` : hooksRef.current.changeKey !== changeAtStart && !pulled ? 'Changes queued' : 'Up to date')
     } catch (cause) {
       const step = progressRef.current as SyncProgress | null
       setError(`${step?.stage ?? 'Sync'}${step?.detail ? ` (${step.detail})` : ''}: ${cause instanceof Error ? cause.message : String(cause)}`)
@@ -301,6 +324,10 @@ export function useCloudSync(hooks: Hooks) {
       // Reload even after a later failure, so the editor never holds a stale pre-pull snapshot.
       try { if (pulled) await hooksRef.current.reload() } catch (cause) { setError(String(cause)) }
       setApplying(false); setBusy(false); running.current = false; setProgress(null); progressRef.current = null
+      if (followUp.current && keyRef.current === key) {
+        clearTimeout(followUpTimer.current)
+        followUpTimer.current = setTimeout(() => { void syncRef.current() }, 900)
+      }
     }
   }, [user, auth, enabled, key, owner, server, snapshot, report, advance])
 
@@ -316,19 +343,24 @@ export function useCloudSync(hooks: Hooks) {
   }, [key])
 
   const syncRef = useRef(synchronize); syncRef.current = synchronize
+  useEffect(() => () => { clearTimeout(followUpTimer.current); followUp.current = false }, [key])
   useEffect(() => {
     if (!enabled || !hooks.ready || hooks.blocked) return
-    const timeout = setTimeout(() => { void syncRef.current() }, 1800)
+    const timeout = setTimeout(() => { void syncRef.current() }, 900)
     return () => clearTimeout(timeout)
   }, [enabled, hooks.ready, hooks.blocked, hooks.changeKey, key])
   useEffect(() => {
     if (!enabled) return
     const refresh = () => { if (document.visibilityState !== 'hidden' && !document.querySelector('input:focus,textarea:focus,[contenteditable=true]:focus')) void syncRef.current() }
     const timer = setInterval(refresh, 60_000)
+    const afterEdit = () => { if (document.visibilityState !== 'hidden' && (waitingForEdit.current || acknowledgedRef.current?.change !== hooksRef.current.changeKey)) void syncRef.current() }
+    const editTimer = { current: undefined as ReturnType<typeof setTimeout> | undefined }
+    const edited = () => { clearTimeout(editTimer.current); editTimer.current = setTimeout(afterEdit, 900) }
+    document.addEventListener('focusout', edited)
     window.addEventListener('online', refresh); window.addEventListener('focus', refresh)
-    return () => { clearInterval(timer); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh) }
+    return () => { clearInterval(timer); clearTimeout(editTimer.current); document.removeEventListener('focusout', edited); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh) }
   }, [enabled])
 
-  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready && !hooks.blocked, server, configure, user, connected: Boolean(auth), busy, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
+  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready, server, configure, user, connected: Boolean(auth), busy, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
     cancelSignIn: () => signInController.current?.abort(), sync: () => synchronize(), resolve: (key: string, choice: 'local' | 'cloud', fingerprint: string) => synchronize({ key, choice, fingerprint }) }
 }
