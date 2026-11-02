@@ -1,5 +1,13 @@
 # Development Plan
 
+## Mac project parity delivered
+
+- [15-3](plans/15-3-mac-project-planning.md) completes Mac project visibility, planning, assignment and progress using existing Android data. The Mac reinstall also completes plan 16 sync-efficiency delivery. No backend/schema change or new Android build is part of this slice.
+
+## Minimal project planning expansion
+
+- [15-1](plans/15-1-android-project-planning.md) delivers the user-requested APK slice: attribute existing daily work to projects and review AI plans across dates using the existing goal/task data model. Desktop project-editor parity remains in parent plan 15.
+
 ## Production goal-workflow delivery
 
 - [13-1](plans/13-1-production-deployment.md) is complete: compatible backend deployed, Mac rebuilt/installed, and original-key Android +9 delivered. The old-service/signing-key blockers from the preview environment are resolved. Physical-phone/live-user acceptance remains separate.

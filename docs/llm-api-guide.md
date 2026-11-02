@@ -249,3 +249,13 @@ Android uses the same `_h<original-text-hash>` replacement policy for generated 
 ## Paragraph text
 
 Task `text` may contain newlines and blank lines. Pass it as one JSON string or one quoted CLI argument; embedded checklist or date-heading text stays inside that task. Markdown writes use escaped `sticky-todo:text` JSON metadata before finish/ID comments when needed, with a readable first-line preview. Use the API to edit the complete text. Cloud sync retains its 5,000-character per-task limit.
+
+
+Android `AiService.planProject(preferences, goal, window, scheduledProjectWork, existingDailyWork)` requests `steps:[{stepId?:string|null,text:string,date:YYYY-MM-DD,minutes:int}]`. Window fields are from/until/minutesPerDay/weekdaysOnly. Existing step IDs must belong to unscheduled goal steps; new actions receive local stable IDs. Validate dates, integer estimates, per-day totals and duplicate work; apply only against the captured project/notebook fingerprint. This is a client AI contract, with no new backend or native CLI endpoint.
+
+
+## Desktop project proposal bridge
+
+`api.llmProjectPlan(request)` invokes native `llm_project_plan`. Requests use `{mode: "steps" | "schedule", goal, window, tasks, scheduledStepIds, contextTruncated}`; `window` contains `{from, until, minutesPerDay, weekdaysOnly}`. Responses are `{steps: string[]}` or `{actions: [{stepId: string | null, text, date, minutes}]}`. The frontend generates new IDs and validates dates/budgets, existing step identities, duplicate work and a fresh goal/archive fingerprint before saving. Generate/Discard never creates tasks; task/goal API schemas remain unchanged.
+
+Mac project operations persist a local recovery journal before sequential writes to existing stores. This is not a new agent-facing task database or CLI transaction command. Existing native per-date compare/backups protect edits; pending operations remain retryable with stable IDs.

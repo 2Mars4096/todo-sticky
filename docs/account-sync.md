@@ -168,3 +168,12 @@ Neither mocked transport tests nor a successful APK build replace the live Fireb
 ## Progress
 
 Account shows the active stage, current date/list, completed record count, elapsed time and a waiting indicator after 15 seconds without progress. Unknown totals stay indeterminate; counts advance after acknowledgement and durable local state. One record is a date, the goals/routines list or a completed focus session, not an individual task. Errors retain stage/date context. Legacy blank checklist entries remain intact.
+
+
+## Sync efficiency and editing behavior
+
+Clients now debounce saved changes for 900ms. An active nonempty text draft defers sync; empty focused capture does not. Leaving the editor promptly schedules deferred work. Android still syncs only while foregrounded; desktop accounts remain optional and independent of capture.
+
+Progress counts changed records and conflicts rather than all equal records. Equal acknowledgements are batched; already-current baselines require no save. Desktop performs one initial archive snapshot, targeted date checks before download application, and one list refresh after a download batch. Native compare-before-write, exact conflict copies and pending mutation IDs retain their original safety ordering. Android compares only the relevant record before incoming changes and avoids per-record whole-notebook saves for idle acknowledgements.
+
+This optimization does not reduce downloaded cloud history or relax Android's bounded response size. Remote latency remains dependent on connectivity and the service; measured gains are reductions in local scan/write/refresh operations, not a claimed live end-to-end timing guarantee.

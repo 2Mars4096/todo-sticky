@@ -347,3 +347,24 @@ As of 2026-11-01 the personal Cloud Run service runs `sticky-todo-sync-00012-z9w
 ## Task control geometry
 
 `mobile/lib/widgets/task_grip.dart` owns the six-dot visual, 44px drag slot and text-scaled first-line control height, shared by daily reorder and Earlier drag. TaskTile derives action/history insets from whether a grip exists. Desktop task controls retain fixed 24px flex sizing and text has zero decorative horizontal padding/margin, keeping paragraph and short-title geometry consistent.
+
+
+The compact phone correction in plan 14-1 narrows TaskGrip to 24px and TaskTile's checkbox slot to 40px, removes the root handle-row outer inset and derives its content inset as 66px. Child leading inset is 36px when the parent has a handle, preserving a 12px text indentation. Daily/Earlier share this geometry.
+
+
+## Android project scheduling
+
+`models/project_plan.dart` validates local proposal windows and actions without extending persisted task/goal schemas. `ProjectScheduleScreen` lives under the existing goal editor, requests AiService.planProject, captures a goal-and-notebook fingerprint and permits text/date/minute edits before applying. StickyStore validates the entire batch before atomically saving goal steps plus dated tasks. Save failure exposes Retry instead of applying again. Assign to project uses the existing task menu and goal links; explicit different descendant projects are preserved. Existing linked work opens through the goal-filtered archive.
+
+
+## Sync efficiency
+
+Both clients batch equal-record acknowledgements before transfers and avoid saving unchanged metadata. Pending upload identities, successful transfer acknowledgements and conflict copies retain their original durability ordering. Desktop targeted snapshots use native date extraction and goals/focus in-memory snapshots; downloaded dates reload once per batch, including partial failures. Android's syncRecord getter serializes only the compared record. Progress counts transfers/conflicts, not equal records. Debounce is 900ms; focus completion reschedules deferred work, and empty focused capture does not count as an active draft. Backend protocol and bounded Android pages are unchanged.
+
+
+## Mac project editor
+
+- `ProjectPage` is an on-demand center page opened from long-term goal titles. It renders full shared GoalItem text/plan, manual edits, linked work, explicit step suggestions and multi-day proposal editing. `projectPlanning.ts` resolves inherited attribution, progress across dated fragments, constraints, fingerprints and immutable operations; `useTasks.assignProject` preserves differently assigned child branches.
+- `useGoals.saveProject` validates/fingerprints a synchronous local-storage commit before updating React state. `projectStorage.ts` keeps folder-scoped `todo-sticky-project-write-v1` journals, saves goals before dates and reuses native `cloud_apply_day` comparison/backups. Retry recognizes already-applied date contents; conflicts stop remaining writes. This is recoverable sequential persistence, not an atomic transaction across Markdown and WebView stores.
+- `llm_project_plan` uses the existing native provider boundary for step or multi-day suggestions. Frontend validation and a fresh archive check precede explicit Apply. Only project/range context is sent, bounded to 500 rows; proposals and minute estimates are not new persisted task fields.
+- Task rows expose assignment via a compact selected-row Project control; linked badges open the project. `ArchivePage` resolves inherited project links, filters dated work and separately reports all-date plan completion, without attributing global focus totals to a project.

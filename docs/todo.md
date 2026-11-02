@@ -1,6 +1,13 @@
 # Todo
 
-- [ ] [15-project-goals-and-multiday-planning](plans/15-project-goals-and-multiday-planning.md) — clarified project-based goals, attribution of existing tasks and multi-day AI planning; implementation pending.
+- [x] [16-sync-efficiency](plans/16-sync-efficiency.md) — sync efficiency verified; Android +14 delivered and Mac installed with the project-parity build.
+
+- [x] [15-2-minimal-copy-pass](plans/15-2-minimal-copy-pass.md) — three small clarity changes; 97 tests and normal/enlarged screenshots pass; same-key APK +13 delivered.
+
+- [x] [14-1-compact-phone-grip](plans/14-1-compact-phone-grip.md) — tighter leading inset and aligned controls verified; original-key APK +11 rebuilt.
+
+- [x] [15-project-goals-and-multiday-planning](plans/15-project-goals-and-multiday-planning.md) — Android project planning delivered; Mac parity installed with descriptions/steps, assignment, dated links and editable multi-day proposals.
+  - [ ] [15-3-mac-project-planning](plans/15-3-mac-project-planning.md) — implementation, tests and Mac reinstall complete; commit/push in progress.
 - [x] [14-task-control-spacing](plans/14-task-control-spacing.md) — consistent visible gaps and first-line/nested alignment verified; Mac installed with data preserved, signed Android +10 rebuilt.
 
 - [x] [13-goal-planning-and-mobile-drag](plans/13-goal-planning-and-mobile-drag.md) — goal workflows and dragging delivered; schema-2 backend deployed, Mac rebuilt/installed, original-key production Android +9 delivered.

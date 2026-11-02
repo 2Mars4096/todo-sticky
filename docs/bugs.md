@@ -1,5 +1,23 @@
 # Bugs And Failed Approaches
 
+## 2026-11-02: Mac project visibility and workflow review
+
+- Mac preserved phone-created GoalItem.plan but exposed only the goal list, so descriptions/steps had no matching project editor. Long-term titles now open the shared text and plan with no data migration or recreation.
+- A completed partial-save retry initially stayed in proposal mode. It now returns to the step list and clears stale selection. Tests cover one written date plus a failed next date, retry and no duplication.
+- New project progress must not display global focus totals as if they belong to the selected project. Project filters omit those totals and label plan completion as all-date progress.
+- Existing hook test harnesses enumerated allowed imports; register the new project helper through the real TypeScript loader rather than bypassing its behavior.
+
+## 2026-11-01: Redundant sync work and delayed editing resume
+
+- Every equal Android record wrote a full notebook snapshot and desktop persisted full metadata per equal record. Batch those baseline acknowledgements and skip unchanged metadata; retain durable per-transfer pending IDs and successful writes.
+- Desktop downloads rescanned all task files and reloaded visible/history state for each date. Read only the target date for stale checks and reload once after the local batch, including a partially successful batch.
+- Focus alone blocked Android sync even with an empty capture field; finishing a draft could wait until the next minute poll. Check nonempty drafts and listen for focus completion. Empty capture stays usable; incoming edits still guard active drafts.
+- The desktop sync-progress VM lacked URLSearchParams, causing its upload-start promise to remain unresolved while Node could exit cleanly. Supply the real global and race upload start against early sync completion; never infer verification from exit code alone without completion evidence.
+
+## 2026-11-01: Over-wide phone grip slot
+
+- Equal optical gaps alone did not meet the user's compactness requirement: a right-aligned grip inside 44px plus a 12px outer inset wasted 44px before the visible dots. Narrow the shared slot to 24px, eliminate the outer inset on handled roots and tighten checkbox/text spacing. Verify overall left offset as well as gap equality.
+
 ## 2026-11-01: Uneven task control spacing
 
 - Phone grips used a centered narrow glyph in a 44px target, followed by a larger checkbox and text with no inset; visible gaps differed despite equal target widths. Daily and Earlier now share the same painted grip geometry, explicit checkbox size and text inset.

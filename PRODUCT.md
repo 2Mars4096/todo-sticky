@@ -60,3 +60,8 @@ Android 2.1.15+7 now mirrors Search, Progress, optional routines, constrained pl
 ## Paragraph capture and editing
 
 Keep the current task/subtask hierarchy. Task capture, title edits and step inputs support wrapped paragraphs and blank lines. Enter inserts a new line; Add/Save or desktop Cmd/Ctrl+Enter commits. Editors grow then scroll within the window. Long task bodies use normal weight, with explicit action controls and preserved accessible names. Phone capture/steps reserve keyboard space by reducing visible lines when the keyboard opens. No standing shortcut hints or extra notebook navigation.
+
+
+Android long-term goals also serve as projects: users can attribute existing tasks, maintain manual plan steps and review AI proposals across dates before scheduling. Daily work retains its goal link and existing subtasks. This uses the existing Goals surface rather than another project database or navigation tab; long-term completion remains deliberate.
+
+Mac now exposes the shared project editor: click a long-term title for its full description/steps, linked daily work, manual/AI step planning and editable multi-day proposals. Task assignment and project-filtered Progress reuse existing goal IDs. Preserve the minimal-copy and capture-first contract; project planning does not become the launch screen.

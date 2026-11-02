@@ -254,3 +254,21 @@ Keep the current task/subtask hierarchy. Task capture, title edits and step inpu
 ## Task control spacing
 
 Preserve equal visible gaps separately from touch targets. Desktop grip/checkbox use fixed 24px flex slots; title padding/margins must not differ for paragraph display. Phone daily and Earlier handles share TaskGrip, with 44px targets and a fixed optical right edge. Checkbox icons use explicit 24px sizing and title padding; control centers follow the first text line at enlarged sizes. Nested rows keep the same checkbox-to-text rule and intentional indentation. Expanded actions/history align to the actual title column.
+
+
+## Compact phone control correction
+
+The user's follow-up rejects the excess leading space in the first spacing pass. Phone root rows with a handle now have zero outer inset, a 24px grip slot, a 40px checkbox slot and 2px title inset. Painted dots begin at 14px and title text at 66px; optical gaps are 12px. Both controls retain the full scaled first-line height. Child rows keep their text 12px beyond the parent title; do not restore the 44px grip slot or 104px title start.
+
+
+## Project-level planning on Android
+
+Keep Assign to project in the existing task menu. Long-term goals open Project tasks; Plan across days is a single adjacent action, with linked work accessible nearby. The proposal page contains a date range, project minutes/day and weekdays-only control, then an editable flat task list and Add to daily tasks. Editing a proposed row changes its text/date/estimate; removing it is reversible by regeneration. No new home tab or dashboard cards. Preserve explicit apply, readable validation, stale-state errors and Retry save at the point of failure.
+
+
+In project planning, label the undated breakdown action Suggest steps to distinguish it from Plan across days. Show Daily project budget with minute units in the selector. Proposal rows expose a named edit icon and a separate remove icon; do not repeat the apply workflow as standing instructional text. Keep consequential deletion, validation and recovery messages.
+
+
+## Mac project parity
+
+Long-term titles are the direct project entry. Reuse the center page, selected material and flat task styling. Full description/step paragraphs remain readable; editing uses inline textareas and named Save/Add actions. Suggestions and multi-day proposals stay editable before commitment. Keep date/minute labels and accessible names, but avoid teaching paragraphs or permanent workflow explanations. Keep removal and partial-save consequences visible at those decisions. Closed projects remain readable; completion stays deliberate. Project progress separates current date-list work from all-date plan totals.

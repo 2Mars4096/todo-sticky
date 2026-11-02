@@ -8,7 +8,7 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed workflow improvements and goal-metadata compatibility and deployed sync service URL (2026-11-01). Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
 
-Local Android release build: `release/todo-sticky.apk` (2.1.15+10, ARM64, 19.62 MB, original release signature, sync URL prefilled). The local `release/` folder is excluded from Git.
+Local Android release build: `release/todo-sticky.apk` (2.1.15+14, ARM64, 19.75 MB, original release signature, sync URL prefilled). The local `release/` folder is excluded from Git.
 
 Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
@@ -133,7 +133,7 @@ Click an unfinished task to select it. Icon buttons for **Focus**, **Add step**,
 - **AI assistance** — Explicitly request outcome suggestions, step breakdowns, or a proposed day plan when useful. Selecting a task does not make an AI request.
 - **Codex background provider** — Run breakdowns, schedules, and album picks through the locally authenticated Codex CLI in an ephemeral read-only workspace, without adding an OpenAI API key
 - **Task-aware albums** — Find four albums suited to the concentration, energy, and atmosphere of the work, in a compact list with musical reasons and listening-mood cues (requires a configured AI provider)
-- **Goals and Routines** — Keep long-term goals and reusable reminders in flat lists. Manual reset remains the default. Routines on both platforms can optionally create daily, weekday or weekly tasks, with Pause and Skip next. Schedules run on this device; generated tasks use ordinary task sync. Type and press Enter to add, double-click or press Enter on a focused item to edit, and Escape to cancel.
+- **Goals and Routines** — Keep long-term goals and reusable reminders in flat lists. Manual reset remains the default. Routines on both platforms can optionally create daily, weekday or weekly tasks, with Pause and Skip next. Schedules run on this device; generated tasks use ordinary task sync. Type and press Enter to add. Open a long-term title for its project details; routines retain double-click/Enter editing and Escape cancellation.
 - **Star Focus** — Select a task, choose a duration, then **Start focus**. **Pause**, **Resume**, and **Finish session** control the timer. Sessions travel the Solar Route and enter a native-local log with `6` / `12` / `24` retention presets. Session completion leaves task-outcome review to you; **Review task** returns to its original entry. A simplified map keeps controls working if 3D rendering is unavailable, and **Try 3D again** retries it.
 - **Undo and save recovery** — Deleting a task or applying a day plan offers **Undo**. Failed writes keep edits in memory and show a persistent **Changes not saved** notice with **Retry save**. Pending saves must finish before switching dates or task folders.
 - **File sync** — Tasks stored as Markdown in `content/to-do/`; edits sync both ways
@@ -273,3 +273,16 @@ The current `main` source includes **Settings → Account**, Google sign-in and 
 The native phone app lives in [`mobile/`](mobile/README.md). Daily tasks have visible drag grips for reordering and icon-only actions with a horizontal dots menu. It carries task capture, nested steps, outcomes/deadlines, goals/routines, AI planning, music suggestions and Focus into a phone layout, with offline persistence and secure provider keys. See the mobile README for build instructions, feature parity, account integration and platform-specific boundaries. The Flutter Android workflow produces an installable review APK; production distribution requires your release signing key.
 
 Live Diane companion handoff remains a known phone gap: Dear Diane's `/api/sticky-todo` protocol explicitly enforces local-only access independently of its remote bearer authentication. Android retains Copy agent prompt. The [protocol review](mobile/README.md#dear-diane-companion-protocol-review) identifies the backend work required for remote support.
+
+
+### Project tasks and planning across days
+
+Under **Goals**, open a long-term goal/project to add manual steps or schedule selected steps into daily tasks. Existing daily tasks can join a project through **More task actions → Assign to project**; dates, completion and nested detail remain intact. Open **linked tasks** to inspect work already attributed to the project.
+
+**Plan across days** asks for a date range, project minutes per day and an optional weekdays-only restriction. Your configured AI provider proposes daily-sized work, reusing unscheduled steps where appropriate. Tap a proposal row to edit text, date and estimate, or remove it. **Add to daily tasks** creates the linked steps and dated work together. Generating or discarding a proposal changes nothing; existing scheduled commitments stay in place. Project completion remains manual.
+
+On Mac, click a long-term title in **Goals** to see the full description, existing steps and linked daily work, including content added on your phone. The pencil edits the project text; **Suggest steps** and **Plan across days** produce editable proposals. Select unscheduled steps and a date, then choose **Add to daily tasks**. Scheduled steps open their actual daily task. Selected task rows expose a **Project** dropdown; **Progress** has a project filter.
+
+Mac saves spanning several dates are recoverable: **Retry save** continues without duplicating completed writes; **Discard remaining** keeps already saved tasks and steps. Removing a project step retains its daily work. No new sync schema or backend setup is required.
+
+Sync batches unchanged acknowledgements, avoids repeated archive scans/list refreshes during downloads, and resumes promptly after editing. Progress counts actual changed records. Conflict review and failed-save recovery remain intact.

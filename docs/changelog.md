@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-11-02 — Mac project editor and phone-created goal details
+
+- [desktop] Open long-term goal titles to view/edit their existing descriptions and steps. Add manual or reviewed AI steps, schedule selected work, open linked tasks, assign existing tasks to projects and filter Progress. Add editable multi-day project proposals with date/budget/weekday validation.
+- [recovery] Preserve the shared goal/task schema; journal cross-file writes, compare before replacing dates and retain backups. Retry skips acknowledged dates; removing a step or discarding remaining writes keeps daily work. Stale/duplicate proposals are rejected before mutation.
+- [ui] Apply self-explanatory-ui with flat lists, direct title entry, concise actions, accessible labels and contextual deletion/recovery consequences. Preserve selected texture and existing paragraph/drag behavior.
+- [delivery] Mac rebuilt, signed, installed and reopened, including pending sync efficiency. All 56 task files/settings unchanged. 22 Node suites, TypeScript, 40 native tests, production browser workflows and existing 100 Android tests pass. [15-3](plans/15-3-mac-project-planning.md).
+
+## 2026-11-01 — Faster, quieter client sync
+
+- [performance] Batch unchanged acknowledgements; skip no-op metadata writes. Desktop checks affected dates instead of rescanning the archive per download and refreshes once per batch. Android compares scoped live records rather than cloning the entire notebook per apply.
+- [interaction] Use 900ms edit debounce, resume after editing, allow empty capture focus and count actual changed records. Ordinary editing waits are status messages; conflict/recovery safeguards remain.
+- [validation] 21 Node suites/TypeScript and 100 Flutter tests/analyzer pass, including idle-save counts, targeted-read/reload counts, concurrent edits and existing conflict/schema migration checks. Original-key APK +14 delivered; Mac bundle built, installation awaiting normal app quit. [Delivery](plans/16-sync-efficiency.md).
+
+## 2026-11-01 — Minimal project UI clarity pass
+
+- [ui] Rename goal Generate plan to Suggest steps, clarify the daily project budget with minute-valued choices, and remove the repeated proposal instruction in favor of an accessible Edit proposed task icon. Preserve removal, apply/discard, labels, warnings and save recovery.
+- [scope] One self-explanatory-ui pass; no task/planning logic or navigation changes. All 97 tests and normal/enlarged visual review pass; original-key APK +13 rebuilt and verified. [Delivery](plans/15-2-minimal-copy-pass.md).
+
+## 2026-11-01 — Android project attribution and multi-day AI planning
+
+- [features] Add Assign to project in the task menu, linked-work access in Project tasks, and Plan across days with range, daily project budget and weekdays-only controls. Reuse existing goal steps or review/edit/remove AI suggestions before adding them to daily lists.
+- [reliability] Keep generation/discard read-only; reject changed notebooks, invalid dates/budgets, duplicate tasks and already scheduled steps before applying. Save project steps and all dates together; Retry persists the same mutation without duplicating tasks. Keep explicit child-project links when assigning a parent.
+- [delivery] Original-key Android +12 / 2012 delivered at `release/todo-sticky.apk` (19.75 MB). Analyzer/formatting and all 97 tests pass; normal/enlarged screenshots reviewed and emulator update preserves notebook bytes. [Evidence](plans/15-1-android-project-planning.md). No new database/schema/backend deployment; Mac project editor remains follow-up.
+
+## 2026-11-01 — Tighten phone drag controls
+
+- [ui] Reduce space before the visible grip from 44px to 14px and the root text inset from 104px to 66px. Use equal 12px optical gaps, first-line vertical alignment and shared Today/Earlier geometry; preserve nested indentation and drag actions.
+- [validation] Flutter formatting/analyzer and all 86 tests pass; normal/enlarged screenshots and expanded nested rows reviewed. Original-key Android +11 delivery tracked in [14-1](plans/14-1-compact-phone-grip.md).
+
 ## 2026-11-01 — Publish local spacing and deployment records
 
 - [repository] Fetch origin/main and confirm it matches ba07999; no incoming changes need merging. Publish the local spacing fix, production deployment evidence and clarified project-goal planning scope in separate source/documentation commits.
