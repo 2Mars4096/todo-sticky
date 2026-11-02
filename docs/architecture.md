@@ -368,3 +368,8 @@ Both clients batch equal-record acknowledgements before transfers and avoid savi
 - `useGoals.saveProject` validates/fingerprints a synchronous local-storage commit before updating React state. `projectStorage.ts` keeps folder-scoped `todo-sticky-project-write-v1` journals, saves goals before dates and reuses native `cloud_apply_day` comparison/backups. Retry recognizes already-applied date contents; conflicts stop remaining writes. This is recoverable sequential persistence, not an atomic transaction across Markdown and WebView stores.
 - `llm_project_plan` uses the existing native provider boundary for step or multi-day suggestions. Frontend validation and a fresh archive check precede explicit Apply. Only project/range context is sent, bounded to 500 rows; proposals and minute estimates are not new persisted task fields.
 - Task rows expose assignment via a compact selected-row Project control; linked badges open the project. `ArchivePage` resolves inherited project links, filters dated work and separately reports all-date plan completion, without attributing global focus totals to a project.
+
+
+### Project editing and review
+
+ProjectPage uses one draft editor for project text, unscheduled steps and actual scheduled tasks, retaining an original snapshot for stale-edit checks. Scheduled root work-date moves use destination-first `ProjectOperation` date changes and reject destination subtree ID collisions. The existing journal/compare/backups handle retries; plan templates are not duplicated. Draft navigation guards keep changed text in place until Save/Cancel, and editor focus restores after save/cancel. App retains a transient project return target when opening linked daily work; DateHeader exposes that return beside existing date controls.

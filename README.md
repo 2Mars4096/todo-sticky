@@ -286,3 +286,8 @@ On Mac, click a long-term title in **Goals** to see the full description, existi
 Mac saves spanning several dates are recoverable: **Retry save** continues without duplicating completed writes; **Discard remaining** keeps already saved tasks and steps. Removing a project step retains its daily work. No new sync schema or backend setup is required.
 
 Sync batches unchanged acknowledgements, avoids repeated archive scans/list refreshes during downloads, and resumes promptly after editing. Progress counts actual changed records. Conflict review and failed-save recovery remain intact.
+
+
+### Editing and reviewing projects on Mac
+
+Open a long-term title in Goals. Use the pencil to edit its description or a step; **Save / Cancel** work consistently, with Cmd/Ctrl+Enter to save and Escape to cancel. A scheduled step’s date row has its own pencil for task text and **Work date**. Changing its work date keeps the deadline, status and nested work. Use **Open task** for status/deadline details or nested-step moves, then **‹ Project** to return. AI proposal text, dates and minutes remain editable before **Add steps / Add to daily tasks**; **Discard** leaves saved work unchanged.

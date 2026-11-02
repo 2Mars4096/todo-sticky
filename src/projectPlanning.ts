@@ -1,3 +1,4 @@
+import { canonical } from './cloudSync'
 import { differenceInCalendarDays, isValid, parseISO } from 'date-fns'
 import type { ExtractedTaskDate, GoalItem, GoalPlanStep, Task } from './types'
 import type { ArchiveRow } from './taskArchive'
@@ -96,4 +97,36 @@ export function assignTaskProject(task: Task, goalId: string | undefined, previo
 }
 export function validateGoalPlan(plan: GoalPlanStep[]) {
   if (plan.length > 200 || new Set(plan.map(step=>step.id)).size !== plan.length || plan.some(step=>!validId(step.id)||!step.text.trim()||step.text.length>5000)) throw new Error('Keep up to 200 distinct steps, each with 1–5,000 characters.')
+}
+
+
+export function reviseProjectTask(folder: string, goal: GoalItem, dates: ExtractedTaskDate[], original: ArchiveRow, text: string, toDate = original.date): ProjectOperation {
+  const value=text.trim()
+  if(!validProjectDate(toDate))throw new Error('Choose a valid work date.')
+  if(!value||value.length>5000) throw new Error('Task text must contain 1–5,000 characters.')
+  const day=dates.find(day=>day.date===original.date)
+  if(!day)throw new Error('This task moved or was removed. Refresh the project.')
+  let found=false
+  const update=(task:Task):Task=>{
+    if(task.id===original.task.id){
+      if(canonical(task)!==canonical(original.task))throw new Error('This task changed while you were editing. Cancel and reopen it to see the latest version.')
+      found=true;return {...task,text:value}
+    }
+    return {...task,subtasks:task.subtasks.map(update)}
+  }
+  const after=day.tasks.map(update)
+  if(!found)throw new Error('This task moved or was removed. Refresh the project.')
+  if(toDate===original.date)return {folder,before:goal,after:goal,days:[{date:day.date,before:day.tasks,after}]}
+  if(original.parents.length)throw new Error('Move this step through its parent task.')
+  const moved=after.find(task=>task.id===original.task.id)!
+  const destination=dates.find(day=>day.date===toDate)?.tasks??[]
+  const ids=new Set<string>()
+  const collect=(task:Task)=>{ids.add(task.id);task.subtasks.forEach(collect)}
+  collect(moved)
+  const collides=(task:Task):boolean=>ids.has(task.id)||task.subtasks.some(collides)
+  if(destination.some(collides))throw new Error('This task already exists on that date. Refresh before moving it.')
+  return {folder,before:goal,after:goal,days:[
+    {date:toDate,before:destination,after:[...destination,moved]},
+    {date:day.date,before:day.tasks,after:day.tasks.filter(task=>task.id!==original.task.id)},
+  ]}
 }

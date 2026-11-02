@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [15-4-project-editing-review](plans/15-4-project-editing-review.md) — consistent Save/Cancel editing, inline scheduled text/work-date revision, draft protection and direct review return; tested and reinstalled with data preserved.
+
 - [x] [16-sync-efficiency](plans/16-sync-efficiency.md) — sync efficiency verified; Android +14 delivered and Mac installed with the project-parity build.
 
 - [x] [15-2-minimal-copy-pass](plans/15-2-minimal-copy-pass.md) — three small clarity changes; 97 tests and normal/enlarged screenshots pass; same-key APK +13 delivered.

@@ -63,6 +63,9 @@ export default function App() {
   const starFocus = useStarFocus(tasks.tasks)
   const [archivePage, setArchivePage] = useState<'search' | 'progress' | null>(null)
   const [activeProject,setActiveProject]=useState<string|null>(null)
+  const [returnProject,setReturnProject]=useState<string|null>(null)
+  const projectLeaveGuard=useRef<()=>boolean>(()=>true)
+  const registerProjectLeaveGuard=useCallback((guard:(()=>boolean)|null)=>{projectLeaveGuard.current=guard??(()=>true)},[])
   const [projectWriting,setProjectWriting]=useState(false)
   const [archiveQuery, setArchiveQuery] = useState('')
   const [archiveTarget, setArchiveTarget] = useState<ArchiveRow | null>(null)
@@ -171,15 +174,17 @@ export default function App() {
     requestAnimationFrame(() => archiveOpener.current?.focus())
   }, [])
   const openArchiveTask = useCallback(async (row: ArchiveRow) => {
+    if(!projectLeaveGuard.current())return
     const request = ++navigationRequest.current
     const folder = currentFolderRef.current
     await tasks.flushPendingSave()
     if (request !== navigationRequest.current || folder !== currentFolderRef.current) return
+    setReturnProject(activeProject)
     setActiveProject(null)
     setArchiveTarget(row)
     calendar.goToDate(new Date(`${row.date}T12:00:00`))
     setArchivePage(null)
-  }, [tasks.flushPendingSave, calendar.goToDate])
+  }, [tasks.flushPendingSave, calendar.goToDate, activeProject])
   useEffect(() => {
     if (!archiveTarget || tasks.loading || tasks.dataDate !== archiveTarget.date || calendar.dateStr !== archiveTarget.date) return
     const root = document.querySelector<HTMLElement>(`[data-task-id="${CSS.escape(archiveTarget.rootId)}"]`)
@@ -204,7 +209,8 @@ export default function App() {
     document.querySelector('.goals-sidebar')?.toggleAttribute('inert',projectWriting)
   },[projectWriting])
   const openProject = (id:string) => {
-    if(projectWriting)return
+    if(projectWriting||!projectLeaveGuard.current())return
+    setReturnProject(null)
     navigationRequest.current++;setActiveProject(id);setArchivePage(null);goals.setSidebarCollapsed(true);setShowAlbumRecommendations(false)
   }
   const assignProject = (taskId:string,goalId:string,subtaskId?:string) => {
@@ -590,9 +596,11 @@ export default function App() {
       <div className="sticky-container">
         {activeProject ? <ProjectPage key={`${activeProject}:${aiSettings?.kbPath}`} goalId={activeProject} goals={goals.targets} folder={aiSettings?.kbPath??''}
           flush={tasks.flushPendingSave} getGoal={goals.currentProject} saveGoal={goals.saveProject} reloadTasks={tasks.load}
-          onWriting={setProjectWriting} onOpen={openArchiveTask} onBack={()=>{if(!projectWriting){const id=activeProject;setActiveProject(null);goals.setSidebarCollapsed(false);requestAnimationFrame(()=>document.querySelector<HTMLElement>(`[data-project-id="${CSS.escape(id)}"]`)?.focus())}}} /> : archivePage ? <ArchivePage goals={goals.targets} key={`${archivePage}:${aiSettings?.kbPath}`} folder={aiSettings?.kbPath ?? ''} initialQuery={archiveQuery} mode={archivePage} date={calendar.dateStr}
+          onWriting={setProjectWriting} registerLeaveGuard={registerProjectLeaveGuard} onOpen={openArchiveTask} onBack={()=>{if(!projectWriting){const id=activeProject;setActiveProject(null);goals.setSidebarCollapsed(false);requestAnimationFrame(()=>document.querySelector<HTMLElement>(`[data-project-id="${CSS.escape(id)}"]`)?.focus())}}} /> : archivePage ? <ArchivePage goals={goals.targets} key={`${archivePage}:${aiSettings?.kbPath}`} folder={aiSettings?.kbPath ?? ''} initialQuery={archiveQuery} mode={archivePage} date={calendar.dateStr}
           flush={tasks.flushPendingSave} missions={starFocus.missionHistory} onBack={closeArchive} onOpen={openArchiveTask} /> : <>
         <DateHeader
+          projectBackLabel={returnProject?goals.targets.find(goal=>goal.id===returnProject)?.text.split('\n')[0]:undefined}
+          onBackProject={()=>{if(returnProject)openProject(returnProject)}}
           displayDate={calendar.displayDate}
           selectedDate={calendar.selectedDate}
           calendarOpen={calendar.calendarOpen}
@@ -758,10 +766,10 @@ export default function App() {
           >
             Albums
           </button>
-          <button className="workflow-entry" aria-label="Search tasks" title="Search tasks" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setActiveProject(null); setArchivePage('search') }}>
+          <button className="workflow-entry" aria-label="Search tasks" title="Search tasks" onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setActiveProject(null); setArchivePage('search') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg>
           </button>
-          <button className="workflow-entry" aria-label="Progress" title="Progress" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setActiveProject(null); setArchivePage('progress') }}>
+          <button className="workflow-entry" aria-label="Progress" title="Progress" onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setActiveProject(null); setArchivePage('progress') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3v14h14M7 14V9m4 5V5m4 9v-7"/></svg>
           </button>
           <div className="spacer" />

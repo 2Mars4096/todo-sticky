@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-02 — Simplify project editing and review
+
+- [ui] Use consistent inline Save/Cancel and Cmd/Ctrl+Enter/Escape for project text and steps. Edit actual scheduled task text/work date in place; provide a compact Project return from full daily-task review. Preserve changed drafts on attempted navigation and restore editor focus.
+- [safety] Capture original edit snapshots; reject newer external changes. Date moves preserve status/deadline/children/goal links, save destination before source cleanup and use existing journal recovery. Pending writes retain one immutable edit until retry/discard.
+- [delivery] 22 Node suites, TypeScript/build and production browser edit/cancel/stale/retry/date/navigation/layout checks pass. Mac rebuilt/reinstalled and launched with all 56 task files/settings unchanged; no backend or Android changes. [15-4](plans/15-4-project-editing-review.md).
+
 ## 2026-11-02 — Mac project editor and phone-created goal details
 
 - [desktop] Open long-term goal titles to view/edit their existing descriptions and steps. Add manual or reviewed AI steps, schedule selected work, open linked tasks, assign existing tasks to projects and filter Progress. Add editable multi-day project proposals with date/budget/weekday validation.

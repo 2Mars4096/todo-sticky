@@ -34,3 +34,12 @@
 .task-project { display:flex; align-items:center; gap:6px; margin:3px 0; }
 .task-project select { font:inherit; font-size:11px; color:var(--text-secondary); background:transparent; border:1px solid var(--sticky-border); border-radius:3px; min-height:26px; max-width:100%; }
 .task-project button { font:inherit; font-size:11px; background:transparent; border:0; color:var(--text-secondary); cursor:pointer; text-align:left; }
+.project-inline-editor { flex:1; min-width:0; width:100%; }
+.project-inline-editor textarea { min-height:78px; }
+.project-editor-actions { display:flex; gap:6px; margin-top:5px; }
+.project-scheduled-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:6px 0 0 22px; }
+.project-page .project-scheduled-row .project-work-link { margin:0; padding-left:0; flex:1; }
+.project-fragment-text { flex-basis:100%; white-space:pre-wrap; overflow-wrap:anywhere; }
+.project-edit-notice { font-size:12px; color:var(--text-secondary); margin:4px 0; }
+.project-edit-date { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--text-secondary); }
+.project-edit-date input { min-width:0; max-width:160px; }

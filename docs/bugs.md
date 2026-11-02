@@ -1,5 +1,11 @@
 # Bugs And Failed Approaches
 
+## 2026-11-02: Project editing friction
+
+- Unscheduled steps had Save without Cancel, and Escape bubbled into leaving the page. Unified inline editors now cancel locally and restore focus.
+- Description edits previously used the latest goal as the save base, allowing an old draft to overwrite a concurrent update. Capture the original goal/task and reject changed versions; refreshing after cancellation exposes the latest contents.
+- Scheduled revision required a detour with no direct return. Inline text/work-date edits now preserve the actual task identity/status/deadline, and full daily-task review has a contextual Project return button. Destination is saved before source removal on date moves.
+
 ## 2026-11-02: Mac project visibility and workflow review
 
 - Mac preserved phone-created GoalItem.plan but exposed only the goal list, so descriptions/steps had no matching project editor. Long-term titles now open the shared text and plan with no data migration or recreation.

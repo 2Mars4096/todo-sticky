@@ -5,6 +5,8 @@ import { MiniCalendar } from './MiniCalendar'
 import '../styles/settings-navigation.css'
 
 interface Props {
+  projectBackLabel?: string
+  onBackProject?: () => void
   displayDate: string
   selectedDate: Date
   calendarOpen: boolean
@@ -18,6 +20,7 @@ interface Props {
 }
 
 export function DateHeader({
+  projectBackLabel, onBackProject,
   displayDate, selectedDate, calendarOpen, isCurrentDay,
   onPrev, onNext,
   onToggleCalendar, onSelectDate, onToday, onCloseCalendar,
@@ -84,8 +87,9 @@ export function DateHeader({
         </div>
         <button className="date-step" onClick={onNext} title="Next day" aria-label="Next day">›</button>
       </div>
-      {!isCurrentDay && <div className="header-row">
-        <button className="today-jump" onClick={onToday}>Go to today</button>
+      {(!isCurrentDay || projectBackLabel) && <div className="header-row">
+        {projectBackLabel&&<button className="today-jump" onClick={onBackProject} aria-label={`Back to project ${projectBackLabel}`} title={projectBackLabel}>‹ Project</button>}
+        {!isCurrentDay&&<button className="today-jump" onClick={onToday}>Go to today</button>}
       </div>}
 
     </div>

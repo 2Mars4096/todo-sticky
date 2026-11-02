@@ -272,3 +272,6 @@ In project planning, label the undated breakdown action Suggest steps to disting
 ## Mac project parity
 
 Long-term titles are the direct project entry. Reuse the center page, selected material and flat task styling. Full description/step paragraphs remain readable; editing uses inline textareas and named Save/Add actions. Suggestions and multi-day proposals stay editable before commitment. Keep date/minute labels and accessible names, but avoid teaching paragraphs or permanent workflow explanations. Keep removal and partial-save consequences visible at those decisions. Closed projects remain readable; completion stays deliberate. Project progress separates current date-list work from all-date plan totals.
+
+
+Project revision uses one inline Save/Cancel pattern for descriptions, unscheduled steps and scheduled task text/work date. Cmd/Ctrl+Enter saves; Escape cancels only that draft. Return focus to the invoking control. Keep changed drafts visible when navigation is attempted and show the brief Save/Cancel prompt only then. A compact Project button returns from full daily-task review. Status/deadline and removal consequences remain explicit; AI proposals retain direct field editing and Apply/Discard.

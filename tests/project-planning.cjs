@@ -32,6 +32,20 @@ assert.equal(goal.plan.length,2,'Preparation does not mutate the goal')
 const detached=p.removeStepOperation('/fixture',goal,days,'a')
 assert.ok(detached.days.every(day=>day.after[0].goalId==='g'&&!day.after[0].goalStepId))
 assert.equal(detached.after.plan.length,1)
+const originalTask=task('linked',{goalId:'g',goalStepId:'a',status:'done',finish:{doneWhen:'Ready',by:'2026-11-05'},subtasks:[task('nested',{status:'done'})]})
+const editableDates=[day('2026-11-02',[originalTask])]
+const originalRow=archiveRows(editableDates,[goal])[0]
+const revised=p.reviseProjectTask('/fixture',goal,editableDates,originalRow,'Revised task\nFull paragraph')
+assert.deepEqual(plain(revised.days[0].after[0]),{...originalTask,text:'Revised task\nFull paragraph'})
+assert.equal(revised.after,goal,'Daily revision does not duplicate the project plan')
+const moved=p.reviseProjectTask('/fixture',goal,editableDates,originalRow,'Revised task','2026-11-04')
+assert.equal(moved.days[0].date,'2026-11-04','Save destination before removing the original')
+assert.deepEqual(plain(moved.days[0].after[0]),{...originalTask,text:'Revised task'})
+assert.equal(moved.days[1].date,'2026-11-02');assert.equal(moved.days[1].after.length,0)
+assert.throws(()=>p.reviseProjectTask('/fixture',goal,[...editableDates,day('2026-11-04',[task('other',{subtasks:[task('nested')]})])],originalRow,'Move','2026-11-04'),/already exists/)
+
+assert.throws(()=>p.reviseProjectTask('/fixture',goal,[day('2026-11-02',[{...originalTask,text:'Newer edit'}])],originalRow,'Overwrite'),/changed/)
+assert.throws(()=>p.reviseProjectTask('/fixture',goal,[],originalRow,'Moved task'),/moved/)
 ;(async()=>{
  const storage=new Map(),written=[],data=new Map(days.map(day=>[day.date,plain(day.tasks)]));let current=plain(goal),fail=true
  const st=load('src/projectStorage.ts',{'@tauri-apps/api/core':{invoke:async(cmd,args)=>{
