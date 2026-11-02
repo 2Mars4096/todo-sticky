@@ -5,6 +5,7 @@ import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 
 import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection, moveCarriedToToday } from '../taskRollover'
 import { applyPlanWithUndo, deleteWithUndo, restoreTaskChange, type TaskUndo } from '../taskHistory'
+import { assignTaskProject } from '../projectPlanning'
 import { planningTaskKey, type PlannedBlock } from '../taskPlanning'
 
 // A stalled archive must not leave the entire task surface waiting forever.
@@ -566,6 +567,19 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     })
   }, [persist])
 
+  const assignProject = useCallback((taskId: string, goalId: string | undefined, previous: string | undefined, subtaskId?: string) => {
+    if (loadingRef.current) return
+    setTasks(current=>{
+      const next=current.map(task=>{
+        if(task.id!==taskId)return task
+        if(subtaskId)return {...task,todaySubtasks:task.todaySubtasks.map(step=>step.id===subtaskId?assignTaskProject(step,goalId,previous):step)}
+        const changed=assignTaskProject({...task,subtasks:task.todaySubtasks},goalId,previous)
+        return {...task,goalId:changed.goalId,goalStepId:changed.goalStepId,todaySubtasks:changed.subtasks}
+      })
+      setUndo(null);persist(next);return next
+    })
+  },[persist,setTasks])
+
   const addAISubtasks = useCallback((taskId: string, subtasks: { text: string }[], expectedDate: string, expectedTaskKey: string) => {
     if (loadingRef.current) return
     setTasks(prev => {
@@ -615,7 +629,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     flushPendingSave,
     saveError, saving, retrySave, undo, undoLastAction, dismissUndo: () => setUndo(null),
     tasks, loading, loadError, rolloverLoading, rolloverError, load, dataDate: loadedDateRef.current,
-    ensureRoutineTask, updateFinish, reviewTask, addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
+    assignProject, ensureRoutineTask, updateFinish, reviewTask, addTask, addTaskBundle, toggleStatus, deleteTask, carryForward, carryForwardTarget,
     addSubtask, moveToToday, reorderTasks, reorderSubtasks, updateTaskText, addAISubtasks, applySchedule,
     addDebugTask, addDebugTaskPack, clearAllTasks,
   }

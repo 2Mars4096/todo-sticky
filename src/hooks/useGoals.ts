@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { canonical } from '../cloudSync'
+import { validateGoalPlan } from '../projectPlanning'
 import type { GoalCategory, GoalItem, GoalsState } from '../types'
 
 const STORAGE_KEY = 'todo-sticky-goals-v1'
@@ -85,6 +87,7 @@ function readStoredState(): StoredGoals {
 export function useGoals() {
   const [stored] = useState<StoredGoals>(() => readStoredState())
   const [state, setState] = useState<GoalsState>(stored.state)
+  const stateRef = useRef(state); stateRef.current = state
   const [storageError, setStorageError] = useState<string | null>(null)
   const [recoveryNotice, setRecoveryNotice] = useState<string | null>(stored.unreadable
     ? 'Some saved goals could not be read. Their original data is being kept for recovery.' : null)
@@ -194,8 +197,25 @@ export function useGoals() {
     setStorageError(null)
   }, [state, stored])
 
+  const saveProject = useCallback((before: GoalItem, after: GoalItem) => {
+    if (stored.readFailed || (stored.unreadable !== null && recoveryKey.current === null)) throw new Error('Recover saved goals before editing this project.')
+    const current = stateRef.current
+    const existing = current.targets.find(goal => goal.id === before.id)
+    if (!existing) throw new Error('This project was removed.')
+    if (canonical(existing) === canonical(after)) return
+    if (existing.done) throw new Error('Reopen this project before editing.')
+    if (canonical(existing) !== canonical(before)) throw new Error('The project changed. Refresh before saving.')
+    validateGoalPlan(after.plan ?? [])
+    if (!after.text.trim() || after.text.length > 5000 || after.id !== before.id) throw new Error('Keep the project text within 1–5,000 characters.')
+    const next = {...current,targets:current.targets.map(goal=>goal.id===after.id?after:goal)}
+    try { window.localStorage.setItem(STORAGE_KEY,JSON.stringify(next)) }
+    catch { throw new Error('Project changes were not saved. Retry when storage is available.') }
+    stateRef.current = next; setState(next); setStorageError(null)
+  }, [stored])
+  const currentProject = useCallback((id: string) => stateRef.current.targets.find(goal=>goal.id===id), [])
+
   return {
-    storageError, recoveryNotice, retrySave: stored.readFailed ? undefined : save,
+    saveProject, currentProject, storageError, recoveryNotice, retrySave: stored.readFailed ? undefined : save,
     sidebarCollapsed: state.sidebarCollapsed,
     targets: state.targets,
     recurring: state.recurring,

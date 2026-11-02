@@ -248,6 +248,11 @@ pub async fn llm_schedule(
 }
 
 #[tauri::command]
+pub async fn llm_project_plan(request: Value, app: AppHandle) -> Result<Value, String> {
+    llm::project_plan(&app, &request).await
+}
+
+#[tauri::command]
 pub async fn llm_recommend_albums(tasks: Value, app: AppHandle) -> Result<Value, String> {
     llm::recommend_albums(&app, &tasks).await
 }

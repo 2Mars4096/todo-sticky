@@ -84,6 +84,8 @@ export const api = {
   llmSchedule: (data: { tasks: AggregatedTask[]; machines: AppSettings['machines']; dateStr: string; availableStart: string; availableEnd: string }) =>
     invoke<unknown>('llm_schedule', data),
 
+  llmProjectPlan: (request: unknown) => invoke<unknown>('llm_project_plan', {request}),
+
   llmRecommendAlbums: (data: { tasks: any[] }) =>
     invoke<AlbumRecommendationResult>('llm_recommend_albums', data),
 

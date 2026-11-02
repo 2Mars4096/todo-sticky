@@ -1,6 +1,8 @@
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { SyncProgressView } from './components/SyncProgressView'
+import { ProjectPage } from './components/ProjectPage'
+import { effectiveProject } from './projectPlanning'
 import { ArchivePage } from './components/ArchivePage'
 import { readTaskArchive } from './taskArchiveReader'
 import { archiveRows, type ArchiveRow } from './taskArchive'
@@ -60,6 +62,8 @@ export default function App() {
   const goals = useGoals()
   const starFocus = useStarFocus(tasks.tasks)
   const [archivePage, setArchivePage] = useState<'search' | 'progress' | null>(null)
+  const [activeProject,setActiveProject]=useState<string|null>(null)
+  const [projectWriting,setProjectWriting]=useState(false)
   const [archiveQuery, setArchiveQuery] = useState('')
   const [archiveTarget, setArchiveTarget] = useState<ArchiveRow | null>(null)
   const archiveOpener = useRef<HTMLElement | null>(null)
@@ -94,7 +98,7 @@ export default function App() {
   const account = useCloudSync({
     kbPath: aiSettings?.kbPath || '',
     ready: Boolean(aiSettings) && !tasks.loading && !tasks.loadError && starFocus.hydrated,
-    blocked: Boolean(aiLoading || providerSwitching || tasks.saveError || goals.storageError || showPlanner || starFocus.activeSession),
+    blocked: Boolean(aiLoading || providerSwitching || tasks.saveError || goals.storageError || showPlanner || projectWriting || starFocus.activeSession),
     changeKey: JSON.stringify([tasks.tasks, goals.targets, goals.recurring, starFocus.missionHistory]),
     flush: tasks.flushPendingSave, reload: tasks.load,
     goals: { targets: goals.targets, recurring: goals.recurring }, missions: starFocus.missionHistory,
@@ -171,6 +175,7 @@ export default function App() {
     const folder = currentFolderRef.current
     await tasks.flushPendingSave()
     if (request !== navigationRequest.current || folder !== currentFolderRef.current) return
+    setActiveProject(null)
     setArchiveTarget(row)
     calendar.goToDate(new Date(`${row.date}T12:00:00`))
     setArchivePage(null)
@@ -193,6 +198,25 @@ export default function App() {
     : !account.enabled || !account.user ? 'local'
       : account.busy ? 'syncing' : account.upToDate && !tasks.saving ? 'synced' : 'waiting'
   const syncLabel = { attention: 'Sync needs attention', local: 'Local only', syncing: 'Syncing', synced: 'Synced with cloud', waiting: 'Waiting to sync' }[syncState]
+
+  useEffect(()=>{
+    document.querySelector('.action-bar')?.toggleAttribute('inert',projectWriting)
+    document.querySelector('.goals-sidebar')?.toggleAttribute('inert',projectWriting)
+  },[projectWriting])
+  const openProject = (id:string) => {
+    if(projectWriting)return
+    navigationRequest.current++;setActiveProject(id);setArchivePage(null);goals.setSidebarCollapsed(true);setShowAlbumRecommendations(false)
+  }
+  const assignProject = (taskId:string,goalId:string,subtaskId?:string) => {
+    const project=goals.targets.find(goal=>goal.id===goalId)
+    if(goalId && (!project || project.done))return
+    if(goalId && !/^[A-Za-z0-9_-]{1,128}$/.test(goalId)){presentNotice({kind:'error',title:'Create a new project before linking this older goal.'});return}
+    const root=tasks.tasks.find(task=>task.id===taskId)
+    if(!root)return
+    const target=subtaskId?root.todaySubtasks.find(step=>step.id===subtaskId):root
+    if(!target)return
+    tasks.assignProject(taskId,goalId||undefined,effectiveProject(target,goals.targets,effectiveProject(root,goals.targets)),subtaskId)
+  }
 
   const openSettingsForProvider = useCallback((provider?: Provider) => {
     setSettingsAccount(false)
@@ -537,6 +561,7 @@ export default function App() {
     <><div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
       <WindowResizeHandles />
       <GoalsSidebar
+        onOpenProject={openProject}
         routines={routines}
         storageError={goals.storageError}
         recoveryNotice={goals.recoveryNotice}
@@ -563,7 +588,9 @@ export default function App() {
       )}
 
       <div className="sticky-container">
-        {archivePage ? <ArchivePage key={`${archivePage}:${aiSettings?.kbPath}`} folder={aiSettings?.kbPath ?? ''} initialQuery={archiveQuery} mode={archivePage} date={calendar.dateStr}
+        {activeProject ? <ProjectPage key={`${activeProject}:${aiSettings?.kbPath}`} goalId={activeProject} goals={goals.targets} folder={aiSettings?.kbPath??''}
+          flush={tasks.flushPendingSave} getGoal={goals.currentProject} saveGoal={goals.saveProject} reloadTasks={tasks.load}
+          onWriting={setProjectWriting} onOpen={openArchiveTask} onBack={()=>{if(!projectWriting){const id=activeProject;setActiveProject(null);goals.setSidebarCollapsed(false);requestAnimationFrame(()=>document.querySelector<HTMLElement>(`[data-project-id="${CSS.escape(id)}"]`)?.focus())}}} /> : archivePage ? <ArchivePage goals={goals.targets} key={`${archivePage}:${aiSettings?.kbPath}`} folder={aiSettings?.kbPath ?? ''} initialQuery={archiveQuery} mode={archivePage} date={calendar.dateStr}
           flush={tasks.flushPendingSave} missions={starFocus.missionHistory} onBack={closeArchive} onOpen={openArchiveTask} /> : <>
         <DateHeader
           displayDate={calendar.displayDate}
@@ -618,6 +645,7 @@ export default function App() {
 
         <DianeProvider enabled={aiSettings?.connectDiane === true} date={calendar.dateStr} kbPath={aiSettings?.kbPath || "default"}>
           <TaskList
+            projects={goals.targets} onOpenProject={openProject} onAssignProject={assignProject}
             rolloverLoading={tasks.rolloverLoading}
             rolloverError={tasks.rolloverError}
             tasks={tasks.tasks}
@@ -730,10 +758,10 @@ export default function App() {
           >
             Albums
           </button>
-          <button className="workflow-entry" aria-label="Search tasks" title="Search tasks" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setArchivePage('search') }}>
+          <button className="workflow-entry" aria-label="Search tasks" title="Search tasks" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setActiveProject(null); setArchivePage('search') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg>
           </button>
-          <button className="workflow-entry" aria-label="Progress" title="Progress" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchivePage('progress') }}>
+          <button className="workflow-entry" aria-label="Progress" title="Progress" onClick={event => { navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setActiveProject(null); setArchivePage('progress') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3v14h14M7 14V9m4 5V5m4 9v-7"/></svg>
           </button>
           <div className="spacer" />

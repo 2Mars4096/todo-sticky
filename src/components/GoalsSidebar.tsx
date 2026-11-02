@@ -16,6 +16,7 @@ interface SidebarProps {
   onAddGoal: (category: GoalCategory, text: string) => void
   onUpdateGoal: (category: GoalCategory, goalId: string, text: string) => void
   onDeleteGoal: (category: GoalCategory, goalId: string) => void
+  onOpenProject?: (id: string) => void
   onToggleGoal: (category: GoalCategory, goalId: string) => void
 }
 
@@ -28,6 +29,7 @@ interface SectionProps {
   onAddGoal: SidebarProps['onAddGoal']
   onUpdateGoal: SidebarProps['onUpdateGoal']
   onDeleteGoal: SidebarProps['onDeleteGoal']
+  onOpenProject?: (id: string) => void
   onToggleGoal: SidebarProps['onToggleGoal']
 }
 
@@ -38,6 +40,7 @@ interface RowProps {
   item: GoalItem
   onUpdateGoal: SidebarProps['onUpdateGoal']
   onDeleteGoal: SidebarProps['onDeleteGoal']
+  onOpenProject?: (id: string) => void
   onToggleGoal: SidebarProps['onToggleGoal']
 }
 
@@ -48,6 +51,7 @@ function GoalRow({
   onUpdateGoal,
   onDeleteGoal,
   onToggleGoal,
+  onOpenProject,
 }: RowProps) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(item.text)
@@ -104,16 +108,20 @@ function GoalRow({
           className="goal-text"
           role="button"
           tabIndex={0}
-          onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setEditing(true) } }}
-          onDoubleClick={() => setEditing(true)}
-          title="Double-click or press Enter to edit"
+          aria-label={category === 'targets' && onOpenProject ? `Open project ${item.text.split('\n')[0]}` : undefined}
+          data-project-id={category === 'targets' ? item.id : undefined}
+          onClick={category === 'targets' && onOpenProject ? () => onOpenProject(item.id) : undefined}
+          onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if(category === 'targets' && onOpenProject) onOpenProject(item.id); else setEditing(true) } }}
+          onDoubleClick={category === 'targets' && onOpenProject ? undefined : () => setEditing(true)}
+          title={category === 'targets' && onOpenProject ? 'Open project' : 'Double-click or press Enter to edit'}
         >
           {item.text}
         </span>
       )}
+      {category === 'targets' && onOpenProject && <span className="goal-plan-entry" aria-hidden="true">{item.plan?.length ? `${item.plan.length} steps` : '›'}</span>}
       <button
         className="goal-delete"
-        onClick={() => onDeleteGoal(category, item.id)}
+        onClick={() => { if (category !== 'targets' || !onOpenProject || window.confirm('Delete this project? Its daily tasks will remain.')) onDeleteGoal(category, item.id) }}
         title="Delete item"
         aria-label={`Delete ${item.text}`}
       >
@@ -133,6 +141,7 @@ function GoalSection({
   onUpdateGoal,
   onDeleteGoal,
   onToggleGoal,
+  onOpenProject,
 }: SectionProps) {
   const [draft, setDraft] = useState('')
   const scheduled = (id: string) => Boolean(routines?.schedules[id] && routines.schedules[id].cadence !== 'manual')
@@ -158,6 +167,7 @@ function GoalSection({
             key={item.id}
             category={category}
             item={category === 'recurring' && scheduled(item.id) ? { ...item, done: false } : item}
+            onOpenProject={onOpenProject}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}
             onToggleGoal={category === 'recurring' && scheduled(item.id) ? () => routines!.pause(item.id) : onToggleGoal}
@@ -211,6 +221,7 @@ export function GoalsSidebar({
   onUpdateGoal,
   onDeleteGoal,
   onToggleGoal,
+  onOpenProject,
 }: SidebarProps) {
   const openTargets = targets.filter(item => !item.done).length
   const openRoutines = recurring.filter(item => routines?.schedules[item.id] && routines.schedules[item.id].cadence !== 'manual' ? !routines.schedules[item.id].paused : !item.done).length
@@ -254,6 +265,7 @@ export function GoalsSidebar({
             items={targets}
             placeholder="Add a goal"
             onAddGoal={onAddGoal}
+            onOpenProject={onOpenProject}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}
             onToggleGoal={onToggleGoal}
@@ -267,6 +279,7 @@ export function GoalsSidebar({
             items={recurring}
             placeholder="Add a routine"
             onAddGoal={onAddGoal}
+            onOpenProject={onOpenProject}
             onUpdateGoal={onUpdateGoal}
             onDeleteGoal={onDeleteGoal}
             onToggleGoal={onToggleGoal}

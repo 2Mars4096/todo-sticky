@@ -2,7 +2,8 @@ import { ParagraphInput } from './ParagraphInput'
 import { useState, useRef, useEffect, useId, type PointerEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
 import { TaskFinish } from './TaskFinish'
-import type { Task, DatedTask, FinishPromise } from '../types'
+import { effectiveProject } from '../projectPlanning'
+import type { GoalItem, Task, DatedTask, FinishPromise } from '../types'
 import '../styles/task-interactions.css'
 
 function BreakdownIcon() {
@@ -70,6 +71,11 @@ export interface SortableTaskProps {
 }
 
 interface Props {
+  projects?: GoalItem[]
+  goalId?: string
+  onOpenProject?: (id:string)=>void
+  onAssignProject?: (goalId:string,subtaskId?:string)=>void
+
   finish?: FinishPromise
   onUpdateFinish?: (patch: Partial<FinishPromise>) => void
   onReview?: (decision: 'complete' | 'revise' | 'stop') => void
@@ -106,6 +112,7 @@ interface Props {
 }
 
 export function TaskItem({
+  projects=[], goalId, onOpenProject, onAssignProject,
   id, text, status, isSubtask, isOtherDate, sourceDate, dianeSourceDate, moveTargetLabel, subtaskMoveTargetLabel,
   isFocusSelected, isFocusLocked, onToggle, onDelete, onPush, onTextChange,
   onCopyTask, onFocusSelect, onFocusSubtask, onAddSubtask, onAIBreakdown,
@@ -276,6 +283,11 @@ export function TaskItem({
         </div>}
         {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
           selected={selected && !editing} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
+        {!isOtherDate && projects.length>0 && (goalId || selected) && <div className="task-project">
+          {selected && !editing && onAssignProject ? <select aria-label={`Project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
+            <option value="" disabled={Boolean(goalId)}>No project</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
+          </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title="Open project">{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??'Project'}</button>}
+        </div>}
         {!isSubtask && steps.length > 0 && <div className="task-steps-summary">
           <button type="button" className="task-steps-toggle" aria-expanded={stepsOpen} aria-controls={stepsId}
             aria-label={`${stepsOpen ? 'Hide' : 'Show'} steps for ${text}. ${doneSteps} of ${steps.length} done`}
@@ -302,7 +314,7 @@ export function TaskItem({
       </div>
     </div>
     {!isSubtask && stepsOpen && <div id={stepsId} className="task-steps-body">
-      {steps.map(sub => <TaskItem key={sub.id} id={sub.id} dianeSourceDate={dianeSourceDate ?? sourceDate} text={sub.text} status={sub.status}
+      {steps.map(sub => <TaskItem projects={projects} goalId={effectiveProject(sub,projects,goalId)} onOpenProject={onOpenProject} onAssignProject={onAssignProject ? value=>onAssignProject(value,sub.id):undefined} key={sub.id} id={sub.id} dianeSourceDate={dianeSourceDate ?? sourceDate} text={sub.text} status={sub.status}
         isSubtask moveTargetLabel={subtaskMoveTargetLabel ?? moveTargetLabel} onToggle={() => onToggleSubtask?.(sub.id)}
         onDelete={() => onDeleteSubtask?.(sub.id)} onPush={() => onPushSubtask?.(sub.id)} onCopyTask={onCopyTask}
         onTextChange={value => onSubtaskTextChange?.(sub.id, value)} parentText={text} selectedFocusId={selectedFocusId}

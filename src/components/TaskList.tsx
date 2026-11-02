@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type PointerEvent } from 'react'
-import type { AggregatedTask, Task, FinishPromise } from '../types'
+import { effectiveProject } from '../projectPlanning'
+import type { GoalItem, AggregatedTask, Task, FinishPromise } from '../types'
 import type { ReorderPosition } from '../hooks/useTasks'
 import { TaskItem } from './TaskItem'
 import { AddTask } from './AddTask'
@@ -11,6 +12,10 @@ type DraggedItem =
 type DropTarget = (DraggedItem & { position: ReorderPosition }) | { kind: 'today'; id?: string; position: ReorderPosition }
 
 interface Props {
+  projects?: GoalItem[]
+  onOpenProject?: (id:string)=>void
+  onAssignProject?: (taskId:string,goalId:string,subtaskId?:string)=>void
+
   tasks: AggregatedTask[]
   loading?: boolean
   rolloverError?: boolean
@@ -39,6 +44,7 @@ interface Props {
 }
 
 export function TaskList({
+  projects=[], onOpenProject, onAssignProject,
   tasks, loading, loadError, rolloverError, rolloverLoading, selectedTaskId, focusLocked, isCurrentDay, moveTargetLabel,
   onToggle, onDelete, onPush, onCopyTask, onTextChange, onUpdateFinish, onReview,
   onAddSubtask, onAddTask, onMoveToToday, onReorderTask, onReorderSubtask,
@@ -253,6 +259,7 @@ export function TaskList({
             <span>Earlier tasks</span>{!carriedOpen && <span className="carried-attention" aria-hidden="true" />}<span className="carried-rule" /><span>{carriedCount}</span>
           </button>}
           {(!task.sourceDate || carriedOpen) && <TaskItem
+            projects={projects} goalId={effectiveProject(task,projects)} onOpenProject={onOpenProject} onAssignProject={onAssignProject ? (value,step)=>onAssignProject(task.id,value,step):undefined}
             id={task.id}
             sourceDate={task.sourceDate}
             text={task.text}

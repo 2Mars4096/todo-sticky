@@ -2,10 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { addDays, format, isValid, parseISO, startOfWeek } from 'date-fns'
 import { readTaskArchive } from '../taskArchiveReader'
 import { archiveRows, archiveSummary, searchArchive, type ArchiveRow } from '../taskArchive'
-import type { StarFocusMissionRecord } from '../types'
+import { projectProgress } from '../projectPlanning'
+import type { GoalItem, StarFocusMissionRecord } from '../types'
 import '../styles/workflow.css'
 
+const noGoals: GoalItem[]=[]
 interface Props {
+  goals?: GoalItem[]
   initialQuery?: string
   folder: string
   mode: 'search' | 'progress'
@@ -15,13 +18,14 @@ interface Props {
   onBack: () => void
   onOpen: (row: ArchiveRow) => Promise<void>
 }
-export function ArchivePage({ initialQuery = '', folder, mode, date, flush, missions, onBack, onOpen }: Props) {
+export function ArchivePage({ goals=noGoals, initialQuery = '', folder, mode, date, flush, missions, onBack, onOpen }: Props) {
   const [rows, setRows] = useState<ArchiveRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [unavailable, setUnavailable] = useState(0)
   const [attempt, setAttempt] = useState(0)
   const [query, setQuery] = useState(initialQuery)
+  const [project,setProject]=useState('')
   const [status, setStatus] = useState('all')
   const [limit, setLimit] = useState(40)
   const [period, setPeriod] = useState<'day' | 'week'>('day')
@@ -39,18 +43,18 @@ export function ArchivePage({ initialQuery = '', folder, mode, date, flush, miss
       return readTaskArchive(folder)
     }
     read()
-      .then(data => { if (!disposed) { setRows(archiveRows(data.dates)); setUnavailable(data.unavailableFiles?.length ?? 0) } })
+      .then(data => { if (!disposed) { setRows(archiveRows(data.dates,goals)); setUnavailable(data.unavailableFiles?.length ?? 0) } })
       .catch(cause => { if (!disposed) setError(cause instanceof Error ? cause.message : String(cause)) })
       .finally(() => { if (!disposed) setLoading(false) })
     return () => { disposed = true }
-  }, [attempt, folder])
-  useEffect(() => setLimit(40), [query, status, selected, period])
+  }, [attempt, folder, goals])
+  useEffect(() => setLimit(40), [query, status, selected, period, project])
   const validDate = /^\d{4}-\d{2}-\d{2}$/.test(selected) && isValid(parseISO(selected))
   const base = new Date(`${validDate ? selected : date}T12:00:00`)
   const from = format(period === 'week' ? startOfWeek(base, { weekStartsOn: 1 }) : base, 'yyyy-MM-dd')
   const until = period === 'week' ? format(addDays(new Date(`${from}T12:00:00`), 6), 'yyyy-MM-dd') : from
-  const summary = useMemo(() => archiveSummary(rows, from, until), [rows, from, until])
-  const results = mode === 'search' ? searchArchive(rows, query, status) : searchArchive(summary.roots, '', status)
+  const summary = useMemo(() => archiveSummary(rows, from, until,project||undefined), [rows, from, until,project])
+  const results = mode === 'search' ? searchArchive(project?rows.filter(row=>row.goalId===project):rows, query, status) : searchArchive(summary.roots, '', status)
   const sessions = missions.filter(mission => {
     const key = format(new Date(mission.completedAt), 'yyyy-MM-dd')
     return key >= from && key <= until
@@ -68,6 +72,7 @@ export function ArchivePage({ initialQuery = '', folder, mode, date, flush, miss
       <button disabled={loading} onClick={() => setAttempt(value => value + 1)} aria-label="Refresh history" title="Refresh history">↻</button>
     </header>
     <div className="archive-controls">
+      {goals.length>0&&<select aria-label="Project filter" value={project} onChange={event=>setProject(event.target.value)}><option value="">All projects</option>{goals.map(goal=><option key={goal.id} value={goal.id}>{goal.text.split('\n')[0]}</option>)}</select>}
       {mode === 'search' ? <input ref={searchInput} type="search" aria-label="Search tasks and steps" placeholder="Search tasks and steps" value={query} onChange={event => setQuery(event.target.value)} />
         : <div className="progress-period"><input type="date" aria-label="Progress date" value={selected} onChange={event => setSelected(event.target.value)} />
           <select aria-label="Progress period" value={period} onChange={event => setPeriod(event.target.value as 'day' | 'week')}><option value="day">Day</option><option value="week">Week</option></select></div>}
@@ -84,8 +89,9 @@ export function ArchivePage({ initialQuery = '', folder, mode, date, flush, miss
         <p className="archive-meta">{from === until ? from : `${from} to ${until}`} · by task list date</p>
         <p><strong>{summary.done} completed</strong> · {summary.open} unfinished · {summary.stopped} stopped</p>
         <progress aria-label="Completed parent tasks" value={summary.done} max={summary.roots.length || 1} />
+        {project&&goals.find(goal=>goal.id===project)?.plan?.length ? <p>Project plan (all dates): {projectProgress(goals.find(goal=>goal.id===project)!,rows).completed}/{goals.find(goal=>goal.id===project)!.plan!.length} steps completed</p>:null}
         <p>{summary.stepsDone}/{summary.stepsTotal} steps completed</p>
-        <p>{sessions.length} focus sessions · {sessions.reduce((total, session) => total + session.durationMinutes, 0)} planned minutes</p>
+        {!project && <p>{sessions.length} focus sessions · {sessions.reduce((total, session) => total + session.durationMinutes, 0)} planned minutes</p>}
         <details><summary>About these totals</summary><p>Tasks are grouped by their list date, not the time they were completed. Steps are counted separately. Focus totals include only retained sessions and their planned duration.</p></details>
       </section>}
       {!loading && !error && (mode === 'search' || validDate) && <>
