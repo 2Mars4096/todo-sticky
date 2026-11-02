@@ -648,6 +648,7 @@ class CloudSyncController extends ChangeNotifier {
 
   List<SyncAction> conflicts = [];
   String? lastSynced;
+  bool _waitingForEdit = false;
   String? _acknowledgedContent, _acknowledgedOwner;
   bool get upToDate =>
       enabled &&
@@ -792,9 +793,20 @@ class CloudSyncController extends ChangeNotifier {
     _debounce?.cancel();
     if (enabled && _active && ready) {
       _debounce = Timer(
-        const Duration(milliseconds: 1800),
+        const Duration(milliseconds: 900),
         () => unawaited(synchronize()),
       );
+    }
+  }
+
+  void editingFinished() {
+    if (!_disposed &&
+        ready &&
+        !busy &&
+        enabled &&
+        (_waitingForEdit || !upToDate) &&
+        !isEditing()) {
+      _schedule();
     }
   }
 
@@ -1074,10 +1086,13 @@ class CloudSyncController extends ChangeNotifier {
       return;
     }
     if (isEditing()) {
-      message = 'Sync will resume after you finish editing.';
+      _waitingForEdit = true;
+      message = 'Waiting for editing to finish';
       _notify();
       return;
     }
+    _waitingForEdit = false;
+    _debounce?.cancel();
     var expectedReview = reviewedFingerprint;
     if (resolveKey != null && expectedReview == null) {
       for (final conflict in conflicts) {
@@ -1164,6 +1179,7 @@ class CloudSyncController extends ChangeNotifier {
         }
       } while (cursor != null);
       if (supportsGoals) {
+        final beforeUpgrade = canonicalJson(meta);
         for (final record in records) {
           final original = local[record.key];
           final upgraded = migrateGoalMetadata(
@@ -1174,7 +1190,7 @@ class CloudSyncController extends ChangeNotifier {
           if (upgraded == null) continue;
           if (canonicalJson(upgraded.local) != canonicalJson(original)) {
             if (isEditing() ||
-                canonicalJson(_snapshot()[record.key]) !=
+                canonicalJson(store.syncRecord(record.key)) !=
                     canonicalJson(original)) {
               _needsSync = true;
               throw StateError(
@@ -1200,7 +1216,7 @@ class CloudSyncController extends ChangeNotifier {
           }
           baseline[record.key] = upgraded.baseline;
         }
-        await _saveMeta(meta);
+        if (canonicalJson(meta) != beforeUpgrade) await _saveMeta(meta);
         ensureCurrent();
       }
       _report('Comparing changes');
@@ -1239,9 +1255,28 @@ class CloudSyncController extends ChangeNotifier {
         conflicts = pendingConflicts;
         throw StateError('Conflict changed. Review again.');
       }
-      _report('Comparing changes', total: actions.length, completed: 0);
+      final beforeAcknowledgements = canonicalJson(meta);
+      for (final action in actions.where(
+        (action) => action.kind == SyncKind.ack,
+      )) {
+        if (action.remote != null) {
+          baseline[action.key] = {
+            ...action.remote!.baseline,
+            'payloadSchemaVersion': supportsGoals ? 2 : 1,
+          };
+        }
+        pending.remove(action.key);
+      }
+      if (canonicalJson(meta) != beforeAcknowledgements) {
+        await _saveMeta(meta);
+        ensureCurrent();
+      }
+      final changes = actions
+          .where((action) => action.kind != SyncKind.ack)
+          .toList();
+      _report('Comparing changes', total: changes.length, completed: 0);
       final unresolved = <SyncAction>[];
-      for (final action in actions) {
+      for (final action in changes) {
         ensureCurrent();
         final detail = action.key.startsWith('day:')
             ? action.key.substring(4)
@@ -1254,18 +1289,6 @@ class CloudSyncController extends ChangeNotifier {
         }
         if (action.kind == SyncKind.conflict) {
           unresolved.add(action);
-          _advance();
-          continue;
-        }
-        if (action.kind == SyncKind.ack) {
-          if (action.remote != null) {
-            baseline[action.key] = {
-              ...action.remote!.baseline,
-              'payloadSchemaVersion': supportsGoals ? 2 : 1,
-            };
-          }
-          pending.remove(action.key);
-          await _saveMeta(meta);
           _advance();
           continue;
         }
@@ -1320,12 +1343,12 @@ class CloudSyncController extends ChangeNotifier {
         }
         // No await between the live-state comparison and synchronous model apply.
         if (isEditing()) {
+          _waitingForEdit = true;
           _needsSync = true;
-          throw StateError(
-            'You started editing. Incoming changes will wait until you finish.',
-          );
+          message = 'Waiting for editing to finish';
+          return;
         }
-        if (canonicalJson(_snapshot()[action.key]) !=
+        if (canonicalJson(store.syncRecord(action.key)) !=
             canonicalJson(action.local)) {
           _needsSync = true;
           throw StateError(

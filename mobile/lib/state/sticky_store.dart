@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../models/goal_progress.dart';
 import '../models/workflow.dart';
+import '../models/project_plan.dart';
 import '../services/persistence.dart';
 
 class StickyStore extends ChangeNotifier {
@@ -469,6 +470,107 @@ class StickyStore extends ChangeNotifier {
     return additions.length;
   }
 
+  String projectFingerprint(String goalId) => jsonEncode({
+    'goal': findGoal(goalId)?.toJson(),
+    'days': days.map(
+      (date, tasks) =>
+          MapEntry(date, tasks.map((task) => task.toJson()).toList()),
+    ),
+  });
+
+  void assignProject(String date, String taskId, String goalId) {
+    final goal = _editableGoal(goalId);
+    if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(goal.id)) {
+      throw StateError('Create a new project before linking this older goal.');
+    }
+    final task = findTask(date, taskId);
+    if (task == null) throw StateError('This task was moved or removed.');
+    final oldGoal = goalIdForTask(task);
+    if (oldGoal == goalId) return;
+    // Preserve distinct projects explicitly assigned to descendants.
+    void assign(Task item) {
+      if (item != task && item.goalId != null && item.goalId != oldGoal) return;
+      item.goalId = goalId;
+      item.goalStepId = null;
+      for (final child in item.subtasks) {
+        assign(child);
+      }
+    }
+
+    assign(task);
+    _undo = null;
+    undoLabel = null;
+    changed();
+  }
+
+  int applyProjectPlan(
+    String goalId,
+    List<ProjectAction> actions,
+    ProjectWindow window,
+    String fingerprint,
+  ) {
+    final goal = _editableGoal(goalId);
+    if (projectFingerprint(goalId) != fingerprint) {
+      throw StateError(
+        'Project or daily work changed. Generate a fresh proposal.',
+      );
+    }
+    if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(goal.id)) {
+      throw StateError(
+        'Create a new project before scheduling this older goal.',
+      );
+    }
+    final scheduled = goal.plan
+        .where((step) => goalStepTasks(goalId, step.id).isNotEmpty)
+        .map((step) => step.id)
+        .toSet();
+    validateProjectActions(actions, goal, scheduled, window);
+    final linkedText = tasksForGoal(goalId)
+        .map((row) => row.task.text.trim().toLowerCase())
+        .toSet();
+    if (actions.any(
+      (action) => linkedText.contains(action.text.trim().toLowerCase()),
+    )) {
+      throw StateError(
+        'This work already belongs to the project. Edit its existing daily task instead.',
+      );
+    }
+    final additions = actions.where((action) => action.stepId == null).length;
+    if (goal.plan.length + additions > 200) {
+      throw StateError('A project can contain up to 200 steps.');
+    }
+    final allIds = days.values
+        .expand((list) => list)
+        .expand((task) => task.flattened)
+        .map((task) => task.id)
+        .toSet();
+    for (final action in actions) {
+      final id = action.stepId ?? action.id;
+      if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(id) ||
+          allIds.contains(id)) {
+        throw StateError(
+          'A task with this identity already exists. No plan was applied.',
+        );
+      }
+    }
+    // Validate the entire batch first, then save steps and all dates atomically.
+    for (final action in actions) {
+      final id = action.stepId ?? action.id;
+      if (action.stepId == null) {
+        goal.plan.add(GoalPlanStep(id: id, text: action.text.trim()));
+      } else {
+        goal.plan.firstWhere((step) => step.id == id).text = action.text.trim();
+      }
+      (days[action.date] ??= []).add(
+        Task(id: id, text: action.text.trim(), goalId: goalId, goalStepId: id),
+      );
+    }
+    _undo = null;
+    undoLabel = null;
+    changed();
+    return actions.length;
+  }
+
   List<Task>? _siblings(String date, String id) {
     List<Task>? search(List<Task> list) {
       if (list.any((t) => t.id == id)) return list;
@@ -854,6 +956,26 @@ class StickyStore extends ChangeNotifier {
     focus.archiveRetentionLimit = value;
     focus.missionHistory = focus.missionHistory.take(value).toList();
     changed();
+  }
+
+  Map<String, dynamic>? syncRecord(String key) {
+    if (key.startsWith('day:')) {
+      final date = key.substring(4), tasks = days[key.substring(4)];
+      return tasks == null
+          ? null
+          : {
+              'date': date,
+              'tasks': tasks.map((task) => task.toJson()).toList(),
+            };
+    }
+    if (key == 'goals') return goals.toJson();
+    if (key.startsWith('focus:')) {
+      return focus.missionHistory
+          .where((mission) => mission.id == key.substring(6))
+          .firstOrNull
+          ?.toJson();
+    }
+    return null;
   }
 
   Map<String, Map<String, dynamic>> syncRecords() => {

@@ -10,6 +10,7 @@ import '../models/workflow.dart';
 import '../services/ai_service.dart';
 import '../state/sticky_store.dart';
 import 'archive_screen.dart';
+import 'project_schedule_screen.dart';
 
 class GoalPlanScreen extends StatefulWidget {
   final StickyStore store;
@@ -267,7 +268,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
           available.isNotEmpty && selected.containsAll(available);
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Goal plan'),
+          title: const Text('Project tasks'),
           actions: [
             if (goal != null)
               IconButton(
@@ -312,6 +313,45 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                             style: Theme.of(context).textTheme.headlineSmall
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
+                          if (!goal.done)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                icon: const Icon(
+                                  Icons.date_range_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Plan across days'),
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => ProjectScheduleScreen(
+                                      store: widget.store,
+                                      ai: widget.ai,
+                                      goalId: goal.id,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (widget.store.tasksForGoal(goal.id).isNotEmpty)
+                            TextButton.icon(
+                              icon: const Icon(Icons.checklist, size: 18),
+                              label: Text(
+                                '${widget.store.tasksForGoal(goal.id).length} linked tasks',
+                              ),
+                              onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) => ArchiveScreen(
+                                    store: widget.store,
+                                    ai: widget.ai,
+                                    openFocus: widget.openFocus,
+                                    initialGoalId: goal.id,
+                                  ),
+                                ),
+                              ),
+                            ),
                           if (progress!.total > 0) ...[
                             const SizedBox(height: 12),
                             Semantics(
@@ -366,7 +406,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                                   label: Text(
                                     generating
                                         ? 'Generating…'
-                                        : 'Generate plan',
+                                        : 'Suggest steps',
                                   ),
                                 ),
                             ],

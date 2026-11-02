@@ -253,6 +253,42 @@ class _TaskTileState extends State<TaskTile> {
     }
   }
 
+  Future<void> assignProject() async {
+    final goals = widget.store.goals.targets
+        .where((goal) => !goal.done)
+        .toList();
+    if (goals.isEmpty) {
+      showError(context, 'Add a project under Goals first.');
+      return;
+    }
+    final id = await showNoteSheet<String>(
+      context,
+      SizedBox(
+        height: MediaQuery.sizeOf(context).height * .55,
+        child: ListView(
+          children: [
+            const ListTile(title: Text('Assign to project')),
+            for (final goal in goals)
+              ListTile(
+                title: Text(goal.text),
+                trailing: widget.store.goalIdForTask(widget.task) == goal.id
+                    ? const Icon(Icons.check)
+                    : null,
+                onTap: () => Navigator.pop(context, goal.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (id != null && mounted) {
+      try {
+        widget.store.assignProject(widget.date, widget.task.id, id);
+      } catch (cause) {
+        showError(context, cause);
+      }
+    }
+  }
+
   String agentPrompt() {
     final task = widget.task;
     return 'Execute the following task completely.\n\nObjective\n${task.text}\n${task.finish?.doneWhen == null ? '' : 'Done when: ${task.finish!.doneWhen}\n'}${task.finish?.by == null ? '' : 'Committed deadline: ${task.finish!.by}\n'}\nChecklist\n${task.subtasks.isEmpty ? '- Determine the concrete steps needed to complete the objective.' : task.subtasks.map((s) => '- ${s.text}').join('\n')}\n\nWorking rules\n- Inspect relevant context before changing anything.\n- Preserve existing work and avoid unrelated changes.\n- Complete the checklist and verify the result.\n- Report exact blockers and remaining follow-ups.\n';
@@ -268,7 +304,7 @@ class _TaskTileState extends State<TaskTile> {
         .indexWhere((row) => row.id == task.id);
     final controlHeight = taskControlHeight(context, depth: widget.depth);
     final hasHandle = widget.dragHandle != null || widget.reorderIndex != null;
-    final contentInset = (hasHandle ? 88.0 : 44.0) + 4;
+    final contentInset = (hasHandle ? 64.0 : 40.0) + 2;
     final unfinished = task.subtasks.where((s) => !s.closed).length;
     final history = widget.depth == 0
         ? widget.store.historicalSteps(widget.date, task)
@@ -279,7 +315,7 @@ class _TaskTileState extends State<TaskTile> {
           : Colors.transparent,
       child: Padding(
         padding: EdgeInsets.only(
-          left: widget.leadingInset,
+          left: widget.depth == 0 && hasHandle ? 0 : widget.leadingInset,
           right: widget.depth == 0 ? 12 : 0,
         ),
         child: Column(
@@ -318,7 +354,7 @@ class _TaskTileState extends State<TaskTile> {
                     ),
                   ),
                 SizedBox(
-                  width: 44,
+                  width: 40,
                   height: controlHeight,
                   child: IconButton(
                     padding: EdgeInsets.zero,
@@ -350,7 +386,7 @@ class _TaskTileState extends State<TaskTile> {
                       task,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(4, 14, 0, 14),
+                      padding: const EdgeInsets.fromLTRB(2, 14, 0, 14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -564,6 +600,10 @@ class _TaskTileState extends State<TaskTile> {
                       tooltip: 'More task actions',
                       icon: const Icon(Icons.more_horiz, size: 20),
                       onSelected: (action) async {
+                        if (action == 'project') {
+                          await assignProject();
+                          return;
+                        }
                         if (action == 'edit') {
                           await editTask(
                             context,
@@ -611,6 +651,10 @@ class _TaskTileState extends State<TaskTile> {
                         }
                       },
                       itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'project',
+                          child: Text('Assign to project'),
+                        ),
                         const PopupMenuItem(
                           value: 'edit',
                           child: Text('Edit task'),
@@ -677,7 +721,7 @@ class _TaskTileState extends State<TaskTile> {
                           task: task.subtasks[i],
                           openFocus: widget.openFocus,
                           depth: widget.depth + 1,
-                          leadingInset: hasHandle ? 56 : 12,
+                          leadingInset: hasHandle ? 36 : 12,
                           parentId: task.id,
                           revealId: widget.revealId,
                         ),

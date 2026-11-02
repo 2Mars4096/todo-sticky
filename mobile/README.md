@@ -135,7 +135,7 @@ Android 2.1.15+4 returns to the existing Account screen after Google sign-in. Th
 
 ### Sync progress and conflict safety
 
-The current local production release is 2.1.15+10 (versionCode 2010), 19.62 MB, signed with the original release key. Account displays stage, count, elapsed and waiting status during sync. Legacy blank checklist entries are preserved. Both conflict versions are saved locally on detection, and a resolution is rejected if the reviewed data changes. The previous release key is retained for in-place updates.
+The current local production release is 2.1.15+11 (versionCode 2011), 19.62 MB, signed with the original release key. Account displays stage, count, elapsed and waiting status during sync. Legacy blank checklist entries are preserved. Both conflict versions are saved locally on detection, and a resolution is rejected if the reviewed data changes. The previous release key is retained for in-place updates.
 
 
 ### Workflow improvements in 2.1.15+7
@@ -153,3 +153,18 @@ The compatible schema-2 backend is live and the original signing key was availab
 
 
 Android +10 aligns the six-dot grip, checkbox and task text with consistent visible gaps while retaining 44px touch targets. Daily and Earlier handles share the same visual; nested steps and expanded controls follow the parent title column. First-line alignment adapts to enlarged text.
+
+Android +11 tightens the phone task row: visible grip inset 14px, title inset 66px and equal 12px optical gaps, shared by Today and Earlier tasks. Nested steps retain a consistent parent-relative indent.
+
+
+### Project tasks and multi-day plans in +12
+
+- Use **More task actions → Assign to project** to attribute existing daily work without moving it. Explicitly different child-project assignments remain separate.
+- **Goals → your goal → Project tasks** retains manual steps, selected-date scheduling and progress. **Linked tasks** opens actual dated work; daily tasks can contain ordinary nested steps.
+- **Plan across days** supports a range of up to 90 days, 15–480 project minutes per day and weekdays-only scheduling. AI can reuse unscheduled steps or suggest a breakdown. Existing daily work is supplied as context; it is never automatically moved.
+- Tap proposed tasks to edit text/date/minutes; remove unwanted rows, then **Add to daily tasks**. The entire batch must fit the selected dates and project budget and match the current notebook. New steps and daily tasks save atomically; failed-save retry does not apply twice.
+- Estimates describe the proposal's project budget, not verified calendar capacity. Existing task deadlines are supplied to the provider; no new deadline is silently added. Live provider quality and physical-device acceptance remain separate from synthetic verification.
+
+The +13 UI clarity pass labels the undated breakdown action **Suggest steps**, puts minute units in the daily project budget selector, and exposes an edit icon on each proposed task. Planning, storage and sync behavior are unchanged.
+
+Android +14 batches unchanged sync acknowledgements, skips idle notebook writes, compares only the affected incoming record and resumes sync after editing. Empty capture focus does not defer sync; actual drafts retain protection. The debounce is 900ms and progress counts changed records, with the existing conflict and pending-write durability rules unchanged.

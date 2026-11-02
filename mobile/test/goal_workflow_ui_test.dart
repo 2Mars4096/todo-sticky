@@ -95,7 +95,7 @@ void main() {
         );
         await tester.tap(find.text(goal.text));
         await tester.pumpAndSettle();
-        expect(find.text('Generate plan'), findsOneWidget);
+        expect(find.text('Suggest steps'), findsOneWidget);
         final row = find.byKey(ValueKey('goal-step-${step.id}'));
         await tester.ensureVisible(row);
         await tester.tap(
@@ -219,7 +219,7 @@ void main() {
       await tester.tap(find.byTooltip('Add plan step'));
       await tester.pumpAndSettle();
       expect(goal.plan.single.text, 'Choose the first users');
-      await tester.tap(find.text('Generate plan'));
+      await tester.tap(find.text('Suggest steps'));
       await tester.pumpAndSettle();
       expect(find.text('Review plan'), findsOneWidget);
       expect(goal.plan.single.text, 'Choose the first users');
@@ -280,7 +280,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Generate plan'));
+      await tester.tap(find.text('Suggest steps'));
       await tester.pump();
       store.addGoalSteps(goal.id, ['Ask an advisor']);
       response.complete(['An obsolete suggestion']);

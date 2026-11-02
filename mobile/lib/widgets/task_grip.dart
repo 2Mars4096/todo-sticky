@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../app.dart';
 
-// Keep the 44px drag target; the painted dots sit on a stable optical edge.
+// Compact horizontal slot; retain the full first-line height for dragging.
 class TaskGrip extends StatelessWidget {
   final double height;
   final bool visible;
   const TaskGrip({super.key, required this.height, this.visible = true});
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 44,
+    width: 24,
     height: height,
     child: Padding(
-      padding: const EdgeInsets.only(right: 3),
+      padding: const EdgeInsets.only(right: 1),
       child: Align(
         alignment: Alignment.centerRight,
         child: SizedBox(

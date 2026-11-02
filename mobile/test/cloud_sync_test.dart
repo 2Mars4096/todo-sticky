@@ -205,6 +205,98 @@ Future<Rig> fixture(
 }
 
 void main() {
+  test('finishing a draft resumes deferred sync without waiting for the minute poll', () async {
+    var editing = true, requests = 0;
+    final rig = await fixture((request) {
+      requests++;
+      if (request.method == 'GET') return page([record('goals', goals())]);
+      final body = object(jsonDecode(request.body));
+      return jsonResponse(
+        record(
+          Uri.decodeComponent(request.url.pathSegments.last),
+          object(body['payload']),
+        ).toJson(),
+      );
+    }, isEditing: () => editing);
+    await rig.sync.synchronize();
+    expect(requests, 0);
+    expect(rig.sync.message, contains('editing'));
+    editing = false;
+    rig.sync.editingFinished();
+    await Future<void>.delayed(const Duration(milliseconds: 1100));
+    expect(requests, greaterThan(0));
+    expect(rig.sync.error, isNull);
+    rig.dispose();
+  });
+
+  test(
+    'idle sync batches 200 acknowledgements without notebook writes',
+    () async {
+      final records = <SyncRecord>[];
+      final local = <String, Map<String, dynamic>>{};
+      final bases = <String, dynamic>{};
+      for (var i = 0; i < 200; i++) {
+        final d = dateKey(DateTime(2026, 1, i + 1)),
+            key = 'day:${dateKey(DateTime(2026, 1, i + 1))}';
+        final payload = {
+          'date': d,
+          'tasks': [Task(id: 't$i', text: 'Task $i').toJson()],
+        };
+        local[key] = payload;
+        final item = record(key, payload);
+        records.add(item);
+        bases[key] = {...item.baseline, 'payloadSchemaVersion': 1};
+      }
+      final goal = record('goals', goals());
+      records.add(goal);
+      bases['goals'] = {...goal.baseline, 'payloadSchemaVersion': 1};
+      final rig = await fixture(
+        (request) {
+          expect(request.method, 'GET');
+          return page(records);
+        },
+        local: local,
+        baseline: bases,
+      );
+      final revision = rig.store.revision;
+      await rig.sync.synchronize();
+      expect(rig.sync.error, isNull);
+      expect(
+        rig.store.revision,
+        revision,
+        reason: 'Already synced notes require no notebook save',
+      );
+      expect(rig.sync.upToDate, true);
+      rig.dispose();
+    },
+  );
+  test(
+    'matching first-link records checkpoint once instead of once per record',
+    () async {
+      final records = <SyncRecord>[], local = <String, Map<String, dynamic>>{};
+      for (var i = 0; i < 40; i++) {
+        final d = dateKey(DateTime(2026, 1, i + 1)),
+            key = 'day:${dateKey(DateTime(2026, 1, i + 1))}';
+        final payload = {
+          'date': d,
+          'tasks': [Task(id: 't$i', text: 'Task $i').toJson()],
+        };
+        local[key] = payload;
+        records.add(record(key, payload));
+      }
+      records.add(record('goals', goals()));
+      final rig = await fixture((request) {
+        expect(request.method, 'GET');
+        return page(records);
+      }, local: local);
+      final revision = rig.store.revision;
+      await rig.sync.synchronize();
+      expect(rig.sync.error, isNull);
+      expect(rig.store.revision - revision, 1);
+      rig.dispose();
+    },
+  );
+
   test('legacy sync upgrade preserves pending edits and previously hidden goal metadata', () async {
     final oldGoal = goals('Original goal');
     final localGoal = goals('My edited goal');

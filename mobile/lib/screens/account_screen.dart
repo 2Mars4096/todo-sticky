@@ -28,10 +28,13 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
           launchUrl(uri, mode: LaunchMode.externalApplication),
       isEditing: () {
         final context = FocusManager.instance.primaryFocus?.context;
-        return context?.widget is EditableText ||
-            context?.findAncestorWidgetOfExactType<EditableText>() != null;
+        final editor = context?.widget is EditableText
+            ? context!.widget as EditableText
+            : context?.findAncestorWidgetOfExactType<EditableText>();
+        return editor != null && editor.controller.text.isNotEmpty;
       },
     );
+    FocusManager.instance.addListener(account.editingFinished);
     _initialize();
   }
 
@@ -46,6 +49,7 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    FocusManager.instance.removeListener(account.editingFinished);
     account.dispose();
     super.dispose();
   }
