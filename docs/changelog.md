@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-08 — Commit and push sync/UI follow-ups
+
+- [repository] Commit the reviewed sync-read/retry fixes, shared typography, read-only recovery UI and direct phone cloud action as `f60e7ed`; push to origin/main and verify the remote commit. Generated APKs, local reports, rollback copies and credentials remain excluded.
+- [validation] Existing verification covers 26 Node suites, TypeScript, 41 native tests, 127 phone tests/analysis, UI previews and the signed +19 APK.
+
 ## 2026-11-08 — Phone cloud button syncs directly
 
 - [mobile] Replace cloud-to-Account navigation with the existing manual sync command, a compact busy indicator and brief controller-result feedback. Keep configuration/conflict details in Settings and preserve draft/save/offline guards; no implicit account enablement.

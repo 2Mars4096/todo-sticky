@@ -23,3 +23,4 @@
 ## Delivery
 - Original-key Android 2.1.16+19 / versionCode 2019 delivered at `release/todo-sticky.apk`, 19,884,735 bytes (19.88 MB), ARM64. Production package, matching certificate, v2 signature, ZIP integrity, 16 KB alignment and service origin verify.
 - SHA-256 `004512d8d9363a98dd793f9214571d60137e7abdc2c18aeea7c544217a88afc6`. Prior +18 APK, source hashes, test/build logs and verification report are retained under ignored `output/phone-sync-shortcut-delivery/`.
+- Source for this shortcut and the preceding sync/typography/recovery corrections is committed as `f60e7ed` and pushed to origin/main; remote commit verified. No new release tag was requested.
