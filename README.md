@@ -6,9 +6,9 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed workflow improvements, goal-metadata compatibility, automatic 15-second sync and deployed sync service URL (2026-11-07). Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
+Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, including automatic 15-second sync, independent-edit merging and individual conflict review (2026-11-08). The deployed sync service URL is prefilled. Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
 
-Local Android release build: `release/todo-sticky.apk` (2.1.15+15, ARM64, 19.75 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
+Local Android release build: `release/todo-sticky.apk` (2.1.16+16, ARM64, 19.88 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
 
 Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
@@ -289,7 +289,7 @@ Sync batches unchanged acknowledgements, avoids repeated archive scans/list refr
 
 Independent additions and edits combine automatically, including steps added to the same goal. Genuine disagreements are reviewed item by item, with separate device/cloud choices that retain unrelated changes from both sides. Background checks preserve your selections and scroll position. Saved copies retain the original versions.
 
-The app checks for remote edits every **15 seconds** while Mac is visible or Android is foregrounded, uploads saved changes after about **0.9 seconds**, and checks promptly when you return. Failures retry automatically on later checks. Mac task/goal sync continues during Focus; incoming focus history waits until the session ends. Nonempty drafts, failed saves and conflicting versions still require completion or review. Android does not sync while closed or backgrounded. These frequency changes are installed on Mac and included in the local Android +15 APK.
+The app checks for remote edits every **15 seconds** while Mac is visible or Android is foregrounded, uploads saved changes after about **0.9 seconds**, and checks promptly when you return. Failures retry automatically on later checks. Mac task/goal sync continues during Focus; incoming focus history waits until the session ends. Nonempty drafts, failed saves and conflicting versions still require completion or review. Android does not sync while closed or backgrounded. These changes are installed on Mac and included in the local Android +16 APK.
 
 
 ### Editing and reviewing projects on Mac

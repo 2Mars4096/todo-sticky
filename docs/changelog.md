@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-08 — Deliver 2.1.16 locally and start public release
+
+- [desktop] Rebuild/sign/install Mac 2.1.16 and verify launch, exact bundle hashes, signature and unchanged task/config files; retain app/task/native/WebKit rollback copies.
+- [android] Deliver original-key 2.1.16+16 / 2016 at `release/todo-sticky.apk` (19.88 MB), with verified v2 signature, package/version, ZIP integrity, 16 KB alignment and service origin.
+- [publication] Commit source as `47d2271`, bump/tag `df8c0c2` and push both to origin/main. Hosted release `42438376556` and Android CI are running; public verification follows in [4-52](plans/4-52-publish-2-1-16.md).
+
 ## 2026-11-08 — Merge independent sync edits and review individual conflicts
 
 - [sync] Merge goals, steps and nested daily tasks by stable ID and acknowledged ancestor. Combine separate additions/fields and safe deletions; retain genuine field, edit-versus-delete and order choices. Each choice preserves unrelated changes. Save exact originals and the combined local record before revision-guarded upload; interrupted retries reuse their mutation identity.

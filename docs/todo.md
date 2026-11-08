@@ -1,7 +1,7 @@
 # Todo
 
-- [ ] [16-2-smart-merge-and-stable-review](plans/16-2-smart-merge-and-stable-review.md) — automatic independent edits, item-by-item conflict choices and quiet background review.
-- [ ] [4-52-publish-2-1-16](plans/4-52-publish-2-1-16.md) — commit/push and release after the merge/review fixes; SSH verified, publication not started.
+- [x] [16-2-smart-merge-and-stable-review](plans/16-2-smart-merge-and-stable-review.md) — independent edits merge, genuine conflicts have individual choices and background review is stable; Mac 2.1.16 installed and original-key APK +16 delivered.
+- [ ] [4-52-publish-2-1-16](plans/4-52-publish-2-1-16.md) — source/version pushed; hosted release and Android CI are running, public asset verification pending.
 
 - [x] [16-1-automatic-sync-frequency](plans/16-1-automatic-sync-frequency.md) — 15-second sync changes installed on Mac with data preserved; all 102 phone tests pass and original-key production APK +15 is delivered.
 
