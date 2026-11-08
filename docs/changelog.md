@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-08 — Publish and verify 2.1.16
+
+- [release] Publish [v2.1.16](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.16) as latest with 14 assets. macOS universal, Windows, Linux and publication workflow `42438376556` succeed; both Android CI runs succeed.
+- [verification] Validate public manifest coverage for all four desktop targets, download all three unique update packages and verify their trusted-key signatures and trusted comments. Published Mac GUI/task-helper binaries both contain ARM64/Intel slices and pass strict bundle-signature checks. Source, tag and delivery records are pushed; [receipt](plans/4-52-publish-2-1-16.md).
+
 ## 2026-11-08 — Deliver 2.1.16 locally and start public release
 
 - [desktop] Rebuild/sign/install Mac 2.1.16 and verify launch, exact bundle hashes, signature and unchanged task/config files; retain app/task/native/WebKit rollback copies.

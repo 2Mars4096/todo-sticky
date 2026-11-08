@@ -1,8 +1,8 @@
 # Development Plan
 
-## Automatic sync and 2.1.16
+## Automatic sync and 2.1.16 delivered
 
-- [16-2](plans/16-2-smart-merge-and-stable-review.md) adds acknowledged-ancestor merges for independent edits and individual review for genuine conflicts, with stable background refresh. Finish local Mac/APK delivery, then commit/push and publish [2.1.16](plans/4-52-publish-2-1-16.md). Existing local-first storage, backend protocol and explicit conflict safeguards remain.
+- [16-2](plans/16-2-smart-merge-and-stable-review.md) delivers acknowledged-ancestor merges for independent edits and individual review for genuine conflicts, with stable background refresh. Mac 2.1.16 is installed, original-key Android +16 is delivered, and [2.1.16](plans/4-52-publish-2-1-16.md) is committed/pushed and published as latest with verified signed updates. Existing local-first storage, backend protocol and explicit conflict safeguards remain.
 
 ## Mac project parity delivered
 
