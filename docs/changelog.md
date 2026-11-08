@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-11-08 — Phone cloud button syncs directly
+
+- [mobile] Replace cloud-to-Account navigation with the existing manual sync command, a compact busy indicator and brief controller-result feedback. Keep configuration/conflict details in Settings and preserve draft/save/offline guards; no implicit account enablement.
+- [verification] All 127 phone tests and analysis pass, including route preservation, direct requests, busy/off states and deferred feedback. Original-key APK delivery tracked in [16-4](plans/16-4-phone-sync-shortcut.md).
+- [delivery] Signed production 2.1.16+19 / 2019 delivered at `release/todo-sticky.apk` (19.88 MB), with matching original certificate, v2 signature, ZIP integrity, 16 KB alignment and service origin verified. Prior +18 APK retained.
+
+## 2026-11-08 — Install final sync, typography and recovery clarification
+
+- [desktop] Install the final combined Mac build with sync-read/retry fixes, one footer shape, shared typography and read-only recovery labels. Signature/bundle hashes and launch verify; all 56 task-folder files/native config unchanged, with a verified rollback copy.
+- [android] Deliver original-key 2.1.16+18 / 2018 at `release/todo-sticky.apk` (19.88 MB). V2 signature, package/version, ZIP integrity, 16 KB alignment and service URL verify. Final checks: 26 Node suites, TypeScript, 41 native tests, 124 phone tests/analysis and visual previews. [Receipt](plans/4-54-text-emphasis-consistency.md).
+
+## 2026-11-08 — Simplify typography and distinguish recovery backups
+
+- [design] Apply shared regular-content and semibold-heading/emphasis roles on Mac and Android. Remove first-line/length-based bolding and inferred project titles; show full project text as plain content. Shared Flutter styles retain resolved fonts across body and list tiles.
+- [recovery] Clearly label saved originals as read-only recovery backups, with Mac/Cloud before-sync titles and no apply controls. Only pending conflicts present individual choices.
+- [verification] Existing project workflows and compact/wide/enlarged browser checks pass; WebKit/Chrome task/project typography and real-font phone previews reviewed. Final combined delivery is tracked in [4-54](plans/4-54-text-emphasis-consistency.md).
+
+## 2026-11-08 — Correct false sync edit detection and footer shape
+
+- [sync] Reproduce the reported missing-date mismatch without edits. Align canonical targeted reads with history for absent, empty and duplicate sections while preserving default task-API behavior. Both clients preserve genuine concurrent local work and retry neutrally, with one prompt retry before normal polling.
+- [ui] Remove native button appearance from the footer so Goals and neighboring controls share one 4px rounded rectangle. Keep visible keyboard focus; WebKit/Chrome compact checks pass.
+- [verification] 41 native tests, 26 Node suites, TypeScript and 124 Flutter tests/analysis pass. Mac reinstall and original-key Android +17 delivery are tracked in [16-3](plans/16-3-false-local-change-detection.md) and [4-53](plans/4-53-footer-control-shape.md).
+
 ## 2026-11-08 — Publish and verify 2.1.16
 
 - [release] Publish [v2.1.16](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.16) as latest with 14 assets. macOS universal, Windows, Linux and publication workflow `42438376556` succeed; both Android CI runs succeed.

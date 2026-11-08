@@ -70,7 +70,7 @@ npm run task-api -- extract --all
 }
 ```
 
-An unsaved date inside an existing weekly file returns an empty task list with that file's revision. If no task archive exists yet, it returns `{"dates":[]}`.
+By default, an unsaved date inside an existing weekly file returns an empty task list with that file's revision. If no task archive exists yet, it returns `{"dates":[]}`. With the desktop bridge's opt-in `canonicalDates: true`, single-date extraction matches canonical history exactly: an absent section returns `dates: []`, an actual empty section remains present, and duplicate date headings retain only their first section. This prevents a synthetic empty day from being mistaken for a concurrent sync edit. CLI/default behavior is unchanged.
 
 ## Create or Input
 

@@ -1,0 +1,33 @@
+const assert=require('node:assert/strict')
+const {fixture}=require('./sync-frequency.cjs')
+const key='day:2026-11-07'
+const day=text=>({date:'2026-11-07',tasks:[{id:'original',text,status:'todo',subtasks:[]}]})
+;(async()=>{
+ let f=await fixture()
+ f.local[key]=day('Original');f.baseline(key,day('Original'));f.remote(key,day('Original'));f.remote(key,day('Remote update'));f.render()
+ const held=await f.hold();f.listeners.get('online')();await held.started
+ f.local[key]={...day('Original'),tasks:[...day('Original').tasks,{id:'routine',text:'Automatic local task',status:'todo',subtasks:[]}]}
+ held.release();await f.flush()
+ assert.equal(f.render().error,null,'A local app update is not a user-facing sync error')
+ assert.match(f.render().message,/Local notes changed; checking again/)
+ assert.equal(f.local[key].tasks[0].text,'Original','Incoming snapshot must not overwrite a changed record')
+ await f.advance(900)
+ assert.equal(f.render().error,null)
+ assert.equal(f.local[key].tasks[0].text,'Remote update')
+ assert.equal(f.local[key].tasks[1].id,'routine','The automatic retry preserves independent local work')
+ f.dispose()
+
+ f=await fixture();f.local[key]=day('Original');f.baseline(key,day('Original'));f.remote(key,day('Original'));f.remote(key,day('Remote update'));f.render()
+ f.applyRace(()=>{})
+ f.listeners.get('online')();await f.flush()
+ assert.equal(f.render().error,null,'Native compare-before-write rejection is retried neutrally')
+ await f.advance(900)
+ const reads=f.reads();await f.advance(2700)
+ assert.equal(f.reads(),reads,'Repeated races cannot cause a rapid retry loop')
+ assert.match(f.render().message,/retrying on the next check/)
+ assert.equal(f.local[key].tasks[0].text,'Original')
+ f.applyRace(undefined);await f.advance(15_000)
+ assert.equal(f.local[key].tasks[0].text,'Remote update','Normal polling resumes safely after the data settles')
+ f.dispose()
+ console.log('Passed neutral local-change retry, independent automatic-update preservation, native stale-write protection and bounded retry scheduling')
+})().catch(error=>{console.error(error);process.exit(1)})

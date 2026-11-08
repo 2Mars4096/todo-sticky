@@ -395,12 +395,6 @@ class _TaskTileState extends State<TaskTile> {
                             style: TextStyle(
                               fontSize: widget.depth == 0 ? 16 : 15,
                               height: 1.4,
-                              fontWeight:
-                                  widget.depth == 0 &&
-                                      task.text.length <= 160 &&
-                                      !task.text.contains('\n')
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
                               color: task.closed ? mutedInk : ink,
                               decoration: task.status == TaskStatus.done
                                   ? TextDecoration.lineThrough

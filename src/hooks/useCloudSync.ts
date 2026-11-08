@@ -93,6 +93,7 @@ export function useCloudSync(hooks: Hooks) {
   const running = useRef(false)
   const waitingForEdit = useRef(false)
   const followUp = useRef(false)
+  const localRaceRetries = useRef(0)
   const followUpTimer = useRef<ReturnType<typeof setTimeout> | undefined>()
   const signInController = useRef<AbortController | null>(null)
   const epoch = useRef(0)
@@ -184,10 +185,15 @@ export function useCloudSync(hooks: Hooks) {
     waitingForEdit.current = false
     followUp.current = false
     foreground.current = manual || Boolean(resolution)
+    if (foreground.current) localRaceRetries.current = 0
     running.current = true; setBusy(true); setBackground(!foreground.current); setError(null)
     progressRef.current = null; report('Checking account')
     const generation = epoch.current
     const assertCurrent = () => { if (generation !== epoch.current || keyRef.current !== key || auth.currentUser?.uid !== user.uid) throw new Error('Account or task folder changed; sync stopped safely.') }
+    const localChanged = () => {
+      followUp.current = localRaceRetries.current++ === 0
+      setMessage(followUp.current ? 'Local notes changed; checking again' : 'Local notes changed; retrying on the next check')
+    }
     let pulled = false
     let deferredFocus = false
     try {
@@ -243,7 +249,7 @@ export function useCloudSync(hooks: Hooks) {
             await yieldSyncUi()
             const latest = await snapshot(undefined, remote.key)
             assertCurrent()
-            if (canonical(latest[remote.key] ?? null) !== canonical(original)) throw new Error('You edited this note during sync. Your edits are safe; sync again to reconcile them.')
+            if (canonical(latest[remote.key] ?? null) !== canonical(original)) { localChanged(); return }
             if (remote.key.startsWith('day:')) {
               await invoke('cloud_apply_day', { date: remote.key.slice(4), tasks: migrated.local!.tasks,
                 expectedTasks: original?.tasks ?? [], expectedKbPath: nativeKbPath })
@@ -312,7 +318,7 @@ export function useCloudSync(hooks: Hooks) {
           const latest = await snapshot(undefined, action.key)
           assertCurrent()
           if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
-          if (canonical(latest[action.key] ?? null) !== canonical(action.local)) { followUp.current = true; throw new Error('You edited this item during sync. Your edits are safe; syncing will retry.') }
+          if (canonical(latest[action.key] ?? null) !== canonical(action.local)) { localChanged(); return }
           if (canonical(upload) !== canonical(action.local)) {
             setApplying(true)
             // Merge locally and durably before sending a revision-guarded upload.
@@ -359,7 +365,7 @@ export function useCloudSync(hooks: Hooks) {
         await yieldSyncUi()
         const latest = await snapshot(undefined, action.key)
         assertCurrent()
-        if (canonical(latest[action.key] ?? null) !== canonical(action.local)) throw new Error('You edited this note during sync. Your edits are safe; sync again to reconcile them.')
+        if (canonical(latest[action.key] ?? null) !== canonical(action.local)) { localChanged(); return }
         const value = action.remote?.deleted ? null : action.remote?.payload ?? null
         if (action.key.startsWith('day:')) {
           const date = action.key.slice(4)
@@ -377,14 +383,19 @@ export function useCloudSync(hooks: Hooks) {
       }
       assertCurrent()
       setConflicts(previous => canonical(previous) === canonical(unresolved) ? previous : unresolved)
+      localRaceRetries.current = 0
       setLastSynced(new Date().toISOString())
       if (deferredFocus) setAcknowledged(null)
       else if (!unresolved.length && hooksRef.current.changeKey === changeAtStart) setAcknowledged({ key, change: changeAtStart })
       setMessage(unresolved.length ? `${unresolved.length} conflicts` : deferredFocus ? 'Focus history waits for session to finish' : hooksRef.current.changeKey !== changeAtStart && !pulled ? 'Changes queued' : 'Up to date')
     } catch (cause) {
-      const step = progressRef.current as SyncProgress | null
-      setError(`${step?.stage ?? 'Sync'}${step?.detail ? ` (${step.detail})` : ''}: ${cause instanceof Error ? cause.message : String(cause)}`)
-      setMessage('Sync stopped')
+      const detail = cause instanceof Error ? cause.message : String(cause)
+      if (detail.includes('Local tasks changed during sync.')) localChanged()
+      else {
+        const step = progressRef.current as SyncProgress | null
+        setError(`${step?.stage ?? 'Sync'}${step?.detail ? ` (${step.detail})` : ''}: ${detail}`)
+        setMessage('Sync stopped')
+      }
     }
     finally {
       // Reload even after a later failure, so the editor never holds a stale pre-pull snapshot.
@@ -409,7 +420,7 @@ export function useCloudSync(hooks: Hooks) {
   }, [key])
 
   const syncRef = useRef(synchronize); syncRef.current = synchronize
-  useEffect(() => () => { clearTimeout(followUpTimer.current); followUp.current = false }, [key])
+  useEffect(() => { localRaceRetries.current = 0; return () => { clearTimeout(followUpTimer.current); followUp.current = false } }, [key])
   useEffect(() => {
     if (!enabled || !hooks.ready || hooks.blocked) return
     const timeout = setTimeout(() => { void syncRef.current() }, 900)

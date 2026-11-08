@@ -13,7 +13,7 @@
 .archive-results li { border-top:1px solid var(--sticky-border); }
 .archive-results button { display:flex; flex-direction:column; width:100%; text-align:left; border:0; padding:10px 2px; gap:4px; }
 .archive-results button:hover { background:var(--sticky-bg-dark); }
-.archive-result-title { font-weight:550; overflow-wrap:anywhere; }
+.archive-result-title { overflow-wrap:anywhere; }
 .archive-meta { color:var(--text-secondary); font-size:12px; overflow-wrap:anywhere; }
 .progress-period { display:flex; gap:8px; flex:1; min-width:180px; }
 .progress-summary { padding:2px 0 12px; }

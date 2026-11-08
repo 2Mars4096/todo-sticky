@@ -234,7 +234,7 @@ export function TaskItem({
   const statusLabel = status === 'done' ? 'Complete' : status === 'stopped' ? 'Stopped'
     : finish?.reviewReady ? '' : status === 'partial' ? 'In progress' : status === 'question' ? 'Needs a decision' : ''
   const cls = [
-    'task-item', isSubtask ? 'subtask' : 'main-task', text.length > 160 || /[\r\n]/.test(text) ? 'task-paragraph' : '', isOtherDate ? 'other-date' : '',
+    'task-item', isSubtask ? 'subtask' : 'main-task', isOtherDate ? 'other-date' : '',
     isFocusSelected ? 'selected-for-focus' : '', selected ? 'task-selected' : '', sortable?.state ?? '',
   ].filter(Boolean).join(' ')
   const handleReorderKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {

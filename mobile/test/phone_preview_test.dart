@@ -51,7 +51,9 @@ void main() {
     store.addTask('Reply to Mei about next week');
     store.addTask('Take a walk before dinner');
     store.addTask('Read the reviewer notes', date: '2026-10-22');
-    store.goals.targets.add(GoalItem(text: 'Submit the paper this autumn'));
+    const goalText =
+        'Submit the paper this autumn\n\nThe mechanism section needs a clear argument and supporting evidence. Keep the full description readable before planning the next steps.';
+    store.goals.targets.add(GoalItem(text: goalText));
     store.goals.recurring.add(GoalItem(text: 'Read one paper with a pen'));
     final key = GlobalKey();
     await tester.pumpWidget(
@@ -111,6 +113,13 @@ void main() {
     await tester.tap(find.text('Goals').last);
     await tester.pumpAndSettle();
     await capture('goals');
+    await tester.ensureVisible(find.text(goalText));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(goalText));
+    await tester.pumpAndSettle();
+    await capture('project');
+    await tester.pageBack();
+    await tester.pumpAndSettle();
     store.startFocus(first, 25);
     await tester.tap(find.text('Focus').last);
     await tester.pumpAndSettle();

@@ -696,6 +696,7 @@ class CloudSyncController extends ChangeNotifier {
   Timer? _debounce, _poll;
   bool _disposed = false, _applying = false, _active = true, _needsSync = false;
   int _epoch = 0;
+  int _localRaceRetries = 0;
   String _lastObserved = '';
   Future<void> _credentialWrites = Future<void>.value();
   CloudSyncController({
@@ -835,6 +836,13 @@ class CloudSyncController extends ChangeNotifier {
         () => unawaited(synchronize(background: true)),
       );
     }
+  }
+
+  void _localChangedDuringSync() {
+    _needsSync = _localRaceRetries++ == 0;
+    message = _needsSync
+        ? 'Local notes changed; checking again'
+        : 'Local notes changed; retrying on the next check';
   }
 
   void editingFinished() {
@@ -1144,6 +1152,7 @@ class CloudSyncController extends ChangeNotifier {
     }
     busy = true;
     this.background = background;
+    if (!background) _localRaceRetries = 0;
     if (!background) _acknowledgedContent = null;
     _needsSync = false;
     error = null;
@@ -1232,13 +1241,15 @@ class CloudSyncController extends ChangeNotifier {
           );
           if (upgraded == null) continue;
           if (canonicalJson(upgraded.local) != canonicalJson(original)) {
-            if (isEditing() ||
-                canonicalJson(store.syncRecord(record.key)) !=
-                    canonicalJson(original)) {
-              _needsSync = true;
-              throw StateError(
-                'You edited this note during sync. Your edits are safe; syncing will retry.',
-              );
+            if (isEditing()) {
+              _waitingForEdit = true;
+              message = 'Waiting for editing to finish';
+              return;
+            }
+            if (canonicalJson(store.syncRecord(record.key)) !=
+                canonicalJson(original)) {
+              _localChangedDuringSync();
+              return;
             }
             _applying = true;
             try {
@@ -1389,10 +1400,8 @@ class CloudSyncController extends ChangeNotifier {
           if (upload != null) validateSyncPayload(action.key, upload);
           if (canonicalJson(store.syncRecord(action.key)) !=
               canonicalJson(action.local)) {
-            _needsSync = true;
-            throw StateError(
-              'You edited this item during sync. Your edits are safe; syncing will retry.',
-            );
+            _localChangedDuringSync();
+            return;
           }
           if (canonicalJson(upload) != canonicalJson(action.local)) {
             _report('Combining changes', detail: detail);
@@ -1479,10 +1488,8 @@ class CloudSyncController extends ChangeNotifier {
         }
         if (canonicalJson(store.syncRecord(action.key)) !=
             canonicalJson(action.local)) {
-          _needsSync = true;
-          throw StateError(
-            'You edited this note during sync. Your edits are safe; syncing will retry.',
-          );
+          _localChangedDuringSync();
+          return;
         }
         _report('Applying downloads', detail: detail);
         _applying = true;
@@ -1508,6 +1515,7 @@ class CloudSyncController extends ChangeNotifier {
         _advance();
       }
       conflicts = unresolved;
+      _localRaceRetries = 0;
       if (unresolved.isNotEmpty) _acknowledgedContent = null;
       if (unresolved.isEmpty && !_needsSync) {
         _acknowledgedContent = canonicalJson(store.syncRecords());

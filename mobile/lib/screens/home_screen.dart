@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               : DateFormat('EEEE').format(date),
                           style: const TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: ink,
                           ),
                         ),

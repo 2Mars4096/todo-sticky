@@ -310,8 +310,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                         children: [
                           Text(
                             goal.text,
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           if (!goal.done)
                             Align(

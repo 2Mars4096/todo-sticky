@@ -153,12 +153,12 @@ export function ProjectPage({goalId,goals,folder,flush,getGoal,saveGoal,reloadTa
     else{validateProjectActions(proposal.actions,current,archiveRows(source,goals),proposal.window);await commit(scheduledOperation(folder,current,source,proposal.actions))}
   })
   return <section className="archive-page project-page" aria-label="Project" onKeyDown={event=>{if(event.key==='Escape'&&!writing){event.stopPropagation();if(pending){leave()}else if(edit){cancelEdit()}else if(proposal){setProposal(null)}else if(mode)setMode(null);else leave()}}}>
-    <header className="archive-heading"><button disabled={writing} onClick={leave}>‹ Goals</button><h2 ref={heading} tabIndex={-1}>{goal?.text.split('\n')[0]||'Project'}</h2>
+    <header className="archive-heading"><button disabled={writing} onClick={leave}>‹ Goals</button><h2 ref={heading} tabIndex={-1}>Project</h2>
       <button disabled={busy||loading||editingNow} onClick={refresh} title="Refresh project" aria-label="Refresh project">↻</button></header>
     <div className="archive-scroll project-body">
       {!goal?<p>This project was removed.</p>:<>
         {edit?.kind==='description'?editor('Project title and description')
-          :<div className="project-description"><p>{goal.text.split('\n')[0].length>45 ? goal.text : goal.text.split('\n').slice(1).join('\n')}</p><button disabled={disabled} onClick={()=>startEdit('description',goal.text)} data-project-edit="description" aria-label="Edit project description" title="Edit project">✎</button></div>}
+          :<div className="project-description"><p>{goal.text}</p><button disabled={disabled} onClick={()=>startEdit('description',goal.text)} data-project-edit="description" aria-label="Edit project description" title="Edit project">✎</button></div>}
         {loading&&<p role="status">Loading project…</p>}
         {error&&<p className="workflow-error" role="alert">{error}</p>}
         {pending&&<div className="project-recovery"><p>Pending save for {pending.after.text.split('\n')[0]}. Saved tasks and steps will remain.</p>

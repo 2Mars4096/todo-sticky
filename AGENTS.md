@@ -115,6 +115,8 @@ Top-level plans omit a parent link. Sub-plans link back to their parent. Create 
 ## Project Notes
 
 - This repository is a Tauri desktop app with a React/Vite frontend and a Rust native layer.
+- Prefer shared role-based UI rules: written content is regular; headings and primary actions are semibold. Do not infer emphasis from text length, first lines, wrapping, completion or selection.
+- Recovery backups are read-only safety copies. Only unresolved sync conflicts ask for choices.
 - The active recovery plan is `docs/plans/4-9-data-history-recovery-and-merge.md`; remaining follow-up questions live in `docs/todo.md` backlog.
 - The Star Focus design lock lives in `docs/plans/1-star-focus-integration-design.md`; implementation should stay consistent with those v1 decisions unless that plan is explicitly revised.
 

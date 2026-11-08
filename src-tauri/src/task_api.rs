@@ -218,7 +218,11 @@ pub fn extract_tasks(
     if let Some(date) = request.date.as_deref() {
         if let Some(info) = file_sync::find_weekly_file(&todo_dir.to_string_lossy(), date)? {
             dates.extend(extract_file(info.clone(), Some(date), Some(date))?);
-            if dates.is_empty() {
+            if request.canonical_dates {
+                // Match canonical history exactly: no invented empty section,
+                // and the first date heading owns any duplicate headings.
+                dates.truncate(1);
+            } else if dates.is_empty() {
                 let (_, revision) = read_file_info(&info)?;
                 dates.push(ExtractedDate {
                     date: date.into(),
@@ -469,6 +473,24 @@ mod tests {
             std::env::temp_dir().join(format!("sticky-todo-task-api-test-{}", new_task_id()));
         fs::create_dir_all(&path).expect("test knowledge base should be created");
         path
+    }
+
+    #[test]
+    fn canonical_targeted_reads_match_history_for_absent_empty_and_duplicate_dates() {
+        let kb = tempfile::tempdir().unwrap();
+        let week = kb.path().join("content/to-do/2026-11-02");
+        fs::create_dir_all(&week).unwrap();
+        fs::write(week.join("index.md"),
+            "## 2026-11-06\n- [ ] Existing\n## 2026-11-08\n\n## 2026-11-09\n- [ ] First\n## 2026-11-09\n- [x] Duplicate\n").unwrap();
+        let history = extract_tasks(kb.path(), ExtractTasksRequest { all: true, canonical_dates: true, ..Default::default() }).unwrap();
+        for date in ["2026-11-06", "2026-11-07", "2026-11-08", "2026-11-09"] {
+            let targeted = extract_tasks(kb.path(), ExtractTasksRequest { date: Some(date.into()), canonical_dates: true, ..Default::default() }).unwrap();
+            let expected: Vec<_> = history.dates.iter().filter(|day| day.date == date).collect();
+            assert_eq!(serde_json::to_value(targeted.dates).unwrap(), serde_json::to_value(expected).unwrap(), "{date}");
+        }
+        let default_read = extract_tasks(kb.path(), ExtractTasksRequest { date: Some("2026-11-07".into()), ..Default::default() }).unwrap();
+        assert_eq!(default_read.dates.len(), 1, "Default task API still supplies an editable empty date");
+        assert!(default_read.dates[0].tasks.is_empty());
     }
 
     #[test]

@@ -111,11 +111,14 @@ The palette is a restrained family of warm paper neutrals, graphite-brown ink, a
 
 ### Hierarchy
 
-- **Title** (650, 14px, 1.2): date and panel titles. Root task titles use 14px at weight 550 with a 1.5 line height.
+- **Heading** (600): date and panel titles.
+- **Content** (400): task, step, goal and project text. Root tasks retain 14px and steps 13px with a 1.5 line height; hierarchy comes from size and indentation.
 - **Body** (400, 13px, 1.45): steps and capture fields. Outcome text and labeled task actions use 12px.
 - **Label** (11px): supporting status, dates, and field labels. Uppercase tracking is reserved for short categorical labels and Focus telemetry.
 
 **The One-Glance Rule.** A user should distinguish date, task, state, and action without reading explanatory prose.
+
+Use these shared roles instead of classifying user text. Never change emphasis based on character count, the first visual/logical line, wrapping, completion or selection. Project text is regular content in full; a fixed page heading provides structure. CSS content/heading tokens and Flutter body/list-tile/heading themes own the defaults. Primary actions may use heading weight.
 
 ## 4. Elevation
 

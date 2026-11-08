@@ -1,5 +1,13 @@
 # Todo
 
+- [x] [16-4-phone-sync-shortcut](plans/16-4-phone-sync-shortcut.md) — phone cloud control syncs directly with result feedback; Account remains in Settings. All 127 phone tests pass; original-key APK +19 delivered.
+
+- [x] [4-54-text-emphasis-consistency](plans/4-54-text-emphasis-consistency.md) — shared plain-content/semibold-heading rules, clear read-only backups, final Mac reinstall and original-key APK +18 delivered.
+
+- [x] [16-3-false-local-change-detection](plans/16-3-false-local-change-detection.md) — reproduced and fixed the absent-date mismatch; both clients quietly retry genuine changes and preserve write guards. Mac/APK delivery complete.
+
+- [x] [4-53-footer-control-shape](plans/4-53-footer-control-shape.md) — native bezel removed; consistent rounded rectangles/focus verified in WebKit/Chrome and installed on Mac.
+
 - [x] [16-2-smart-merge-and-stable-review](plans/16-2-smart-merge-and-stable-review.md) — independent edits merge, genuine conflicts have individual choices and background review is stable; Mac 2.1.16 installed and original-key APK +16 delivered.
 - [x] [4-52-publish-2-1-16](plans/4-52-publish-2-1-16.md) — committed/pushed and published as latest; hosted desktop/Android checks, public updater signatures and both universal Mac binaries verify.
 

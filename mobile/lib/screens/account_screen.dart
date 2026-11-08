@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app.dart';
 import '../widgets/sync_progress.dart';
 import '../widgets/conflict_items.dart';
+import '../widgets/cloud_sync_button.dart';
 import '../services/cloud_sync.dart';
 import '../services/files.dart';
 import '../state/sticky_store.dart';
@@ -59,45 +60,7 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
   Widget build(BuildContext context) => StickyApp(
     store: widget.store,
     accountBuilder: (_) => AccountScreen(account: account),
-    syncIndicatorBuilder: (context) => ListenableBuilder(
-      listenable: account,
-      builder: (context, _) {
-        final attention = account.error != null || account.conflicts.isNotEmpty;
-        final local = !account.enabled;
-        final label = attention
-            ? 'Sync needs attention'
-            : local
-            ? 'Local only'
-            : account.busy && !account.background
-            ? 'Syncing'
-            : account.upToDate
-            ? 'Synced with cloud'
-            : 'Waiting to sync';
-        final icon = attention
-            ? Icons.error_outline
-            : local
-            ? Icons.cloud_off_outlined
-            : account.busy && !account.background
-            ? Icons.sync
-            : account.upToDate
-            ? Icons.cloud_done_outlined
-            : Icons.cloud_queue_outlined;
-        return IconButton(
-          tooltip: '$label. Open Account',
-          icon: Icon(
-            icon,
-            size: 18,
-            color: attention ? Theme.of(context).colorScheme.error : mutedInk,
-          ),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => AccountScreen(account: account),
-            ),
-          ),
-        );
-      },
-    ),
+    syncIndicatorBuilder: (_) => CloudSyncButton(account: account),
   );
 }
 

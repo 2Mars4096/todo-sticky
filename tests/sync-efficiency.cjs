@@ -27,7 +27,7 @@ async function run(count,pulls=false,changeDuringPull=false){
  for(let i=0;i<4;i++){render();await new Promise(setImmediate)}
  await render().sync();const result=render();
  assert.equal(reads.filter(r=>r.all).length,1,'Exactly one full scan per sync');assert.equal(writes.length,0);
- if(changeDuringPull){assert.match(result.error,/edited/);assert.equal(applies,1);assert.equal(reloads,1,'Refresh successful downloads even after a later stale-edit rejection');}
+ if(changeDuringPull){assert.equal(result.error,null);assert.match(result.message,/Local notes changed/);assert.equal(applies,1);assert.equal(reloads,1,'Refresh successful downloads even after a later concurrent change');}
  else {assert.equal(result.error,null);assert.equal(applies,pulls?count:0);assert.equal(reloads,pulls?1:0);if(!pulls)assert.equal(metadataWrites,0,'Unchanged records must not cause writes');}
  return {count,pulls,fullScans:reads.filter(r=>r.all).length,targetedReads:reads.filter(r=>r.date).length,reloads,metadataWrites};
 }

@@ -206,6 +206,88 @@ Future<Rig> fixture(
 }
 
 void main() {
+  for (final emptySection in [false, true]) {
+    test(
+      'incoming cloud date is safe with ${emptySection ? 'an empty' : 'no'} local section',
+      () async {
+        final rig = await fixture(
+          (request) {
+            expect(request.method, 'GET');
+            return page([
+              record(dayKey, day('Cloud work')),
+              record('goals', goals()),
+            ]);
+          },
+          local: emptySection
+              ? {
+                  dayKey: {'date': date, 'tasks': <dynamic>[]},
+                }
+              : {},
+        );
+        addTearDown(rig.dispose);
+        await rig.sync.synchronize();
+        expect(rig.sync.error, isNull);
+        expect(rig.store.syncRecord(dayKey), day('Cloud work'));
+        expect(rig.sync.upToDate, isTrue);
+      },
+    );
+  }
+
+  testWidgets(
+    'automatic local work during download retries quietly and retains both changes',
+    (tester) async {
+      late Rig rig;
+      var gets = 0;
+      Map<String, dynamic>? uploaded;
+      final automatic = Task(
+        id: 'routine-task',
+        text: 'Automatic routine',
+      ).toJson();
+      rig = await fixture(
+        (request) async {
+          if (request.method == 'GET') {
+            gets++;
+            if (gets == 1) {
+              await rig.store.applySyncRecord(dayKey, {
+                'date': date,
+                'tasks': [...day('Original')['tasks'] as List, automatic],
+              });
+            }
+            return page([
+              record(dayKey, day('Remote update'), revision: 2),
+              record('goals', goals()),
+            ]);
+          }
+          uploaded = object(jsonDecode(request.body));
+          return jsonResponse(
+            record(dayKey, object(uploaded!['payload']), revision: 3).toJson(),
+          );
+        },
+        local: {dayKey: day('Original')},
+        baseline: {dayKey: record(dayKey, day('Original')).baseline},
+      );
+      try {
+        await tester.pump(const Duration(milliseconds: 900));
+        expect(rig.sync.error, isNull);
+        expect(
+          rig.sync.message,
+          contains('Local notes changed; checking again'),
+        );
+        expect(rig.store.tasksFor(date).first.text, 'Original');
+        await tester.pump(const Duration(milliseconds: 900));
+        expect(gets, 2);
+        expect(rig.sync.error, isNull);
+        expect(rig.store.tasksFor(date).map((task) => task.text).toList(), [
+          'Remote update',
+          'Automatic routine',
+        ]);
+        expect(uploaded, isNotNull);
+      } finally {
+        rig.dispose();
+      }
+    },
+  );
+
   Map<String, dynamic> goalList(
     List<String> ids, {
     Map<String, String> texts = const {},
@@ -343,7 +425,8 @@ void main() {
       );
       addTearDown(rig.dispose);
       await rig.sync.synchronize();
-      expect(rig.sync.error, contains('edited this item'));
+      expect(rig.sync.error, isNull);
+      expect(rig.sync.message, contains('Local notes changed'));
       expect(puts, 0);
       expect(rig.store.syncRecord('goals'), goalList(['old', 'a', 'new-edit']));
     },
@@ -1308,7 +1391,8 @@ void main() {
           ]),
         );
         await syncing;
-        expect(rig.sync.error, isNotNull);
+        expect(rig.sync.error, isNull);
+        expect(rig.sync.message, contains('Local notes changed'));
         expect(rig.store.tasksFor(date).map((t) => t.text), [
           'Original',
           'Captured during sync',

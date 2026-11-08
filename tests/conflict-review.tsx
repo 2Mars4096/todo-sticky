@@ -13,7 +13,7 @@ const ancestor = { targets: [goal('a', 'Research question'), goal('b', 'Experime
 let revision = 2
 const conflict = (second = 'Cloud experiment plan') => reconcile({ goals: local }, [{key:'goals',revision,payload:payload('Cloud research question',second,'Only on phone'),deleted:false,updatedAt:'',mutationId:'fixture'}], {goals:{revision:1,payload:ancestor,deleted:false}})
 function App() {
-  const [account, setAccount] = useState({ conflicts: conflict(), recovery: [], busy: false, background: false, progress: null, error: null })
+  const [account, setAccount] = useState({ conflicts: conflict(), recovery: [{key:'goals',local,remote:conflict()[0].remote,at:'2026-11-07T15:25:05Z'}], busy: false, background: false, progress: null, error: null })
   const calls: unknown[] = []
   Object.assign(window, { __conflictReview: {
     calls,

@@ -67,6 +67,10 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
         'liquid' => const Color(0xffedf2e9),
         _ => paper,
       };
+      final contentText = ThemeData(useMaterial3: true).textTheme.bodyLarge!
+          .copyWith(fontWeight: FontWeight.w400, height: 1.4, color: ink);
+      final emphasisText = contentText.copyWith(fontWeight: FontWeight.w600);
+      final bodyText = contentText.copyWith(fontSize: 14);
       return MaterialApp(
         title: 'Sticky Todo',
         debugShowCheckedModeBanner: false,
@@ -86,10 +90,15 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
             centerTitle: false,
             scrolledUnderElevation: 0,
           ),
-          textTheme: const TextTheme(
-            titleLarge: TextStyle(fontWeight: FontWeight.w700),
-            bodyLarge: TextStyle(fontSize: 16, height: 1.4),
-            bodyMedium: TextStyle(fontSize: 14, height: 1.4),
+          textTheme: TextTheme(
+            titleLarge: emphasisText.copyWith(fontSize: 22, height: 1.3),
+            titleMedium: emphasisText,
+            bodyLarge: contentText,
+            bodyMedium: bodyText,
+          ),
+          listTileTheme: ListTileThemeData(
+            titleTextStyle: contentText.copyWith(color: ink),
+            subtitleTextStyle: bodyText.copyWith(color: mutedInk),
           ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
@@ -108,7 +117,10 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
             thickness: 1,
           ),
           filledButtonTheme: FilledButtonThemeData(
-            style: FilledButton.styleFrom(minimumSize: const Size(48, 48)),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              textStyle: emphasisText.copyWith(fontSize: 14),
+            ),
           ),
         ),
         home: Builder(

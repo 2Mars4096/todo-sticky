@@ -12,7 +12,7 @@
 .app-shell .add-task-row input::placeholder { color: #796b4c; }
 .app-shell .compact-date-header .date-title-label { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.2; }
 .app-shell .action-bar { padding: 6px 8px; gap: 4px; flex-wrap: wrap; }
-.app-shell .action-bar > button { min-height: 30px; min-width: 30px; padding: 4px 7px; white-space: nowrap; color: #615333; flex-shrink: 0; }
+.app-shell .action-bar > button { -webkit-appearance: none; appearance: none; border-radius: 4px; box-shadow: none; min-height: 30px; min-width: 30px; padding: 4px 7px; white-space: nowrap; color: #615333; flex-shrink: 0; }
 .app-shell .action-bar .spacer { flex: 1 1 0; min-width: 0; }
 .app-shell .provider-quick-control { flex: 0 1 108px; max-width: 108px; }
 .app-shell .provider-quick-control select { width: 100%; min-width: 0; max-width: 100%; height: 30px; color: #615333; }

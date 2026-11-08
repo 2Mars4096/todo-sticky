@@ -6,7 +6,7 @@ const suites = [
   'finish-dates', 'app-updates', 'app-updates-auto', 'update-persistence',
   'update-manifest', 'task-loading', 'task-rollover', 'task-completion',
   'calendar-rollover', 'task-save-recovery', 'task-history', 'day-planning',
-  'ai-errors', 'review-reliability', 'cloud-sync', 'sync-merge', 'sync-merge-controller', 'account-return', 'sync-progress', 'sync-conflicts', 'workflow-improvements', 'goal-linkage', 'sync-efficiency', 'sync-frequency', 'project-planning',
+  'ai-errors', 'review-reliability', 'cloud-sync', 'sync-merge', 'sync-merge-controller', 'sync-local-races', 'account-return', 'sync-progress', 'sync-conflicts', 'workflow-improvements', 'goal-linkage', 'sync-efficiency', 'sync-frequency', 'project-planning',
 ]
 
 for (const suite of suites) {

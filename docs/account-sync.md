@@ -172,9 +172,13 @@ Account shows the active stage, current date/list, completed record count, elaps
 
 ## Sync efficiency and editing behavior
 
+On phone, the cloud button requests sync directly and displays the controller's result without opening Account. It stays disabled while unavailable or busy; it never enables sync or signs in implicitly. Settings → Account & sync retains configuration and conflict/recovery controls. The desktop indicator still opens Account details.
+
 Independent additions and separate edits now combine automatically, including steps added to the same goal. Sync uses item IDs and the last acknowledged version, rather than choosing an entire Goals list or date. Different IDs with identical text remain separate items. Without a shared ancestor, an absent item is treated as an addition on the other device, never inferred deletion.
 
 Review asks for each incompatible field/item: competing text/status edits, delete-versus-edit or incompatible ordering. Choose This Mac/This device or Cloud for each displayed difference, then Apply choices. Every result keeps independent edits from both sides; original copies remain exportable. Background checks preserve choices and scroll. A changed item requires a fresh choice for that item. New unfinished children reopen a completed parent; project/step links remain one assignment. Combined content must fit existing schema/size limits.
+
+Recovery backups are historical originals saved before combining changes, not a work queue. That view labels Mac/Cloud before sync, is read-only and offers export; Needs review 0 means no conflict choices remain. A concurrent local change can come from an automatic routine or file update: both clients preserve the changed record and retry neutrally, with one prompt retry before normal polling. Canonical single-date Mac reads match history exactly, so missing/empty date representation cannot trigger a false edit warning.
 
 Clients now debounce saved changes for 900ms. An active nonempty text draft defers sync; empty focused capture does not. Leaving the editor promptly schedules deferred work. Android still syncs only while foregrounded; desktop accounts remain optional and independent of capture.
 

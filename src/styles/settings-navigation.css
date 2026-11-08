@@ -20,6 +20,7 @@
 }
 
 .compact-date-header .date-nav .date-title {
+  font-weight: var(--heading-weight);
   font-size: 13px;
   min-height: 30px;
   color: #3d3520;

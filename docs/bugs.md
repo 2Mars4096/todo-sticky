@@ -1,5 +1,18 @@
 # Bugs And Failed Approaches
 
+## 2026-11-08: Conditional text emphasis and confusing recovery snapshots
+
+- `::first-line` made bold words depend on window width, while a 160-character task classifier and separate phone rule changed emphasis by content length. Remove those rules and use shared content/heading roles.
+- Project descriptions were promoted to large bold headings or split using inferred-title length. Show the full field as regular content under a stable page heading instead.
+- Partial Flutter list-tile styles bypassed resolved font-family defaults in real-font previews. Reuse resolved body/emphasis styles in the shared theme rather than introducing per-row font fixes.
+- Historical Mac/Cloud copies looked like active conflicts. Name them Recovery backups, label both versions as before sync, explain that no action is needed in that read-only view and remove unreachable bulk-choice controls.
+
+## 2026-11-08: False sync edit warning and native footer bezel
+
+- Reproduced the user's November 7 warning read-only: canonical history has no date section, while date-specific extraction invented an empty day. The sync hook interpreted `null` versus an empty payload as an edit. Canonical date reads now omit absent sections and select only the first duplicate heading, matching history; default agent/CLI empty-date behavior remains.
+- Genuine concurrent changes can come from routines, file updates or another app operation, so neither client attributes them to user editing. Defer without replacement, retry once promptly and fall back to periodic checks if changes continue. Native stale-write rejection remains protected and gets the same neutral retry on Mac.
+- Goals inherited custom 4px corners while retaining native macOS appearance, producing a second bezel. Footer buttons now explicitly use `appearance: none` and `-webkit-appearance: none`. WebKit/Chrome compact screenshots and keyboard focus were checked. WebKit's default Tab navigation can skip buttons; use actual keyboard interaction on the focused control to verify its focus-visible outline.
+
 ## 2026-11-08: Coarse conflicts and flashing review
 
 - Whole-record reconciliation marked independent additions to the same Goals/steps list as a conflict. Use acknowledged-ancestor, ID-aware field/collection merges; preserve originals and validate before durable local apply and revision-guarded upload.

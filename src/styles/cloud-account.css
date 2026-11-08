@@ -50,10 +50,7 @@
 .cloud-saved-label{font-size:10px;color:#6e7753}
 .cloud-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
 .cloud-version{min-width:0;border:1px solid #d6c99e;border-radius:8px;overflow:hidden;background:#fff9e8}
-.cloud-version.is-selected{border-color:#856519;box-shadow:0 0 0 1px #856519}
 .cloud-version header{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px;border-bottom:1px solid #e8d9a0;background:#f5edce}
-.cloud-version header label{display:flex;align-items:center;gap:6px;font-weight:600;margin:0!important;color:#493d24}
-.cloud-version header input[type=radio]{width:16px!important;min-height:16px!important;height:16px;margin:0;accent-color:#80651f}
 .cloud-version header>span{font-size:10px;color:#7a6f50}
 .cloud-version-rows{max-height:270px;overflow:auto;padding:6px 9px}
 .cloud-version-row{padding-top:8px;padding-bottom:8px;border-bottom:1px solid #eee5c7;overflow-wrap:anywhere}
@@ -71,7 +68,6 @@
 .settings-panel.settings-refined .cloud-account .cloud-sync-toggle input{margin:0;flex-shrink:0}
 .settings-panel.settings-refined .cloud-account .cloud-review-options label{display:flex;align-items:center;gap:6px;margin:0}
 .settings-panel.settings-refined .cloud-account .cloud-review-options input{margin:0;flex-shrink:0}
-.settings-panel.settings-refined .cloud-account .cloud-version header label{display:flex;align-items:center;gap:6px;margin:0}
 .settings-panel.settings-refined .cloud-account .cloud-review-select{display:grid;gap:5px}
 .cloud-item-conflict{min-width:0;margin:16px 0;padding:0 0 16px;border:0;border-bottom:1px solid #e8d9a0}
 .cloud-item-conflict legend{padding:0 0 8px;font-weight:600;overflow-wrap:anywhere;line-height:1.5}

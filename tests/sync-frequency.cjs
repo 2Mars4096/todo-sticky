@@ -5,6 +5,7 @@ const load = require('./helpers/load-typescript.cjs')
 async function fixture(options = {}) {
   const slots = [], effects = [], timers = new Map(), listeners = new Map(), docListeners = new Map()
   const storage = new Map(), local = {}, remote = new Map()
+  let applyRace
   let cursor = 0, timerId = 0, now = 0, reads = 0, offline = false, failPut = false, draft = '', hold, heldStarted
   const uploads = []
   const goals = { targets: [], recurring: [] }
@@ -35,9 +36,12 @@ async function fixture(options = {}) {
     react, 'firebase/auth': { onAuthStateChanged: (_, fn) => { fn(user); return () => {} } },
     '@tauri-apps/api/core': { invoke: async (name, args) => {
       if (name === 'cloud_task_folder') return '/fixture'
-      if (name === 'cloud_apply_day') local['day:' + args.date] = { date: args.date, tasks: args.tasks }
+      if (name === 'cloud_apply_day') {
+        if (applyRace) { applyRace(args); throw Error('Local tasks changed during sync. Sync again; your edits are safe.') }
+        local['day:' + args.date] = { date: args.date, tasks: args.tasks }
+      }
     } },
-    '../api': { waitForPendingWrites: async () => {}, api: { extractTaskApi: async request => ({ dates: Object.values(local).filter(day => !request.date || day.date === request.date) }) } },
+    '../api': { waitForPendingWrites: async () => {}, api: { extractTaskApi: async request => ({ dates: structuredClone(Object.values(local).filter(day => !request.date || day.date === request.date)) }) } },
     '../cloudAccount': { connectAccount: async () => auth, requestJson: async (_, path, options = {}) => {
       if (path === '/v1/config') return { schemaVersion: 1 }
       if (options.method === 'PUT') { const body = JSON.parse(options.body), k = decodeURIComponent(path.split('/').pop())
@@ -76,6 +80,7 @@ async function fixture(options = {}) {
   render(); await flush()
   return { render, flush, advance, document, hooks, local, listeners, docListeners, timers, uploads, reads: () => reads,
     failPut: value => { failPut = value },
+    applyRace: fn => { applyRace = fn },
     baseline: (k, payload) => { const meta = JSON.parse(storage.get(key)); meta.baseline[k] = { revision: 1, payload, deleted: payload === null }; storage.set(key, JSON.stringify(meta)) },
     offline: value => { offline = value }, draft: value => { draft = value },
     remote: (k, payload) => remote.set(k, record(k, payload, (remote.get(k)?.revision ?? 0) + 1)),

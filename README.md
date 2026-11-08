@@ -6,9 +6,9 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, including automatic 15-second sync, independent-edit merging and individual conflict review (2026-11-08). The deployed sync service URL is prefilled. Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
+Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16 with the reviewed sync-read/retry corrections, shared typography, consistent footer shape and clear read-only recovery labels (2026-11-08). The deployed sync service URL is prefilled. Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
 
-Local Android release build: `release/todo-sticky.apk` (2.1.16+16, ARM64, 19.88 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
+Local Android release build: `release/todo-sticky.apk` (2.1.16+19, ARM64, 19.88 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
 
 Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
@@ -158,7 +158,7 @@ Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as th
 
 The magnifying-glass button opens **Search** across task dates, including completed/stopped tasks and steps. Results show their date and parent context; selecting one opens the original task. The chart button opens **Progress** for a day or week. Task counts describe the current states on those dates' lists, not when completion occurred. Steps are separate, and focus totals use retained sessions and planned minutes. Unavailable archive files are reported rather than counted as empty history.
 
-The small account indicator opens Account details. Its symbol and tooltip distinguish local-only, waiting, syncing, cloud-acknowledged and attention states. Editing a task clears the prior synced indication until the current content is acknowledged.
+The small account indicator opens Account details on desktop. On phone, the cloud button syncs directly and briefly shows the result; configuration and conflict review remain in **Settings → Account & sync**. Symbols and tooltips distinguish local-only, waiting, syncing, cloud-acknowledged and attention states. Editing a task clears the prior synced indication until the current content is acknowledged. The phone eye button shows/hides completed and stopped tasks without deleting them.
 
 Under **Goals → Routines**, Manual remains unchanged. Daily, Weekdays and Weekly generate one ordinary task on eligible dates when Today is loaded. Weekly uses the weekday you configure it; the device's local calendar controls dates. Schedules are stored on this device for the current task folder, while generated tasks can sync normally. Missed days are not backfilled. **Pause** leaves existing tasks intact; **Skip next** skips the next ungenerated occurrence. Changing a schedule affects future generation, not existing task text. A failed task save leaves the occurrence pending for Retry without duplicating it.
 
@@ -289,7 +289,9 @@ Sync batches unchanged acknowledgements, avoids repeated archive scans/list refr
 
 Independent additions and edits combine automatically, including steps added to the same goal. Genuine disagreements are reviewed item by item, with separate device/cloud choices that retain unrelated changes from both sides. Background checks preserve your selections and scroll position. Saved copies retain the original versions.
 
-The app checks for remote edits every **15 seconds** while Mac is visible or Android is foregrounded, uploads saved changes after about **0.9 seconds**, and checks promptly when you return. Failures retry automatically on later checks. Mac task/goal sync continues during Focus; incoming focus history waits until the session ends. Nonempty drafts, failed saves and conflicting versions still require completion or review. Android does not sync while closed or backgrounded. These changes are installed on Mac and included in the local Android +16 APK.
+Recovery backups are read-only originals saved before sync, with no action needed in that view. Genuine concurrent local changes retry quietly; automatic routines or file updates are not reported as user edits. Written task/goal/project content uses one regular style, while headings/actions use semibold, without first-line or text-length formatting rules.
+
+The app checks for remote edits every **15 seconds** while Mac is visible or Android is foregrounded, uploads saved changes after about **0.9 seconds**, and checks promptly when you return. Failures retry automatically on later checks. Mac task/goal sync continues during Focus; incoming focus history waits until the session ends. Nonempty drafts, failed saves and conflicting versions still require completion or review. Android does not sync while closed or backgrounded. These changes are installed on Mac and included in the local Android +19 APK.
 
 
 ### Editing and reviewing projects on Mac
