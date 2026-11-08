@@ -1,5 +1,9 @@
 # Development Plan
 
+## Automatic sync and 2.1.16
+
+- [16-2](plans/16-2-smart-merge-and-stable-review.md) adds acknowledged-ancestor merges for independent edits and individual review for genuine conflicts, with stable background refresh. Finish local Mac/APK delivery, then commit/push and publish [2.1.16](plans/4-52-publish-2-1-16.md). Existing local-first storage, backend protocol and explicit conflict safeguards remain.
+
 ## Mac project parity delivered
 
 - [15-3](plans/15-3-mac-project-planning.md) completes Mac project visibility, planning, assignment and progress using existing Android data. The Mac reinstall also completes plan 16 sync-efficiency delivery. No backend/schema change or new Android build is part of this slice.

@@ -22,9 +22,9 @@ export function AccountPanel({ account }: { account: CloudAccount }) {
     {account.user ? <>
       <div className="cloud-sync-controls">
         <label className="cloud-sync-toggle"><input type="checkbox" checked={account.enabled} onChange={event => account.toggleEnabled(event.target.checked)} disabled={account.busy} />Sync this folder</label>
-        <button type="button" className="cloud-primary" onClick={() => { void account.sync() }} disabled={!account.enabled || account.busy}>{account.busy ? 'Syncing…' : 'Sync now'}</button>
+        <button type="button" className="cloud-primary" onClick={() => { void account.sync() }} disabled={!account.enabled || account.busy}>{account.busy && !account.background ? 'Syncing…' : 'Sync now'}</button>
       </div>
-      {account.busy && account.progress ? <SyncProgressView progress={account.progress} /> : <p role="status" className="cloud-sync-status">{account.message}</p>}
+      {account.busy && !account.background && account.progress ? <SyncProgressView progress={account.progress} /> : <p role="status" className="cloud-sync-status">{account.message}</p>}
       {account.lastSynced && <time className="cloud-last-sync" title={new Date(account.lastSynced).toLocaleString()}>Checked {new Date(account.lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>}
       <div className="cloud-review-launchers"><button ref={reviewButton} type="button" className={account.conflicts.length ? 'cloud-review-needed' : 'cloud-quiet'} onClick={() => setReview('pending')}>Conflicts <span>{account.conflicts.length}</span></button><button type="button" className="cloud-quiet" onClick={() => setReview('history')}>Saved copies <span>{account.recovery.length}</span></button></div>
     </> : <div className="cloud-login-actions"><button type="button" className="cloud-primary" onClick={() => { void account.login() }} disabled={!account.connected || account.signingIn}>{account.signingIn ? 'Waiting for Google…' : 'Continue with Google'}</button>{account.signingIn && <button type="button" className="cloud-quiet" onClick={account.cancelSignIn}>Cancel</button>}</div>}

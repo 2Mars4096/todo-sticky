@@ -29,10 +29,21 @@ jobs:
           packages: 'platform-tools platforms;android-35 platforms;android-36 build-tools;36.0.0'
           log-accepted-android-sdk-licenses: 'false'
       - uses: subosito/flutter-action@v2
+        id: flutter_sdk
+        continue-on-error: true
         with:
           flutter-version: '3.47.8'
           channel: stable
           cache: true
+      - name: Restore pinned SDK when its release archive is unavailable
+        if: steps.flutter_sdk.outcome == 'failure'
+        shell: bash
+        run: |
+          sdk_dir="$RUNNER_TEMP/sticky-flutter-3.47.8"
+          git clone --depth 1 --branch 3.47.8 https://github.com/flutter/flutter.git "$sdk_dir"
+          test "$(git -C "$sdk_dir" rev-parse HEAD)" = 737ba8f885dc774b53b442759999a312c9461e4e
+          echo "$sdk_dir/bin" >> "$GITHUB_PATH"
+          "$sdk_dir/bin/flutter" --version
       - run: flutter pub get --enforce-lockfile
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze

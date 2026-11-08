@@ -172,7 +172,13 @@ Account shows the active stage, current date/list, completed record count, elaps
 
 ## Sync efficiency and editing behavior
 
+Independent additions and separate edits now combine automatically, including steps added to the same goal. Sync uses item IDs and the last acknowledged version, rather than choosing an entire Goals list or date. Different IDs with identical text remain separate items. Without a shared ancestor, an absent item is treated as an addition on the other device, never inferred deletion.
+
+Review asks for each incompatible field/item: competing text/status edits, delete-versus-edit or incompatible ordering. Choose This Mac/This device or Cloud for each displayed difference, then Apply choices. Every result keeps independent edits from both sides; original copies remain exportable. Background checks preserve choices and scroll. A changed item requires a fresh choice for that item. New unfinished children reopen a completed parent; project/step links remain one assignment. Combined content must fit existing schema/size limits.
+
 Clients now debounce saved changes for 900ms. An active nonempty text draft defers sync; empty focused capture does not. Leaving the editor promptly schedules deferred work. Android still syncs only while foregrounded; desktop accounts remain optional and independent of capture.
+
+Both clients poll remote changes every 15 seconds while visible/foregrounded. Mac also checks on visibility return, focus and online events; Android starts a check immediately after a background-to-foreground transition. Failed attempts retry on subsequent polls. Mac syncs tasks/goals during Focus and defers only incoming focus history until the active session finishes. This is periodic reconciliation, not push delivery; network time, drafts, protected operations and conflict review can extend the delay. Each poll retains the existing paginated history download, so more frequent polling increases network requests. These changes are installed on Mac and included in the verified local Android +15 APK; see [16-1](plans/16-1-automatic-sync-frequency.md).
 
 Progress counts changed records and conflicts rather than all equal records. Equal acknowledgements are batched; already-current baselines require no save. Desktop performs one initial archive snapshot, targeted date checks before download application, and one list refresh after a download batch. Native compare-before-write, exact conflict copies and pending mutation IDs retain their original safety ordering. Android compares only the relevant record before incoming changes and avoids per-record whole-notebook saves for idle acknowledgements.
 

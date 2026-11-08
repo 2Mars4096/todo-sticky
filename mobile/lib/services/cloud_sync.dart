@@ -8,15 +8,8 @@ import 'package:http/http.dart' as http;
 
 import '../models/models.dart';
 import '../state/sticky_store.dart';
-
-String canonicalJson(Object? value) {
-  if (value is List) return '[${value.map(canonicalJson).join(',')}]';
-  if (value is Map) {
-    final keys = value.keys.cast<String>().toList()..sort();
-    return '{${keys.map((key) => '${jsonEncode(key)}:${canonicalJson(value[key])}').join(',')}}';
-  }
-  return jsonEncode(value);
-}
+import 'sync_merge.dart';
+export 'sync_merge.dart';
 
 String syncOrigin(String value) {
   final uri = Uri.parse(value.trim());
@@ -335,13 +328,17 @@ void validateSyncPayload(String key, Map<String, dynamic> payload) {
   }
 }
 
-enum SyncKind { push, pull, ack, conflict }
+enum SyncKind { push, pull, ack, conflict, merge }
 
 class SyncAction {
   final String key;
   SyncKind kind;
   final Map<String, dynamic>? local;
   final SyncRecord? remote;
+  MergeResult? merge;
+  Map<String, dynamic>? ancestor;
+  bool hasAncestor = false, atomicTasks = false;
+  String? mergeProblem;
   SyncAction(this.key, this.kind, this.local, this.remote);
 }
 
@@ -507,7 +504,46 @@ List<SyncAction> reconcileRecords(
       kind = SyncKind.conflict;
     }
     if (kind == SyncKind.ack && record == null) continue;
-    actions.add(SyncAction(key, kind, left, record));
+    final action = SyncAction(key, kind, left, record);
+    if (kind == SyncKind.conflict && record != null) {
+      action.ancestor = base?['deleted'] == true
+          ? null
+          : base?['payload'] as Map<String, dynamic>?;
+      action.hasAncestor = base != null;
+      action.merge = mergeSyncPayload(
+        key,
+        action.ancestor,
+        left,
+        right,
+        action.hasAncestor,
+      );
+      bool valid(Map<String, dynamic>? payload) {
+        try {
+          if (payload != null) validateSyncPayload(key, payload);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      if (!valid(action.merge!.payload) && key.startsWith('day:')) {
+        action.atomicTasks = true;
+        action.merge = mergeSyncPayload(
+          key,
+          action.ancestor,
+          left,
+          right,
+          action.hasAncestor,
+          atomicTasks: true,
+        );
+      }
+      if (action.merge!.issues.isEmpty && valid(action.merge!.payload)) {
+        action.kind = SyncKind.merge;
+      } else if (action.merge!.issues.isEmpty) {
+        action.mergeProblem = 'Combined changes exceed sync limits. Shorten the affected list or plan before syncing.';
+      }
+    }
+    actions.add(action);
   }
   return actions;
 }
@@ -616,11 +652,12 @@ class CloudSyncController extends ChangeNotifier {
   final Future<bool> Function(Uri) openBrowser;
   final bool Function() isEditing;
   final Duration pollInterval;
+  final Duration syncInterval;
   AccountSession? session;
   String server = '';
   String message = '';
   String? error;
-  bool busy = false, signingIn = false, ready = false;
+  bool busy = false, background = false, signingIn = false, ready = false;
   CloudSyncProgress? progress;
   void _report(String stage, {String? detail, int? completed, int? total}) {
     final now = DateTime.now(), previous = progress;
@@ -632,7 +669,7 @@ class CloudSyncController extends ChangeNotifier {
       startedAt: previous?.startedAt ?? now,
       updatedAt: now,
     );
-    _notify();
+    if (!background) _notify();
   }
 
   void _advance() {
@@ -667,6 +704,7 @@ class CloudSyncController extends ChangeNotifier {
     CloudTransport? transport,
     bool Function()? isEditing,
     this.pollInterval = const Duration(milliseconds: 1500),
+    this.syncInterval = const Duration(seconds: 15),
   }) : transport = transport ?? CloudTransport(),
        isEditing = isEditing ?? (() => false);
 
@@ -740,8 +778,8 @@ class CloudSyncController extends ChangeNotifier {
     if (_disposed) return;
     _lastObserved = canonicalJson(store.syncRecords());
     store.addListener(_changed);
-    _poll = Timer.periodic(const Duration(seconds: 60), (_) {
-      if (_active) unawaited(synchronize());
+    _poll = Timer.periodic(syncInterval, (_) {
+      if (_active) unawaited(synchronize(background: true));
     });
     ready = true;
     _schedule();
@@ -794,7 +832,7 @@ class CloudSyncController extends ChangeNotifier {
     if (enabled && _active && ready) {
       _debounce = Timer(
         const Duration(milliseconds: 900),
-        () => unawaited(synchronize()),
+        () => unawaited(synchronize(background: true)),
       );
     }
   }
@@ -811,9 +849,10 @@ class CloudSyncController extends ChangeNotifier {
   }
 
   void setActive(bool active) {
+    if (_active == active) return;
     _active = active;
     if (active) {
-      _schedule();
+      unawaited(synchronize(background: true));
     } else {
       _debounce?.cancel();
     }
@@ -1070,6 +1109,8 @@ class CloudSyncController extends ChangeNotifier {
     String? resolveKey,
     bool useCloud = false,
     String? reviewedFingerprint,
+    Map<String, String>? choices,
+    bool background = false,
   }) async {
     if (_disposed ||
         !ready ||
@@ -1102,10 +1143,12 @@ class CloudSyncController extends ChangeNotifier {
       }
     }
     busy = true;
-    _acknowledgedContent = null;
+    this.background = background;
+    if (!background) _acknowledgedContent = null;
     _needsSync = false;
     error = null;
     progress = null;
+    _notify();
     _report('Saving local edits');
     final epoch = _epoch, owner = session!.owner, origin = session!.origin;
     void ensureCurrent() {
@@ -1221,6 +1264,17 @@ class CloudSyncController extends ChangeNotifier {
       }
       _report('Comparing changes');
       final actions = reconcileRecords(local, records, baseline);
+      for (final action in actions) {
+        final prepared = pending[action.key] == null
+            ? null
+            : object(pending[action.key]);
+        if (action.kind == SyncKind.conflict &&
+            prepared != null &&
+            prepared['fingerprint'] == canonicalJson(action.local) &&
+            prepared['expectedRevision'] == action.remote?.revision) {
+          action.kind = SyncKind.push;
+        }
+      }
       // Upload unsynced missions before incoming history can prune the local
       // display. An interrupted cycle must not lose an unuploaded session.
       bool pulls(SyncAction action) =>
@@ -1236,7 +1290,10 @@ class CloudSyncController extends ChangeNotifier {
           .where((action) => action.kind == SyncKind.conflict)
           .toList();
       var preserved = false;
-      for (final action in pendingConflicts) {
+      for (final action in actions.where(
+        (action) =>
+            action.kind == SyncKind.conflict || action.kind == SyncKind.merge,
+      )) {
         preserved =
             preserveSyncConflict(meta['conflicts'] as List, action) ||
             preserved;
@@ -1285,16 +1342,88 @@ class CloudSyncController extends ChangeNotifier {
             : 'Focus session';
         _report('Checking changes', detail: detail);
         if (action.kind == SyncKind.conflict && resolveKey == action.key) {
-          action.kind = useCloud ? SyncKind.pull : SyncKind.push;
+          if (action.merge != null) {
+            final selected =
+                choices ??
+                {
+                  for (final issue in action.merge!.issues)
+                    issue.path: useCloud ? 'cloud' : 'local',
+                };
+            if (action.merge!.issues.any(
+                  (issue) => !['local', 'cloud'].contains(selected[issue.path]),
+                ) ||
+                selected.keys.any(
+                  (path) =>
+                      !action.merge!.issues.any((issue) => issue.path == path),
+                )) {
+              throw StateError('Choose a version for each conflicting item.');
+            }
+            action.merge = mergeSyncPayload(
+              action.key,
+              action.ancestor,
+              action.local,
+              action.remote?.deleted == true ? null : action.remote?.payload,
+              action.hasAncestor,
+              choices: selected,
+              atomicTasks: action.atomicTasks,
+            );
+            action.kind = SyncKind.merge;
+          } else {
+            action.kind = useCloud ? SyncKind.pull : SyncKind.push;
+          }
         }
         if (action.kind == SyncKind.conflict) {
           unresolved.add(action);
           _advance();
           continue;
         }
-        if (action.kind == SyncKind.push) {
+        var upload = action.local;
+        if (action.kind == SyncKind.merge) {
+          if (isEditing()) {
+            _waitingForEdit = true;
+            _needsSync = true;
+            message = 'Waiting for editing to finish';
+            return;
+          }
+          upload = action.merge!.payload;
+          if (upload != null) validateSyncPayload(action.key, upload);
+          if (canonicalJson(store.syncRecord(action.key)) !=
+              canonicalJson(action.local)) {
+            _needsSync = true;
+            throw StateError(
+              'You edited this item during sync. Your edits are safe; syncing will retry.',
+            );
+          }
+          if (canonicalJson(upload) != canonicalJson(action.local)) {
+            _report('Combining changes', detail: detail);
+            _applying = true;
+            try {
+              await store.applySyncRecord(
+                action.key,
+                upload,
+                deleted: upload == null,
+              );
+            } finally {
+              _applying = false;
+            }
+            ensureCurrent();
+          }
+          if (action.remote != null &&
+              canonicalJson(upload) == canonicalJson(action.remote!.payload)) {
+            baseline[action.key] = {
+              ...action.remote!.baseline,
+              'payloadSchemaVersion': supportsGoals ? 2 : 1,
+            };
+            pending.remove(action.key);
+            await _saveMeta(meta);
+            ensureCurrent();
+            _advance();
+            continue;
+          }
+        }
+        if (action.kind == SyncKind.push || action.kind == SyncKind.merge) {
           _report('Uploading', detail: detail);
-          final fingerprint = canonicalJson(action.local),
+          final fingerprint = canonicalJson(upload),
               revision = action.remote?.revision ?? 0;
           var mutation = pending[action.key] == null
               ? null
@@ -1319,15 +1448,15 @@ class CloudSyncController extends ChangeNotifier {
               if (supportsGoals) 'schemaVersion': 2,
               'expectedRevision': revision,
               'mutationId': mutation['mutationId'],
-              'deleted': action.local == null,
-              'payload': action.local,
+              'deleted': upload == null,
+              'payload': upload,
             },
           );
           ensureCurrent();
           final record = SyncRecord.fromJson(result);
           if (record.key != action.key ||
               canonicalJson(record.payload) != fingerprint ||
-              record.deleted != (action.local == null)) {
+              record.deleted != (upload == null)) {
             throw const FormatException(
               'The sync acknowledgement did not match your note.',
             );
@@ -1379,6 +1508,7 @@ class CloudSyncController extends ChangeNotifier {
         _advance();
       }
       conflicts = unresolved;
+      if (unresolved.isNotEmpty) _acknowledgedContent = null;
       if (unresolved.isEmpty && !_needsSync) {
         _acknowledgedContent = canonicalJson(store.syncRecords());
         _acknowledgedOwner = owner;
@@ -1396,6 +1526,7 @@ class CloudSyncController extends ChangeNotifier {
       }
     } finally {
       busy = false;
+      this.background = false;
       progress = null;
       _notify();
       if (_needsSync && !_disposed) _schedule();

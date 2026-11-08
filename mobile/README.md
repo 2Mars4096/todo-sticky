@@ -59,6 +59,8 @@ Both preview flags are required. The package is `io.github.twomars4096.sticky_to
 
 ## Data and recovery
 
+The app checks remote edits every 15 seconds while foregrounded, uploads saved edits after about 900ms and checks immediately when returning to the app. Failed attempts retry on later polls; drafts, save failures and conflicts retain their existing protections. There is no sync worker while the phone app is closed/backgrounded. This cadence is included in the verified local production `2.1.15+15` APK at `../release/todo-sticky.apk` (19.75 MB, original release key); install over the existing production app. All 102 phone tests and static analysis pass.
+
 The phone works offline without an account or Diane. `sticky-todo.json` lives in app-private storage. Writes are serialized, written and flushed to a temporary file, then atomically renamed; a previous readable save is retained. A corrupted primary file is preserved before fallback recovery. An unreadable notebook is never silently treated as an empty notebook. Save failures keep edits on screen with a persistent Retry action.
 
 Android system auto-backup is disabled so encrypted key material cannot be accidentally restored without its Keystore keys. Use the explicit export for migration, or the separate account/sync feature. Clearing Android app storage or uninstalling removes local data; export first when using the standalone app.

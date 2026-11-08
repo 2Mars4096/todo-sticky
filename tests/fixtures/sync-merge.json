@@ -1,0 +1,1169 @@
+[
+  {
+    "name": "independent steps in one shared goal",
+    "key": "goals",
+    "ancestor": {
+      "targets": [
+        {
+          "id": "project",
+          "text": "Learning project",
+          "done": false,
+          "plan": [
+            {
+              "id": "old",
+              "text": "old"
+            }
+          ]
+        }
+      ],
+      "recurring": []
+    },
+    "local": {
+      "targets": [
+        {
+          "id": "project",
+          "text": "Learning project",
+          "done": false,
+          "plan": [
+            {
+              "id": "old",
+              "text": "old"
+            },
+            {
+              "id": "a",
+              "text": "Compare approaches"
+            }
+          ]
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "project",
+          "text": "Learning project",
+          "done": false,
+          "plan": [
+            {
+              "id": "old",
+              "text": "old"
+            },
+            {
+              "id": "b",
+              "text": "Gather evidence"
+            },
+            {
+              "id": "c",
+              "text": "Test assumptions"
+            }
+          ]
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": true,
+    "expected": {
+      "targets": [
+        {
+          "id": "project",
+          "text": "Learning project",
+          "done": false,
+          "plan": [
+            {
+              "id": "old",
+              "text": "old"
+            },
+            {
+              "id": "a",
+              "text": "Compare approaches"
+            },
+            {
+              "id": "b",
+              "text": "Gather evidence"
+            },
+            {
+              "id": "c",
+              "text": "Test assumptions"
+            }
+          ]
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "separate goal fields",
+    "key": "goals",
+    "ancestor": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "a",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "local": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "New text",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "a",
+          "done": true
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": true,
+    "expected": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "New text",
+          "done": true
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "independent root additions",
+    "key": "goals",
+    "ancestor": {
+      "targets": [
+        {
+          "id": "old",
+          "text": "old",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "local": {
+      "targets": [
+        {
+          "id": "old",
+          "text": "old",
+          "done": false
+        },
+        {
+          "id": "a",
+          "text": "a",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "old",
+          "text": "old",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": true,
+    "expected": {
+      "targets": [
+        {
+          "id": "old",
+          "text": "old",
+          "done": false
+        },
+        {
+          "id": "a",
+          "text": "a",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "deletion and unrelated edit",
+    "key": "goals",
+    "ancestor": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "a",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "local": {
+      "targets": [
+        {
+          "id": "b",
+          "text": "b",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "a",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "Edited",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": true,
+    "expected": {
+      "targets": [
+        {
+          "id": "b",
+          "text": "Edited",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "delete versus edit keeps independent additions",
+    "key": "goals",
+    "ancestor": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "a",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "local": {
+      "targets": [
+        {
+          "id": "new",
+          "text": "new",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Edited",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": true,
+    "expected": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Edited",
+          "done": false
+        },
+        {
+          "id": "new",
+          "text": "new",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": [
+      "/targets/a"
+    ],
+    "choices": {
+      "/targets/a": "cloud"
+    }
+  },
+  {
+    "name": "no ancestor preserves distinct IDs even for matching text",
+    "key": "goals",
+    "ancestor": null,
+    "local": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Same title",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "b",
+          "text": "Same title",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": false,
+    "expected": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Same title",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "Same title",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "no ancestor still identifies incompatible shared fields",
+    "key": "goals",
+    "ancestor": null,
+    "local": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Local",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Cloud",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": false,
+    "expected": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Cloud",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": [
+      "/targets/a/text"
+    ],
+    "choices": {
+      "/targets/a/text": "cloud"
+    }
+  },
+  {
+    "name": "item by item resolution keeps other changes",
+    "key": "goals",
+    "ancestor": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "a",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "local": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Local A",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "Local B",
+          "done": false
+        },
+        {
+          "id": "x",
+          "text": "x",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "cloud": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Cloud A",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "Cloud B",
+          "done": false
+        },
+        {
+          "id": "y",
+          "text": "y",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "hasAncestor": true,
+    "expected": {
+      "targets": [
+        {
+          "id": "a",
+          "text": "Local A",
+          "done": false
+        },
+        {
+          "id": "b",
+          "text": "Cloud B",
+          "done": false
+        },
+        {
+          "id": "x",
+          "text": "x",
+          "done": false
+        },
+        {
+          "id": "y",
+          "text": "y",
+          "done": false
+        }
+      ],
+      "recurring": []
+    },
+    "issuePaths": [
+      "/targets/a/text",
+      "/targets/b/text"
+    ],
+    "choices": {
+      "/targets/a/text": "local",
+      "/targets/b/text": "cloud"
+    }
+  },
+  {
+    "name": "nested steps edited independently",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "parent",
+          "text": "parent",
+          "status": "todo",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "a",
+              "status": "todo",
+              "subtasks": []
+            },
+            {
+              "id": "b",
+              "text": "b",
+              "status": "todo",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "parent",
+          "text": "parent",
+          "status": "todo",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "Edited A",
+              "status": "todo",
+              "subtasks": []
+            },
+            {
+              "id": "b",
+              "text": "b",
+              "status": "todo",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "cloud": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "parent",
+          "text": "parent",
+          "status": "todo",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "a",
+              "status": "todo",
+              "subtasks": []
+            },
+            {
+              "id": "b",
+              "text": "b",
+              "status": "done",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "hasAncestor": true,
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "parent",
+          "text": "parent",
+          "status": "todo",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "Edited A",
+              "status": "todo",
+              "subtasks": []
+            },
+            {
+              "id": "b",
+              "text": "b",
+              "status": "done",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "new unfinished step reopens completed parent",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "p",
+          "text": "p",
+          "status": "todo",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "a",
+              "status": "todo",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "p",
+          "text": "p",
+          "status": "done",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "a",
+              "status": "done",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "cloud": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "p",
+          "text": "p",
+          "status": "todo",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "a",
+              "status": "todo",
+              "subtasks": []
+            },
+            {
+              "id": "b",
+              "text": "b",
+              "status": "todo",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "hasAncestor": true,
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "p",
+          "text": "p",
+          "status": "todo",
+          "subtasks": [
+            {
+              "id": "a",
+              "text": "a",
+              "status": "done",
+              "subtasks": []
+            },
+            {
+              "id": "b",
+              "text": "b",
+              "status": "todo",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "one-sided reorder and independent text edit",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "c",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "c",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "cloud": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "Edited",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "hasAncestor": true,
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "Edited",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "incompatible reordering is a separate choice",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "c",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "c",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "cloud": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "c",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "hasAncestor": true,
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "c",
+          "text": "c",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "issuePaths": [
+      "/tasks/$order"
+    ],
+    "choices": {
+      "/tasks/$order": "cloud"
+    }
+  },
+  {
+    "name": "independent insertions in same gap converge",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "z",
+          "text": "z",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "l",
+          "text": "l",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "z",
+          "text": "z",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "cloud": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "r",
+          "text": "r",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "z",
+          "text": "z",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "hasAncestor": true,
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "l",
+          "text": "l",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "r",
+          "text": "r",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "z",
+          "text": "z",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "tombstone versus item edit reviews the item",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "Edited",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "cloud": null,
+    "hasAncestor": true,
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "Edited",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "issuePaths": [
+      "/tasks/a"
+    ],
+    "choices": {
+      "/tasks/a": "local"
+    }
+  },
+  {
+    "name": "paragraphs and blank legacy tasks survive",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "First\n\nSecond",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "cloud": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "a",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "hasAncestor": true,
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "First\n\nSecond",
+          "status": "todo",
+          "subtasks": []
+        },
+        {
+          "id": "b",
+          "text": "b",
+          "status": "todo",
+          "subtasks": []
+        }
+      ]
+    },
+    "issuePaths": []
+  },
+  {
+    "name": "project identity and step identity are one assignment",
+    "key": "day:2026-11-08",
+    "ancestor": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "Task",
+          "status": "todo",
+          "subtasks": [],
+          "goalId": "g1",
+          "goalStepId": "s1"
+        }
+      ]
+    },
+    "local": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "Edited task",
+          "status": "todo",
+          "subtasks": [],
+          "goalId": "g2"
+        }
+      ]
+    },
+    "cloud": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "Task",
+          "status": "todo",
+          "subtasks": [],
+          "goalId": "g1",
+          "goalStepId": "s2"
+        }
+      ]
+    },
+    "hasAncestor": true,
+    "choices": {
+      "/tasks/a/$project": "cloud"
+    },
+    "expected": {
+      "date": "2026-11-08",
+      "tasks": [
+        {
+          "id": "a",
+          "text": "Edited task",
+          "status": "todo",
+          "subtasks": [],
+          "goalId": "g1",
+          "goalStepId": "s2"
+        }
+      ]
+    },
+    "issuePaths": [
+      "/tasks/a/$project"
+    ]
+  }
+]

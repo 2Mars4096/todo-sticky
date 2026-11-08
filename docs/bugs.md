@@ -1,5 +1,23 @@
 # Bugs And Failed Approaches
 
+## 2026-11-08: Coarse conflicts and flashing review
+
+- Whole-record reconciliation marked independent additions to the same Goals/steps list as a conflict. Use acknowledged-ancestor, ID-aware field/collection merges; preserve originals and validate before durable local apply and revision-guarded upload.
+- Whole-record choices could discard unrelated items. Individual choices now recompute a combined result retaining independent edits from both sides. Deletion/edit and ordering disagreements remain explicit; no-ancestor absence cannot establish deletion.
+- Every background check mounted progress and disabled review radios. Focus leaving those radios could schedule another sync because only non-acknowledged content was checked. Restrict blur retries to text editors, suppress background progress/overlays and keep stable issue/recovery keys. Background checks retain choices and scroll; changed issues alone invalidate selections.
+- A successful compiled default URL was not persisted, so a public build without that default could disconnect an existing local account. Persist the selected service and recover only a unique enabled owner/folder-bound origin.
+- Flutter release archives returned 404 despite a valid official tag. CI now falls back to the exact verified official Git commit and bootstraps its matching engine, without changing dependencies or requirements.
+- A failed upload after individual choices must not ask the same questions again. Resume a persisted upload intent only when local bytes and expected cloud revision still match; otherwise reconcile again. Phone list choices keep their state while offscreen, and tests pump layout after ensureVisible before actual taps.
+
+## 2026-11-07: Automatic sync gaps and phone verification tooling
+
+- Flutter fake-clock transport callbacks must use `expectSync`: guarded `expect` can throw while `tester.pump` is advancing a scheduled sync, and that error is correctly caught as a transport failure. The new foreground test exposed this harness error after restoring the SDK; retain explicit controller-error assertions so caught test failures cannot masquerade as scheduling failures.
+- Mac's periodic/focus/online wrapper rejected any focused input, contradicting the inner nonempty-draft guard. An empty capture could suppress remote checks indefinitely. Use the draft guard consistently and handle visibility return.
+- Mac blocked all sync during active Focus because incoming focus-history application rejects an active timer. Defer only incoming focus records and resume after Focus; keep tasks/goals syncing independently.
+- Both clients waited up to 60 seconds for remote changes and automatic failure retries. Poll every 15 seconds in the foreground; retain draft/save/conflict protections.
+- Phone test execution is currently blocked by tooling: `/opt/homebrew/bin/flutter` resolves to the SDK with Dart 3.11.5, below the notebook's Dart 3.13 minimum. `mobile/.dart_tool/package_config.json` and `android/local.properties` reference missing `/private/tmp/sticky-flutter-3.47.8`. Attempts to retrieve the pinned official archive/manifest returned HTTP 404. Restore a compatible SDK before claiming Android test/build acceptance; do not lower project requirements to bypass this.
+  - Resolved for this delivery: restore official Flutter Git tag `3.47.8` into `/private/tmp/sticky-flutter-3.47.8`, then bootstrap its engine/Dart components with `bin/flutter --version`. It supplies Dart 3.13.7; use its explicit binary instead of the older PATH SDK. All 102 phone tests and analysis pass without changing requirements or the lockfile.
+
 ## 2026-11-02: Project editing friction
 
 - Unscheduled steps had Save without Cancel, and Escape bubbled into leaving the page. Unified inline editors now cancel locally and restore focus.

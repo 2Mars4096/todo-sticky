@@ -24,6 +24,8 @@ const longEmail = 'research.notes.and.daily.planning@university.example';
 class ScreenAccount extends CloudSyncController {
   bool syncEnabled = false;
   int signInRequests = 0;
+  final choiceSets = <Map<String, String>?>[];
+  void refresh() => notifyListeners();
   final resolutions = <({String? key, bool useCloud})>[];
 
   ScreenAccount({required super.store, required super.transport})
@@ -44,8 +46,11 @@ class ScreenAccount extends CloudSyncController {
     String? resolveKey,
     bool useCloud = false,
     String? reviewedFingerprint,
+    Map<String, String>? choices,
+    bool background = false,
   }) async {
     resolutions.add((key: resolveKey, useCloud: useCloud));
+    choiceSets.add(choices);
   }
 }
 
@@ -244,10 +249,14 @@ void main() {
         refreshToken: 'not-a-real-refresh-token',
         expiresAt: DateTime.now().millisecondsSinceEpoch + 3600000,
       );
-      Map<String, dynamic> note(String text) => {
-        'date': '2026-10-24',
-        'tasks': [Task(id: 'research-task', text: text).toJson()],
-      };
+      Map<String, dynamic> note(String text, {String second = 'Second task'}) =>
+          {
+            'date': '2026-10-24',
+            'tasks': [
+              Task(id: 'research-task', text: text).toJson(),
+              Task(id: 'second-task', text: second).toJson(),
+            ],
+          };
       account.message =
           '1 note needs your choice. Both versions are preserved.';
       account.lastSynced = '2026-10-24T10:30:00';
@@ -255,13 +264,17 @@ void main() {
         SyncAction(
           'day:2026-10-24',
           SyncKind.conflict,
-          note('Add the final research figures and send the draft to Mei'),
+          note(
+            'Add the final research figures and send the draft to Mei',
+            second: 'Local second item',
+          ),
           SyncRecord(
             key: 'day:2026-10-24',
             revision: 2,
             deleted: false,
             payload: note(
               'Review the supporting evidence before sending the draft',
+              second: 'Cloud second item',
             ),
             mutationId: 'desktop-revision',
             updatedAt: '2026-10-24T10:30:00Z',
@@ -269,6 +282,13 @@ void main() {
         ),
       ];
 
+      account.conflicts.single.merge = mergeSyncPayload(
+        'day:2026-10-24',
+        note('Original task', second: 'Original second'),
+        account.conflicts.single.local,
+        account.conflicts.single.remote!.payload,
+        true,
+      );
       final boundary = GlobalKey();
       await openAccount(tester, account, boundary);
       expect(find.text(longEmail), findsOneWidget);
@@ -282,18 +302,74 @@ void main() {
       await tester.pumpAndSettle();
       expect(account.resolutions, [(key: null, useCloud: false)]);
 
-      await revealButton(tester, 'Keep device version');
-      await tester.tap(buttonWithLabel('Keep device version'));
+      final radios = find.byType(RadioListTile<String>);
+      await tester.ensureVisible(radios.at(0));
+      await tester.pumpAndSettle();
+      await tester.tap(radios.at(0));
+      await tester.pumpAndSettle();
+      final position = tester
+          .state<ScrollableState>(accountScrollable())
+          .position
+          .pixels;
+      account.busy = true;
+      account.background = true;
+      account.refresh();
+      await tester.pump();
+      expect(
+        tester
+            .widget<RadioGroup<String>>(find.byType(RadioGroup<String>).first)
+            .groupValue,
+        'local',
+      );
+      expect(
+        tester.state<ScrollableState>(accountScrollable()).position.pixels,
+        position,
+      );
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      account.busy = false;
+      account.background = false;
+      account.refresh();
+      await tester.pump();
+      await tester.ensureVisible(radios.at(3));
+      await tester.pumpAndSettle();
+      await tester.tap(radios.at(3));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widgetList<RadioGroup<String>>(find.byType(RadioGroup<String>))
+            .map((group) => group.groupValue)
+            .toList(),
+        ['local', 'cloud'],
+      );
+      await revealButton(tester, 'Apply choices');
+      expect(
+        tester
+            .widget<ButtonStyleButton>(buttonWithLabel('Apply choices'))
+            .onPressed,
+        isNotNull,
+      );
+      await tester.tap(buttonWithLabel('Apply choices'));
       await tester.pumpAndSettle();
       expect(account.resolutions.last, (
         key: 'day:2026-10-24',
         useCloud: false,
       ));
 
-      await revealButton(tester, 'Use account version');
-      await tester.tap(buttonWithLabel('Use account version'));
+      expect(account.choiceSets.last, {
+        '/tasks/research-task/text': 'local',
+        '/tasks/second-task/text': 'cloud',
+      });
+      await tester.ensureVisible(radios.at(1));
       await tester.pumpAndSettle();
-      expect(account.resolutions.last, (key: 'day:2026-10-24', useCloud: true));
+      await tester.tap(radios.at(1));
+      await tester.pumpAndSettle();
+      await revealButton(tester, 'Apply choices');
+      await tester.tap(buttonWithLabel('Apply choices'));
+      await tester.pumpAndSettle();
+      expect(account.choiceSets.last, {
+        '/tasks/research-task/text': 'cloud',
+        '/tasks/second-task/text': 'cloud',
+      });
 
       await revealButton(tester, 'Export conflict recovery copies');
       expect(

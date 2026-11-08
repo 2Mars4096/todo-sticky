@@ -6,9 +6,9 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed workflow improvements and goal-metadata compatibility and deployed sync service URL (2026-11-01). Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
+Local macOS installation: `/Applications/Sticky Todo.app` includes the reviewed workflow improvements, goal-metadata compatibility, automatic 15-second sync and deployed sync service URL (2026-11-07). Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
 
-Local Android release build: `release/todo-sticky.apk` (2.1.15+14, ARM64, 19.75 MB, original release signature, sync URL prefilled). The local `release/` folder is excluded from Git.
+Local Android release build: `release/todo-sticky.apk` (2.1.15+15, ARM64, 19.75 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
 
 Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
@@ -266,7 +266,7 @@ Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stab
 
 ## Optional Google account and cross-platform sync
 
-The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Account shows sync progress and a dedicated Conflicts & recovery view. Same-day conflicts are compared as readable versions, with both copies retained locally and stale choices blocked; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching optimized Android release APK is available; The personal Cloud Run service is deployed; see [connection steps](docs/account-sync.md#personal-deployment). Updated macOS/Android builds return from browser confirmation to the app, with a **Return to Sticky Todo** fallback button. The public v2.1.15 desktop release predates these account changes.
+The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Account shows sync progress and a dedicated Conflicts & recovery view. Same-day conflicts are compared as readable versions, with both copies retained locally and stale choices blocked; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching optimized Android release APK is available; The personal Cloud Run service is deployed; see [connection steps](docs/account-sync.md#personal-deployment). Updated macOS/Android builds return from browser confirmation to the app, with a **Return to Sticky Todo** fallback button.
 
 ## Android app (Flutter)
 
@@ -286,6 +286,10 @@ On Mac, click a long-term title in **Goals** to see the full description, existi
 Mac saves spanning several dates are recoverable: **Retry save** continues without duplicating completed writes; **Discard remaining** keeps already saved tasks and steps. Removing a project step retains its daily work. No new sync schema or backend setup is required.
 
 Sync batches unchanged acknowledgements, avoids repeated archive scans/list refreshes during downloads, and resumes promptly after editing. Progress counts actual changed records. Conflict review and failed-save recovery remain intact.
+
+Independent additions and edits combine automatically, including steps added to the same goal. Genuine disagreements are reviewed item by item, with separate device/cloud choices that retain unrelated changes from both sides. Background checks preserve your selections and scroll position. Saved copies retain the original versions.
+
+The app checks for remote edits every **15 seconds** while Mac is visible or Android is foregrounded, uploads saved changes after about **0.9 seconds**, and checks promptly when you return. Failures retry automatically on later checks. Mac task/goal sync continues during Focus; incoming focus history waits until the session ends. Nonempty drafts, failed saves and conflicting versions still require completion or review. Android does not sync while closed or backgrounded. These frequency changes are installed on Mac and included in the local Android +15 APK.
 
 
 ### Editing and reviewing projects on Mac

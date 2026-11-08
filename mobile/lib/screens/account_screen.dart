@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../app.dart';
 import '../widgets/sync_progress.dart';
+import '../widgets/conflict_items.dart';
 import '../services/cloud_sync.dart';
 import '../services/files.dart';
 import '../state/sticky_store.dart';
@@ -67,7 +68,7 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
             ? 'Sync needs attention'
             : local
             ? 'Local only'
-            : account.busy
+            : account.busy && !account.background
             ? 'Syncing'
             : account.upToDate
             ? 'Synced with cloud'
@@ -76,7 +77,7 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
             ? Icons.error_outline
             : local
             ? Icons.cloud_off_outlined
-            : account.busy
+            : account.busy && !account.background
             ? Icons.sync
             : account.upToDate
             ? Icons.cloud_done_outlined
@@ -152,28 +153,6 @@ class _AccountScreenState extends State<AccountScreen> {
     } finally {
       if (mounted) setState(() => configuring = false);
     }
-  }
-
-  String title(SyncAction action) => action.key.startsWith('day:')
-      ? 'Notes · ${action.key.substring(4)}'
-      : action.key == 'goals'
-      ? 'Goals and routines'
-      : 'Focus session';
-  String preview(Map<String, dynamic>? payload) {
-    if (payload == null) return 'Deleted on this device';
-    final tasks = payload['tasks'];
-    if (tasks is List) {
-      return tasks.isEmpty
-          ? 'No tasks'
-          : tasks
-                .take(5)
-                .map((task) => '• ${(task as Map)['text']}')
-                .join('\n');
-    }
-    if (payload['targets'] is List) {
-      return '${(payload['targets'] as List).length} goals · ${(payload['recurring'] as List).length} routines';
-    }
-    return payload['taskText'] as String? ?? 'Saved work';
   }
 
   @override
@@ -280,14 +259,18 @@ class _AccountScreenState extends State<AccountScreen> {
                     onPressed: unavailable || !account.enabled
                         ? null
                         : () => run(() => account.synchronize()),
-                    icon: account.busy
+                    icon: account.busy && !account.background
                         ? const SizedBox(
                             width: 18,
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.sync),
-                    label: Text(account.busy ? 'Syncing…' : 'Sync now'),
+                    label: Text(
+                      account.busy && !account.background
+                          ? 'Syncing…'
+                          : 'Sync now',
+                    ),
                   ),
                   OutlinedButton(
                     onPressed: unavailable ? null : () => run(account.signOut),
@@ -301,9 +284,10 @@ class _AccountScreenState extends State<AccountScreen> {
                 ],
               ),
             ],
-            if (account.busy && account.progress != null)
+            if (account.busy && !account.background && account.progress != null)
               SyncProgressView(progress: account.progress!),
-            if (!account.busy && account.message.isNotEmpty) ...[
+            if ((!account.busy || account.background) &&
+                account.message.isNotEmpty) ...[
               const SizedBox(height: 16),
               Semantics(
                 liveRegion: true,
@@ -340,81 +324,10 @@ class _AccountScreenState extends State<AccountScreen> {
               const SizedBox(height: 8),
               const Text('Both copies saved', style: TextStyle(height: 1.4)),
               for (final conflict in account.conflicts)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title(conflict),
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'ON THIS DEVICE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: mutedInk,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        preview(conflict.local),
-                        maxLines: 7,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'IN YOUR ACCOUNT',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: mutedInk,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        preview(
-                          conflict.remote?.deleted == true
-                              ? null
-                              : conflict.remote?.payload,
-                        ),
-                        maxLines: 7,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 8,
-                        children: [
-                          OutlinedButton(
-                            onPressed: unavailable
-                                ? null
-                                : () => run(
-                                    () => account.synchronize(
-                                      resolveKey: conflict.key,
-                                      reviewedFingerprint:
-                                          syncConflictFingerprint(conflict),
-                                    ),
-                                  ),
-                            child: const Text('Keep device version'),
-                          ),
-                          FilledButton.tonal(
-                            onPressed: unavailable
-                                ? null
-                                : () => run(
-                                    () => account.synchronize(
-                                      resolveKey: conflict.key,
-                                      reviewedFingerprint:
-                                          syncConflictFingerprint(conflict),
-                                      useCloud: true,
-                                    ),
-                                  ),
-                            child: const Text('Use account version'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                ConflictItems(
+                  key: ValueKey(conflict.key),
+                  account: account,
+                  conflict: conflict,
                 ),
             ],
             if (account.session != null)

@@ -1,4 +1,7 @@
 // Shared, deterministic three-way reconciliation. No network or UI dependencies.
+import { canonical, mergeSyncPayload, type MergeResult } from './syncMerge'
+export { canonical, mergeSyncPayload } from './syncMerge'
+export type { MergeChoices, MergeIssue } from './syncMerge'
 export type SyncPayload = Record<string, unknown> | null
 export interface CloudRecord {
   key: string
@@ -11,17 +14,14 @@ export interface CloudRecord {
 export interface SyncBaseline { revision: number; payload: SyncPayload; deleted: boolean; payloadSchemaVersion?: number }
 export interface SyncAction {
   key: string
-  kind: 'push' | 'pull' | 'ack' | 'conflict'
+  kind: 'push' | 'pull' | 'ack' | 'conflict' | 'merge'
   local: SyncPayload
   remote: CloudRecord | null
-}
-
-export function canonical(value: unknown): string {
-  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']'
-  if (value && typeof value === 'object') return '{' + Object.keys(value).sort()
-    .filter(key => (value as Record<string, unknown>)[key] !== undefined)
-    .map(key => JSON.stringify(key) + ':' + canonical((value as Record<string, unknown>)[key])).join(',') + '}'
-  return JSON.stringify(value) ?? 'null'
+  merge?: MergeResult
+  ancestor?: SyncPayload
+  hasAncestor?: boolean
+  atomicTasks?: boolean
+  mergeProblem?: string
 }
 
 function empty(key: string, payload: SyncPayload): boolean {
@@ -53,7 +53,21 @@ export function reconcile(local: Record<string, SyncPayload>, cloud: CloudRecord
     else if (record?.revision === base.revision) kind = 'push'
     else kind = 'conflict'
     if (kind === 'ack' && !record) continue
-    actions.push({ key, kind, local: left, remote: record })
+    const action: SyncAction = { key, kind, local: left, remote: record }
+    if (kind === 'conflict' && record) {
+      action.ancestor = base?.deleted ? null : base?.payload ?? null
+      action.hasAncestor = Boolean(base)
+      action.merge = mergeSyncPayload(key, action.ancestor, left, right, action.hasAncestor)
+      // Concurrent cross-parent moves can otherwise duplicate a task ID. Fall
+      // back to individual root-task choices rather than writing an invalid tree.
+      if (action.merge.payload && !validPayload(key, action.merge.payload) && key.startsWith('day:')) {
+        action.atomicTasks = true
+        action.merge = mergeSyncPayload(key, action.ancestor, left, right, action.hasAncestor, {}, true)
+      }
+      if (!action.merge.issues.length && (action.merge.payload === null || validPayload(key, action.merge.payload))) action.kind = 'merge'
+      else if (!action.merge.issues.length) action.mergeProblem = 'Combined changes exceed sync limits. Shorten the affected list or plan before syncing.'
+    }
+    actions.push(action)
   }
   return actions
 }

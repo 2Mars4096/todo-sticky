@@ -3,13 +3,29 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { invoke } from '@tauri-apps/api/core'
 import { api, waitForPendingWrites } from '../api'
 import { connectAccount, googleSignIn, requestJson, signOut, type Auth, type User } from '../cloudAccount'
-import { canonical, reconcile, syncServerUrl, validateRecords, goalPlanningSupported, hasGoalPlanningMetadata, migrateGoalMetadata, type CloudRecord, type SyncAction, type SyncBaseline, type SyncPayload } from '../cloudSync'
+import { canonical, reconcile, syncServerUrl, validateRecords, goalPlanningSupported, hasGoalPlanningMetadata, migrateGoalMetadata, mergeSyncPayload, type MergeChoices, type CloudRecord, type SyncAction, type SyncBaseline, type SyncPayload } from '../cloudSync'
 import { nextSyncProgress, syncRecordLabel, yieldSyncUi, type SyncProgress } from '../syncProgress'
 import { preserveConflict, reviewedConflictMatches, type SyncRecoveryEntry } from '../syncConflicts'
 import type { GoalItem, StarFocusMissionRecord, Task } from '../types'
 
 const SERVER_KEY = 'todo-sticky-cloud-server-v1'
 const OWNER_KEY = 'todo-sticky-cloud-owner-v1'
+function rememberedServer(kbPath: string): string {
+  const explicit = stored(SERVER_KEY)
+  if (explicit) return explicit
+  const owner = stored(OWNER_KEY)
+  if (!owner || !kbPath) return ''
+  // Earlier local builds used a compiled default without saving it. Recover
+  // only a unique, enabled origin already bound to this owner and folder.
+  try {
+    const prefix = `todo-sticky-cloud-v1:${owner}:`, suffix = ':' + kbPath, origins = new Set<string>()
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith(prefix) && key.endsWith(suffix) && metadata(key).enabled) origins.add(syncServerUrl(key.slice(prefix.length, -suffix.length)))
+    }
+    return origins.size === 1 ? [...origins][0] : ''
+  } catch { return '' }
+}
 interface Metadata {
   enabled: boolean
   baseline: Record<string, SyncBaseline>
@@ -20,6 +36,7 @@ interface Hooks {
   kbPath: string
   ready: boolean
   blocked: boolean
+  focusActive?: boolean
   changeKey: string
   flush: () => Promise<void>
   reload: () => Promise<unknown>
@@ -46,16 +63,18 @@ function baseline(record: CloudRecord, payloadSchemaVersion: number): SyncBaseli
 
 export function useCloudSync(hooks: Hooks) {
   const hooksRef = useRef(hooks); hooksRef.current = hooks
-  const [server, setServer] = useState(() => stored(SERVER_KEY) || import.meta.env.VITE_SYNC_SERVER_URL || '')
+  const [server, setServer] = useState(() => rememberedServer(hooks.kbPath) || import.meta.env.VITE_SYNC_SERVER_URL || '')
   const [auth, setAuth] = useState<Auth | null>(null)
   const [connectAttempt, setConnectAttempt] = useState(0)
   const [user, setUser] = useState<User | null>(null)
   const [busy, setBusy] = useState(false)
+  const [background, setBackground] = useState(false)
+  const foreground = useRef(false)
   const [progress, setProgress] = useState<SyncProgress | null>(null)
   const progressRef = useRef<SyncProgress | null>(null)
   const report = useCallback((stage: string, update: Partial<SyncProgress> = {}) => {
     progressRef.current = nextSyncProgress(progressRef.current, stage, update)
-    setProgress(progressRef.current)
+    if (foreground.current) setProgress(progressRef.current)
   }, [])
   const advance = useCallback(() => {
     const current = progressRef.current
@@ -81,6 +100,8 @@ export function useCloudSync(hooks: Hooks) {
   const owner = auth && user ? `${auth.app.options.projectId}:${user.uid}` : ''
   const keyRef = useRef(key); keyRef.current = key
 
+  useEffect(() => { if (!server) { const recovered = rememberedServer(hooks.kbPath); if (recovered) setServer(recovered) } }, [server, hooks.kbPath])
+
   useEffect(() => {
     epoch.current++
     let disposed = false
@@ -88,6 +109,7 @@ export function useCloudSync(hooks: Hooks) {
     setAuth(null); setUser(null); setEnabled(false); setConflicts([])
     if (server) void connectAccount(server).then(result => {
       if (disposed) return
+      if (!stored(SERVER_KEY)) localStorage.setItem(SERVER_KEY, server)
       setAuth(result)
       unsubscribe = onAuthStateChanged(result, value => { epoch.current++; setUser(value) })
     }).catch(cause => { if (!disposed) setError(cause.message) })
@@ -153,7 +175,7 @@ export function useCloudSync(hooks: Hooks) {
     return local
   }, [])
 
-  const synchronize = useCallback(async (resolution?: { key: string; choice: 'local' | 'cloud'; fingerprint: string }) => {
+  const synchronize = useCallback(async (resolution?: { key: string; choice?: 'local' | 'cloud'; choices?: MergeChoices; fingerprint: string }, manual = false) => {
     const changeAtStart = hooksRef.current.changeKey
     if (!user || !auth || !enabled || !key || !hooksRef.current.ready) return
     if (running.current) { followUp.current = true; return }
@@ -161,11 +183,13 @@ export function useCloudSync(hooks: Hooks) {
     if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
     waitingForEdit.current = false
     followUp.current = false
-    running.current = true; setBusy(true); setError(null)
+    foreground.current = manual || Boolean(resolution)
+    running.current = true; setBusy(true); setBackground(!foreground.current); setError(null)
     progressRef.current = null; report('Checking account')
     const generation = epoch.current
     const assertCurrent = () => { if (generation !== epoch.current || keyRef.current !== key || auth.currentUser?.uid !== user.uid) throw new Error('Account or task folder changed; sync stopped safely.') }
     let pulled = false
+    let deferredFocus = false
     try {
       if (localStorage.getItem(OWNER_KEY) !== owner) throw new Error('Enable sync to link these notes to this account.')
       const meta = metadata(key)
@@ -238,13 +262,19 @@ export function useCloudSync(hooks: Hooks) {
       setApplying(false)
       report('Comparing changes')
       const actions = reconcile(local, cloud, meta.baseline)
+      // A failed, durably prepared upload is already an accepted decision.
+      // Resume it only while both the local bytes and remote revision match.
+      for (const action of actions) {
+        const pending = meta.pending[action.key]
+        if (action.kind === 'conflict' && pending && pending.fingerprint === canonical(action.local) && pending.expectedRevision === action.remote?.revision) action.kind = 'push'
+      }
       // Finish all HTTP writes before local changes lock the editor.
       actions.sort((a, b) => Number(a.kind === 'pull') - Number(b.kind === 'pull'))
       const pendingConflicts = actions.filter(action => action.kind === 'conflict')
       let preserved = false
-      for (const action of pendingConflicts) preserved = preserveConflict(meta.conflicts, action) || preserved
+      for (const action of actions.filter(item => item.kind === 'conflict' || item.kind === 'merge')) preserved = preserveConflict(meta.conflicts, action) || preserved
       if (preserved) { persist(); setRecovery([...meta.conflicts]) }
-      setConflicts(pendingConflicts)
+      setConflicts(previous => canonical(previous) === canonical(pendingConflicts) ? previous : pendingConflicts)
       if (resolution && !reviewedConflictMatches(actions, resolution.key, resolution.fingerprint)) {
         setConflicts(pendingConflicts)
         throw new Error('Conflict changed. Review again.')
@@ -264,12 +294,44 @@ export function useCloudSync(hooks: Hooks) {
         report('Checking changes', { detail })
         if (action.kind === 'conflict' && resolution?.key === action.key) {
           // Both reviewed copies were durably saved before any version is applied.
-          action.kind = resolution.choice === 'local' ? 'push' : 'pull'
+          if (action.merge) {
+            const choices = resolution.choices ?? Object.fromEntries(action.merge.issues.map(issue => [issue.path, resolution.choice!]))
+            if (action.merge.issues.some(issue => !['local', 'cloud'].includes(choices[issue.path])) || Object.keys(choices).some(path => !action.merge!.issues.some(issue => issue.path === path))) throw new Error('Choose a version for each conflicting item.')
+            action.merge = mergeSyncPayload(action.key, action.ancestor, action.local, action.remote?.deleted ? null : action.remote?.payload ?? null, Boolean(action.hasAncestor), choices, action.atomicTasks)
+            action.kind = 'merge'
+          } else action.kind = resolution.choice === 'local' ? 'push' : 'pull'
         }
         if (action.kind === 'conflict') { unresolved.push(action); advance(); continue }
-        if (action.kind === 'push') {
+        let upload = action.local
+        if (action.kind === 'merge') {
+          if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+          if (action.key.startsWith('focus:') && hooksRef.current.focusActive) { deferredFocus = true; continue }
+          upload = action.merge!.payload
+          validateRecords([{ ...action.remote!, payload: upload, deleted: upload === null }])
+          report('Combining changes', { detail })
+          const latest = await snapshot(undefined, action.key)
+          assertCurrent()
+          if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+          if (canonical(latest[action.key] ?? null) !== canonical(action.local)) { followUp.current = true; throw new Error('You edited this item during sync. Your edits are safe; syncing will retry.') }
+          if (canonical(upload) !== canonical(action.local)) {
+            setApplying(true)
+            // Merge locally and durably before sending a revision-guarded upload.
+            if (action.key.startsWith('day:')) {
+              await invoke('cloud_apply_day', { date: action.key.slice(4), tasks: upload?.tasks ?? [], expectedTasks: action.local?.tasks ?? [], expectedKbPath: nativeKbPath }); pulled = true
+            } else if (action.key === 'goals') await hooksRef.current.applyGoals(upload as unknown as Hooks['goals'] ?? { targets: [], recurring: [] })
+            else await hooksRef.current.applyMission(upload as unknown as StarFocusMissionRecord | null, action.key.slice(6))
+            await waitForPendingWrites(); await yieldSyncUi()
+            if (pulled) { await hooksRef.current.reload(); pulled = false }
+            setApplying(false)
+          }
+          if (action.remote && canonical(upload) === canonical(action.remote.payload)) {
+            meta.baseline[action.key] = baseline(action.remote, payloadSchemaVersion)
+            delete meta.pending[action.key]; persist(); advance(); continue
+          }
+        }
+        if (action.kind === 'push' || action.kind === 'merge') {
           report('Uploading', { detail })
-          const fingerprint = canonical(action.local)
+          const fingerprint = canonical(upload)
           const revision = action.remote?.revision ?? 0
           let pending = meta.pending[action.key]
           if (!pending || pending.fingerprint !== fingerprint || pending.expectedRevision !== revision) {
@@ -277,7 +339,7 @@ export function useCloudSync(hooks: Hooks) {
             meta.pending[action.key] = pending; persist()
           }
           const result = await requestJson(server, '/v1/sync/' + encodeURIComponent(action.key), {
-            method: 'PUT', body: JSON.stringify({ expectedRevision: revision, mutationId: pending.mutationId, deleted: action.local === null, payload: action.local,
+            method: 'PUT', body: JSON.stringify({ expectedRevision: revision, mutationId: pending.mutationId, deleted: upload === null, payload: upload,
               ...(payloadSchemaVersion === 2 ? { schemaVersion: 2 } : {}),
             }),
           }, token)
@@ -289,6 +351,9 @@ export function useCloudSync(hooks: Hooks) {
         }
         // Only the short local-apply phase locks interaction. Never lock during HTTP requests.
         if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+        // An active timer is device-local. It must only defer incoming history,
+        // rather than blocking unrelated tasks/goals for the whole session.
+        if (action.key.startsWith('focus:') && hooksRef.current.focusActive) { deferredFocus = true; continue }
         report('Applying downloads', { detail })
         setApplying(true)
         await yieldSyncUi()
@@ -311,10 +376,11 @@ export function useCloudSync(hooks: Hooks) {
         advance()
       }
       assertCurrent()
-      setConflicts(unresolved)
+      setConflicts(previous => canonical(previous) === canonical(unresolved) ? previous : unresolved)
       setLastSynced(new Date().toISOString())
-      if (!unresolved.length && hooksRef.current.changeKey === changeAtStart) setAcknowledged({ key, change: changeAtStart })
-      setMessage(unresolved.length ? `${unresolved.length} conflicts` : hooksRef.current.changeKey !== changeAtStart && !pulled ? 'Changes queued' : 'Up to date')
+      if (deferredFocus) setAcknowledged(null)
+      else if (!unresolved.length && hooksRef.current.changeKey === changeAtStart) setAcknowledged({ key, change: changeAtStart })
+      setMessage(unresolved.length ? `${unresolved.length} conflicts` : deferredFocus ? 'Focus history waits for session to finish' : hooksRef.current.changeKey !== changeAtStart && !pulled ? 'Changes queued' : 'Up to date')
     } catch (cause) {
       const step = progressRef.current as SyncProgress | null
       setError(`${step?.stage ?? 'Sync'}${step?.detail ? ` (${step.detail})` : ''}: ${cause instanceof Error ? cause.message : String(cause)}`)
@@ -323,7 +389,7 @@ export function useCloudSync(hooks: Hooks) {
     finally {
       // Reload even after a later failure, so the editor never holds a stale pre-pull snapshot.
       try { if (pulled) await hooksRef.current.reload() } catch (cause) { setError(String(cause)) }
-      setApplying(false); setBusy(false); running.current = false; setProgress(null); progressRef.current = null
+      setApplying(false); setBusy(false); setBackground(false); running.current = false; setProgress(null); progressRef.current = null
       if (followUp.current && keyRef.current === key) {
         clearTimeout(followUpTimer.current)
         followUpTimer.current = setTimeout(() => { void syncRef.current() }, 900)
@@ -348,19 +414,26 @@ export function useCloudSync(hooks: Hooks) {
     if (!enabled || !hooks.ready || hooks.blocked) return
     const timeout = setTimeout(() => { void syncRef.current() }, 900)
     return () => clearTimeout(timeout)
-  }, [enabled, hooks.ready, hooks.blocked, hooks.changeKey, key])
+  }, [enabled, hooks.ready, hooks.blocked, hooks.changeKey, hooks.focusActive, key])
   useEffect(() => {
     if (!enabled) return
-    const refresh = () => { if (document.visibilityState !== 'hidden' && !document.querySelector('input:focus,textarea:focus,[contenteditable=true]:focus')) void syncRef.current() }
-    const timer = setInterval(refresh, 60_000)
+    // synchronize itself protects nonempty drafts. Empty focused capture must
+    // not suppress discovery of remote edits or the online/resume retry.
+    const refresh = () => { if (document.visibilityState !== 'hidden') void syncRef.current() }
+    const timer = setInterval(refresh, 15_000)
     const afterEdit = () => { if (document.visibilityState !== 'hidden' && (waitingForEdit.current || acknowledgedRef.current?.change !== hooksRef.current.changeKey)) void syncRef.current() }
     const editTimer = { current: undefined as ReturnType<typeof setTimeout> | undefined }
-    const edited = () => { clearTimeout(editTimer.current); editTimer.current = setTimeout(afterEdit, 900) }
+    const edited = (event: FocusEvent) => {
+      const target = event.target as HTMLElement | null
+      if (!target?.matches('textarea,input:not([type=checkbox]):not([type=radio]):not([type=button]),[contenteditable=true]')) return
+      clearTimeout(editTimer.current); editTimer.current = setTimeout(afterEdit, 900)
+    }
     document.addEventListener('focusout', edited)
+    document.addEventListener('visibilitychange', refresh)
     window.addEventListener('online', refresh); window.addEventListener('focus', refresh)
-    return () => { clearInterval(timer); clearTimeout(editTimer.current); document.removeEventListener('focusout', edited); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh) }
+    return () => { clearInterval(timer); clearTimeout(editTimer.current); document.removeEventListener('focusout', edited); document.removeEventListener('visibilitychange', refresh); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh) }
   }, [enabled])
 
-  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready, server, configure, user, connected: Boolean(auth), busy, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
-    cancelSignIn: () => signInController.current?.abort(), sync: () => synchronize(), resolve: (key: string, choice: 'local' | 'cloud', fingerprint: string) => synchronize({ key, choice, fingerprint }) }
+  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready, server, configure, user, connected: Boolean(auth), busy, background, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
+    cancelSignIn: () => signInController.current?.abort(), sync: () => synchronize(undefined, true), resolve: (key: string, choice: 'local' | 'cloud', fingerprint: string) => synchronize({ key, choice, fingerprint }), resolveItems: (key: string, choices: MergeChoices, fingerprint: string) => synchronize({ key, choices, fingerprint }) }
 }

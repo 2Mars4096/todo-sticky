@@ -101,7 +101,8 @@ export default function App() {
   const account = useCloudSync({
     kbPath: aiSettings?.kbPath || '',
     ready: Boolean(aiSettings) && !tasks.loading && !tasks.loadError && starFocus.hydrated,
-    blocked: Boolean(aiLoading || providerSwitching || tasks.saveError || goals.storageError || showPlanner || projectWriting || starFocus.activeSession),
+    blocked: Boolean(aiLoading || providerSwitching || tasks.saveError || goals.storageError || showPlanner || projectWriting),
+    focusActive: Boolean(starFocus.activeSession),
     changeKey: JSON.stringify([tasks.tasks, goals.targets, goals.recurring, starFocus.missionHistory]),
     flush: tasks.flushPendingSave, reload: tasks.load,
     goals: { targets: goals.targets, recurring: goals.recurring }, missions: starFocus.missionHistory,
@@ -201,7 +202,7 @@ export default function App() {
   }, [archiveTarget, tasks.loading, tasks.dataDate, tasks.loadError, tasks.tasks, calendar.dateStr, presentNotice])
   const syncState = account.error || account.conflicts.length ? 'attention'
     : !account.enabled || !account.user ? 'local'
-      : account.busy ? 'syncing' : account.upToDate && !tasks.saving ? 'synced' : 'waiting'
+      : account.busy && !account.background ? 'syncing' : account.upToDate && !tasks.saving ? 'synced' : 'waiting'
   const syncLabel = { attention: 'Sync needs attention', local: 'Local only', syncing: 'Syncing', synced: 'Synced with cloud', waiting: 'Waiting to sync' }[syncState]
 
   useEffect(()=>{
@@ -918,6 +919,6 @@ export default function App() {
           onResetOrbitMap={starFocus.resetOrbitMap}
         />
       )}
-    </div>{account.applying && <div className="cloud-sync-applying"><div>{account.progress ? <SyncProgressView progress={account.progress} /> : 'Updating your notes…'}</div></div>}</>
+    </div>{account.applying && !account.background && <div className="cloud-sync-applying"><div>{account.progress ? <SyncProgressView progress={account.progress} /> : 'Updating your notes…'}</div></div>}</>
   )
 }

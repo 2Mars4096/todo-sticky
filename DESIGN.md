@@ -217,6 +217,8 @@ Lead with controls and current data. Omit promotional intros, repeated page head
 
 Use short labels and current data. Identity and sign-out share one row; sync toggle/action share the next. Progress has a compact stage, bar, counts and elapsed time. Connection details stay collapsed. Conflict/recovery review is a separate in-place view, with paired readable versions, explicit selection, visible deletion states, local saved copies and contextual export. Avoid standing descriptive paragraphs and raw JSON previews.
 
+Independent sync edits combine automatically. Pending review shows only genuinely incompatible individual items/fields, with separate device/cloud choices and Apply choices. Unrelated changes survive either choice. Background polling never mounts progress in review or resets scroll/choices; changed issues alone require reselection. Full original comparisons remain in Saved copies.
+
 ## Android task controls
 
 Daily root tasks expose a six-dot drag grip before the checkbox. Expanded actions use quiet, touch-sized Focus, Add step, Suggest and Move icons; horizontal dots disclose editing, copy, status and delete. Tooltips and accessible names retain action meaning without persistent text labels.

@@ -158,6 +158,7 @@ Future<Rig> fixture(
   Future<bool> Function(Uri)? openBrowser,
   bool Function()? isEditing,
   Map<String, dynamic>? serviceConfig,
+  StatePersistence? persistence,
 }) async {
   final secure = credentials ?? MemoryCredentials();
   if (signedIn) {
@@ -167,7 +168,7 @@ Future<Rig> fixture(
     );
   }
   final store = StickyStore(
-    persistence: MemoryPersistence(),
+    persistence: persistence ?? MemoryPersistence(),
     credentials: secure,
   );
   await store.initialize();
@@ -205,6 +206,218 @@ Future<Rig> fixture(
 }
 
 void main() {
+  Map<String, dynamic> goalList(
+    List<String> ids, {
+    Map<String, String> texts = const {},
+  }) => {
+    'targets': [
+      for (final id in ids) GoalItem(id: id, text: texts[id] ?? id).toJson(),
+    ],
+    'recurring': [],
+  };
+  Map<String, dynamic> goalBase(Map<String, dynamic> value) => {
+    'goals': {
+      'revision': 1,
+      'payload': value,
+      'deleted': false,
+      'payloadSchemaVersion': 1,
+    },
+  };
+
+  test('automatic merge is durable before upload and interrupted upload reuses mutation ID', () async {
+    final initial = goalList(['old']),
+        left = goalList(['old', 'a']),
+        right = goalList(['old', 'b']);
+    final sent = <Map<String, dynamic>>[];
+    var fail = true;
+    late Rig rig;
+    rig = await fixture(
+      (request) {
+        if (request.method == 'GET') {
+          return page([record('goals', right, revision: 2)]);
+        }
+        final body = object(jsonDecode(request.body));
+        sent.add(body);
+        expect(rig.store.syncRecord('goals'), goalList(['old', 'a', 'b']));
+        final persisted = (rig.store.persistence as MemoryPersistence).data!;
+        expect(persisted['goals'], goalList(['old', 'a', 'b']));
+        if (fail) return jsonResponse({'detail': 'Offline'}, status: 503);
+        return jsonResponse(
+          record('goals', object(body['payload']), revision: 3).toJson(),
+        );
+      },
+      local: {'goals': left},
+      baseline: goalBase(initial),
+    );
+    addTearDown(rig.dispose);
+    await rig.sync.synchronize();
+    expect(rig.sync.error, isNotNull);
+    expect(rig.store.syncRecord('goals'), goalList(['old', 'a', 'b']));
+    expect(object((rig.meta['conflicts'] as List).single)['local'], left);
+    fail = false;
+    await rig.sync.synchronize();
+    expect(rig.sync.error, isNull);
+    expect(sent.length, 2);
+    expect(sent[0]['mutationId'], sent[1]['mutationId']);
+    expect(sent[0]['payload'], sent[1]['payload']);
+  });
+
+  test(
+    'individual conflict choices keep additions from both devices',
+    () async {
+      final initial = goalList(['a', 'b']);
+      final left = goalList(
+        ['a', 'b', 'x'],
+        texts: {'a': 'Local A', 'b': 'Local B'},
+      );
+      final right = goalList(
+        ['a', 'b', 'y'],
+        texts: {'a': 'Cloud A', 'b': 'Cloud B'},
+      );
+      Map<String, dynamic>? uploaded;
+      var fail = true;
+      final mutationIds = <String>[];
+      final rig = await fixture(
+        (request) {
+          if (request.method == 'GET') {
+            return page([record('goals', right, revision: 2)]);
+          }
+          uploaded = object(jsonDecode(request.body));
+          mutationIds.add(uploaded!['mutationId'] as String);
+          if (fail) return jsonResponse({'detail': 'Offline'}, status: 503);
+          return jsonResponse(
+            record('goals', object(uploaded!['payload']), revision: 3).toJson(),
+          );
+        },
+        local: {'goals': left},
+        baseline: goalBase(initial),
+      );
+      addTearDown(rig.dispose);
+      await rig.sync.synchronize();
+      expect(uploaded, isNull);
+      final review = rig.sync.conflicts.single;
+      expect(review.merge!.issues.length, 2);
+      await rig.sync.synchronize(
+        resolveKey: 'goals',
+        reviewedFingerprint: syncConflictFingerprint(review),
+        choices: {'/targets/a/text': 'local', '/targets/b/text': 'cloud'},
+      );
+      final expected = goalList(
+        ['a', 'b', 'x', 'y'],
+        texts: {'a': 'Local A', 'b': 'Cloud B'},
+      );
+      expect(rig.sync.error, isNotNull);
+      expect(rig.store.syncRecord('goals'), expected);
+      fail = false;
+      await rig.sync.synchronize();
+      expect(rig.sync.error, isNull);
+      expect(mutationIds.length, 2);
+      expect(mutationIds[0], mutationIds[1]);
+      expect(uploaded!['payload'], expected);
+      expect(rig.store.syncRecord('goals'), expected);
+    },
+  );
+
+  test(
+    'an edit made during a merge download is preserved and never uploaded over',
+    () async {
+      final initial = goalList(['old']),
+          left = goalList(['old', 'a']),
+          right = goalList(['old', 'b']);
+      var puts = 0;
+      late Rig rig;
+      rig = await fixture(
+        (request) async {
+          if (request.method == 'GET') {
+            await rig.store.applySyncRecord(
+              'goals',
+              goalList(['old', 'a', 'new-edit']),
+            );
+            return page([record('goals', right, revision: 2)]);
+          }
+          puts++;
+          return jsonResponse({});
+        },
+        local: {'goals': left},
+        baseline: goalBase(initial),
+      );
+      addTearDown(rig.dispose);
+      await rig.sync.synchronize();
+      expect(rig.sync.error, contains('edited this item'));
+      expect(puts, 0);
+      expect(rig.store.syncRecord('goals'), goalList(['old', 'a', 'new-edit']));
+    },
+  );
+
+  testWidgets('remote changes arrive every 15 seconds; resume is immediate', (
+    tester,
+  ) async {
+    var requests = 0;
+    final cloud = <SyncRecord>[record('goals', goals())];
+    final rig = await fixture((request) {
+      expectSync(request.method, 'GET');
+      requests++;
+      return page(cloud);
+    });
+    try {
+      await tester.pump(const Duration(milliseconds: 900));
+      expect(rig.sync.error, isNull);
+      expect(rig.sync.busy, isFalse);
+      expect(requests, 1, reason: 'Startup sync is automatic');
+      cloud.add(record(dayKey, day('From Mac')));
+      await tester.pump(const Duration(milliseconds: 14100));
+      expect(requests, 2);
+      expect(rig.store.syncRecord(dayKey), day('From Mac'));
+
+      rig.sync.setActive(false);
+      cloud[1] = record(dayKey, day('While phone asleep'), revision: 2);
+      await tester.pump(const Duration(seconds: 30));
+      expect(requests, 2, reason: 'No polling while backgrounded');
+      rig.sync.setActive(true);
+      await tester.pump();
+      expect(
+        requests,
+        3,
+        reason: 'Resume does not wait for a debounce or poll',
+      );
+      expect(rig.store.syncRecord(dayKey), day('While phone asleep'));
+      expect(rig.sync.error, isNull);
+      rig.sync.setActive(true);
+      await tester.pump();
+      expect(requests, 3, reason: 'Repeated lifecycle state is a no-op');
+
+      await rig.sync.setEnabled(false);
+      await tester.pump(const Duration(seconds: 30));
+      expect(requests, 3, reason: 'Explicit pause still stops automatic sync');
+    } finally {
+      rig.dispose();
+    }
+  });
+
+  testWidgets('foreground polling retries offline failures automatically', (
+    tester,
+  ) async {
+    var offline = true, requests = 0;
+    final rig = await fixture((request) {
+      requests++;
+      return offline
+          ? jsonResponse({'detail': 'Offline fixture'}, status: 503)
+          : page([record('goals', goals()), record(dayKey, day('Recovered'))]);
+    });
+    try {
+      await tester.pump(const Duration(milliseconds: 900));
+      expect(requests, 1);
+      expect(rig.sync.error, isNotNull);
+      offline = false;
+      await tester.pump(const Duration(milliseconds: 14100));
+      expect(requests, 2);
+      expect(rig.sync.error, isNull);
+      expect(rig.store.syncRecord(dayKey), day('Recovered'));
+    } finally {
+      rig.dispose();
+    }
+  });
+
   test('finishing a draft resumes deferred sync without waiting for the minute poll', () async {
     var editing = true, requests = 0;
     final rig = await fixture((request) {

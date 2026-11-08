@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-08 — Merge independent sync edits and review individual conflicts
+
+- [sync] Merge goals, steps and nested daily tasks by stable ID and acknowledged ancestor. Combine separate additions/fields and safe deletions; retain genuine field, edit-versus-delete and order choices. Each choice preserves unrelated changes. Save exact originals and the combined local record before revision-guarded upload; interrupted retries reuse their mutation identity.
+- [ui] Replace whole-record replacement controls with individual item/field choices on Mac and Android. Background checks stay quiet, text-editor blur alone can schedule an editing retry, and unchanged choices/scroll remain stable. Changed fields invalidate only their own selection; saved-copy identity remains stable as history grows.
+- [release readiness] Preserve an existing owner/folder service URL when upgrading to a public build, and add an official pinned-Git fallback for unavailable Flutter archives in CI. All 25 Node suites, TypeScript, Android analysis/121 tests and compact/wide browser review pass. [Implementation](plans/16-2-smart-merge-and-stable-review.md); publication tracked in [2.1.16](plans/4-52-publish-2-1-16.md).
+
+## 2026-11-07 — Install automatic-sync Mac build and deliver Android +15
+
+- [desktop] Restore the Rust toolchain, rebuild/sign and reinstall Mac with exact bundle verification and successful launch. All 56 task-folder files and native config remain unchanged; app/task/native/WebKit rollback copies retained. All 23 Node suites and TypeScript pass.
+- [android] Restore official Flutter 3.47.8 / Dart 3.13.7, fix a guarded assertion in the new fake-clock test and pass all 102 tests, analyzer and changed-file formatting. Deliver production +15 / 2015 at `release/todo-sticky.apk` (19.75 MB); original-key v2 signature, package/version, ZIP integrity, 16 KB alignment and service origin verify. Previous APK retained; no phone installation, public release or backend change. Delivery evidence: [16-1](plans/16-1-automatic-sync-frequency.md).
+
+## 2026-11-07 — More automatic Mac and phone sync
+
+- [sync] Reduce both clients' foreground remote checks from 60 to 15 seconds; retain 900ms saved-change debounce and automatic periodic retries. Mac checks on visibility return as well as focus/online; Android resumes immediately.
+- [fix] Empty focused Mac capture no longer suppresses polling. Active Mac Focus defers only incoming focus history, allowing task/goal sync; ending Focus schedules the deferred history. Preserve draft protection, conflict review, compare-before-write and offline core operation.
+- [validation] All 23 Node suites, TypeScript and frontend production build pass, including synthetic automatic arrivals, draft resume, offline retry, overlap, hidden/paused polling and Focus deferral. Android lifecycle/retry regressions added but cannot run: default Dart 3.11.5 is below required 3.13 and the former temporary Flutter 3.47.8 SDK is missing. No installed-app/backend/public-release changes. [Plan](plans/16-1-automatic-sync-frequency.md).
+
 ## 2026-11-02 — Simplify project editing and review
 
 - [ui] Use consistent inline Save/Cancel and Cmd/Ctrl+Enter/Escape for project text and steps. Edit actual scheduled task text/work date in place; provide a compact Project return from full daily-task review. Preserve changed drafts on attempted navigation and restore editor focus.
