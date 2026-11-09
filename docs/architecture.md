@@ -1,5 +1,11 @@
 # Architecture
 
+## Shared Diane backend (staged cutover)
+- Product-owned Python source is `plugin/backend/diane/plugins/`. `todo_sync.py` projects the original standalone sync envelope from the same canonical records used by the embedded plugin; `todo_sync_protocol.py` preserves original validation and schema-1 metadata protection.
+- Revision/hash/container-shape metadata and hash-only mutation receipts live in the existing owner-scoped settings/receipt namespaces. No duplicate live day payload database is introduced. Canonical plugin edits are reflected in legacy sync revisions.
+- Offline/admin `CanonicalTodoSync.seed_records` seeds immutable original envelopes/revisions with a stable source namespace; divergent existing data refuses. Central identity, quota, migration execution and deployment belong to Diane.
+- `backend/` is the old deployment retained for rollback until verified cutover; standalone UI/source paths remain as documented in `folder-guide.md`.
+
 - Product release layout: `desktop/`, `web/`, `phone/` (Flutter), `plugin/`. Legacy paths are compatibility symlinks for existing scripts. `plugin/` owns embedded UI and backend adapter releases; standalone interfaces remain unchanged.
 
 ## Flutter Android

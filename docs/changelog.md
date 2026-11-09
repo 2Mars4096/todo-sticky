@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-09
+- [feat] Add product-owned canonical `/v1/sync` projection, original v1/v2 validation, CAS/idempotent writes and original-revision migration seeds. Task bodies remain in shared canonical records; metadata/receipts contain hashes rather than a second live payload store.
+- [test] 12 backend contract/SQLite/FastAPI checks pass; build `diane-todo-plugin` 0.1.2. No production migration or default cutover yet.
+- [docs] Consolidate product folder ownership into the existing folder guide; retain compatibility symlinks and legacy rollback backend.
+- [docs] Start original `/v1/sync` compatibility over Diane canonical records, shared sign-in and standalone web/phone integration; preserve UI and defer live cutover until parent migration.
+
 ## 2026-11-09 — Product-owned release structure
 - Move app sources into desktop/web/phone/plugin; retain legacy build paths and standalone UI. Plugin UI/backend source now belongs to this product; shared-service cutover remains pending.
 

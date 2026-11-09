@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] Canonical shared sync, central identity and unchanged standalone clients — [17-1](plans/17-1-canonical-sync.md).
+
 - [ ] Independent app releases and shared Diane services — [plan](plans/17-diane-shared-apps.md).
 
 - [x] [16-4-phone-sync-shortcut](plans/16-4-phone-sync-shortcut.md) — phone cloud control syncs directly with result feedback; Account remains in Settings. All 127 phone tests pass; original-key APK +19 delivered.

@@ -1,10 +1,16 @@
 # Folder guide
 
-Keep the existing tool-defined names; renaming them can break builds or deployment.
+One canonical home per product surface. Legacy paths are symlinks while established build commands migrate.
 
 | Location | Purpose / cleanup rule |
 | --- | --- |
-| `src/`, `src-tauri/`, `mobile/`, `backend/` | Desktop, Android and sync-service source. Keep. |
+| `web/src/` | Shared original React UI used by web and desktop; no duplicate standalone JSX. |
+| `desktop/src-tauri/` | Tauri native shell, native services and desktop packaging. |
+| `phone/` | Flutter app; Android and iOS are separately verified targets. |
+| `plugin/` | Product-owned embedded frontend and canonical backend release. `plugin/backend/` is the package source, not a second live service. |
+| `backend/` | Original sync deployment retained for migration/rollback; new shared data authority is Diane canonical records. |
+| `shared/`, `app.manifest.json` | Cross-surface product contract and identity/version metadata. |
+| `src`, `src-tauri`, `mobile`, `index.html` | Compatibility symlinks to canonical homes; no parallel implementations. Remove only after callers are updated and verified. |
 | `scripts/`, `tests/` | Build, release, demo and verification tools. Keep. See script map below. |
 | `docs/`, `demo/` | Project records and published demonstration assets. Keep. |
 | `content/` | Local task files, including a history-recovery source. Never treat as build output. |
@@ -39,3 +45,5 @@ Keep the existing tool-defined names; renaming them can break builds or deployme
 `.cjs` means CommonJS JavaScript; `.js`, `.py`, and `.sh` identify JavaScript, Python, and shell scripts. Numbered files in `docs/plans/` are linked project history, not temporary scripts.
 
 On 2026-10-29, cleanup removed only Rust compiler-cache subdirectories (`build`, `deps`, `incremental`, `.fingerprint` under debug/release), backend Python bytecode, selected Finder metadata and the empty `.cursor/`. Native executables, release bundles, rollback copies, dependencies, private configuration, task data and all linked checkout contents were preserved. The next native build must regenerate its compiler caches and will take longer.
+
+The independent-app layout is documented here rather than in a parallel layout guide. Shared identity/data/quota cutover is tracked in [17](plans/17-diane-shared-apps.md) and [17-1](plans/17-1-canonical-sync.md). Standalone UI remains unchanged.
