@@ -303,3 +303,5 @@ Open a long-term title in Goals. Use the pencil to edit its description or a ste
 ### Shared Diane candidate
 
 The staged shared build retains the Todo interface and local notes, and signs in through the shared Diane account for synchronized tasks/goals and AI quota. Existing direct AI provider choices remain available. Meeting task links open the exact Todo task after sign-in and sync; they never run it automatically. Release-time flags `STICKY_SHARED_CUTOVER=1` (desktop) and `DIANE_SHARED_CUTOVER=true` (Flutter) opt into the verified shared service; ordinary source defaults remain unchanged. Deployment and account migration must pass the release gate before distributing these candidates. See [shared sync plan](docs/plans/17-1-canonical-sync.md).
+
+Task handoff: select a task, choose its Diane icon, confirm the suggested workspace or use **Choose folder…**, then **Run in Diane**. Uncertain matches stay blank; choosing a folder alone never starts work.

@@ -41,6 +41,7 @@
 
 - `src/diane.ts` defines the companion protocol; `src/components/DianeAction.tsx` owns one app-level receipt store, polling, icon controls and portalled details. WebView-local receipts retain immutable request UUIDs keyed by knowledge-base/date/task identity before network writes.
 - `src-tauri/src/diane.rs` exposes only projects/dispatch/status/stop/open through a fixed loopback endpoint, with no proxying, redirects, credentials, or arbitrary URLs.
+- `dianeWorkspace.ts` conservatively suggests a unique known name/path from task context. The native directory chooser registers an explicit folder through local-only POST /api/sticky-todo/projects; canonical selected_project_id handles symlinks. Registration never executes work.
 - Diane owns durable sessions, project roots, execution profiles and runtime state; the companion API and desktop open route are required. The task handoff transfers no credentials. Separately, the optional native credential fallback below can read matching Diane file-backed keys without requiring its process.
 - Debug-only `STICKY_TODO_DEV_DATA_DIR` bypasses legacy settings and forces task/state storage below an absolute test root. Pair with `src-tauri/tauri.diane-dev.conf.json` to isolate WebView storage too.
 

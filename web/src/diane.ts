@@ -32,6 +32,7 @@ export interface DianeProjects {
   version: number
   projects: { id: string; name: string; root: string }[]
   active_project_id: string | null
+  selected_project_id?: string
 }
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -61,7 +62,7 @@ export function readDianeReceipts(raw: string | null): Record<string, DianeRecei
 
 export async function dianeRequest<T>(action: string, requestId?: string, body?: unknown): Promise<T> {
   const value: unknown = await invoke('diane_request', { action, requestId, body })
-  if (action === 'projects') {
+  if (action === 'projects' || action === 'choose-project') {
     if (!record(value) || value.version !== 1 || !Array.isArray(value.projects)
       || !value.projects.every(project => record(project) && ['id', 'name', 'root'].every(key => typeof project[key] === 'string'))
       || (value.active_project_id !== null && typeof value.active_project_id !== 'string')) {

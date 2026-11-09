@@ -17,8 +17,8 @@
 
 ## Decisions
 - Diane is optional. Startup, task creation/editing/completion/deletion, storage, dates, goals and focus must work independently. A missing integration affects dispatch/status only; independently configured AI providers must not require Diane.
-- Todo uses the most recently focused Diane window's selected project; its name appears on the Run tooltip. No project/model/agent picker in Todo.
-- Missing project/folder disables dispatch or returns a specific error. Do not guess a filesystem destination.
+- Todo suggests only a unique task-context project name or explicit path. Active/first projects are not implicit destinations. A compact selected-task popover allows explicit workspace choice or native folder registration before Run.
+- An uncertain destination stays blank and disables Run; Choose folder registers only the selected directory with Diane and never executes work.
 - A dispatch snapshots text, parent context, current-date steps, and project ID. Completed steps are identified as context.
 - One dispatch per source date/task identity. Reconnect reuses the request ID; follow-up happens in Diane. Deliberate reruns and cross-date link migration are future work.
 - Queued: hollow circle; running: blue pulse; attention: amber diamond; ready: green check circle; stopped: gray square; failed: red crossed circle. Connection loss: hollow circle with dash and last-check time.
@@ -43,3 +43,11 @@
 - Combine native command registration, styles, and documentation; keep file-backed credential lookup separate from process-dependent task dispatch.
 - Production frontend build and disconnected-control browser checks pass; full TypeScript checking retains only the known 16 Star Focus errors. Native test results are recorded in the changelog.
 - The original uncommitted state is retained in a named Git stash before the fast-forward. Existing task data, credentials and installed applications are not changed by the merge.
+
+## 2026-11-10 workspace refinement
+- [x] Restore the standalone task handoff icon accidentally absent from current TaskItem rendering.
+- [x] Add conservative exact project-name/path matching, ambiguity handling, native folder choice, canonical selected-project response and explicit Run.
+- [x] Keep plugin overview quiet: full outcome, goal and next-step details appear on task selection; due/review signals stay visible.
+- [x] Verify 30 Node suites, TypeScript, narrow keyboard/touch-equivalent click paths, folder registration without execution, idempotent dispatch and receipt reopening.
+- [ ] Reinstall original Mac app after preserving profile/task files; deliver same-key Android APK with current service unchanged.
+- Reference: Radix Popover documented button-trigger/portal/focus/Escape interaction, adapted within existing source styles without new dependency.

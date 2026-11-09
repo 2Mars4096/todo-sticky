@@ -1,3 +1,4 @@
+import { DianeAction } from './DianeAction'
 import { ParagraphInput } from './ParagraphInput'
 import { useState, useRef, useEffect, useId, type PointerEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
@@ -298,6 +299,7 @@ export function TaskItem({
           {!stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
         </div>}
         {(selected && !isOtherDate) && !editing && <div className="task-primary-actions">
+          <DianeAction id={id} text={text} sourceDate={dianeSourceDate??sourceDate} parent={parentText} steps={steps.map(step=>`${step.status==='done'?'[done] ':''}${step.text}`)} />
           {!isOtherDate && !closed && onFocusSelect && <button type="button" className={`task-text-action task-icon-action task-focus-action${isFocusSelected ? ' active' : ''}`}
             onClick={event => { event.currentTarget.focus(); onFocusSelect() }} disabled={Boolean(isFocusLocked && !isFocusSelected)}
             title={isFocusLocked && !isFocusSelected ? 'A focus session is already active' : 'Focus'}

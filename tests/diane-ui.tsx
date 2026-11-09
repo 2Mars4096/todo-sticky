@@ -17,6 +17,8 @@ if (failure === 'corrupt') localStorage.setItem('sticky-todo-diane-v1', '{broken
 ;(window as any).calls = []
 ;(window as any).__TAURI_INTERNALS__ = { invoke: async (_: string, args: any) => {
  (window as any).calls.push(args)
+ if (_ === 'plugin:dialog|open') return '/tmp/chosen-workspace'
+ if (args.action === 'choose-project') return {version:1,projects:[{id:'project-a',name:'Test project',root:'/tmp'},{id:'chosen',name:'Chosen workspace',root:'/private/tmp/chosen-workspace'}],active_project_id:'project-a',selected_project_id:'chosen'}
  if (failure === 'offline') throw Error('Diane is not installed or connected')
  if (failure === 'pending') return new Promise(() => {})
  if (failure === 'malformed') return {}

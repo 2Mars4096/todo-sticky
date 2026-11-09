@@ -123,7 +123,7 @@ export function TaskFinish({ taskText, finish, selected, dateOpen, setDateOpen, 
   const changes = (finish?.deadlineChanges ?? []).filter(change => change.from !== null)
 
   return <div className="task-finish">
-    {(finish?.doneWhen || (selected && !closed) || editing) && <div className="finish-field">
+    {((selected && (finish?.doneWhen || !closed)) || editing) && <div className="finish-field">
       <span className="finish-field-label">Outcome</span>
       <div className="finish-field-value">
         {editing ? <div className="outcome-editor" onBlur={event => {

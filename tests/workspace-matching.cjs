@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict')
+const load=require('./helpers/load-typescript.cjs')
+const {suggestWorkspace}=load('src/dianeWorkspace.ts')
+const projects=[{id:'a',name:'Deep Agent Network',root:'/work/deep-agent-network'},{id:'b',name:'Todo Sticky',root:'/work/todo-sticky'},{id:'c',name:'Work',root:'/work/general'}]
+assert.equal(suggestWorkspace(projects,'Fix Todo Sticky handoff').id,'b')
+assert.equal(suggestWorkspace(projects,'Review /work/deep-agent-network/src/main.ts').id,'a')
+assert.equal(suggestWorkspace(projects,'Fix the task interface'),undefined)
+assert.equal(suggestWorkspace(projects,'Discuss work today'),undefined)
+assert.equal(suggestWorkspace(projects,'Link todo-sticky with deep-agent-network'),undefined)
+assert.equal(suggestWorkspace(projects,'Edit /work/todo-sticky-copy now'),undefined)
+assert.equal(suggestWorkspace([...projects,{id:'other',name:'Todo Sticky',root:'/other/todo-sticky'}],'Todo Sticky'),undefined)
+assert.equal(suggestWorkspace(projects,'Use /work/deep-agent-network for Todo Sticky notes').id,'a')
+console.log('Workspace matching: exact paths/names, ambiguity, generic text, path boundaries and unique winner passed')

@@ -1,3 +1,7 @@
+## 2026-11-10 — Hidden handoff entry
+- Current standalone TaskItem had stopped rendering DianeAction while provider/settings remained. Restore its selected-task icon and exercise the actual reachable browser path; testing the detached component alone missed this regression.
+- Path-prefix matching must not choose todo-sticky from a different folder named todo-sticky-copy. Strip path tokens from name matching and require an explicit path boundary.
+
 ## 2026-11-10 — Moved web entry and shared cutover
 - Fixed: resolving the root index.html compatibility symlink caused Vite to emit dist/web/index.html, leaving Tauri without its entry page. Vite now roots at web/ and writes root dist/.
 - Limitation: standalone React browser local-note APIs still require Tauri. Shared sign-in/transport support does not constitute a complete independent browser client.

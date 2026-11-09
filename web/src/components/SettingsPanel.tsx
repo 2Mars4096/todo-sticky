@@ -108,8 +108,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
     let disposed = false
     setDianeDestination('Checking Dear Diane on this computer…')
     void dianeRequest<DianeProjects>('projects').then(data => {
-      const project = data.projects.find(item => item.id === data.active_project_id)
-      if (!disposed) setDianeDestination(project?.root ? 'Project: ' + project.name + ' · ' + project.root : 'Connected. Select a project folder in Dear Diane.')
+      if (!disposed) setDianeDestination(data.projects.length ? 'Connected · choose a workspace when sending a task.' : 'Connected · choose a folder when sending a task.')
     }).catch(() => { if (!disposed) setDianeDestination('Not connected. Open Dear Diane on this computer.') })
     return () => { disposed = true }
   }, [settings.connectDiane, loading, loadFailed])

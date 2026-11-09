@@ -5,7 +5,7 @@ use std::time::Duration;
 #[tauri::command]
 pub async fn diane_request(action: String, request_id: Option<String>, body: Option<Value>) -> Result<Value, String> {
     let suffix = match action.as_str() {
-        "projects" => "/projects".to_owned(),
+        "projects" | "choose-project" => "/projects".to_owned(),
         "dispatch" => "/requests".to_owned(),
         "status" | "stop" | "open" => {
             let id = request_id.ok_or("Missing dispatch ID")?;

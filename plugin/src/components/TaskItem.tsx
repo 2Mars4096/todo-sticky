@@ -283,7 +283,7 @@ export function TaskItem({
         </div>}
         {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
           selected={selected && !editing} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
-        {!isOtherDate && projects.length>0 && (goalId || selected) && <div className="task-project">
+        {!isOtherDate && projects.length>0 && selected && <div className="task-project">
           {selected && !editing && onAssignProject ? <select aria-label={`Task project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
             <option value="" disabled={Boolean(goalId)}>No project</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
           </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title="Open project">{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??'Project'}</button>}
@@ -295,7 +295,7 @@ export function TaskItem({
             <span aria-hidden="true">{stepsOpen ? '▾' : '▸'}</span>
             {`${doneSteps}/${steps.length} steps done`}
           </button>
-          {!stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
+          {selected && !stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
         </div>}
         {(selected && !isOtherDate) && !editing && <div className="task-primary-actions">
           {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title="Add step" aria-label="Add step" onClick={openStepEntry}><AddStepIcon /></button>}

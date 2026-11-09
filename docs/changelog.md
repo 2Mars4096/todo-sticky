@@ -1,4 +1,10 @@
 ## 2026-11-10
+- [fix] Restore the missing standalone Diane handoff icon in selected-task actions.
+- [feat] Suggest only a unique task-context workspace; allow explicit workspace/folder choice before Run, preserve immutable dispatch receipts and leave uncertain choices blank.
+- [refactor] Plugin 0.1.3 keeps overview outcomes/project/next-step details behind task selection while preserving due/review signals.
+- [test] 30 Node suites, TypeScript and narrow browser handoff/keyboard/folder-registration/idempotency checks pass. Shared-service cutover remains disabled in installation builds.
+
+## 2026-11-10
 - [feat] Standalone Todo keeps its original UI while supporting central account sign-in, verified pending-edit migration, shared Universal Cell AI and exact dated task links. Explicit direct providers remain available.
 - [fix] Set the canonical web build root after folder moves so native bundles contain index.html; quiet sync reuses complete snapshots without dropping offline edits.
 - [test] 29 Node suites, 42 Rust tests and 137 Flutter tests pass (one existing skip); TypeScript and Flutter analysis clean. Shared signed Android build20 staged, not installed/published.
