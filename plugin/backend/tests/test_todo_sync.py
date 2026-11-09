@@ -142,3 +142,38 @@ def test_router_keeps_old_paths_and_owner_guard(host):
         assert client.get('/v1/sync',headers={'Authorization':'Bearer bob'}).json()['records']==[]
         stale=client.put('/v1/sync/day:'+DAY,headers={'Authorization':'Bearer alice'},json=mutation(day(),mid='other-mutation-001').model_dump())
         assert stale.status_code==409 and 'current' in stale.json()
+
+def test_goal_reassignment_updates_canonical_link_but_keeps_other_provenance(sync,host):
+    sync.mutate('alice','goals',mutation({'targets':[{'id':'old','text':'Old','done':False},{'id':'new','text':'New','done':False}],'recurring':[]}))
+    sync.mutate('alice','day:'+DAY,mutation(day([task(goalId='old')]),mid='mutation-create-001'))
+    value=current(sync);value['payload']['tasks'][0]['goalId']='new'
+    sync.mutate('alice','day:'+DAY,mutation(value['payload'],revision=value['revision'],mid='mutation-change-001'))
+    record=host.list_records('alice','todo',record_type='task')['items'][0]
+    links=[r for r in record['relationships'] if r['kind']=='belongs-to']
+    assert len(links)==1 and links[0]['target']['record_id']==record['extensions']['goal_id']
+
+def test_unreachable_cycle_refuses_read_without_returning_an_empty_destructive_snapshot(sync,host):
+    sync.mutate('alice','day:'+DAY,mutation(day([task('a'),task('b')])))
+    def corrupt(state):
+        rows=[r for r in state['records'].values() if r['record_type']=='task']
+        for row,other in [(rows[0],rows[1]),(rows[1],rows[0])]:
+            row['relationships']=[{'kind':'parent','target':{'plugin_id':'todo','record_type':'task','record_id':other['record_id']}}]
+            state['records']['task:'+row['record_id']]=row
+    host.repository.transact('alice','todo',corrupt)
+    with pytest.raises(HTTPException,match='cycle'):sync.records('alice')
+    assert len(host.list_records('alice','todo',record_type='task')['items'])==2
+
+def test_derived_goal_link_repair_pins_revision_and_preserves_sync_revision(sync,host):
+    sync.mutate('alice','goals',mutation({'targets':[{'id':'goal','text':'Project','done':False}],'recurring':[]}))
+    sync.mutate('alice','day:'+DAY,mutation(day([task(goalId='goal')]),mid='mutation-create-001'))
+    record=host.list_records('alice','todo',record_type='task')['items'][0]
+    content=editable(record);content['relationships']=[]
+    host.put_record('alice','todo','task',record['record_id'],{'request_id':'simulate-first-seed','expected_revision':record['revision'],'record':content})
+    before=current(sync);canonical_before=host.get_record('alice','todo','task',record['record_id'])
+    candidate=sync.reconcile_goal_links('alice')['candidates'];assert len(candidate)==1
+    report=sync.reconcile_goal_links('alice',dry_run=False,expected=candidate);assert report['changed']==[record['record_id']]
+    after=host.get_record('alice','todo','task',record['record_id'])
+    assert after['revision']==canonical_before['revision']+1 and after['text']==canonical_before['text'] and after['status']==canonical_before['status']
+    assert current(sync)==before
+    assert sync.reconcile_goal_links('alice')['candidates']==[]
+    assert sync.reconcile_goal_links('alice',dry_run=False,expected=candidate)['conflicts']==[record['record_id']]

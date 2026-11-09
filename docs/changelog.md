@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-10
+- [fix] Backend0.1.3 preserves canonical goal relationships on standalone reassignment and refuses invalid/cross-date task graphs instead of returning a destructive empty snapshot.
+- [feat] Add dry-run/expected-revision derived-goal-link repair for already-seeded records; preserve legacy sync revisions and task text/status. Fifteen tests pass; immutable wheel retained for parent migration.
+
 ## 2026-11-09
 - [feat] Add product-owned canonical `/v1/sync` projection, original v1/v2 validation, CAS/idempotent writes and original-revision migration seeds. Task bodies remain in shared canonical records; metadata/receipts contain hashes rather than a second live payload store.
 - [test] 12 backend contract/SQLite/FastAPI checks pass; build `diane-todo-plugin` 0.1.2. No production migration or default cutover yet.

@@ -69,7 +69,7 @@ class CanonicalTodoSync:
         goals = {'targets': [], 'recurring': []}
         by_id = {}
         for row in rows:
-            by_id[row['record_id']] = row
+            by_id[(row['record_type'],row['record_id'])] = row
             if row['record_type'] == 'task':
                 days.setdefault(day_of(row), []).append(row)
             elif row['record_type'] in ('goal', 'routine'):
@@ -102,7 +102,7 @@ class CanonicalTodoSync:
                 if finish or shape.get('finishPresent'):
                     item['finish'] = finish
                 if ext.get('goal_id'):
-                    goal = index['by_id'].get(ext['goal_id'])
+                    goal = index['by_id'].get(('goal',ext['goal_id']))
                     item['goalId'] = wire_id(goal) if goal else (meta.get('goalAliases') or {}).get(ext['goal_id'], ext['goal_id'])
                 if ext.get('goal_step_id'):
                     item['goalStepId'] = ext['goal_step_id']
@@ -115,7 +115,16 @@ class CanonicalTodoSync:
                         raise HTTPException(422, 'A task cannot be its own parent')
                     nodes[parent]['subtasks'].append(nodes[record['record_id']])
                 else:
+                    other_parent=index['by_id'].get(('task',parent)) if parent else None
+                    if other_parent and not other_parent.get('deleted') and day_of(other_parent)!=key[4:]:raise HTTPException(422,'A task has a parent on another date; reconcile that hierarchy before syncing')
                     roots.append(nodes[record['record_id']])
+            def count_tree(items,seen):
+                count=0
+                for item in items:
+                    if item['id'] in seen:raise HTTPException(422,'Task hierarchy contains a cycle')
+                    seen.add(item['id']);count+=1+count_tree(item['subtasks'],seen)
+                return count
+            if count_tree(roots,set())!=len(active):raise HTTPException(422,'Task hierarchy contains an unreachable cycle')
             exists = bool(rows) or bool(meta.get('present'))
             deleted = not active and bool(meta.get('deleted'))
             return (None if deleted else {'date':key[4:], 'tasks':roots}), deleted, exists
@@ -138,7 +147,7 @@ class CanonicalTodoSync:
         if not record or record.get('deleted'):
             return None, True, bool(record) or bool(meta.get('present'))
         ext = record['extensions']
-        task = index['by_id'].get(ext.get('task_id'))
+        task = index['by_id'].get(('task',ext.get('task_id')))
         payload = {'id':key[6:], 'taskId':wire_id(task) if task else ext.get('task_id', ''),
                    'taskText':record.get('text') or record['title'], 'durationMinutes':ext.get('duration_minutes'),
                    'completedAt':ext.get('completed_at'), 'vehicleCode':ext.get('vehicle_code', ''),
@@ -212,7 +221,8 @@ class CanonicalTodoSync:
                     if item.get('goalStepId'):
                         ext['goal_step_id']=item['goalStepId']
                     content.update(title=item['text'][:200],text=item['text'],status=item['status'])
-                    content['relationships']=[link for link in content['relationships'] if link['kind']!='parent']
+                    content['relationships']=[link for link in content['relationships'] if link['kind']!='parent' and not(link['kind']=='belongs-to' and link.get('target',{}).get('plugin_id')=='todo' and link.get('target',{}).get('record_type')=='goal')]
+                    if ext.get('goal_id'):content['relationships'].append({'kind':'belongs-to','target':{'plugin_id':'todo','record_type':'goal','record_id':ext['goal_id']}})
                     if parent:content['relationships'].append({'kind':'parent','target':{'plugin_id':'todo','record_type':'task','record_id':parent}})
                     plans.append(('task',canonical,content))
                     visit(item['subtasks'],canonical)
@@ -302,6 +312,53 @@ class CanonicalTodoSync:
             state['receipts'][receipt_key]={'fingerprint':request_hash,'result_fingerprint':result_hash,'revision':result['revision'],'created_at':now()}
             return project_record(result,mutation.schemaVersion)
         return self.repository.transact(owner,'todo',write)
+
+    def reconcile_goal_links(self, owner, *, dry_run=True, expected=None):
+        """Admin repair for the initial standalone seed's derived goal links.
+
+        Inspect first. Applying pins exact canonical revisions and goal IDs;
+        text/status, source metadata and unrelated relationship bytes are retained.
+        """
+        self._authorize(write=not dry_run)
+        def desired(record):
+            goal_id=record['extensions'].get('goal_id')
+            links=[copy.deepcopy(link) for link in record['relationships'] if not(link['kind']=='belongs-to' and link.get('target',{}).get('plugin_id')=='todo' and link.get('target',{}).get('record_type')=='goal')]
+            if goal_id:
+                target=self.repository.read(owner,'todo','records','goal:'+goal_id)
+                links.append({'kind':'belongs-to','target':{'plugin_id':'todo','record_type':'goal','record_id':goal_id,'unresolved':not target or bool(target.get('deleted'))}})
+            return links
+        if dry_run:
+            candidates=[];cursor=None
+            while True:
+                page=self.repository.page(owner,'todo',prefix='task:',limit=500,cursor=cursor)
+                for record in page['items']:
+                    if not record.get('deleted') and record['relationships']!=desired(record):
+                        candidates.append({'record_id':record['record_id'],'revision':record['revision'],'goal_id':record['extensions'].get('goal_id')})
+                cursor=page['next_cursor']
+                if not cursor:break
+            return {'dry_run':True,'candidates':candidates}
+        if not isinstance(expected,list) or len(expected)>2000:
+            raise ValueError('Pass the inspected candidate list (at most 2,000 records)')
+        changed=[];conflicts=[]
+        for candidate in expected:
+            if not isinstance(candidate,dict) or set(candidate)!={'record_id','revision','goal_id'}:raise ValueError('Invalid repair candidate')
+            def repair(state):
+                self.plugins._enabled(state)
+                key='task:'+candidate['record_id'];record=state['records'].get(key)
+                if not record or record.get('deleted') or record['revision']!=candidate['revision'] or record['extensions'].get('goal_id')!=candidate['goal_id']:return 'conflict'
+                links=desired(record)
+                if links==record['relationships']:return 'unchanged'
+                content=editable(record);content['relationships']=links
+                self.plugins._validate(owner,'todo','task',content,record)
+                result={**record,'relationships':links,'revision':record['revision']+1,'updated_at':now()}
+                state['records'][key]=result
+                operation='goal-link-'+hashlib.sha256(str(candidate).encode()).hexdigest()
+                self.plugins._event(state,operation,result,'record.updated')
+                return 'changed'
+            result=self.repository.transact(owner,'todo',repair)
+            if result=='changed':changed.append(candidate['record_id'])
+            elif result=='conflict':conflicts.append(candidate['record_id'])
+        return {'dry_run':False,'changed':changed,'conflicts':conflicts}
 
     def seed_records(self, owner, legacy_records, *, source_id='todo-standalone'):
         """Offline/admin migration API; never exposed as an unauthenticated route.
