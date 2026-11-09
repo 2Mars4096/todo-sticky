@@ -49,5 +49,11 @@
 - [x] Add conservative exact project-name/path matching, ambiguity handling, native folder choice, canonical selected-project response and explicit Run.
 - [x] Keep plugin overview quiet: full outcome, goal and next-step details appear on task selection; due/review signals stay visible.
 - [x] Verify 30 Node suites, TypeScript, narrow keyboard/touch-equivalent click paths, folder registration without execution, idempotent dispatch and receipt reopening.
-- [ ] Reinstall original Mac app after preserving profile/task files; deliver same-key Android APK with current service unchanged.
+- [x] Reinstall original Mac app after preserving profile/task files; deliver same-key Android APK with current service unchanged.
 - Reference: Radix Popover documented button-trigger/portal/focus/Escape interaction, adapted within existing source styles without new dependency.
+
+## Delivery evidence
+- Producer `f83237c`; plugin `@diane-app/todo-plugin@0.1.3` packaged.
+- Reinstalled `/Applications/Sticky Todo.app`, ARM64/ad-hoc signature verified; native process relaunched. Protected backup under `~/Library/Application Support/Todo Reinstall Backups/20261110-workspace-f83237c` retains original app/profile/WebKit/task files. All 56 task files and profile bytes unchanged through installation.
+- Android: `release/todo-sticky-current-service-2.1.16-21.apk`, package `io.github.twomars4096.sticky_todo`, split versionCode2021, original signer verified. SHA256 `b8e0888a5631d344285c9057df6b1bb6ef4a842f022768cf4a92694af350d914`.
+- Shared cutover disabled in both builds; original release APK and shared candidate retained. No APK installed, no iOS work. Real paired agent execution remains pending; UI verification used mock requests and did not call a model.

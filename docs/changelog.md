@@ -1,4 +1,8 @@
 ## 2026-11-10
+- [infra] Reinstall original Todo Mac app with protected rollback/profile/task backup; verify all 56 task files and profile unchanged. Deliver same-key Android build21 (split2021), preserving current service and disabling shared cutover.
+- [test] Native 42 tests and selected-task browser folder-registration checks pass; no model execution or phone installation.
+
+## 2026-11-10
 - [fix] Restore the missing standalone Diane handoff icon in selected-task actions.
 - [feat] Suggest only a unique task-context workspace; allow explicit workspace/folder choice before Run, preserve immutable dispatch receipts and leave uncertain choices blank.
 - [refactor] Plugin 0.1.3 keeps overview outcomes/project/next-step details behind task selection while preserving due/review signals.
