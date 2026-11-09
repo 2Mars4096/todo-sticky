@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict')
+const {fixture}=require('./sync-frequency.cjs')
+;(async()=>{
+ const f=await fixture({conditional:true});await f.advance(900)
+ const initial=f.fullReads();await f.advance(15000);await f.advance(15000)
+ assert.equal(f.fullReads(),initial,'quiet polling should reuse a complete remote snapshot');assert.ok(f.conditionalReads()>=2)
+ const key='day:2026-11-09';f.local[key]={date:'2026-11-09',tasks:[{id:'a',text:'Local offline work',status:'todo',subtasks:[]}]};f.hooks.changeKey='local-work';f.render();await f.advance(900)
+ assert.ok(f.uploads.length,'unchanged remote generation must not skip local writes')
+ await f.advance(15000);assert.ok(f.fullReads()>initial,'writes invalidate the cached remote generation')
+ f.dispose();console.log('Conditional sync: quiet point-checks reuse immutable snapshots; local edits still reconcile/upload and invalidate cache')
+})().catch(error=>{console.error(error);process.exit(1)})

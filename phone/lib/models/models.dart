@@ -363,6 +363,11 @@ class FocusState {
 }
 
 const providerPresets = <String, Map<String, String>>{
+  'diane': {
+    'name': 'Diane shared account',
+    'base': 'https://dear-diane-202610-api.web.app',
+    'model': '',
+  },
   'moonshot': {
     'name': 'Moonshot · Kimi',
     'base': 'https://api.moonshot.ai/v1',
@@ -404,6 +409,7 @@ class ProviderProfile {
 
 class Preferences {
   String provider;
+  bool providerChosen;
   Map<String, ProviderProfile> profiles;
   List<Map<String, dynamic>> machines;
   String material;
@@ -414,6 +420,7 @@ class Preferences {
   List<String> planningMachines;
   Preferences({
     this.provider = 'moonshot',
+    this.providerChosen = false,
     Map<String, ProviderProfile>? profiles,
     List<Map<String, dynamic>>? machines,
     this.material = 'paper',
@@ -435,6 +442,9 @@ class Preferences {
     provider: providerPresets.containsKey(j['provider'])
         ? j['provider'] as String
         : 'moonshot',
+    providerChosen: j['providerChosen'] is bool
+        ? j['providerChosen'] as bool
+        : j.containsKey('provider'),
     profiles: object(j['profiles'] ?? {})
         .map((k, v) => MapEntry(k, ProviderProfile.fromJson(object(v)))),
     machines: (j['machines'] as List? ?? []).map(object).toList(),
@@ -460,6 +470,7 @@ class Preferences {
   );
   Map<String, dynamic> toJson() => {
     'provider': provider,
+    'providerChosen': providerChosen,
     'profiles': profiles.map((k, v) => MapEntry(k, v.toJson())),
     'machines': machines,
     'material': material,

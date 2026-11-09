@@ -11,6 +11,121 @@ import '../state/sticky_store.dart';
 import 'sync_merge.dart';
 export 'sync_merge.dart';
 
+const dianeSharedOrigin = 'https://dear-diane-202610-api.web.app';
+String selectedSharedServiceOrigin(String current, bool cutover) {
+  if (!cutover) return current;
+  if (current.isEmpty ||
+      current ==
+          'https://sticky-todo-sync-507920948662.asia-southeast1.run.app') {
+    return dianeSharedOrigin;
+  }
+  return current;
+}
+
+Uri accountConfigurationUri(String origin) => Uri.parse(
+  '$origin${origin == dianeSharedOrigin ? '/api/connected-apps/config?appId=todo' : '/v1/config'}',
+);
+
+String? parseTodoTaskLink(String value) {
+  final uri = Uri.tryParse(value);
+  if (uri == null || uri.userInfo.isNotEmpty || uri.hasQuery || uri.hasFragment) {
+    return null;
+  }
+  final parts = uri.pathSegments;
+  String? id;
+  if (['todo-sticky', 'todo-sticky-preview'].contains(uri.scheme) &&
+      uri.host == 'task' &&
+      parts.length == 1) {
+    id = parts.single;
+  } else if (uri.scheme == 'https' &&
+      uri.origin == dianeSharedOrigin &&
+      parts.length == 4 &&
+      parts.take(3).join('/') == 'apps/todo/tasks') {
+    id = parts.last;
+  }
+  return id != null &&
+          RegExp(r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$').hasMatch(id)
+      ? id
+      : null;
+}
+
+/// Returns only metadata updates. Task bodies and old account keys stay untouched.
+Map<String, dynamic> verifiedSharedOwnerMigration(
+  Map<String, dynamic> metadata, {
+  required String origin,
+  required String projectId,
+  required String uid,
+  required Map<String, dynamic> identity,
+}) {
+  final previous = metadata['owner'];
+  final next = '$projectId:$uid';
+  if (previous == null || previous == next) return {};
+  final aliases = identity['legacyAccounts'];
+  if (origin != dianeSharedOrigin ||
+      projectId != 'dear-diane-202610' ||
+      identity['owner'] != uid ||
+      identity['appId'] != 'todo' ||
+      aliases is! List ||
+      !aliases.any(
+        (entry) =>
+            entry is Map &&
+            entry['appId'] == 'todo' &&
+            '${entry['projectId']}:${entry['owner']}' == previous,
+      )) {
+    throw StateError(
+      'This notebook belongs to another account. The shared service has not verified its original account link.',
+    );
+  }
+  final prefix = 'account:$previous:';
+  final candidates = metadata.entries
+      .where((entry) => entry.key.startsWith(prefix))
+      .toList();
+  for (final entry in candidates) {
+    syncOrigin(entry.key.substring(prefix.length));
+    final value = object(entry.value);
+    if (value['enabled'] is! bool ||
+        value['baseline'] is! Map ||
+        value['pending'] is! Map ||
+        value['conflicts'] is! List) {
+      throw StateError(
+        'Original sync metadata needs recovery. Local notes are unchanged.',
+      );
+    }
+  }
+  if (candidates.map((entry) => canonicalJson(entry.value)).toSet().length >
+      1) {
+    throw StateError(
+      'Several original sync histories need review. Baselines and offline changes were kept.',
+    );
+  }
+  final target = 'account:$next:$origin';
+  final updates = <String, dynamic>{};
+  if (candidates.isNotEmpty) {
+    final source = candidates.first;
+    if (metadata.containsKey(target) &&
+        canonicalJson(metadata[target]) != canonicalJson(source.value)) {
+      throw StateError(
+        'The shared account has different saved sync history. Existing copies were kept for review.',
+      );
+    }
+    if (!metadata.containsKey(target)) {
+      updates[target] = jsonDecode(jsonEncode(source.value));
+    }
+    final receipt = 'shared-owner-migration:$next';
+    if (!metadata.containsKey(receipt)) {
+      updates[receipt] = {
+        'fromOwner': previous,
+        'toOwner': next,
+        'sourceKey': source.key,
+        'targetKey': target,
+        'verifiedAt': DateTime.now().toIso8601String(),
+      };
+    }
+  }
+  updates['owner'] = next;
+  return updates;
+}
+
 String syncOrigin(String value) {
   final uri = Uri.parse(value.trim());
   final local = ['localhost', '127.0.0.1', '::1'].contains(uri.host);
@@ -44,8 +159,11 @@ class CloudTransport {
     Map<String, dynamic>? body,
     Map<String, String>? form,
     String? token,
+    Duration timeout = const Duration(seconds: 25),
+    Map<String, String> headers = const {},
   }) async {
     final request = http.Request(method, uri)..followRedirects = false;
+    request.headers.addAll(headers);
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
     if (form != null) {
       request.bodyFields = form;
@@ -87,7 +205,7 @@ class CloudTransport {
           throw CloudFailure(response.statusCode, message);
         }
         return data;
-      })().timeout(const Duration(seconds: 25));
+      })().timeout(timeout);
     } on TimeoutException {
       throw CloudFailure(
         408,
@@ -654,6 +772,8 @@ class CloudSyncController extends ChangeNotifier {
   final Duration pollInterval;
   final Duration syncInterval;
   AccountSession? session;
+  String? _remoteCacheKey, _remoteGeneration;
+  List<Map<String, dynamic>>? _remoteRecords;
   String server = '';
   String message = '';
   String? error;
@@ -763,6 +883,23 @@ class CloudSyncController extends ChangeNotifier {
           store.syncMetadata['serviceOrigin'] as String? ??
           const String.fromEnvironment('SYNC_SERVER_URL');
       if (server.isNotEmpty) server = syncOrigin(server);
+      if (const bool.fromEnvironment('DIANE_SHARED_CUTOVER') &&
+          store.syncMetadata['sharedServiceCutoverApplied'] != true) {
+        final nextOrigin = selectedSharedServiceOrigin(server, true);
+        if (nextOrigin != server) {
+          store.syncMetadata['serviceOriginBeforeDiane'] = server;
+          store.syncMetadata['serviceOrigin'] = nextOrigin;
+          store.syncMetadata['sharedServiceCutoverApplied'] = true;
+          store.changed();
+          await store.flush();
+          server = nextOrigin;
+        } else if (server == dianeSharedOrigin) {
+          store.syncMetadata['sharedServiceCutoverApplied'] = true;
+          store.changed();
+          await store.flush();
+        }
+      }
+
       final raw = await store.credentials.read(sessionKey);
       if (raw != null && raw.isNotEmpty) {
         final restored = AccountSession.fromJson(object(jsonDecode(raw)));
@@ -880,7 +1017,7 @@ class CloudSyncController extends ChangeNotifier {
     busy = true;
     _notify();
     try {
-      final config = await transport.request(Uri.parse('$origin/v1/config'));
+      final config = await transport.request(accountConfigurationUri(origin));
       if (_disposed) return;
       final firebase = object(config['firebase']);
       if (config['schemaVersion'] != 1 ||
@@ -923,7 +1060,7 @@ class CloudSyncController extends ChangeNotifier {
     message = 'Choose your Google account in the browser, then return here.';
     _notify();
     try {
-      final config = await transport.request(Uri.parse('$origin/v1/config'));
+      final config = await transport.request(accountConfigurationUri(origin));
       if (_disposed || epoch != _epoch) return;
       final firebase = object(config['firebase']);
       if (config['schemaVersion'] != 1 ||
@@ -931,6 +1068,10 @@ class CloudSyncController extends ChangeNotifier {
           firebase['projectId'] is! String) {
         throw StateError('The service has an invalid Firebase configuration.');
       }
+      final shared =
+          config['login'] is Map &&
+          (config['login'] as Map)['exchangePath'] ==
+              '/api/connected-apps/auth/exchange';
       final verifier = _randomCode(), sessionId = _randomCode();
       final challenge = base64UrlEncode(
         sha256.convert(utf8.encode(verifier)).bytes,
@@ -939,6 +1080,7 @@ class CloudSyncController extends ChangeNotifier {
         queryParameters: {
           'sessionId': sessionId,
           'challenge': challenge,
+          if (shared) 'appId': 'todo',
           if (!const bool.fromEnvironment('STICKY_PREVIEW')) 'returnTo': 'app',
         },
       ).query;
@@ -953,9 +1095,15 @@ class CloudSyncController extends ChangeNotifier {
         // The browser's return link resumes this activity and polling continues.
         if (!_active) continue;
         final exchange = await transport.request(
-          Uri.parse('$origin/v1/auth/exchange'),
+          Uri.parse(
+            '$origin${shared ? '/api/connected-apps/auth/exchange' : '/v1/auth/exchange'}',
+          ),
           method: 'POST',
-          body: {'sessionId': sessionId, 'verifier': verifier},
+          body: {
+            'sessionId': sessionId,
+            'verifier': verifier,
+            if (shared) 'appId': 'todo',
+          },
         );
         if (epoch != _epoch || _disposed) return;
         if (exchange['customToken'] is! String) continue;
@@ -1002,11 +1150,32 @@ class CloudSyncController extends ChangeNotifier {
         );
         final owner = store.syncMetadata['owner'];
         if (owner != null && owner != next.owner) {
-          throw StateError(
-            'This notebook belongs to another account. Sign in with that account to protect its notes.',
+          if (!shared || origin != dianeSharedOrigin) {
+            throw StateError(
+              'This notebook belongs to another account. Sign in with that account to protect its notes.',
+            );
+          }
+          final identity = await transport.request(
+            Uri.parse('$origin/api/connected-apps/identity'),
+            token: next.idToken,
           );
+          if (_disposed || epoch != _epoch) return;
+          if (!await _migrateSharedOwner(next, identity, epoch)) return;
         }
         if (!await _persistSession(next, epoch)) return;
+        if (next.origin == dianeSharedOrigin &&
+            !store.preferences.providerChosen) {
+          final directKey = await store.credentials.read(
+            store.preferences.provider,
+          );
+          if (_disposed || epoch != _epoch) return;
+          if (directKey == null || directKey.trim().isEmpty) {
+            store.preferences.provider = 'diane';
+            store.preferences.providerChosen = true;
+            store.changed();
+            await store.flush();
+          }
+        }
         message = enabled ? 'Sync ready.' : 'Sync is off.';
         _schedule();
         return;
@@ -1024,6 +1193,160 @@ class CloudSyncController extends ChangeNotifier {
         _notify();
       }
     }
+  }
+
+  Future<({String date, String taskId})> resolveSharedTask(String id) async {
+    if (!RegExp(r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$').hasMatch(id)) {
+      throw StateError('Invalid shared task link.');
+    }
+    final current = session, epoch = _epoch;
+    if (current == null || current.origin != dianeSharedOrigin) {
+      throw StateError(
+        'Sign in to the shared Diane account to open this task.',
+      );
+    }
+    if (!enabled) {
+      throw StateError('Enable sync in Account to open this shared task.');
+    }
+    final token = await _token();
+    final record = await transport.request(
+      Uri.parse(
+        '${current.origin}/api/plugins/todo/records/task/${Uri.encodeComponent(id)}',
+      ),
+      token: token,
+    );
+    if (_disposed || epoch != _epoch || session?.owner != current.owner) {
+      throw StateError('Account changed before the task opened.');
+    }
+    if (record['record_id'] != id ||
+        record['record_type'] != 'task' ||
+        record['plugin_id'] != 'todo' ||
+        record['deleted'] == true) {
+      throw StateError('The linked task is unavailable.');
+    }
+    final extensions = object(record['extensions'] ?? {}),
+        source = object(extensions['source'] ?? {});
+    final created = record['created_at']?.toString() ?? '';
+    final date =
+        extensions['date']?.toString() ??
+        (created.length >= 10 ? created.substring(0, 10) : '');
+    if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date) ||
+        dateKey(parseDate(date)) != date) {
+      throw StateError('The task has no usable date.');
+    }
+    var taskId =
+        (source['app'] == 'todo-sticky' ? source['id'] : record['record_id'])
+            ?.toString() ??
+        '';
+    if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(taskId)) {
+      taskId =
+          'diane_${sha256.convert(utf8.encode('task:$id')).toString().substring(0, 40)}';
+    }
+    await synchronize();
+    if (_disposed || epoch != _epoch || session?.owner != current.owner) {
+      throw StateError('Account changed before the task opened.');
+    }
+    return (date: date, taskId: taskId);
+  }
+
+  Future<Map<String, dynamic>> requestAgent(
+    String action,
+    Map<String, dynamic> input,
+  ) async {
+    final current = session, epoch = _epoch;
+    if (current == null || current.origin != dianeSharedOrigin) {
+      throw StateError(
+        'Sign in to the shared Diane account in Settings → Account.',
+      );
+    }
+    final bound = store.syncMetadata['owner'];
+    if (bound != null && bound != current.owner) {
+      throw StateError(
+        'These notes belong to another account. Verify the shared account link first.',
+      );
+    }
+    final token = await _token();
+    if (_disposed || epoch != _epoch || session?.owner != current.owner) {
+      throw StateError('Account changed before the request.');
+    }
+    final requestId = 'todo-${_randomCode()}';
+    final value = await transport.request(
+      Uri.parse('${current.origin}/api/plugins/todo/compat/ai'),
+      method: 'POST',
+      token: token,
+      headers: {'Idempotency-Key': requestId},
+      timeout: const Duration(seconds: 120),
+      body: {
+        'request_id': requestId,
+        'payload': {'action': action, 'input': input, 'intent_id': requestId},
+      },
+    );
+    if (_disposed || epoch != _epoch || session?.owner != current.owner) {
+      throw StateError(
+        'Account changed while Diane was working; the result belongs to the earlier account.',
+      );
+    }
+    return value;
+  }
+
+  Future<bool> _migrateSharedOwner(
+    AccountSession next,
+    Map<String, dynamic> identity,
+    int epoch,
+  ) {
+    final result = _credentialWrites.then((_) async {
+      if (_disposed || epoch != _epoch) return false;
+      final updates = verifiedSharedOwnerMigration(
+        store.syncMetadata,
+        origin: next.origin,
+        projectId: next.projectId,
+        uid: next.uid,
+        identity: identity,
+      );
+      if (updates.isEmpty) return true;
+      final previous = <String, dynamic>{};
+      final existed = <String>{};
+      for (final key in updates.keys) {
+        if (store.syncMetadata.containsKey(key)) {
+          existed.add(key);
+          previous[key] = store.syncMetadata[key];
+        }
+      }
+      void restore() {
+        for (final key in updates.keys) {
+          if (canonicalJson(store.syncMetadata[key]) !=
+              canonicalJson(updates[key])) {
+            continue;
+          }
+          if (existed.contains(key)) {
+            store.syncMetadata[key] = previous[key];
+          } else {
+            store.syncMetadata.remove(key);
+          }
+        }
+        store.changed();
+      }
+
+      store.syncMetadata.addAll(updates);
+      store.changed();
+      try {
+        await store.flush();
+      } catch (_) {
+        restore();
+        rethrow;
+      }
+      if (_disposed || epoch != _epoch) {
+        restore();
+        await store.flush();
+        return false;
+      }
+      return true;
+    });
+    _credentialWrites = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return result;
   }
 
   Future<String> _token() async {
@@ -1180,7 +1503,7 @@ class CloudSyncController extends ChangeNotifier {
           pending = object(meta['pending']);
       meta['baseline'] = baseline;
       meta['pending'] = pending;
-      final config = await transport.request(Uri.parse('$origin/v1/config'));
+      final config = await transport.request(accountConfigurationUri(origin));
       ensureCurrent();
       final versions = config['payloadSchemaVersions'];
       final supportsGoals =
@@ -1197,12 +1520,19 @@ class CloudSyncController extends ChangeNotifier {
       final records = <SyncRecord>[], keys = <String>{}, cursors = <String>{};
       String? cursor;
       var pageNumber = 0;
+      final cacheKey = jsonEncode([owner, origin, supportsGoals ? 2 : 1]);
+      final cached = _remoteCacheKey == cacheKey ? _remoteRecords : null;
+      final cachedGeneration = cached != null ? _remoteGeneration : null;
+      String? observedGeneration;
+      var generationAvailable = true;
       do {
         _report('Reading cloud', detail: 'Page ${++pageNumber}');
         final uri = Uri.parse('$origin/v1/sync').replace(
           queryParameters: {
             'pageSize': '20',
             'after': ?cursor,
+            if (cursor == null && cachedGeneration != null)
+              'ifGeneration': cachedGeneration,
             if (supportsGoals) 'schemaVersion': '2',
           },
         );
@@ -1215,6 +1545,36 @@ class CloudSyncController extends ChangeNotifier {
           throw const FormatException(
             'The sync service did not return goal-aware notes. No local data was changed.',
           );
+        }
+        if (page['notModified'] == true) {
+          if (cached == null ||
+              cursor != null ||
+              page['generation'] != cachedGeneration ||
+              page['nextCursor'] != null) {
+            throw const FormatException(
+              'Incompatible conditional sync response.',
+            );
+          }
+          records.addAll(
+            cached.map(
+              (value) =>
+                  SyncRecord.fromJson(object(jsonDecode(jsonEncode(value)))),
+            ),
+          );
+          observedGeneration = cachedGeneration;
+          break;
+        }
+        final generation = page['generation'];
+        if (generation is String &&
+            RegExp(r'^[a-f0-9]{64}$').hasMatch(generation)) {
+          if (observedGeneration != null && observedGeneration != generation) {
+            throw StateError(
+              'Cloud records changed during paging. Sync again; local notes are unchanged.',
+            );
+          }
+          observedGeneration = generation;
+        } else {
+          generationAvailable = false;
         }
         for (final value in page['records'] as List) {
           final record = SyncRecord.fromJson(object(value));
@@ -1230,6 +1590,17 @@ class CloudSyncController extends ChangeNotifier {
           throw const FormatException('The service returned a repeated page.');
         }
       } while (cursor != null);
+      _remoteCacheKey = generationAvailable && observedGeneration != null
+          ? cacheKey
+          : null;
+      _remoteGeneration = generationAvailable ? observedGeneration : null;
+      _remoteRecords = _remoteCacheKey == null
+          ? null
+          : records
+                .map(
+                  (record) => object(jsonDecode(jsonEncode(record.toJson()))),
+                )
+                .toList();
       if (supportsGoals) {
         final beforeUpgrade = canonicalJson(meta);
         for (final record in records) {
@@ -1449,6 +1820,9 @@ class CloudSyncController extends ChangeNotifier {
             await _saveMeta(meta);
             ensureCurrent();
           }
+          _remoteCacheKey = null;
+          _remoteGeneration = null;
+          _remoteRecords = null;
           final result = await transport.request(
             Uri.parse('$origin/v1/sync/${Uri.encodeComponent(action.key)}'),
             method: 'PUT',
@@ -1526,6 +1900,9 @@ class CloudSyncController extends ChangeNotifier {
           ? 'Up to date across your devices.'
           : '${unresolved.length} notes need your choice. Both versions are preserved.';
     } catch (cause) {
+      _remoteCacheKey = null;
+      _remoteGeneration = null;
+      _remoteRecords = null;
       if (!_disposed) {
         final step = progress;
         error =

@@ -53,7 +53,7 @@ export interface TaskMutationResult {
 export type ViewMode = 'all' | 'today'
 export type GoalCategory = 'targets' | 'recurring'
 
-export type Provider = 'codex' | 'moonshot' | 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom'
+export type Provider = 'diane' | 'codex' | 'moonshot' | 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom'
 
 export interface ProviderProfile {
   apiBase: string
@@ -63,6 +63,7 @@ export interface ProviderProfile {
 
 export interface AppSettings {
   provider: Provider
+  providerChosen?: boolean
   apiBase: string
   apiKey: string
   model: string

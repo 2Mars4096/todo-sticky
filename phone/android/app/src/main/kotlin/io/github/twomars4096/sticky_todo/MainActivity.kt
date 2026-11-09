@@ -9,12 +9,37 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
+    private var linkChannel: MethodChannel? = null
+    private var pendingTaskLink: String? = null
     private var pending: MethodChannel.Result? = null
     private var pendingContent: String? = null
     private val fileWorker = Executors.newSingleThreadExecutor()
 
+    private fun acceptedTaskLink(value: String?): String? {
+        if (value == null) return null
+        val uri = android.net.Uri.parse(value)
+        if (uri.query != null || uri.fragment != null || uri.encodedAuthority?.contains('@') == true) return null
+        val parts = uri.pathSegments
+        val native = uri.scheme == (if (packageName.endsWith(".preview")) "todo-sticky-preview" else "todo-sticky") && uri.host == "task" && parts.size == 1
+        val web = uri.scheme == "https" && uri.host == "dear-diane-202610-api.web.app" && parts.size == 4 && parts.take(3) == listOf("apps", "todo", "tasks")
+        val id = if (native || web) parts.lastOrNull() else null
+        return if (id != null && Regex("^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$").matches(id)) value else null
+    }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        acceptedTaskLink(intent.dataString)?.let { pendingTaskLink = it; linkChannel?.invokeMethod("available", null) }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        pendingTaskLink = acceptedTaskLink(intent?.dataString)
+        linkChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sticky_todo/links").apply {
+            setMethodCallHandler { call, result ->
+                if (call.method == "take") { val value = pendingTaskLink; pendingTaskLink = null; result.success(value) }
+                else result.notImplemented()
+            }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sticky_todo/files")
             .setMethodCallHandler { call, result ->
                 if (pending != null) {

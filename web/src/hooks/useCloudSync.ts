@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { invoke } from '@tauri-apps/api/core'
 import { api, waitForPendingWrites } from '../api'
-import { connectAccount, googleSignIn, requestJson, signOut, type Auth, type User } from '../cloudAccount'
+import { connectAccount, googleSignIn, requestJson, signOut, selectedSharedServiceOrigin, type Auth, type User } from '../cloudAccount'
 import { canonical, reconcile, syncServerUrl, validateRecords, goalPlanningSupported, hasGoalPlanningMetadata, migrateGoalMetadata, mergeSyncPayload, type MergeChoices, type CloudRecord, type SyncAction, type SyncBaseline, type SyncPayload } from '../cloudSync'
 import { nextSyncProgress, syncRecordLabel, yieldSyncUi, type SyncProgress } from '../syncProgress'
 import { preserveConflict, reviewedConflictMatches, type SyncRecoveryEntry } from '../syncConflicts'
@@ -63,7 +63,16 @@ function baseline(record: CloudRecord, payloadSchemaVersion: number): SyncBaseli
 
 export function useCloudSync(hooks: Hooks) {
   const hooksRef = useRef(hooks); hooksRef.current = hooks
-  const [server, setServer] = useState(() => rememberedServer(hooks.kbPath) || import.meta.env.VITE_SYNC_SERVER_URL || '')
+  const [server, setServer] = useState(() => {
+    const current=rememberedServer(hooks.kbPath)||import.meta.env.VITE_SYNC_SERVER_URL||''
+    if(typeof __STICKY_SHARED_CUTOVER__==='undefined'||!__STICKY_SHARED_CUTOVER__||stored('todo-sticky-diane-service-cutover-v1'))return current
+    const next=selectedSharedServiceOrigin(current,true)
+    try{
+      if(next!==current){localStorage.setItem('todo-sticky-previous-service-v1',current);localStorage.setItem(SERVER_KEY,next)}
+      if(next!==current||next==='https://dear-diane-202610-api.web.app')localStorage.setItem('todo-sticky-diane-service-cutover-v1','applied')
+      return next
+    }catch{return current}
+  })
   const [auth, setAuth] = useState<Auth | null>(null)
   const [connectAttempt, setConnectAttempt] = useState(0)
   const [user, setUser] = useState<User | null>(null)
@@ -90,6 +99,7 @@ export function useCloudSync(hooks: Hooks) {
   const [acknowledged, setAcknowledged] = useState<{ key: string; change: string } | null>(null)
   const [lastSynced, setLastSynced] = useState<string | null>(null)
   const acknowledgedRef = useRef(acknowledged); acknowledgedRef.current = acknowledged
+  const remoteSnapshot = useRef<{key:string;schema:number;generation:string;records:CloudRecord[]}|null>(null)
   const running = useRef(false)
   const waitingForEdit = useRef(false)
   const followUp = useRef(false)
@@ -108,7 +118,7 @@ export function useCloudSync(hooks: Hooks) {
     let disposed = false
     let unsubscribe: (() => void) | undefined
     setAuth(null); setUser(null); setEnabled(false); setConflicts([])
-    if (server) void connectAccount(server).then(result => {
+    if (server) void connectAccount(server,hooks.kbPath).then(result => {
       if (disposed) return
       if (!stored(SERVER_KEY)) localStorage.setItem(SERVER_KEY, server)
       setAuth(result)
@@ -137,10 +147,10 @@ export function useCloudSync(hooks: Hooks) {
     if (!auth || signingIn) return
     setSigningIn(true); setError(null); setMessage('Waiting for Google')
     const controller = new AbortController(); signInController.current = controller
-    try { await googleSignIn(server, auth, controller.signal); setMessage('Signed in') }
+    try { await googleSignIn(server, auth, controller.signal, hooks.kbPath); setMessage('Signed in'); setConnectAttempt(value=>value+1) }
     catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
     finally { setSigningIn(false); signInController.current = null }
-  }, [auth, signingIn, server])
+  }, [auth, signingIn, server, hooks.kbPath])
 
   const logout = useCallback(async () => {
     if (!auth || running.current) return
@@ -221,22 +231,35 @@ export function useCloudSync(hooks: Hooks) {
       let cursor: string | null = null
       const cursors = new Set<string>()
       let pageNumber = 0
+      let observedGeneration: string | null = null
+      let generationAvailable = true
+      const cached = remoteSnapshot.current?.key===key && remoteSnapshot.current.schema===payloadSchemaVersion ? remoteSnapshot.current : null
       do {
         report('Reading cloud', { detail: `Page ${++pageNumber}` })
         const parameters = new URLSearchParams()
         if (cursor) parameters.set('after', cursor)
+        else if (cached) parameters.set('ifGeneration',cached.generation)
         if (payloadSchemaVersion === 2) parameters.set('schemaVersion', '2')
         const query = parameters.toString()
         const page = await requestJson(server, '/v1/sync' + (query ? '?' + query : ''), {}, token)
         assertCurrent()
         if (page.schemaVersion !== 1) throw new Error('The sync service version is incompatible.')
         if (payloadSchemaVersion === 2 && page.payloadSchemaVersion !== 2) throw new Error('The sync service did not return goal plans. Sync stopped before changing local data.')
+        if(page.notModified===true){
+          if(!cached||cursor||page.generation!==cached.generation||page.nextCursor)throw new Error('The conditional sync response is incompatible.')
+          cloud.push(...validateRecords(JSON.parse(JSON.stringify(cached.records))));observedGeneration=cached.generation;break
+        }
+        if(typeof page.generation==='string'&&/^[a-f0-9]{64}$/.test(page.generation)){
+          if(observedGeneration&&observedGeneration!==page.generation)throw new Error('Cloud records changed during paging. Sync again; local notes are unchanged.')
+          observedGeneration=page.generation
+        }else generationAvailable=false
         cloud.push(...validateRecords(page.records))
         cursor = page.nextCursor ?? null
         if (cursor && (typeof cursor !== 'string' || cursors.has(cursor))) throw new Error('The sync service returned an invalid page cursor.')
         if (cursor) cursors.add(cursor)
       } while (cursor)
       validateRecords(cloud)
+      remoteSnapshot.current=generationAvailable&&observedGeneration?{key,schema:payloadSchemaVersion,generation:observedGeneration,records:JSON.parse(JSON.stringify(cloud))}:null
       if (payloadSchemaVersion === 2) {
         for (const remote of cloud) {
           const original = local[remote.key] ?? null
@@ -344,6 +367,7 @@ export function useCloudSync(hooks: Hooks) {
             pending = { mutationId: crypto.randomUUID(), fingerprint, expectedRevision: revision }
             meta.pending[action.key] = pending; persist()
           }
+          remoteSnapshot.current=null
           const result = await requestJson(server, '/v1/sync/' + encodeURIComponent(action.key), {
             method: 'PUT', body: JSON.stringify({ expectedRevision: revision, mutationId: pending.mutationId, deleted: upload === null, payload: upload,
               ...(payloadSchemaVersion === 2 ? { schemaVersion: 2 } : {}),
@@ -389,6 +413,7 @@ export function useCloudSync(hooks: Hooks) {
       else if (!unresolved.length && hooksRef.current.changeKey === changeAtStart) setAcknowledged({ key, change: changeAtStart })
       setMessage(unresolved.length ? `${unresolved.length} conflicts` : deferredFocus ? 'Focus history waits for session to finish' : hooksRef.current.changeKey !== changeAtStart && !pulled ? 'Changes queued' : 'Up to date')
     } catch (cause) {
+      if(remoteSnapshot.current?.key===key)remoteSnapshot.current=null
       const detail = cause instanceof Error ? cause.message : String(cause)
       if (detail.includes('Local tasks changed during sync.')) localChanged()
       else {

@@ -1,3 +1,8 @@
+## 2026-11-10 — Moved web entry and shared cutover
+- Fixed: resolving the root index.html compatibility symlink caused Vite to emit dist/web/index.html, leaving Tauri without its entry page. Vite now roots at web/ and writes root dist/.
+- Limitation: standalone React browser local-note APIs still require Tauri. Shared sign-in/transport support does not constitute a complete independent browser client.
+- Build environment: the host Diane venv has no pip; build product wheels with uv build. A local Mac app build initially requested a public updater signature; staging uses createUpdaterArtifacts=false, keeping updater release credentials out of the build.
+
 # Bugs And Failed Approaches
 
 ## 2026-11-08: Conditional text emphasis and confusing recovery snapshots

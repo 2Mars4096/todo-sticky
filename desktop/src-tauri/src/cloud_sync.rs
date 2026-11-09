@@ -10,6 +10,16 @@ pub(crate) fn is_account_return_url(url: &str) -> bool {
     matches!(url, "todo-sticky://account-return" | "todo-sticky://account-return/")
 }
 
+pub(crate) fn task_link_id(value: &str) -> Option<String> {
+    let url = reqwest::Url::parse(value).ok()?;
+    if url.scheme() != "todo-sticky" || url.host_str() != Some("task") || !url.username().is_empty()
+        || url.password().is_some() || url.query().is_some() || url.fragment().is_some() { return None; }
+    let id = url.path().strip_prefix('/')?;
+    if id.is_empty() || id.len() > 160 || !id.as_bytes()[0].is_ascii_alphanumeric()
+        || !id.bytes().all(|c| c.is_ascii_alphanumeric() || b"._:-".contains(&c)) { return None; }
+    Some(id.to_string())
+}
+
 fn sign_in_url(url: &str, return_to_app: bool) -> Result<reqwest::Url, String> {
     let mut parsed = reqwest::Url::parse(url).map_err(|_| "Invalid sign-in URL")?;
     let loopback = matches!(parsed.host_str(), Some("localhost" | "127.0.0.1" | "[::1]"));
@@ -99,5 +109,17 @@ mod tests {
         let tasks = serde_json::to_value(vec![task]).unwrap();
         apply_day(dir.path(), "2026-10-24", vec![], tasks).unwrap();
         assert_eq!(std::fs::read_dir(dir.path().join(".sticky-sync-backups")).unwrap().count(), 1);
+    }
+}
+
+#[cfg(test)]
+mod shared_task_link_tests {
+    use super::task_link_id;
+    #[test]
+    fn accepts_task_identity_only_never_commands_tokens_or_paths() {
+        assert_eq!(task_link_id("todo-sticky://task/abc-123"), Some("abc-123".into()));
+        for value in ["todo-sticky://account-return", "todo-sticky://task/a/b", "todo-sticky://task/a?token=secret", "https://other.example/task/a", "todo-sticky://user:secret@task/a"] {
+            assert!(task_link_id(value).is_none());
+        }
     }
 }

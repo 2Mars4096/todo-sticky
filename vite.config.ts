@@ -5,8 +5,10 @@ import path from 'path'
 const host = process.env.TAURI_DEV_HOST
 
 export default defineConfig({
+  root: path.resolve(__dirname, "web"),
   plugins: [react()],
-  base: './',
+  base: process.env.STICKY_WEB_BASE || './',
+  define: { __STICKY_SHARED_CUTOVER__: JSON.stringify(process.env.STICKY_SHARED_CUTOVER === '1') },
   clearScreen: false,
   server: {
     port: 5173,
@@ -15,7 +17,8 @@ export default defineConfig({
     hmr: host ? { protocol: 'ws', host, port: 1421 } : undefined,
   },
   build: {
-    outDir: 'dist',
+    outDir: path.resolve(__dirname, 'dist'),
+    emptyOutDir: true,
     target: process.env.TAURI_ENV_PLATFORM === 'windows' ? 'chrome105' : 'safari14',
     minify: !process.env.TAURI_ENV_DEBUG ? 'esbuild' : false,
     sourcemap: !!process.env.TAURI_ENV_DEBUG,

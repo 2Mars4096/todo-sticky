@@ -377,6 +377,7 @@ async fn codex_login_status(config: &LLMConfig) -> Result<String, String> {
 }
 
 async fn chat_completion(config: &LLMConfig, messages: &[Message]) -> Result<String, String> {
+    if config.provider.eq_ignore_ascii_case("diane") { return Err("Shared Diane requests must use the signed-in app bridge; no direct provider fallback is allowed.".into()); }
     if config.provider.eq_ignore_ascii_case("codex") {
         return codex_completion(config, messages).await;
     }

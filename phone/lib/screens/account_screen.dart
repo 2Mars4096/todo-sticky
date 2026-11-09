@@ -1,3 +1,11 @@
+import 'dart:async';
+
+import 'package:flutter/services.dart';
+
+import '../services/ai_service.dart';
+import '../models/workflow.dart';
+import 'archive_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -20,6 +28,13 @@ class AccountEnabledApp extends StatefulWidget {
 class _AccountEnabledAppState extends State<AccountEnabledApp>
     with WidgetsBindingObserver {
   late final CloudSyncController account;
+  late final AiService linkAi;
+  final navigator = GlobalKey<NavigatorState>();
+  final focusRequests = ValueNotifier(0);
+  static const links = MethodChannel('sticky_todo/links');
+  bool openingLink = false, accountRouteOpen = false;
+  String? lastLinkMessage;
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +51,15 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
         return editor != null && editor.controller.text.isNotEmpty;
       },
     );
+    linkAi = AiService(
+      widget.store.credentials,
+      sharedRequest: account.requestAgent,
+    );
+    account.addListener(_retryPendingLink);
+    links.setMethodCallHandler((call) async {
+      if (call.method == 'available') await _takeTaskLink();
+    });
+    FocusManager.instance.addListener(_retryPendingLink);
     FocusManager.instance.addListener(account.editingFinished);
     _initialize();
   }
@@ -43,6 +67,126 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
   Future<void> _initialize() async {
     await widget.store.initialize();
     if (mounted) await account.initialize();
+    if (mounted) {
+      await _takeTaskLink();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _retryPendingLink());
+    }
+  }
+
+  Future<void> _takeTaskLink() async {
+    try {
+      final raw = await links.invokeMethod<String>('take');
+      final id = raw == null ? null : parseTodoTaskLink(raw);
+      if (id != null && mounted) {
+        widget.store.syncMetadata['pendingSharedTaskLink'] = id;
+        widget.store.changed();
+        await widget.store.flush();
+        lastLinkMessage = null;
+        _retryPendingLink();
+      }
+    } on MissingPluginException {
+      /* Widget/browser tests have no native link channel. */
+    } catch (cause) {
+      _linkMessage(cause.toString());
+    }
+  }
+
+  void _retryPendingLink() {
+    if (mounted) unawaited(_openPendingLink());
+  }
+
+  void _linkMessage(String text) {
+    if (!mounted || lastLinkMessage == text) return;
+    lastLinkMessage = text;
+    final context = navigator.currentContext;
+    if (context == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        action: SnackBarAction(
+          label: 'Cancel link',
+          onPressed: () {
+            widget.store.syncMetadata.remove('pendingSharedTaskLink');
+            widget.store.changed();
+            unawaited(widget.store.flush());
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openPendingLink() async {
+    final id = widget.store.syncMetadata['pendingSharedTaskLink'];
+    if (!mounted ||
+        !widget.store.ready ||
+        id is! String ||
+        openingLink ||
+        account.busy ||
+        account.signingIn ||
+        account.isEditing() ||
+        navigator.currentState == null) {
+      return;
+    }
+    if (account.session == null ||
+        account.server != dianeSharedOrigin ||
+        !account.enabled) {
+      if (!accountRouteOpen) {
+        accountRouteOpen = true;
+        unawaited(
+          navigator.currentState!
+              .push<void>(
+                MaterialPageRoute(
+                  builder: (_) => AccountScreen(account: account),
+                ),
+              )
+              .whenComplete(() => accountRouteOpen = false),
+        );
+      }
+      return;
+    }
+    openingLink = true;
+    try {
+      final target = await account.resolveSharedTask(id);
+      if (!mounted ||
+          widget.store.syncMetadata['pendingSharedTaskLink'] != id ||
+          account.isEditing()) {
+        return;
+      }
+      final matches = archiveRows(widget.store.days)
+          .where(
+            (row) => row.date == target.date && row.task.id == target.taskId,
+          )
+          .toList();
+      if (matches.length != 1) {
+        throw StateError(
+          'This shared task has not synced yet. Review sync in Account; the link is retained.',
+        );
+      }
+      await widget.store.flush();
+      if (!mounted) return;
+      unawaited(
+        navigator.currentState!.push<void>(
+          MaterialPageRoute(
+            builder: (_) => TaskReviewScreen(
+              store: widget.store,
+              ai: linkAi,
+              row: matches.single,
+              openFocus: () {
+                focusRequests.value++;
+              },
+            ),
+          ),
+        ),
+      );
+      widget.store.syncMetadata.remove('pendingSharedTaskLink');
+      widget.store.changed();
+      await widget.store.flush();
+      lastLinkMessage = null;
+    } catch (cause) {
+      _linkMessage(cause.toString().replaceFirst('Bad state: ', ''));
+    } finally {
+      openingLink = false;
+    }
   }
 
   @override
@@ -52,6 +196,11 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     FocusManager.instance.removeListener(account.editingFinished);
+    account.removeListener(_retryPendingLink);
+    FocusManager.instance.removeListener(_retryPendingLink);
+    links.setMethodCallHandler(null);
+    focusRequests.dispose();
+    linkAi.dispose();
     account.dispose();
     super.dispose();
   }
@@ -59,6 +208,9 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
   @override
   Widget build(BuildContext context) => StickyApp(
     store: widget.store,
+    navigatorKey: navigator,
+    externalFocusRequests: focusRequests,
+    sharedAgent: account.requestAgent,
     accountBuilder: (_) => AccountScreen(account: account),
     syncIndicatorBuilder: (_) => CloudSyncButton(account: account),
   );

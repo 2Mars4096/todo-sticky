@@ -5,7 +5,7 @@ const load = require('./helpers/load-typescript.cjs')
 async function fixture(options = {}) {
   const slots = [], effects = [], timers = new Map(), listeners = new Map(), docListeners = new Map()
   const storage = new Map(), local = {}, remote = new Map()
-  let applyRace
+  let applyRace, fullReads=0, conditionalReads=0
   let cursor = 0, timerId = 0, now = 0, reads = 0, offline = false, failPut = false, draft = '', hold, heldStarted
   const uploads = []
   const goals = { targets: [], recurring: [] }
@@ -42,16 +42,18 @@ async function fixture(options = {}) {
       }
     } },
     '../api': { waitForPendingWrites: async () => {}, api: { extractTaskApi: async request => ({ dates: structuredClone(Object.values(local).filter(day => !request.date || day.date === request.date)) }) } },
-    '../cloudAccount': { connectAccount: async () => auth, requestJson: async (_, path, options = {}) => {
+    '../cloudAccount': { connectAccount: async () => auth, requestJson: async (_, path, requestOptions = {}) => {
       if (path === '/v1/config') return { schemaVersion: 1 }
-      if (options.method === 'PUT') { const body = JSON.parse(options.body), k = decodeURIComponent(path.split('/').pop())
+      if (requestOptions.method === 'PUT') { const body = JSON.parse(requestOptions.body), k = decodeURIComponent(path.split('/').pop())
         uploads.push(body)
         if (failPut) throw Error('Offline upload fixture')
         assert.equal(body.expectedRevision, remote.get(k)?.revision ?? 0, 'Revision-guarded upload')
         const value = record(k, body.payload, body.expectedRevision + 1); remote.set(k, value); return value }
       reads++; heldStarted?.(); if (hold) await hold
       if (offline) throw Error('Offline fixture')
-      return { schemaVersion: 1, records: [...remote.values()], nextCursor: null }
+      const generation=options.conditional?require('node:crypto').createHash('sha256').update(JSON.stringify([...remote.values()])).digest('hex'):undefined
+      if(generation&&new URL('https://fixture'+path).searchParams.get('ifGeneration')===generation){conditionalReads++;return {schemaVersion:1,records:[],nextCursor:null,generation,notModified:true}}
+      fullReads++;return { schemaVersion: 1, records: [...remote.values()], nextCursor: null, ...(generation?{generation}:{}) }
     } },
     '../cloudSync': load('src/cloudSync.ts', {}, { URL }), '../syncConflicts': load('src/syncConflicts.ts'),
     '../syncProgress': { ...load('src/syncProgress.ts'), yieldSyncUi: async () => {} },
@@ -78,7 +80,7 @@ async function fixture(options = {}) {
     now = end; await flush()
   }
   render(); await flush()
-  return { render, flush, advance, document, hooks, local, listeners, docListeners, timers, uploads, reads: () => reads,
+  return { render, flush, advance, document, hooks, local, listeners, docListeners, timers, uploads, reads: () => reads, fullReads:()=>fullReads, conditionalReads:()=>conditionalReads,
     failPut: value => { failPut = value },
     applyRace: fn => { applyRace = fn },
     baseline: (k, payload) => { const meta = JSON.parse(storage.get(key)); meta.baseline[k] = { revision: 1, payload, deleted: payload === null }; storage.set(key, JSON.stringify(meta)) },

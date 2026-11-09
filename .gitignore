@@ -67,3 +67,6 @@ output/account-sync/
 /plugin/backend/build/
 /plugin/backend/*.egg-info/
 /plugin/node_modules/
+
+# Product backend/test bytecode
+plugin/backend/**/__pycache__/

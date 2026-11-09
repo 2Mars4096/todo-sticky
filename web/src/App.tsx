@@ -1,3 +1,5 @@
+import { listen } from '@tauri-apps/api/event'
+import { DIANE_SHARED_ORIGIN, parseTodoTaskLink, readSharedTodoTask } from './cloudAccount'
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { SyncProgressView } from './components/SyncProgressView'
@@ -97,6 +99,12 @@ export default function App() {
   currentDateRef.current = calendar.dateStr
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
+  const [taskLink,setTaskLink]=useState<string|null>(()=>{try{return parseTodoTaskLink(window.location.href)||localStorage.getItem('todo-sticky-pending-task-link-v1')}catch{return null}})
+  const linkBusy=useRef(false),linkAccountShown=useRef(false),linkMounted=useRef(true)
+  const taskLinkRef=useRef(taskLink);taskLinkRef.current=taskLink
+  useEffect(()=>()=>{linkMounted.current=false},[])
+  const [linkTick,setLinkTick]=useState(0)
+
 
   const account = useCloudSync({
     kbPath: aiSettings?.kbPath || '',
@@ -200,6 +208,44 @@ export default function App() {
     })
     return () => cancelAnimationFrame(frame)
   }, [archiveTarget, tasks.loading, tasks.dataDate, tasks.loadError, tasks.tasks, calendar.dateStr, presentNotice])
+  useEffect(()=>{
+    let disposed=false,unlisten:(()=>void)|undefined
+    const accept=(id:string|null)=>{if(!id||disposed||!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(id))return;try{localStorage.setItem('todo-sticky-pending-task-link-v1',id)}catch{}setTaskLink(id);linkAccountShown.current=false;setLinkTick(value=>value+1)}
+    const take=()=>{if(isTauri())void invoke<string|null>('take_task_link').then(accept).catch(()=>{})}
+    if(isTauri())void listen('todo-task-link',take).then(fn=>{if(disposed)fn();else{unlisten=fn;take()}})
+    const fromUrl=()=>accept(parseTodoTaskLink(window.location.href))
+    const settled=()=>setTimeout(()=>{if(!disposed)setLinkTick(value=>value+1)},100)
+    window.addEventListener('popstate',fromUrl);window.addEventListener('focus',take);document.addEventListener('focusout',settled);document.addEventListener('keyup',settled)
+    return()=>{disposed=true;unlisten?.();window.removeEventListener('popstate',fromUrl);window.removeEventListener('focus',take);document.removeEventListener('focusout',settled);document.removeEventListener('keyup',settled)}
+  },[])
+  const linkAccount=useRef(account);linkAccount.current=account
+  useEffect(()=>{
+    if(!taskLink||linkBusy.current||tasks.loading)return
+    if(!account.user||account.server!==DIANE_SHARED_ORIGIN||!account.enabled){
+      if(!linkAccountShown.current){linkAccountShown.current=true;setSettingsAccount(true);setShowSettings(true);presentNotice({kind:'success',title:'Shared task waiting',message:'Sign in and enable sync to open this task. It will not run automatically.'})}
+      return
+    }
+    if(showSettings||showPlanner||showTrackingStation||projectWriting||!projectLeaveGuard.current())return
+    const drafts=[...document.querySelectorAll<HTMLTextAreaElement>('textarea.task-inline-edit,textarea.outcome-editor,textarea#quick-add-task')]
+    if(drafts.some(field=>field.value.trim()))return
+    linkBusy.current=true;const uid=account.user.uid,requested=taskLink
+    const current=()=>linkMounted.current&&taskLinkRef.current===requested&&linkAccount.current.user?.uid===uid
+    void (async()=>{
+      try{
+        const folder=aiSettings?.kbPath||await invoke<string>('cloud_task_folder')
+        const target=await readSharedTodoTask(taskLink,folder)
+        await linkAccount.current.sync()
+        const data=await api.extractTaskApi({date:target.date,canonicalDates:true})
+        if(!current()||!projectLeaveGuard.current())return
+        const rows=archiveRows(data.dates,goals.targets).filter(row=>row.date===target.date&&row.task.id===target.taskId)
+        if(rows.length!==1)throw new Error('Sync this date in Account, then open the shared task again. The link is retained.')
+        await openArchiveTask(rows[0]);if(!current())return
+        localStorage.removeItem('todo-sticky-pending-task-link-v1');setTaskLink(null)
+      }catch(error){if(current())presentNotice({kind:'error',title:'Task link waiting',message:error instanceof Error?error.message:String(error)})}
+      finally{linkBusy.current=false;if(linkMounted.current&&taskLinkRef.current!==requested)setLinkTick(value=>value+1)}
+    })()
+  },[taskLink,account.user?.uid,account.server,account.enabled,tasks.loading,showSettings,showPlanner,showTrackingStation,projectWriting,linkTick])
+
   const syncState = account.error || account.conflicts.length ? 'attention'
     : !account.enabled || !account.user ? 'local'
       : account.busy && !account.background ? 'syncing' : account.upToDate && !tasks.saving ? 'synced' : 'waiting'
@@ -282,6 +328,15 @@ export default function App() {
   useEffect(() => {
     api.getSettings().then(setAiSettings).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if(!account.user||account.server!==DIANE_SHARED_ORIGIN||!aiSettings||aiSettings.providerChosen!==false||showSettings||providerSwitching||aiSettings.apiKey.trim()||isProviderConfigured(aiSettings,aiSettings.provider))return
+    let disposed=false
+    const next=settingsForProvider(aiSettings,'diane')
+    void api.saveSettings(next).then(()=>{if(!disposed)setAiSettings(next)}).catch(()=>{})
+    return()=>{disposed=true}
+  },[account.user,account.server,aiSettings,showSettings,providerSwitching])
+
 
   useEffect(() => {
     if (!starFocus.hydrated || typeof window === 'undefined') return

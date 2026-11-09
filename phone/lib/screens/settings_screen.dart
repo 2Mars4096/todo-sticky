@@ -90,7 +90,10 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(
-                builder: (_) => ProviderEditor(store: store),
+                builder: (_) => ProviderEditor(
+                  store: store,
+                  sharedRequest: ai.sharedRequest,
+                ),
               ),
             ),
           ),
@@ -215,7 +218,8 @@ class SettingsScreen extends StatelessWidget {
 
 class ProviderEditor extends StatefulWidget {
   final StickyStore store;
-  const ProviderEditor({super.key, required this.store});
+  final SharedAgentRequest? sharedRequest;
+  const ProviderEditor({super.key, required this.store, this.sharedRequest});
   @override
   State<ProviderEditor> createState() => _ProviderEditorState();
 }
@@ -289,7 +293,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
     });
     final ephemeral = MemoryCredentials()
       ..values[draft.provider] = key.text.trim();
-    final ai = AiService(ephemeral);
+    final ai = AiService(ephemeral, sharedRequest: widget.sharedRequest);
     try {
       await ai.testConnection(draft);
       if (mounted) {
@@ -357,6 +361,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
                   capture();
                   setState(() {
                     draft.provider = value;
+                    draft.providerChosen = true;
                     base.text = draft.profile().apiBase;
                     model.text = draft.profile().model;
                     key.clear();
@@ -367,38 +372,44 @@ class _ProviderEditorState extends State<ProviderEditor> {
                 },
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: key,
-          enabled: !loadingKey && !busy,
-          obscureText: true,
-          autocorrect: false,
-          enableSuggestions: false,
-          decoration: const InputDecoration(labelText: 'API key'),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: model,
-          enabled: !busy,
-          autocorrect: false,
-          decoration: const InputDecoration(labelText: 'Model'),
-        ),
-        const SizedBox(height: 16),
-        ExpansionTile(
-          tilePadding: EdgeInsets.zero,
-          title: const Text('Connection details'),
-          children: [
-            TextField(
-              controller: base,
-              enabled: !busy,
-              autocorrect: false,
-              keyboardType: TextInputType.url,
-              decoration: const InputDecoration(
-                labelText: 'HTTPS API base URL',
+        if (draft.provider == 'diane')
+          const Text(
+            'Uses your shared Diane sign-in and account limits. Direct providers keep their own billing.',
+          )
+        else ...[
+          TextField(
+            controller: key,
+            enabled: !loadingKey && !busy,
+            obscureText: true,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: const InputDecoration(labelText: 'API key'),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: model,
+            enabled: !busy,
+            autocorrect: false,
+            decoration: const InputDecoration(labelText: 'Model'),
+          ),
+          const SizedBox(height: 16),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Connection details'),
+            children: [
+              TextField(
+                controller: base,
+                enabled: !busy,
+                autocorrect: false,
+                keyboardType: TextInputType.url,
+                decoration: const InputDecoration(
+                  labelText: 'HTTPS API base URL',
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ],
         if (message != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),

@@ -1,6 +1,6 @@
 # Todo
 
-- [ ] Canonical shared sync, central identity and unchanged standalone clients — [17-1](plans/17-1-canonical-sync.md).
+- [ ] Canonical shared sync and unchanged standalone clients implemented/tested; staged releases await shared-backend acceptance — [17-1](plans/17-1-canonical-sync.md).
 
 - [ ] Independent app releases and shared Diane services — [plan](plans/17-diane-shared-apps.md).
 

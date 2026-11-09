@@ -1,6 +1,10 @@
 # Architecture
 
 ## Shared Diane backend (staged cutover)
+- Standalone clients negotiate central broker configuration, sign in with app-scoped custom Firebase tokens, and copy pending/baseline state only from a server-verified original issuer+UID. Shared AI uses the compatibility endpoint; explicit direct provider mode is retained.
+- Optional sync generations permit quiet polling through five point reads. A complete immutable client snapshot remains necessary for offline three-way merge; upload/account/error invalidates the cache.
+- Android native links and macOS URL events retain canonical task IDs until authenticated lookup/sync can reveal their exact dated original task. Links never execute tasks.
+- Vite roots directly at `web/` and outputs root `dist/index.html`; compatibility symlinks do not determine bundler entry identity.
 - Product-owned Python source is `plugin/backend/diane/plugins/`. `todo_sync.py` projects the original standalone sync envelope from the same canonical records used by the embedded plugin; `todo_sync_protocol.py` preserves original validation and schema-1 metadata protection.
 - Revision/hash/container-shape metadata and hash-only mutation receipts live in the existing owner-scoped settings/receipt namespaces. No duplicate live day payload database is introduced. Canonical plugin edits are reflected in legacy sync revisions.
 - Offline/admin `CanonicalTodoSync.seed_records` seeds immutable original envelopes/revisions with a stable source namespace; divergent existing data refuses. Central identity, quota, migration execution and deployment belong to Diane.
@@ -15,7 +19,7 @@
 
 - `mobile/` is the native phone client. `models/` preserves Task/FinishPromise/Goal/Mission JSON contracts; `state/sticky_store.dart` owns independently usable local state and `services/persistence.dart` serializes atomic app-private saves with readable backups. API credentials use Android secure storage and never enter notebook exports or sync records.
 - `services/ai_service.dart` provides explicit HTTPS provider operations with real error diagnostics and strict plan validation; phone `screens/` and `widgets/` keep capture, proposals, completion review and recovery close to their task.
-- Android Kotlin handles only user-chosen file imports/exports through the Storage Access Framework. No broad external storage permission or local desktop bridge is introduced. The native Focus painter is a mobile visual adaptation, retaining lifecycle/history behavior.
+- Android Kotlin handles user-chosen file imports/exports through the Storage Access Framework and validated task deep-link delivery. No broad external storage permission or local desktop bridge is introduced. The native Focus painter is a mobile visual adaptation, retaining lifecycle/history behavior.
 - `StickyStore.syncRecords()`, `applySyncRecord()`, per-account `syncMetadata`, and `StickyApp.accountBuilder` are the integration seam for the separate Google account/sync branch. Active timers, provider keys and device settings remain local.
 - `.github/workflows/flutter-android.yml` runs format/analyze/tests and builds an ARM64 debug review APK; release signing requires a locally supplied keystore.
 - Remote Diane handoff is not part of the phone implementation: Dear Diane's companion router enforces `local_only` even behind remote bearer authentication. Its generic run API does not provide the companion defaults/receipt contract. See [7-1](plans/7-1-diane-remote-feasibility.md); no agent links or bearer tokens enter notebook/sync records.

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 
 import 'state/sticky_store.dart';
 import 'services/ai_service.dart';
@@ -18,11 +19,17 @@ const mutedInk = Color(0xff756747);
 
 class StickyApp extends StatefulWidget {
   final StickyStore store;
+  final GlobalKey<NavigatorState>? navigatorKey;
+  final ValueListenable<int>? externalFocusRequests;
+  final SharedAgentRequest? sharedAgent;
   final Widget Function(StickyStore store)? accountBuilder;
   final Widget Function(BuildContext context)? syncIndicatorBuilder;
   const StickyApp({
     super.key,
     required this.store,
+    this.navigatorKey,
+    this.externalFocusRequests,
+    this.sharedAgent,
     this.accountBuilder,
     this.syncIndicatorBuilder,
   });
@@ -31,22 +38,32 @@ class StickyApp extends StatefulWidget {
 }
 
 class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
-  late final AiService ai = AiService(widget.store.credentials);
+  late final AiService ai = AiService(
+    widget.store.credentials,
+    sharedRequest: widget.sharedAgent,
+  );
   Timer? clock;
   int tab = 0;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    widget.externalFocusRequests?.addListener(_openExternalFocus);
     clock = Timer.periodic(
       const Duration(seconds: 15),
       (_) => widget.store.refreshClock(),
     );
   }
 
+  void _openExternalFocus() {
+    widget.navigatorKey?.currentState?.popUntil((route) => route.isFirst);
+    if (mounted) setState(() => tab = 2);
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.externalFocusRequests?.removeListener(_openExternalFocus);
     clock?.cancel();
     ai.dispose();
     super.dispose();
@@ -73,6 +90,7 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
       final bodyText = contentText.copyWith(fontSize: 14);
       return MaterialApp(
         title: 'Sticky Todo',
+        navigatorKey: widget.navigatorKey,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,

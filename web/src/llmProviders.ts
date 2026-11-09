@@ -9,6 +9,7 @@ interface ProviderPreset {
 }
 
 export const PROVIDER_ORDER: Provider[] = [
+  'diane',
   'codex',
   'moonshot',
   'openrouter',
@@ -19,6 +20,7 @@ export const PROVIDER_ORDER: Provider[] = [
 ]
 
 export const PROVIDER_PRESETS: Record<Provider, ProviderPreset> = {
+  diane: {label:'Diane shared account',shortLabel:'Diane',apiBase:'https://dear-diane-202610-api.web.app',model:'',models:[]},
   codex: {
     label: 'Codex (ChatGPT login)',
     shortLabel: 'Codex',
@@ -104,6 +106,7 @@ export function settingsForProvider(
   return {
     ...synced,
     provider,
+    providerChosen: true,
     apiBase: savedProfile?.apiBase ?? preset.apiBase,
     apiKey: savedProfile?.apiKey ?? '',
     model: savedProfile?.model ?? preset.model,
@@ -114,6 +117,7 @@ export function isProviderConfigured(settings: AppSettings, provider: Provider) 
   const synced = syncActiveProviderProfile(settings)
   const profile = synced.providerProfiles[provider]
 
+  if (provider === 'diane') return true
   if (provider === 'codex') {
     return Boolean(profile?.apiBase.trim())
   }

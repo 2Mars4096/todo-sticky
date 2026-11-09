@@ -299,3 +299,7 @@ The app checks for remote edits every **15 seconds** while Mac is visible or And
 ### Editing and reviewing projects on Mac
 
 Open a long-term title in Goals. Use the pencil to edit its description or a step; **Save / Cancel** work consistently, with Cmd/Ctrl+Enter to save and Escape to cancel. A scheduled step’s date row has its own pencil for task text and **Work date**. Changing its work date keeps the deadline, status and nested work. Use **Open task** for status/deadline details or nested-step moves, then **‹ Project** to return. AI proposal text, dates and minutes remain editable before **Add steps / Add to daily tasks**; **Discard** leaves saved work unchanged.
+
+### Shared Diane candidate
+
+The staged shared build retains the Todo interface and local notes, and signs in through the shared Diane account for synchronized tasks/goals and AI quota. Existing direct AI provider choices remain available. Meeting task links open the exact Todo task after sign-in and sync; they never run it automatically. Release-time flags `STICKY_SHARED_CUTOVER=1` (desktop) and `DIANE_SHARED_CUTOVER=true` (Flutter) opt into the verified shared service; ordinary source defaults remain unchanged. Deployment and account migration must pass the release gate before distributing these candidates. See [shared sync plan](docs/plans/17-1-canonical-sync.md).

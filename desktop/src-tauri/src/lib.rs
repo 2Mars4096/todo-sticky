@@ -30,6 +30,12 @@ const WINDOW_EDGE_MARGIN_LOGICAL: f64 = 16.0;
 #[derive(Default)]
 struct LaunchVisibility(AtomicBool);
 
+#[derive(Default)]
+struct PendingTaskLink(Mutex<Option<String>>);
+
+#[tauri::command]
+fn take_task_link(app: AppHandle) -> Option<String> { app.state::<PendingTaskLink>().0.lock().ok()?.take() }
+
 fn reveal_initial_window(app: &AppHandle) {
     let Some(win) = app.get_webview_window("main") else { return; };
     if app.state::<LaunchVisibility>().0.swap(true, Ordering::SeqCst) { return; }
@@ -332,6 +338,7 @@ pub fn run() {
                 .build(),
         )
         .manage(LaunchVisibility::default())
+        .manage(PendingTaskLink::default())
         .manage(Mutex::new(WatcherState::default()))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -434,6 +441,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             frontend_ready,
+            take_task_link,
             cloud_sync::open_account_sign_in,
             cloud_sync::cloud_apply_day,
             cloud_sync::cloud_task_folder,
@@ -467,6 +475,13 @@ pub fn run() {
     app.run(|app, event| {
         #[cfg(target_os = "macos")]
         if let RunEvent::Opened { urls } = &event {
+            for url in urls {
+                if let Some(id) = cloud_sync::task_link_id(url.as_str()) {
+                    if let Ok(mut pending) = app.state::<PendingTaskLink>().0.lock() { *pending = Some(id); }
+                    app.emit("todo-task-link", ()).ok();
+                    if let Some(window) = app.get_webview_window("main") { window.unminimize().ok(); show_window(&window, true); }
+                }
+            }
             if urls.iter().any(|url| cloud_sync::is_account_return_url(url.as_str())) {
                 if let Some(window) = app.get_webview_window("main") {
                     window.unminimize().ok();

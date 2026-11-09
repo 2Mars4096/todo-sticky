@@ -55,6 +55,8 @@ impl Default for LLMProviderProfile {
 #[serde(default)]
 pub struct AppSettings {
     pub provider: String,
+    #[serde(rename = "providerChosen", default = "existing_provider_choice")]
+    pub provider_chosen: bool,
     #[serde(rename = "apiBase")]
     pub api_base: String,
     #[serde(rename = "apiKey")]
@@ -71,10 +73,13 @@ pub struct AppSettings {
     pub machines: Vec<Machine>,
 }
 
+fn existing_provider_choice() -> bool { true }
+
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
             provider: "moonshot".into(),
+            provider_chosen: false,
             api_base: "https://api.moonshot.ai/v1".into(),
             api_key: String::new(),
             model: "kimi-k2.6".into(),
@@ -434,27 +439,32 @@ fn migrate_from_env() -> Option<AppSettings> {
         settings.provider = infer_provider(api_base);
         settings.api_base = api_base.clone();
         found_legacy_value = true;
+        settings.provider_chosen = true;
     }
 
     if let Some(api_key) = vars.get("VITE_LLM_API_KEY").filter(|v| !v.trim().is_empty()) {
         settings.api_key = api_key.clone();
         found_legacy_value = true;
+        settings.provider_chosen = true;
     }
 
     if let Some(model) = vars.get("VITE_LLM_MODEL").filter(|v| !v.trim().is_empty()) {
         settings.model = model.clone();
         found_legacy_value = true;
+        settings.provider_chosen = true;
     }
 
     if let Some(kb_path) = vars.get("VITE_KB_PATH").filter(|v| !v.trim().is_empty()) {
         settings.kb_path = kb_path.clone();
         found_legacy_value = true;
+        settings.provider_chosen = true;
     }
 
     if let Some(raw_machines) = vars.get("VITE_MACHINES").filter(|v| !v.trim().is_empty()) {
         if let Ok(machines) = serde_json::from_str::<Vec<Machine>>(raw_machines) {
             settings.machines = machines;
             found_legacy_value = true;
+        settings.provider_chosen = true;
         }
     }
 

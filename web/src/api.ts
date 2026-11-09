@@ -1,3 +1,4 @@
+import { runSharedTodoAgent } from './cloudAccount'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import type {
@@ -23,6 +24,13 @@ function persist<T>(request: Promise<T>): Promise<T> {
 
 export async function waitForPendingWrites(): Promise<void> {
   while (pendingWrites.size) await Promise.all([...pendingWrites])
+}
+
+async function agentCall<T>(action: string, input: unknown, nativeCommand: string, nativeArgs: unknown): Promise<T> {
+  const settings=await invoke<AppSettings>('get_settings')
+  if(settings.provider!=='diane')return invoke<T>(nativeCommand,nativeArgs as Record<string,unknown>)
+  const folder=settings.kbPath||await invoke<string>('cloud_task_folder')
+  return runSharedTodoAgent<T>(action,input,folder)
 }
 
 export const api = {
@@ -79,15 +87,15 @@ export const api = {
     invoke<string[]>('list_weekly_files'),
 
   llmBreakdown: (data: { taskText: string; existingSubtasks: string[]; suggestFinish?: boolean }) =>
-    invoke<{ finishSuggestion?: string; subtasks: { text: string; estimatedMinutes?: number; machineTask?: boolean }[] }>('llm_breakdown', data),
+    agentCall<{ finishSuggestion?: string; subtasks: { text: string; estimatedMinutes?: number; machineTask?: boolean }[] }>('breakdown',data,'llm_breakdown',data),
 
   llmSchedule: (data: { tasks: AggregatedTask[]; machines: AppSettings['machines']; dateStr: string; availableStart: string; availableEnd: string }) =>
-    invoke<unknown>('llm_schedule', data),
+    agentCall<unknown>('schedule',data,'llm_schedule',data),
 
-  llmProjectPlan: (request: unknown) => invoke<unknown>('llm_project_plan', {request}),
+  llmProjectPlan: (request: unknown) => agentCall<unknown>('project',request,'llm_project_plan',{request}),
 
   llmRecommendAlbums: (data: { tasks: any[] }) =>
-    invoke<AlbumRecommendationResult>('llm_recommend_albums', data),
+    agentCall<AlbumRecommendationResult>('albums',data,'llm_recommend_albums',data),
 
   getSettings: () =>
     invoke<AppSettings>('get_settings'),
@@ -102,7 +110,7 @@ export const api = {
     persist(invoke<{ ok: boolean }>('save_star_focus_state', { state })),
 
   testConnection: (settings: { provider: string; apiBase: string; apiKey: string; model: string; preferDianeCredentials?: boolean }) =>
-    invoke<{ ok: boolean; message: string }>('test_connection', { settings }),
+    settings.provider==='diane' ? runSharedTodoAgent('breakdown',{taskText:'Connection test: return one step named Connected. Do not use tools.',existingSubtasks:[]}).then(()=>({ok:true,message:'Shared Diane connected. Requests use your shared account limits.'})) : invoke<{ ok: boolean; message: string }>('test_connection', { settings }),
 
   dianeCredentialStatus: (provider: string, endpoint: string) =>
     invoke<boolean>('diane_credential_status', { provider, endpoint }),
