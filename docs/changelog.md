@@ -1,3 +1,6 @@
+## 2026-11-10
+- [perf] Release canonical sync adapter 0.1.4: owner/schema-scoped generation checks avoid full canonical scans on quiet polling; empty-container changes advance the clock. 17 backend tests pass.
+
 # Changelog
 
 ## 2026-11-10

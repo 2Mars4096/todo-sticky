@@ -177,3 +177,26 @@ def test_derived_goal_link_repair_pins_revision_and_preserves_sync_revision(sync
     assert current(sync)==before
     assert sync.reconcile_goal_links('alice')['candidates']==[]
     assert sync.reconcile_goal_links('alice',dry_run=False,expected=candidate)['conflicts']==[record['record_id']]
+
+def test_conditional_sync_skips_collection_scan_and_is_owner_schema_bound(sync,host,monkeypatch):
+    sync.mutate('alice','day:'+DAY,mutation(day()))
+    first=sync.records('alice');token=first['generation']
+    original=sync._index
+    monkeypatch.setattr(sync,'_index',lambda *_:pytest.fail('unchanged sync must not scan canonical collection'))
+    assert sync.records('alice',if_generation=token)['notModified'] is True
+    monkeypatch.setattr(sync,'_index',original)
+    assert not sync.records('bob',if_generation=token).get('notModified')
+    assert not sync.records('alice',schema_version=1,if_generation=token).get('notModified')
+    record=host.list_records('alice','todo',record_type='task')['items'][0]
+    value=editable(record);value['text']='Plugin edit'
+    host.put_record('alice','todo','task',record['record_id'],{'request_id':'changed','expected_revision':record['revision'],'record':value})
+    updated=sync.records('alice',if_generation=token)
+    assert not updated.get('notModified') and updated['generation']!=token
+    assert updated['records'][0]['payload']['tasks'][0]['text']=='Plugin edit'
+
+def test_empty_container_and_ack_only_revision_invalidate_generation(sync):
+    first=sync.records('alice')
+    one=sync.mutate('alice','day:'+DAY,mutation(day([])))
+    page=sync.records('alice',if_generation=first['generation']);assert not page.get('notModified')
+    sync.mutate('alice','day:'+DAY,mutation(day([]),revision=one['revision'],mid='new-empty-mutation'))
+    assert not sync.records('alice',if_generation=page['generation']).get('notModified')

@@ -20,6 +20,7 @@ from .todo_actions import parent_id
 
 META = 'standalone-sync:'
 NAMESPACE = 'standalone-sync-source'
+CLOCK = 'standalone-sync-clock'
 MAX_CHANGES = 180  # canonical record + outbox writes remain below Firestore's 500 limit
 
 
@@ -168,13 +169,28 @@ class CanonicalTodoSync:
         return {'key':key, 'revision':meta['revision'], 'deleted':deleted, 'payload':payload,
                 'updatedAt':meta['updatedAt'], 'mutationId':meta['mutationId']}
 
-    def records(self, owner, after='', limit=200, schema_version=2):
+    @staticmethod
+    def _generation(state, owner, schema_version):
+        versions=[state['settings'].get('generation:'+kind,{'value':0}).get('value',0)
+                  for kind in ('task','goal','routine','focus_session')]
+        versions.append(state['settings'].get(CLOCK,{'value':0}).get('value',0))
+        return fingerprint({'contract':'canonical-todo-sync-v1','owner':owner,'schema':schema_version,'versions':versions})
+
+    @staticmethod
+    def _advance_clock(state):
+        clock=state['settings'].get(CLOCK,{'value':0})
+        state['settings'][CLOCK]={'value':clock.get('value',0)+1}
+
+    def records(self, owner, after='', limit=200, schema_version=2, if_generation=None):
         self._authorize()
         if after and not KEY.fullmatch(after):
             raise HTTPException(422, 'Invalid cursor')
         if not 1 <= limit <= 250 or schema_version not in (1,2):
             raise HTTPException(422, 'Unsupported page size or schema')
         def read(state):
+            generation=self._generation(state,owner,schema_version)
+            if not after and if_generation==generation:
+                return {'records':[],'nextCursor':None,'notModified':True,'generation':generation,'schemaVersion':1,'payloadSchemaVersion':schema_version}
             index = self._index(state)
             keys = {'day:'+day for day in index['days']} | set(index['focus'])
             if any(index['goals'].values()):
@@ -185,7 +201,7 @@ class CanonicalTodoSync:
             rows = [self._refresh(state,key,index) for key in page]
             return {'records':[project_record(row,schema_version) for row in rows if row],
                     'nextCursor':page[-1] if len(selected)>limit else None,
-                    'schemaVersion':1, 'payloadSchemaVersion':schema_version}
+                    'schemaVersion':1, 'payloadSchemaVersion':schema_version,'generation':generation}
         return self.repository.transact(owner,'todo',read)
 
     @staticmethod
@@ -306,6 +322,7 @@ class CanonicalTodoSync:
             result_hash=fingerprint({'payload':payload,'deleted':mutation.deleted})
             state['settings'][META+key]={**old,**metadata,'present':True,'deleted':mutation.deleted,'fingerprint':result_hash,
                 'revision':mutation.expectedRevision+1,'updatedAt':now(),'mutationId':mutation.mutationId}
+            self._advance_clock(state)
             result=self._refresh(state,key)
             if not result or result['payload']!=payload or result['deleted']!=mutation.deleted:
                 raise HTTPException(422,'This legacy payload cannot round-trip through the canonical schema; no changes were saved')
@@ -396,6 +413,7 @@ class CanonicalTodoSync:
                     'fingerprint':fingerprint({'payload':record['payload'],'deleted':record['deleted']}),
                     'revision':record['revision'],'updatedAt':record.get('updatedAt') or now(),'mutationId':record['mutationId'],
                     'seed_fingerprint':seed_hash,'source_id':source_id}
+                self._advance_clock(state)
                 actual=self._refresh(state,key)
                 if not actual or actual['payload']!=record['payload'] or actual['revision']!=record['revision']:
                     raise HTTPException(422,'Source record cannot round-trip through the shared schema: '+key)
@@ -412,8 +430,8 @@ def build_sync_router(plugins, auth, companion_service, *, before_write: Callabl
     @router.get('/v1/health')
     def health():return {'ok':True,'canonical':True,'contract':'todo/1'}
     @router.get('/v1/sync')
-    def records(after:str='',pageSize:int=Query(default=200,ge=1,le=250),schemaVersion:int=Query(default=1,ge=1,le=2),account=Depends(owner)):
-        return JSONResponse(adapter.records(account,after,pageSize,schemaVersion),headers={'Cache-Control':'no-store','Pragma':'no-cache','X-Content-Type-Options':'nosniff'})
+    def records(after:str='',pageSize:int=Query(default=200,ge=1,le=250),schemaVersion:int=Query(default=1,ge=1,le=2),ifGeneration:str|None=Query(default=None,pattern=r'^[a-f0-9]{64}$'),account=Depends(owner)):
+        return JSONResponse(adapter.records(account,after,pageSize,schemaVersion,ifGeneration),headers={'Cache-Control':'no-store','Pragma':'no-cache','X-Content-Type-Options':'nosniff'})
     @router.put('/v1/sync/{key}')
     def mutate(key:str,body:Mutation,account=Depends(owner)):
         if before_write:before_write(account,key,body)
