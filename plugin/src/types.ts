@@ -1,0 +1,106 @@
+export interface FinishPromise {
+  doneWhen?: string
+  by?: string
+  originalBy?: string
+  deadlineChanges?: { from: string | null; to: string | null; at: string }[]
+  reviewReady?: boolean
+}
+
+export interface Task {
+  finish?: FinishPromise
+  goalId?: string
+  goalStepId?: string
+  id: string
+  text: string
+  status: 'todo' | 'done' | 'partial' | 'question' | 'stopped'
+  subtasks: Task[]
+}
+
+export interface DatedTask extends Task {
+  sourceDate: string
+}
+
+export interface AggregatedTask {
+  finish?: FinishPromise
+  goalId?: string
+  goalStepId?: string
+  sourceDate?: string
+  originalId?: string
+  id: string
+  text: string
+  status: 'todo' | 'done' | 'partial' | 'question' | 'stopped'
+  todaySubtasks: Task[]
+  otherSubtasks: DatedTask[]
+}
+
+export interface ExtractedTaskDate {
+  date: string
+  tasks: Task[]
+  filePath: string
+  weekStart: string
+  revision: string
+}
+
+export interface TaskMutationResult {
+  ok: boolean
+  date: string
+  task: Task
+  filePath: string
+  weekStart: string
+  revision: string
+}
+
+export type ViewMode = 'all' | 'today'
+export type GoalCategory = 'targets' | 'recurring'
+
+export type Provider = 'codex' | 'moonshot' | 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom'
+
+export interface ProviderProfile {
+  apiBase: string
+  apiKey: string
+  model: string
+}
+
+export interface AppSettings {
+  provider: Provider
+  apiBase: string
+  apiKey: string
+  model: string
+  providerProfiles: Partial<Record<Provider, ProviderProfile>>
+  connectDiane?: boolean
+  preferDianeCredentials?: boolean
+  dianeProviders?: Provider[]
+  kbPath: string
+  machines: { name: string; type: string; specs?: string; capabilities?: string[] }[]
+}
+
+export interface AlbumRecommendation {
+  title: string
+  artist: string
+  year?: number
+  fit: string
+  bestFor: string
+}
+
+export interface AlbumRecommendationResult {
+  summary: string
+  albums: AlbumRecommendation[]
+}
+
+export interface GoalPlanStep {
+  id: string
+  text: string
+}
+
+export interface GoalItem {
+  id: string
+  text: string
+  done: boolean
+  plan?: GoalPlanStep[]
+}
+
+export interface GoalsState {
+  sidebarCollapsed: boolean
+  targets: GoalItem[]
+  recurring: GoalItem[]
+}

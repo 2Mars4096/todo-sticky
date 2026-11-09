@@ -1,0 +1,18 @@
+{
+  "hostApi": "diane-plugin/1",
+  "entry": "plugin/src/index.ts",
+  "permissions": [
+    "records.read",
+    "records.write",
+    "agent.request"
+  ],
+  "recordKinds": [
+    "task",
+    "goal",
+    "routine"
+  ],
+  "surfaces": [
+    "panel",
+    "window"
+  ]
+}

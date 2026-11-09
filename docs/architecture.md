@@ -1,5 +1,7 @@
 # Architecture
 
+- Product release layout: `desktop/`, `web/`, `phone/` (Flutter), `plugin/`. Legacy paths are compatibility symlinks for existing scripts. `plugin/` owns embedded UI and backend adapter releases; standalone interfaces remain unchanged.
+
 ## Flutter Android
 
 - Daily phone rows expose a `ReorderableDragStartListener` grip; the sliver contains visible rows only and maps reorder positions back to the stored list so hidden completed tasks remain intact. Task actions use named icon buttons, with editing and secondary actions under horizontal dots.

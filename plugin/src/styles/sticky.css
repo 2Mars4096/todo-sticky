@@ -1,0 +1,2610 @@
+/* Ported from Todo Sticky; selectors scoped to Diane plugin root. */
+.diane-todo-port {
+  --sticky-bg: #FFF8DC;
+  --sticky-bg-dark: #F5EDBE;
+  --sticky-border: #E8D9A0;
+  --sidebar-bg: #F1E2A0;
+  --sidebar-bg-dark: #E7D186;
+  --sidebar-ink: #5B4A1E;
+  --text-primary: #3D3520;
+  --text-secondary: #7A6F50;
+  --text-muted: #9C9169;
+  --accent: #C4A44A;
+  --accent-hover: #A8882E;
+  --done-color: #78956A;
+  --delete-color: #B85F52;
+  --focus-ring: rgba(168, 136, 46, 0.42);
+  --radius: 6px;
+  --content-weight: 400;
+  --heading-weight: 600;
+}
+
+.diane-todo-port * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.diane-todo-port,
+.diane-todo-port,
+.diane-todo-port {
+  height: 100%;
+}
+
+.diane-todo-port {
+  font-weight: var(--content-weight);
+  background: var(--sticky-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.diane-todo-port h1, .diane-todo-port h2, .diane-todo-port h3, .diane-todo-port h4, .diane-todo-port h5, .diane-todo-port h6, .diane-todo-port strong { font-weight: var(--heading-weight); }
+
+.diane-todo-port .boot-fallback {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 32px;
+  background: var(--wb-paper);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.diane-todo-port .boot-fallback-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent-hover);
+  font-size: 18px;
+}
+
+.diane-todo-port .boot-fallback h1 {
+  font-size: 17px;
+}
+
+.diane-todo-port .boot-fallback p {
+  max-width: 280px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.diane-todo-port .boot-fallback button {
+  justify-self: center;
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--sticky-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.diane-todo-port .task-loading-mark {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--wb-line);
+  border-top-color: var(--accent-hover);
+  border-radius: 999px;
+  animation: task-loading-spin 0.9s linear infinite;
+}
+
+@keyframes task-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diane-todo-port .task-loading-mark { animation: none; }
+}
+
+.diane-todo-port .app-shell {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--wb-line);
+  background:
+    var(--wb-paper);
+  box-shadow:
+    none;
+}
+
+.diane-todo-port button:focus-visible,
+.diane-todo-port input:focus-visible,
+.diane-todo-port textarea:focus-visible,
+.diane-todo-port select:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.diane-todo-port .window-resize-handles {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.diane-todo-port .window-resize-handle {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.diane-todo-port .window-resize-handle.north,
+.diane-todo-port .window-resize-handle.south {
+  left: 14px;
+  right: 14px;
+  height: 8px;
+}
+
+.diane-todo-port .window-resize-handle.north { top: 0; cursor: ns-resize; }
+.diane-todo-port .window-resize-handle.south { bottom: 0; cursor: ns-resize; }
+
+.diane-todo-port .window-resize-handle.east,
+.diane-todo-port .window-resize-handle.west {
+  top: 14px;
+  bottom: 14px;
+  width: 8px;
+}
+
+.diane-todo-port .window-resize-handle.east { right: 0; cursor: ew-resize; }
+.diane-todo-port .window-resize-handle.west { left: 0; cursor: ew-resize; }
+
+.diane-todo-port .window-resize-handle.north-east,
+.diane-todo-port .window-resize-handle.north-west,
+.diane-todo-port .window-resize-handle.south-east,
+.diane-todo-port .window-resize-handle.south-west {
+  width: 18px;
+  height: 18px;
+}
+
+.diane-todo-port .window-resize-handle.north-east { top: 0; right: 0; cursor: nesw-resize; }
+.diane-todo-port .window-resize-handle.north-west { top: 0; left: 0; cursor: nwse-resize; }
+.diane-todo-port .window-resize-handle.south-east { right: 0; bottom: 0; cursor: nwse-resize; }
+.diane-todo-port .window-resize-handle.south-west { left: 0; bottom: 0; cursor: nesw-resize; }
+
+.diane-todo-port .window-resize-handle.south-east::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  opacity: 0.66;
+  background: var(--wb-paper);
+  pointer-events: none;
+}
+
+.diane-todo-port .goals-sidebar {
+  width: 208px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--note-material-surface,
+    linear-gradient(180deg, rgba(243, 229, 175, 0.98) 0%, rgba(233, 211, 132, 0.98) 100%));
+  border-right: 1px solid var(--wb-line);
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.diane-todo-port .goals-sidebar.collapsed {
+  width: 44px;
+}
+
+.diane-todo-port .goals-sidebar.collapsed .sidebar-top {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 7px;
+}
+
+.diane-todo-port .sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--wb-line);
+}
+
+.diane-todo-port .sidebar-spacer {
+  flex: 1;
+}
+
+.diane-todo-port .sidebar-toggle {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: 1px solid var(--wb-line);
+  border-radius: 999px;
+  background: var(--wb-paper);
+  color: var(--sidebar-ink);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .rail-name {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+
+.diane-todo-port .sidebar-toggle:hover {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .sidebar-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.diane-todo-port .sidebar-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.diane-todo-port .sidebar-body::-webkit-scrollbar-thumb {
+  background: var(--wb-paper);
+  border-radius: 999px;
+}
+
+.diane-todo-port .sidebar-mini-stats {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px 0 12px;
+}
+
+.diane-todo-port .mini-stat {
+  width: 34px;
+  min-height: 44px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  background: var(--wb-paper);
+  color: var(--sidebar-ink);
+  box-shadow: none;
+}
+
+.diane-todo-port .mini-stat strong {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.diane-todo-port .mini-stat span {
+  width: 100%;
+  padding-inline: 1px;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.diane-todo-port .sidebar-backdrop {
+  display: none;
+}
+
+.diane-todo-port .app-shell.is-compact .goals-sidebar:not(.collapsed) {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 32;
+  width: min(272px, calc(100% - 52px));
+  box-shadow: none;
+}
+
+.diane-todo-port .app-shell.is-compact .goals-sidebar:not(.collapsed) {
+  left: 0;
+}
+
+.diane-todo-port .app-shell.is-compact .sidebar-backdrop {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  border: 0;
+  background: var(--wb-paper);
+  cursor: default;
+}
+
+.diane-todo-port .duration-row,
+.diane-todo-port .phase-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.diane-todo-port .duration-row {
+  margin-top: 10px;
+}
+
+.diane-todo-port .duration-chip,
+.diane-todo-port .phase-pill {
+  border: 1px solid var(--wb-line);
+  border-radius: 999px;
+  background: var(--wb-paper);
+  color: var(--wb-ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.diane-todo-port .duration-chip {
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .duration-chip {
+  padding: 5px 9px;
+}
+
+.diane-todo-port .duration-chip.active {
+  background: var(--wb-soft);
+  color: var(--wb-ink);
+  border-color: var(--wb-line);
+}
+
+.diane-todo-port .duration-chip:hover {
+  background: var(--wb-soft);
+}
+
+@keyframes starmap-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes starmap-body-rotation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes starmap-layer-drift {
+  0% {
+    transform: scale(0.997);
+    opacity: 0.94;
+  }
+
+  50% {
+    transform: scale(1.003);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.998);
+    opacity: 0.96;
+  }
+}
+
+@keyframes starmap-craft-pulse {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.56;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes starmap-marker-ping {
+  0%,
+  100% {
+    opacity: 0.42;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.diane-todo-port .planet-core,
+.diane-todo-port .planet-pulse {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.diane-todo-port .planet-core {
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  margin-top: -15px;
+  border-radius: 50%;
+  background:
+    var(--wb-paper);
+  box-shadow:
+    none;
+}
+
+.diane-todo-port .planet-pulse {
+  width: 58px;
+  height: 58px;
+  margin-left: -29px;
+  margin-top: -29px;
+  border-radius: 50%;
+  border: 1px solid var(--wb-line);
+}
+
+.diane-todo-port .phase-strip {
+  margin-top: 10px;
+}
+
+.diane-todo-port .phase-pill {
+  padding: 4px 7px;
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .phase-pill.done {
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .phase-pill.current {
+  background: var(--wb-paper);
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .goal-section + .goal-section {
+  margin-top: 12px;
+}
+
+.diane-todo-port .goal-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.diane-todo-port .goal-section-header h2 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .goal-section-header span {
+  font-size: 10px;
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .goal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diane-todo-port .goal-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: var(--wb-paper);
+  border: 1px solid var(--wb-line);
+}
+
+.diane-todo-port .goal-row.done {
+  opacity: 0.7;
+}
+
+.diane-todo-port .goal-toggle {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--wb-line);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .goal-toggle.done {
+  background: var(--done-color);
+  border-color: var(--done-color);
+}
+
+.diane-todo-port .goal-toggle.done::after {
+  content: '✓';
+  display: block;
+  color: white;
+  font-size: 9px;
+  line-height: 12px;
+  text-align: center;
+}
+
+.diane-todo-port .goal-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.45;
+  font-size: 11.5px;
+  word-break: break-word;
+  cursor: text;
+}
+
+.diane-todo-port .goal-row.done .goal-text {
+  color: var(--wb-ink);
+  text-decoration: line-through;
+}
+
+.diane-todo-port .goal-delete {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: color-mix(in oklch, oklch(65% .17 30) 80%, var(--wb-ink));
+  cursor: pointer;
+  padding: 1px 2px;
+  border-radius: 4px;
+}
+
+.diane-todo-port .goal-delete:hover {
+  color: var(--delete-color);
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .goal-edit-input,
+.diane-todo-port .goal-composer-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 40px;
+  border: 1px solid var(--wb-line);
+  border-radius: 8px;
+  background: var(--wb-paper);
+  color: var(--text-primary);
+  font: inherit;
+  line-height: 1.45;
+  outline: none;
+  padding: 6px 8px;
+}
+
+.diane-todo-port .goal-edit-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.diane-todo-port .goal-edit-input:focus,
+.diane-todo-port .goal-composer-input:focus {
+  border-color: var(--wb-line);
+}
+
+.diane-todo-port .goal-empty {
+  font-size: 10.5px;
+  color: var(--wb-ink);
+  line-height: 1.45;
+  padding: 8px 2px 2px;
+}
+
+.diane-todo-port .goal-composer {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diane-todo-port .goal-composer button {
+  align-self: flex-end;
+  border: 1px solid var(--wb-line);
+  border-radius: 999px;
+  background: var(--wb-paper);
+  color: var(--sidebar-ink);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .goal-composer button:hover {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .goal-composer button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.diane-todo-port .sticky-container {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background:
+    var(--wb-paper);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Drag area / Header */
+.diane-todo-port .sticky-header {
+  padding: 8px 14px 7px;
+  background: var(--sticky-bg-dark);
+  border-bottom: 1px solid var(--sticky-border);
+  flex-shrink: 0;
+}
+
+.diane-todo-port .window-drag-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 15px;
+  margin: -1px 0 5px;
+  cursor: grab;
+  user-select: none;
+}
+
+.diane-todo-port .window-drag-pill {
+  width: 44px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--wb-paper);
+}
+
+.diane-todo-port .window-drag-bar:active {
+  cursor: grabbing;
+}
+
+.diane-todo-port .date-nav {
+  width: 100%;
+  max-width: 330px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 28px minmax(11ch, 1fr) 28px;
+  align-items: center;
+  column-gap: 4px;
+}
+
+.diane-todo-port .date-nav button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .date-nav button:hover {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+}
+
+.diane-todo-port .date-nav .date-step {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+}
+
+.diane-todo-port .date-title {
+  width: 100%;
+  min-width: 0;
+  min-height: 28px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+  position: relative;
+  background: none;
+  border: none;
+  font-family: inherit;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 10px;
+  align-items: center;
+  column-gap: 3px;
+  white-space: nowrap;
+}
+
+.diane-todo-port .date-title::before {
+  content: '';
+}
+
+.diane-todo-port .date-title-slot {
+  position: relative;
+  min-width: 0;
+}
+
+.diane-todo-port .date-title-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.diane-todo-port .date-title:hover {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .cal-chevron {
+  font-size: 9px;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+
+.diane-todo-port .date-title:hover .cal-chevron {
+  color: var(--text-secondary);
+}
+
+.diane-todo-port .header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.diane-todo-port .today-marker,
+.diane-todo-port .today-jump {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.diane-todo-port .today-marker {
+  color: var(--text-muted);
+}
+
+.diane-todo-port .today-jump {
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--wb-paper);
+  color: var(--accent-hover);
+  padding: 3px 6px;
+  cursor: pointer;
+}
+
+/* View toggle */
+.diane-todo-port .view-toggle {
+  display: flex;
+  background: var(--wb-paper);
+  border-radius: 4px;
+  padding: 1px;
+  font-size: 11px;
+}
+
+.diane-todo-port .view-toggle button {
+  background: none;
+  border: none;
+  padding: 2px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .view-toggle button.active {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+/* Calendar popup */
+.diane-todo-port .calendar-popup {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: var(--sticky-bg);
+  border: 1px solid var(--sticky-border);
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 8px;
+  margin-top: 4px;
+}
+
+.diane-todo-port .calendar-popup .rdp {
+  --rdp-accent-color: var(--accent);
+  --rdp-background-color: var(--sticky-bg-dark);
+  font-size: 12px;
+}
+
+/* Task list */
+.diane-todo-port .task-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 0 10px;
+}
+
+.diane-todo-port .task-list.empty {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 30px 24px 20px;
+}
+
+.diane-todo-port .task-empty-state {
+  max-width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.diane-todo-port .task-empty-state strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.diane-todo-port .task-empty-state > span:last-of-type {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.diane-todo-port .task-empty-mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--wb-line);
+  border-radius: 50%;
+  background: var(--wb-paper);
+  color: var(--accent-hover);
+  font-size: 13px;
+}
+
+.diane-todo-port .task-empty-today {
+  margin-top: 3px;
+  padding: 5px 9px;
+  border: 1px solid var(--wb-line);
+  border-radius: 5px;
+  background: var(--wb-paper);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.diane-todo-port .task-empty-today:hover {
+  background: var(--wb-soft);
+  border-color: var(--wb-line);
+}
+
+.diane-todo-port .task-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.diane-todo-port .task-list::-webkit-scrollbar-thumb {
+  background: var(--sticky-border);
+  border-radius: 2px;
+}
+
+/* Task item */
+.diane-todo-port .task-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 3px 12px 3px 12px;
+  gap: 6px;
+  position: relative;
+  transition: background 0.1s;
+}
+
+.diane-todo-port .task-item:hover {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .task-item.main-task {
+  padding-top: 6px;
+}
+
+.diane-todo-port .task-item.subtask {
+  padding-left: 32px;
+}
+
+.diane-todo-port .task-item.subtask::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--sticky-border);
+}
+
+.diane-todo-port .task-item.other-date {
+  opacity: 0.4;
+}
+
+.diane-todo-port .task-item.other-date:hover {
+  opacity: 0.6;
+}
+
+.diane-todo-port .task-item.dragging {
+  opacity: 0.42;
+}
+
+.diane-todo-port .task-item.drop-before::after,
+.diane-todo-port .task-item.drop-after::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.diane-todo-port .task-item.drop-before::after {
+  top: -1px;
+}
+
+.diane-todo-port .task-item.drop-after::after {
+  bottom: -1px;
+}
+
+.diane-todo-port .task-drag-handle {
+  user-select: none;
+  -webkit-user-select: none;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 18px;
+  margin: 0 0 0 -4px;
+  padding: 2px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: grab;
+  opacity: 0.58;
+  touch-action: none;
+}
+
+.diane-todo-port .task-drag-handle:hover,
+.diane-todo-port .task-drag-handle:focus-visible {
+  color: var(--accent-hover);
+  background: var(--wb-soft);
+  opacity: 1;
+}
+
+.diane-todo-port .task-drag-handle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.diane-todo-port .task-drag-handle:active {
+  cursor: grabbing;
+}
+
+.diane-todo-port .task-drag-handle svg {
+  display: block;
+  width: 10px;
+  height: 14px;
+  fill: currentColor;
+}
+
+/* Checkbox */
+.diane-todo-port .task-checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--text-secondary);
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.15s;
+  background: transparent;
+  padding: 0;
+}
+
+.diane-todo-port .task-checkbox:hover {
+  border-color: var(--accent);
+}
+
+.diane-todo-port .task-checkbox.done {
+  background: var(--done-color);
+  border-color: var(--done-color);
+}
+
+.diane-todo-port .task-checkbox.done::after {
+  content: '✓';
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.diane-todo-port .task-checkbox.partial {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.diane-todo-port .task-checkbox.partial::after {
+  content: '~';
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Task text */
+.diane-todo-port .task-content-flow {
+  display: flow-root;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.diane-todo-port .task-content-flow.editable {
+  cursor: text;
+}
+
+.diane-todo-port .task-content-flow.editing {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.diane-todo-port .task-content-flow.editing .task-actions {
+  float: none;
+  flex: none;
+  margin-left: 0;
+}
+
+.diane-todo-port .task-text {
+  display: inline;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  cursor: text;
+  border-radius: 3px;
+  padding: 0 2px;
+  margin: 0 -2px;
+  transition: background 0.15s;
+}
+
+.diane-todo-port .task-text:hover:not(.done) {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .task-text:not([role='button']) {
+  cursor: default;
+}
+
+.diane-todo-port .task-text[role='button']:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.diane-todo-port .task-text.done {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.diane-todo-port .task-text-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: inherit;
+  line-height: 1.4;
+  padding: 0;
+}
+
+.diane-todo-port .task-inline-edit {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  border-bottom: 1px solid var(--accent);
+  vertical-align: baseline;
+}
+
+.diane-todo-port .date-tag {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  padding: 1px 4px;
+  background: var(--wb-paper);
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: baseline;
+}
+
+/* Hover actions */
+.diane-todo-port .task-actions {
+  cursor: default;
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  white-space: nowrap;
+  vertical-align: middle;
+  opacity: 0.54;
+  transition: opacity 0.15s;
+}
+
+.diane-todo-port .task-item:hover .task-actions,
+.diane-todo-port .task-item:focus-within .task-actions {
+  opacity: 1;
+}
+
+.diane-todo-port .task-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.diane-todo-port .task-actions button.task-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+}
+
+.diane-todo-port .task-actions button:hover {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .task-actions button.delete:hover {
+  color: var(--delete-color);
+}
+
+.diane-todo-port .task-actions button.push:hover {
+  color: var(--accent);
+}
+
+.diane-todo-port .task-actions button.ai-btn {
+  border: 1px solid oklch(0.52 0.13 282 / 0.18);
+  background: oklch(0.52 0.13 282 / 0.06);
+  color: oklch(0.43 0.13 282);
+}
+
+.diane-todo-port .task-actions button.ai-btn:hover {
+  border-color: oklch(0.52 0.13 282 / 0.3);
+  background: oklch(0.52 0.13 282 / 0.12);
+  color: oklch(0.38 0.14 282);
+}
+
+.diane-todo-port .task-action-icon {
+  display: block;
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.diane-todo-port .task-action-icon .task-action-icon-fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+.diane-todo-port .task-actions button.copy-link:hover {
+  color: var(--accent-hover);
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .task-step-add-row {
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 12px 3px;
+  gap: 6px;
+}
+
+.diane-todo-port .task-step-add-handle-space {
+  flex: 0 0 14px;
+  width: 14px;
+  margin-left: -4px;
+}
+
+.diane-todo-port .task-step-add-checkbox-space {
+  flex: 0 0 16px;
+  width: 16px;
+}
+
+.diane-todo-port .task-step-add-input {
+  min-width: 0;
+  padding: 3px 6px;
+  border: 1px solid var(--sticky-border);
+  border-radius: 4px;
+  background: transparent;
+}
+
+.diane-todo-port .task-step-add-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.diane-todo-port .task-step-add-input:focus {
+  border-color: var(--accent-hover);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Retain a full input hit area and keyboard access while idle. */
+@media (hover: hover) and (pointer: fine) {
+  .diane-todo-port .task-step-add-input { opacity: 0; }
+  .diane-todo-port .task-step-add-row:hover .task-step-add-input,
+  .diane-todo-port .task-step-add-row:focus-within .task-step-add-input,
+  .diane-todo-port .task-step-add-row.has-draft .task-step-add-input { opacity: 1; }
+}
+
+.diane-todo-port .task-add-row {
+  margin-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Add task */
+.diane-todo-port .add-task {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--wb-line);
+  flex-shrink: 0;
+}
+
+.diane-todo-port .add-task label {
+  display: block;
+  margin: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.diane-todo-port .add-task-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+  margin: 0 0 5px 2px;
+}
+
+.diane-todo-port .add-task-row {
+  display: flex;
+  gap: 6px;
+}
+
+.diane-todo-port .add-task input {
+  flex: 1;
+  min-width: 0;
+  background: var(--wb-paper);
+  border: 1px solid var(--wb-line);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font: inherit;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .add-task input::placeholder {
+  color: var(--text-muted);
+}
+
+.diane-todo-port .add-task input:focus {
+  background: var(--wb-paper);
+  border-color: var(--wb-line);
+}
+
+.diane-todo-port .add-task button {
+  min-width: 46px;
+  border: 1px solid var(--wb-line);
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.diane-todo-port .add-task button:hover:not(:disabled) {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .add-task button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.diane-todo-port .add-task.prominent {
+  padding-top: 13px;
+  padding-bottom: 13px;
+  background: var(--wb-paper);
+}
+
+.diane-todo-port .dev-tools-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--wb-line);
+  background:
+    var(--wb-paper);
+}
+
+.diane-todo-port .dev-tools-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.diane-todo-port .dev-tools-head {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.diane-todo-port .dev-tools-title span {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .dev-tools-title strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.diane-todo-port .dev-tools-badge {
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--wb-paper);
+  color: var(--wb-ink);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.diane-todo-port .dev-tools-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.diane-todo-port .dev-tools-actions.speed {
+  gap: 5px;
+}
+
+.diane-todo-port .dev-tools-actions button {
+  background: var(--wb-paper);
+  border: 1px solid var(--wb-line);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .dev-tools-actions button:hover {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+}
+
+.diane-todo-port .dev-tools-actions button.active {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+  border-color: var(--wb-line);
+}
+
+.diane-todo-port .dev-tools-actions.speed button {
+  min-width: 38px;
+  padding-inline: 8px;
+}
+
+.diane-todo-port .dev-tools-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@container todo-port (max-width: 620px) {
+  .diane-todo-port .dev-tools-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .diane-todo-port .dev-tools-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* Action bar */
+.diane-todo-port .action-bar {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 6px;
+  border-top: 1px solid var(--sticky-border);
+  flex-shrink: 0;
+}
+
+.diane-todo-port .action-bar button {
+  background: var(--wb-paper);
+  border: 1px solid var(--sticky-border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diane-todo-port .action-bar button:hover {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+}
+
+.diane-todo-port .action-bar button.active {
+  border-color: var(--wb-line);
+  background: var(--wb-soft);
+  color: var(--text-primary);
+}
+
+.diane-todo-port .action-bar button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.diane-todo-port .action-bar button:disabled:hover {
+  background: var(--wb-soft);
+  color: var(--text-secondary);
+}
+
+.diane-todo-port .action-bar .spacer {
+  flex: 1;
+}
+
+.diane-todo-port .provider-quick-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.diane-todo-port .provider-status-dot {
+  position: absolute;
+  left: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.diane-todo-port .provider-quick-control.configured .provider-status-dot {
+  background: var(--done-color);
+}
+
+.diane-todo-port .provider-quick-control.needs-setup .provider-status-dot {
+  background: var(--accent);
+}
+
+.diane-todo-port .provider-quick-control select {
+  width: auto;
+  max-width: 108px;
+  height: 25px;
+  padding: 3px 22px 3px 20px;
+  border: 1px solid var(--sticky-border);
+  border-radius: 4px;
+  background-color: var(--wb-paper);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%237A6F50'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition:
+    background-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.diane-todo-port .provider-quick-control select:hover:not(:disabled) {
+  background-color: var(--wb-soft);
+  border-color: var(--wb-line);
+  color: var(--text-primary);
+}
+
+.diane-todo-port .provider-quick-control select:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.diane-todo-port .action-bar button.gear {
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.diane-todo-port .action-bar button.dev-toggle {
+  background: var(--wb-paper);
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .action-bar button.dev-toggle.active {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+  border-color: var(--wb-line);
+}
+
+/* Task-aware album recommendations */
+.diane-todo-port .album-recommendations {
+  position: absolute;
+  z-index: 38;
+  right: 10px;
+  bottom: 41px;
+  left: 10px;
+  max-height: min(430px, calc(100% - 76px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--wb-line);
+  border-radius: 10px;
+  background:
+    var(--wb-paper);
+  box-shadow: none;
+  animation: album-sheet-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes album-sheet-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.diane-todo-port .album-recommendations-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px 9px;
+  border-bottom: 1px solid var(--wb-line);
+}
+
+.diane-todo-port .album-recommendations-header h2 {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.diane-todo-port .album-recommendations-close {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.diane-todo-port .album-recommendations-close:hover {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+}
+
+.diane-todo-port .album-recommendations-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 12px 6px;
+}
+
+.diane-todo-port .album-list {
+  list-style: none;
+}
+
+.diane-todo-port .album-row {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 7px 0;
+}
+
+.diane-todo-port .album-row + .album-row {
+  border-top: 1px solid var(--wb-line);
+}
+
+.diane-todo-port .album-disc,
+.diane-todo-port .album-loading-disc {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle, transparent 0 3px, rgba(255, 248, 220, 0.13) 3px 4px),
+    var(--text-primary);
+  box-shadow: none;
+}
+
+.diane-todo-port .album-disc > span {
+  position: absolute;
+  inset: 8px;
+  border: 2px solid var(--sticky-bg-dark);
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.diane-todo-port .album-copy {
+  min-width: 0;
+}
+
+.diane-todo-port .album-title-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 6px;
+}
+
+.diane-todo-port .album-title-line strong {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  line-height: 1.25;
+}
+
+.diane-todo-port .album-title-line span {
+  color: var(--text-muted);
+  font-size: 9.5px;
+}
+
+.diane-todo-port .album-copy p {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.diane-todo-port .album-best-for {
+  max-width: 92px;
+  padding: 3px 6px;
+  border: 1px solid var(--wb-line);
+  border-radius: 999px;
+  background: var(--wb-paper);
+  color: var(--sidebar-ink);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.diane-todo-port .album-recommendations-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 12px;
+  border-top: 1px solid var(--wb-line);
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.diane-todo-port .album-recommendations-footer button {
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent-hover);
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.diane-todo-port .album-recommendations-footer button:hover:not(:disabled) {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .album-recommendations-footer button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.diane-todo-port .album-loading-list {
+  padding-block: 3px;
+}
+
+.diane-todo-port .album-loading-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 52px;
+}
+
+.diane-todo-port .album-loading-row + .album-loading-row {
+  border-top: 1px solid var(--wb-line);
+}
+
+.diane-todo-port .album-loading-disc,
+.diane-todo-port .album-loading-lines span {
+  overflow: hidden;
+  background: var(--wb-paper);
+}
+
+.diane-todo-port .album-loading-disc::after,
+.diane-todo-port .album-loading-lines span::after {
+  content: '';
+  display: block;
+  width: 45%;
+  height: 100%;
+  background: var(--wb-paper);
+  animation: album-loading-sweep 1.25s ease-in-out infinite;
+}
+
+.diane-todo-port .album-loading-lines {
+  flex: 1;
+}
+
+.diane-todo-port .album-loading-lines span {
+  display: block;
+  width: min(180px, 70%);
+  height: 8px;
+  border-radius: 3px;
+}
+
+.diane-todo-port .album-loading-lines span + span {
+  width: min(240px, 92%);
+  height: 6px;
+  margin-top: 6px;
+}
+
+@keyframes album-loading-sweep {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(250%); }
+}
+
+@container todo-port (max-width: 520px) {
+  .diane-todo-port .album-row {
+    grid-template-columns: 25px minmax(0, 1fr);
+  }
+
+  .diane-todo-port .album-best-for {
+    grid-column: 2;
+    justify-self: start;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diane-todo-port .album-recommendations { animation: none; }
+  .diane-todo-port .album-loading-disc::after,
+  .diane-todo-port .album-loading-lines span::after { animation: none; }
+}
+
+/* Settings overlay */
+.diane-todo-port .settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--wb-paper);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diane-todo-port .settings-panel {
+  background: var(--sticky-bg);
+  border-radius: 8px;
+  padding: 16px;
+  width: 90%;
+  max-width: 340px;
+  max-height: 90vh;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.diane-todo-port .settings-panel.settings-wide {
+  max-width: 370px;
+}
+
+.diane-todo-port .settings-panel h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.diane-todo-port .settings-subtitle {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.diane-todo-port .settings-scroll {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -16px;
+  padding: 0 16px;
+}
+
+.diane-todo-port .settings-scroll::-webkit-scrollbar { width: 4px; }
+.diane-todo-port .settings-scroll::-webkit-scrollbar-thumb {
+  background: var(--sticky-border);
+  border-radius: 2px;
+}
+
+.diane-todo-port .settings-section {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--sticky-border);
+}
+
+.diane-todo-port .settings-section:last-child { border-bottom: none; }
+
+.diane-todo-port .section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.diane-todo-port .settings-panel label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+  margin-top: 8px;
+}
+
+.diane-todo-port .settings-panel label:first-of-type { margin-top: 4px; }
+
+.diane-todo-port .settings-panel input,
+.diane-todo-port .settings-panel textarea {
+  width: 100%;
+  background: var(--wb-paper);
+  border: 1px solid var(--sticky-border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.diane-todo-port .settings-panel input:focus {
+  border-color: var(--accent);
+}
+
+.diane-todo-port .settings-panel select {
+  width: 100%;
+  background: var(--wb-paper);
+  border: 1px solid var(--sticky-border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%237A6F50'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+
+.diane-todo-port .settings-panel select:focus {
+  border-color: var(--accent);
+}
+
+.diane-todo-port .hint {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.diane-todo-port .hint code {
+  background: var(--wb-paper);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+/* Input with side button */
+.diane-todo-port .input-row {
+  display: flex;
+  gap: 4px;
+}
+
+.diane-todo-port .input-row input { flex: 1; }
+
+.diane-todo-port .input-row-btn {
+  flex-shrink: 0;
+  width: 32px;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px !important;
+}
+
+/* Test connection */
+.diane-todo-port .test-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.diane-todo-port .test-result {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.diane-todo-port .test-result.ok { color: var(--done-color); }
+.diane-todo-port .test-result.fail { color: var(--delete-color); }
+
+/* Machine cards */
+.diane-todo-port .machine-card {
+  background: var(--wb-paper);
+  border: 1px solid var(--wb-line);
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diane-todo-port .machine-card input {
+  background: var(--wb-paper) !important;
+}
+
+.diane-todo-port .machine-card-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.diane-todo-port .machine-name {
+  flex: 1;
+  font-weight: 600 !important;
+}
+
+.diane-todo-port .machine-type-sel {
+  width: auto !important;
+  flex-shrink: 0;
+  font-size: 11px !important;
+  padding: 4px 20px 4px 6px !important;
+}
+
+.diane-todo-port .machine-rm {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px !important;
+  color: var(--text-muted) !important;
+  border: none !important;
+  background: none !important;
+}
+
+.diane-todo-port .machine-rm:hover {
+  color: var(--delete-color) !important;
+}
+
+.diane-todo-port .add-machine {
+  margin-top: 8px;
+  width: 100%;
+  font-size: 11px !important;
+  color: var(--text-secondary) !important;
+  border-style: dashed !important;
+}
+
+/* Footer buttons */
+.diane-todo-port .settings-panel .btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sticky-border);
+  flex-shrink: 0;
+}
+
+.diane-todo-port .settings-panel button {
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--sticky-border);
+  background: var(--wb-paper);
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.diane-todo-port .settings-panel button:hover {
+  background: var(--wb-soft);
+}
+
+.diane-todo-port .settings-panel button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.diane-todo-port .settings-panel button.primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.diane-todo-port .settings-panel button.primary:hover {
+  background: var(--accent-hover);
+}
+
+/* Schedule overlay */
+.diane-todo-port .schedule-panel {
+  background: var(--sticky-bg);
+  border-radius: 8px;
+  padding: 0;
+  width: 94%;
+  max-width: 360px;
+  max-height: 85vh;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.diane-todo-port .schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--sticky-border);
+}
+
+.diane-todo-port .schedule-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.diane-todo-port .schedule-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.diane-todo-port .schedule-close:hover {
+  background: var(--wb-soft);
+  color: var(--text-primary);
+}
+
+.diane-todo-port .schedule-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+}
+
+.diane-todo-port .schedule-summary {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  background: var(--wb-paper);
+  border-radius: 6px;
+}
+
+.diane-todo-port .schedule-section {
+  margin-bottom: 12px;
+}
+
+.diane-todo-port .schedule-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.diane-todo-port .schedule-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.diane-todo-port .schedule-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 37px;
+  top: 14px;
+  bottom: -8px;
+  width: 1px;
+  background: var(--sticky-border);
+}
+
+.diane-todo-port .schedule-time {
+  flex-shrink: 0;
+  width: 34px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: right;
+  padding-top: 1px;
+}
+
+.diane-todo-port .schedule-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 4px;
+  z-index: 1;
+}
+
+.diane-todo-port .schedule-dot.machine-dot {
+  background: var(--done-color);
+}
+
+.diane-todo-port .schedule-detail {
+  flex: 1;
+  min-width: 0;
+}
+
+.diane-todo-port .schedule-task-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.diane-todo-port .schedule-action {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+.diane-todo-port .schedule-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.diane-todo-port .schedule-assigned {
+  padding: 0 4px;
+  background: var(--wb-paper);
+  border-radius: 2px;
+}
+
+.diane-todo-port .machine-row .schedule-task-name {
+  color: var(--text-secondary);
+}
+
+.diane-todo-port .schedule-panel .btn-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 14px;
+  border-top: 1px solid var(--sticky-border);
+}
+
+.diane-todo-port .schedule-panel .btn-row button {
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--sticky-border);
+  background: var(--wb-paper);
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.diane-todo-port .schedule-panel .btn-row button:hover {
+  background: var(--wb-soft);
+}
+
+/* AI loading */
+.diane-todo-port .ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.diane-todo-port .ai-loading .spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--sticky-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Schedule toast */
+.diane-todo-port .schedule-toast {
+  position: absolute;
+  bottom: 52px;
+  left: 12px;
+  right: 12px;
+  background: var(--wb-paper);
+  color: var(--wb-ink);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: pointer;
+  animation: toast-in 0.25s ease;
+  box-shadow: none;
+}
+.diane-todo-port .schedule-toast.success { background: var(--wb-paper); }
+.diane-todo-port .schedule-toast.error { background: var(--wb-paper); }
+.diane-todo-port .schedule-toast strong { font-size: 12px; }
+.diane-todo-port .schedule-toast p { margin: 4px 0 0; opacity: 0.9; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (hover: none) {
+  .diane-todo-port .task-actions {
+    opacity: 0.82;
+  }
+}
+
+@container todo-port (max-width: 520px) {
+  .diane-todo-port .sticky-header {
+    padding-inline: 10px;
+  }
+
+  .diane-todo-port .date-nav {
+    gap: 2px;
+  }
+
+  .diane-todo-port .date-title {
+    font-size: 13px;
+    padding-inline: 5px;
+  }
+
+  .diane-todo-port .task-item {
+    padding-inline: 9px;
+  }
+
+  .diane-todo-port .task-step-add-row {
+    padding-inline: 9px;
+  }
+
+  .diane-todo-port .provider-quick-control select {
+    max-width: 94px;
+  }
+}
+
+/* Star Focus solar-route layout */
+
+.diane-todo-port .solar-route-readout {
+  display: grid;
+  grid-template-columns: auto minmax(62px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.diane-todo-port .solar-route-stop {
+  min-width: 0;
+}
+
+.diane-todo-port .solar-route-stop.destination {
+  text-align: right;
+}
+
+.diane-todo-port .solar-route-stop span {
+  display: block;
+  color: var(--focus-dim);
+  font-size: 8px;
+  font-weight: 720;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.diane-todo-port .solar-route-stop strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--focus-text);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.diane-todo-port .solar-route-track {
+  position: relative;
+  height: 18px;
+}
+
+.diane-todo-port .solar-route-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--focus-dim), var(--focus-accent));
+}
+
+.diane-todo-port .solar-route-line::before,
+.diane-todo-port .solar-route-line::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--focus-dim);
+  border-radius: 50%;
+  background: var(--focus-space);
+}
+
+.diane-todo-port .solar-route-line::before { left: 0; }
+.diane-todo-port .solar-route-line::after {
+  right: 0;
+  border-color: var(--focus-accent);
+}
+
+.diane-todo-port .solar-route-craft {
+  position: absolute;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--focus-blue);
+  box-shadow: none;
+  transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.diane-todo-port .solar-route-craft.arrived {
+  background: var(--focus-green);
+  box-shadow: none;
+}
+
+@container todo-port (max-width: 430px) {
+
+  .diane-todo-port .solar-route-readout {
+    gap: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diane-todo-port *,
+  .diane-todo-port *::before,
+  .diane-todo-port *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* In-app release updates */
+.diane-todo-port .settings-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.diane-todo-port .app-updates .test-row { flex-wrap: wrap; }
+.diane-todo-port .app-updates progress { width: 100%; accent-color: var(--accent); margin-top: 8px; }
+.diane-todo-port .app-updates details { margin-top: 8px; font-size: 11px; }
+.diane-todo-port .app-updates summary { cursor: pointer; }
+.diane-todo-port .update-notes { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 150px; overflow-y: auto; margin-top: 6px; }
+.diane-todo-port .update-error { color: var(--danger); font-size: 11px; overflow-wrap: anywhere; margin-top: 6px; }
+
+/* Updates use a quiet, persistent marker rather than an interrupting dialog. */
+.diane-todo-port .update-dot {
+  display: inline-block;
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-hover);
+}
+.diane-todo-port .settings-update-button { position: relative; }
+.diane-todo-port .settings-update-dot { position: absolute; top: 2px; right: 2px; }
+.diane-todo-port .app-updates .update-action { display: inline-flex; align-items: center; gap: 6px; }
+
+.diane-todo-port .settings-panel .diane-credentials-choice { display:flex; align-items:center; gap:6px; }
+.diane-todo-port .settings-panel .diane-credentials-choice input { width:auto; margin:0; padding:0; }
+/* Diane keeps execution out of the note: one status glyph and optional details. */
+.diane-todo-port .diane-action-wrap { position: relative; display: inline-flex; vertical-align: middle; }
+.diane-todo-port .diane-action { opacity: 1; }
+.diane-todo-port .diane-dot { width: 16px; height: 16px; fill: currentColor; stroke: currentColor; stroke-width: 1.5; }
+.diane-todo-port .diane-new, .diane-todo-port .diane-queued, .diane-todo-port .diane-unavailable { fill: none; }
+.diane-todo-port .diane-new, .diane-todo-port .diane-queued, .diane-todo-port .diane-stopped, .diane-todo-port .diane-unavailable { color: oklch(0.48 0.025 85); }
+.diane-todo-port .diane-running { color: oklch(0.48 0.10 245); animation: diane-pulse 1.6s ease-in-out infinite; }
+.diane-todo-port .diane-attention { color: oklch(0.52 0.12 70); }
+.diane-todo-port .diane-ready { color: oklch(0.46 0.10 145); }
+.diane-todo-port .diane-failed { color: oklch(0.48 0.16 28); }
+.diane-todo-port .diane-mark { fill: none; stroke: oklch(0.98 0.02 95); stroke-linecap: round; stroke-linejoin: round; }
+.diane-todo-port .diane-details { position: fixed; z-index: 100; max-height: calc(100vh - 24px); overflow: auto; width: min(280px, 70vw); display: flex; flex-direction: column; gap: 6px; padding: 10px; white-space: normal; overflow-wrap: anywhere; background: var(--bg, #fff8dc); color: var(--text, #3d3520); border: 1px solid var(--wb-line); border-radius: 6px; box-shadow: none; font-size: 12px; line-height: 1.4; }
+.diane-todo-port .diane-details > span { max-height: 180px; overflow: auto; }
+.diane-todo-port .diane-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.diane-todo-port .diane-detail-actions button { font: inherit; padding: 4px 6px; border: 1px solid var(--wb-line); border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
+.diane-todo-port .diane-action:focus-visible, .diane-todo-port .diane-detail-actions button:focus-visible { outline: 2px solid var(--wb-accent); outline-offset: 2px; }
+@keyframes diane-pulse { 50% { opacity: 0.45; transform: scale(0.8); } }
+@media (prefers-reduced-motion: reduce) { .diane-todo-port .diane-running { animation: none; } }
+
+.diane-todo-port .task-actions:has(.diane-action) { opacity: 1; }
+.diane-todo-port .task-actions:has(.diane-action) > button { opacity: 0.54; }
+.diane-todo-port .task-item:hover .task-actions:has(.diane-action) > button,
+.diane-todo-port .task-item:focus-within .task-actions:has(.diane-action) > button { opacity: 1; }
+
+.diane-todo-port .diane-action:disabled { cursor: not-allowed; background: transparent; }
+.diane-todo-port .diane-action:disabled .diane-dot { color: oklch(0.68 0.008 85); opacity: 0.65; }
+
+.diane-todo-port .carried-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary, #7A6F50);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+}
+.diane-todo-port .carried-rule { flex: 1; border-top: 1px solid var(--border, #E8D9A0); }
+.diane-todo-port .carried-toggle:hover { background: var(--wb-soft); }
+.diane-todo-port .carried-toggle:focus-visible { outline: 2px solid var(--wb-accent); outline-offset: -2px; }
+.diane-todo-port .rollover-error { padding: 8px 10px; font-size: 12px; }
+
+/* Finish promises stay attached to the note; tools appear on selection. */
+.diane-todo-port .task-content-flow.editing { flex-wrap: wrap; }
+.diane-todo-port .task-finish { display: block; width: 100%; font-size: 11px; line-height: 1.5; color: var(--text-secondary, #7a6f50); cursor: default; }
+.diane-todo-port .task-finish:empty, .diane-todo-port .finish-tools:empty { display: none; }
+.diane-todo-port .task-finish button { font: inherit; color: inherit; background: transparent; border: 0; padding: 3px 4px; border-radius: 3px; cursor: pointer; }
+.diane-todo-port .task-finish button:hover { background: var(--wb-soft); }
+.diane-todo-port .task-finish button:focus-visible, .diane-todo-port .deadline-badge:focus-visible { outline: 2px solid var(--wb-accent); outline-offset: 2px; }
+.diane-todo-port .task-finish .finish-sentence { display: block; text-align: left; padding-left: 0; overflow-wrap: anywhere; }
+.diane-todo-port .finish-tools { display: flex; gap: 8px; margin-top: 3px; }
+.diane-todo-port .finish-editor { display: block; margin-top: 5px; }
+.diane-todo-port .finish-editor input { width: 100%; box-sizing: border-box; }
+.diane-todo-port .finish-editor input, .diane-todo-port .deadline-editor input { font: inherit; color: var(--wb-ink); background: transparent; border: 1px solid var(--wb-line); border-radius: 3px; padding: 4px; min-width: 0; }
+.diane-todo-port .deadline-badge { display: inline-block; vertical-align: baseline; font: inherit; font-size: 10px; color: var(--wb-ink); border: 1px solid var(--wb-line); background: transparent; border-radius: 4px; margin-left: 5px; padding: 1px 4px; cursor: pointer; }
+.diane-todo-port .deadline-badge.due { color: var(--wb-ink); background: var(--wb-paper); }
+.diane-todo-port .deadline-badge.overdue { color: color-mix(in oklch, oklch(65% .17 30) 80%, var(--wb-ink)); background: var(--wb-paper); border-color: var(--wb-line); }
+.diane-todo-port .deadline-editor, .diane-todo-port .finish-review { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 5px; padding: 5px 0; border-top: 1px solid var(--wb-line); }
+.diane-todo-port .deadline-editor small, .diane-todo-port .finish-review > span { flex-basis: 100%; }
+.diane-todo-port .review-hint { display: block; color: var(--wb-muted); }
+.diane-todo-port .task-checkbox.stopped::after { content: '−'; display: block; line-height: 12px; color: var(--wb-ink); }
+.diane-todo-port .finish-editor textarea { display: block; width: 100%; box-sizing: border-box; resize: vertical; min-height: 64px; font: inherit; line-height: 1.5; color: var(--wb-ink); background: transparent; border: 1px solid var(--wb-line); border-radius: 3px; padding: 5px; }
+.diane-todo-port .finish-editor textarea::placeholder { color: var(--wb-muted); opacity: 1; }
+.diane-todo-port .suggestion-hint { display: block; color: var(--wb-muted); margin-top: 3px; }
+
+/* Stable metadata rows: the label and value stay put during edits. */
+.diane-todo-port .task-finish { clear: both; }
+.diane-todo-port .finish-field { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 5px; align-items: baseline; padding-top: 3px; }
+.diane-todo-port .finish-field-label { color: var(--wb-muted); }
+.diane-todo-port .finish-field-value { min-width: 0; }
+.diane-todo-port .task-finish .outcome-value { display: block; padding: 0; text-align: left; width: 100%; color: var(--wb-ink); overflow-wrap: anywhere; }
+.diane-todo-port .task-finish .outcome-value.suggested, .diane-todo-port .task-finish .due-empty { color: var(--wb-ink); }
+.diane-todo-port .task-finish .due-empty { padding: 0; }
+.diane-todo-port .finish-field .deadline-badge { margin: 0; padding: 0 3px; }
+.diane-todo-port .finish-field textarea { display: block; box-sizing: border-box; width: 100%; resize: none; min-height: 54px; font: inherit; line-height: 1.5; color: var(--wb-ink); background: transparent; border: 0; border-bottom: 1px solid var(--accent); border-radius: 0; padding: 0; outline: none; }
+.diane-todo-port .finish-field textarea::placeholder { color: var(--wb-muted); opacity: 1; }
+.diane-todo-port .due-edit { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.diane-todo-port .due-edit input { font: inherit; color: var(--wb-ink); background: transparent; border: 1px solid var(--wb-line); border-radius: 3px; padding: 3px; min-width: 0; }
+.diane-todo-port .due-edit small { flex-basis: 100%; }
+
+/* Goals use the same quiet inline entry and editing grammar as daily tasks. */
+.diane-todo-port .goals-heading { flex: 1; padding-left: 3px; color: var(--sidebar-ink); font-size: 13px; font-weight: 600; }
+.diane-todo-port .goal-section + .goal-section { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--wb-line); }
+.diane-todo-port .goal-section-header h2 { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 600; }
+.diane-todo-port .goal-section-header { margin-bottom: 8px; }
+.diane-todo-port .goal-row { padding: 5px 0; background: transparent; border: 0; border-radius: 0; gap: 7px; }
+.diane-todo-port .goal-toggle { border-radius: 4px; }
+.diane-todo-port .goal-text { font-size: 12px; }
+.diane-todo-port .goal-delete { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+.diane-todo-port .goal-edit-input { resize: none; min-height: 28px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid var(--accent); border-radius: 0; outline: none; font-size: 12px; }
+.diane-todo-port .goal-composer { display: grid; grid-template-columns: 15px minmax(0, 1fr); column-gap: 7px; row-gap: 0; align-items: baseline; margin-top: 5px; }
+.diane-todo-port .goal-add-mark { color: var(--text-secondary); text-align: center; font-size: 14px; }
+.diane-todo-port .goal-composer-input { box-sizing: border-box; min-height: 28px; padding: 3px 0; border: 0; border-bottom: 1px solid var(--wb-line); border-radius: 0; background: transparent; font-size: 12px; }
+.diane-todo-port .goal-composer-input:focus { border-bottom-color: var(--accent-hover); outline: none; }
+.diane-todo-port .goal-composer-input::placeholder { color: var(--text-secondary); }

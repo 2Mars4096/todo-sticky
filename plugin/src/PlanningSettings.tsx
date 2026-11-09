@@ -1,0 +1,25 @@
+import {useEffect,useId,useMemo,useState} from 'react';
+import {createTodoApi} from './api';
+import type {AppSettings} from './types';
+import {storageForAccount} from './storage';
+export interface PlanningPreferences {revision:number;machines:AppSettings['machines'];planningPreferences:{start?:string;end?:string;machines?:string[]}}
+/** Machine controls adapted directly from original SettingsPanel.tsx. */
+export function PlanningSettings({scope,value,onSaved}:{scope:string;value:PlanningPreferences;onSaved:(value:PlanningPreferences)=>void}){
+ const id=useId(),api=useMemo(()=>createTodoApi(scope),[scope]);const [machines,setMachines]=useState(value.machines),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ useEffect(()=>setMachines(value.machines),[value]);
+ const updateMachine=(index:number,patch:Partial<AppSettings['machines'][0]>)=>setMachines(items=>items.map((item,i)=>i===index?{...item,...patch}:item));
+ const save=async()=>{setBusy(true);setError('');try{const next=await api.savePreferences({machines,planningPreferences:JSON.parse(storageForAccount(scope).getItem('todo-sticky-planning-preferences-v1')||'{}')},value.revision);onSaved(next);}catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}};
+ return <details className="todo-port-settings"><summary>Planning settings</summary>
+ <button type="button" onClick={()=>window.dispatchEvent(new CustomEvent('diane:plugin-settings',{detail:{section:'ai'}}))}>AI provider settings</button>
+ <details><summary>Scheduling machines (optional)</summary>
+ {machines.map((machine,index)=><div className="machine-card" key={index}>
+ <div className="settings-machine-heading"><strong>Machine {index+1}</strong><button type="button" disabled={busy} onClick={()=>setMachines(items=>items.filter((_,i)=>i!==index))} aria-label={'Remove machine '+(machine.name||index+1)}>Remove</button></div>
+ <label htmlFor={id+'-machine-name-'+index}>Name</label><input id={id+'-machine-name-'+index} value={machine.name} disabled={busy} onChange={event=>updateMachine(index,{name:event.target.value})}/>
+ <label htmlFor={id+'-machine-type-'+index}>Type</label><select id={id+'-machine-type-'+index} value={machine.type} disabled={busy} onChange={event=>updateMachine(index,{type:event.target.value})}><option value="server">Server</option><option value="workstation">Workstation</option></select>
+ <label htmlFor={id+'-machine-specs-'+index}>Specifications (optional)</label><input id={id+'-machine-specs-'+index} value={machine.specs||''} disabled={busy} onChange={event=>updateMachine(index,{specs:event.target.value})} placeholder="For example, 64 GB RAM"/>
+ <label htmlFor={id+'-machine-capabilities-'+index}>Capabilities (comma separated)</label><input id={id+'-machine-capabilities-'+index} value={(machine.capabilities||[]).join(', ')} disabled={busy} onChange={event=>updateMachine(index,{capabilities:event.target.value.split(',').map(value=>value.trim()).filter(Boolean)})}/>
+ </div>)}
+ <button type="button" disabled={busy} onClick={()=>setMachines(items=>[...items,{name:'',type:'server',specs:'',capabilities:[]}])}>Add machine</button>
+ <button type="button" disabled={busy} onClick={()=>void save()}>Save planning settings</button>
+ </details>{error&&<p role="alert">{error}</p>}</details>;
+}

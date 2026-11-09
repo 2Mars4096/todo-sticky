@@ -1,0 +1,36 @@
+{
+  "name": "@diane-app/todo-plugin",
+  "version": "0.1.2",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css",
+    "./source/*": "./src/*"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "manifest.json",
+    "dist",
+    "build.mjs",
+    "HOST-CONTRACT.md"
+  ],
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "*",
+    "date-fns": "^4.0.0",
+    "react-day-picker": "^9.0.0"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "types": "./src/index.ts"
+}

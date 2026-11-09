@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "todo",
+  "name": "Todo",
+  "version": "0.1.2",
+  "repository": "https://github.com/2Mars4096/todo-sticky",
+  "paths": {
+    "desktop": "desktop/",
+    "web": "web/",
+    "phone": "phone/",
+    "plugin": "plugin/",
+    "shared": "shared/",
+    "backend": "backend/",
+    "scripts": "scripts/",
+    "docs": "docs/"
+  },
+  "releases": {
+    "web": {
+      "path": "web/",
+      "status": "planned"
+    },
+    "desktop": {
+      "path": "desktop/",
+      "status": "planned"
+    },
+    "android": {
+      "path": "phone/android/",
+      "status": "planned"
+    },
+    "ios": {
+      "path": "phone/ios/",
+      "status": "planned"
+    },
+    "plugin": {
+      "path": "plugin/",
+      "status": "implemented"
+    }
+  },
+  "backend": {
+    "contract": "todo/1",
+    "discoveryPath": "/.well-known/diane-apps",
+    "recordNamespace": "todo"
+  },
+  "identity": {
+    "contract": "diane-account/1",
+    "clientId": "todo",
+    "scopes": [
+      "todo:read",
+      "todo:write"
+    ]
+  },
+  "quota": {
+    "scope": "account",
+    "metering": "server",
+    "requestIdentity": "idempotency-key"
+  },
+  "plugin": {
+    "hostApi": "diane-plugin/1",
+    "entry": "plugin/src/index.ts",
+    "permissions": [
+      "records.read",
+      "records.write",
+      "agent.request"
+    ],
+    "recordKinds": [
+      "task",
+      "goal",
+      "routine"
+    ],
+    "surfaces": [
+      "panel",
+      "window"
+    ]
+  }
+}

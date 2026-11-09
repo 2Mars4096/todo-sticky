@@ -1,0 +1,18 @@
+// @vitest-environment happy-dom
+import {act,createElement as h} from 'react';
+import {createRoot} from 'react-dom/client';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+const mock=vi.hoisted(()=>({scope:'goal-owner',records:[] as any[],put:vi.fn(),remove:vi.fn(),api:{goalRecords:vi.fn()}}));
+vi.mock('../api',()=>({createTodoApi:()=>mock.api}));
+vi.mock('@diane/plugin-sdk/client',async importOriginal=>{const actual=await importOriginal<any>();return {...actual,pluginScope:()=>mock.scope,pluginApi:{put:mock.put,remove:mock.remove}};});
+vi.mock('@diane/plugin-sdk/records',()=>({recordsChanged:vi.fn()}));
+import {useGoals} from '../hooks/useGoals';
+let host:HTMLDivElement,root:ReturnType<typeof createRoot>,goals:ReturnType<typeof useGoals>;
+function Harness(){goals=useGoals('goal-owner');return h('div',null,goals.targets.map(g=>h('span',{key:g.id},g.text)),goals.storageError);}
+beforeEach(()=>{Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});mock.scope='goal-owner';mock.records=[];mock.put.mockReset();mock.remove.mockReset();mock.api.goalRecords.mockImplementation(async()=>({items:structuredClone(mock.records)}));localStorage.clear();host=document.createElement('div');document.body.append(host);root=createRoot(host);});
+afterEach(()=>{act(()=>root.unmount());host.remove();});
+async function mount(){await act(async()=>root.render(h(Harness)));}
+function acceptPut(){mock.put.mockImplementation(async(plugin,type,id,record,revision)=>{const saved={...record,plugin_id:plugin,record_type:type,record_id:id,revision:revision+1,created_at:'now',updated_at:'now',_scope:'goal-owner'};mock.records=[...mock.records.filter(r=>r.record_id!==id),saved];return saved;});}
+it('retains failed additions and retries the same write instead of reloading away the goal',async()=>{mock.put.mockRejectedValueOnce(Error('Offline'));await mount();await act(async()=>{goals.addGoal('targets','Keep my goal');});expect(goals.targets[0].text).toBe('Keep my goal');expect(goals.pending).toBe(true);expect(goals.storageError).toContain('retained');const id=goals.targets[0].id;acceptPut();await act(async()=>{goals.retrySave();});expect(mock.put.mock.calls[0][2]).toBe(id);expect(mock.put.mock.calls[1][2]).toBe(id);expect(mock.put.mock.calls[0][5]).toBe(mock.put.mock.calls[1][5]);expect(goals.pending).toBe(false);expect(goals.targets[0].text).toBe('Keep my goal');});
+it('retains failed edits across reload and remount; another account cannot submit them',async()=>{mock.records=[{schema_version:1,plugin_id:'todo',record_type:'goal',record_id:'saved-goal',title:'Old goal',text:'Old goal',status:'todo',tags:[],relationships:[],attachments:[],extensions:{done:false,plan:[]},revision:1,created_at:'now',updated_at:'now'}];mock.put.mockRejectedValue(Error('Offline'));await mount();await act(async()=>{goals.updateGoal('targets','saved-goal','Changed goal');});await act(async()=>{await goals.reload();});expect(goals.targets[0].text).toBe('Changed goal');await act(async()=>root.unmount());root=createRoot(host);await mount();expect(goals.targets[0].text).toBe('Changed goal');mock.scope='other-owner';const count=mock.put.mock.calls.length;await act(async()=>goals.retrySave());expect(mock.put).toHaveBeenCalledTimes(count);mock.scope='goal-owner';acceptPut();await act(async()=>goals.retrySave());expect(goals.targets[0].text).toBe('Changed goal');expect(goals.pending).toBe(false);});
+it('persists sidebar toggles in this account only',async()=>{await mount();await act(async()=>goals.toggleSidebar());expect(localStorage.getItem('diane.todoPort.v1:goal-owner:goals-collapsed')).toBe('false');expect(localStorage.getItem('todo-sticky-goals-v1')).toBeNull();});

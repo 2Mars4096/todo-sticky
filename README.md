@@ -1,5 +1,7 @@
 # Sticky Todo
 
+Product release sources live in `desktop/`, `web/`, `phone/` and `plugin/`. Existing build commands remain available through compatibility paths. Shared Diane backend/sign-in cutover is tracked separately and is not enabled by this reorganization.
+
 A compact desktop planner for daily tasks, clear outcomes, and focused work. Tasks stay in local Markdown files; AI assistance is optional.
 
 Repository files: [folder and script guide](docs/folder-guide.md), including hidden directories and safe cleanup rules.

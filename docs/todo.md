@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] Independent app releases and shared Diane services — [plan](plans/17-diane-shared-apps.md).
+
 - [x] [16-4-phone-sync-shortcut](plans/16-4-phone-sync-shortcut.md) — phone cloud control syncs directly with result feedback; Account remains in Settings. All 127 phone tests pass; original-key APK +19 delivered.
 
 - [x] [4-54-text-emphasis-consistency](plans/4-54-text-emphasis-consistency.md) — shared plain-content/semibold-heading rules, clear read-only backups, final Mac reinstall and original-key APK +18 delivered.

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-09 — Product-owned release structure
+- Move app sources into desktop/web/phone/plugin; retain legacy build paths and standalone UI. Plugin UI/backend source now belongs to this product; shared-service cutover remains pending.
+
 ## 2026-11-08 — Commit and push sync/UI follow-ups
 
 - [repository] Commit the reviewed sync-read/retry fixes, shared typography, read-only recovery UI and direct phone cloud action as `f60e7ed`; push to origin/main and verify the remote commit. Generated APKs, local reports, rollback copies and credentials remain excluded.
