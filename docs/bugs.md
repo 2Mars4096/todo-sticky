@@ -1,5 +1,10 @@
 # Bugs And Failed Approaches
 
+## 2026-11-10 — MCP verification and existing write boundary
+- Reusing the desktop target cache from an isolated worktree failed because generated Tauri permission files were missing. Verify with `/private/tmp/sticky-task-mcp-target` and the existing isolated Rust toolchain instead.
+- Native task mutations check revisions but do not lock across processes. MCP serializes one connection only; pause desktop edits and serialize external writers. Shared locking across every desktop/cloud/CLI writer remains follow-up work, not a claimed guarantee of this adapter.
+
+
 ## 2026-11-10 — Phone-only build staging omits shared test fixture
 
 A temporary phone-only copy cannot run sync_merge_test.dart without the repository's sibling tests/fixtures/sync-merge.json. The started suite reported122 passed, one skip and that fixture-load error; no rerun per user's minimal-test request. Release compilation and original-key artifact verification remain independent and passed.

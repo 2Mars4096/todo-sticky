@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-10 — Local task MCP interface
+- [feat] Add stdio MCP list/create/edit/delete tools to the native task CLI, with read-only mode, strict inputs, bounded frames and required existing-archive revisions. Reuses local Markdown storage without Diane.
+- [fix] Return a JSON error rather than panic when CLI receives only `--kb-path`; document `stopped` status.
+- [test] All 45 native tests and a real CLI/MCP subprocess round-trip pass on disposable data; native debug CLI builds.
+- [docs] Add local client configuration and meeting-summary integration examples; explicitly document concurrent-writer and UI-operation limits.
+
+
 ## 2026-11-10 — Empty-file cleanup
 - [maintenance] Remove obsolete backend namespace directories, stale Python build/egg-info artifacts and 17 empty phone build logs. No empty tracked source files found; retain tooling locks/markers. Backend source hashes unchanged.
 

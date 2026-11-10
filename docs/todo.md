@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Local app CLI/MCP task access on `feat/task-mcp` — [4-10-1](plans/4-10-agent-task-api.md#4-10-1-local-application-mcp-access).
+
 - [x] Remove stale empty directories, Python packaging leftovers and empty build logs; retain required tooling markers — [9-folder-cleanup](plans/9-folder-cleanup.md).
 
 - [x] Second cleanup pass: remove 404 disposable local files, 20 empty directories and retired demo seeder — [9-folder-cleanup](plans/9-folder-cleanup.md).
@@ -251,6 +253,7 @@ Deferred ideas (not implementation commitments): [AI-tool integration cart](idea
 - [x] [5-build-artifact-cleanup](plans/5-build-artifact-cleanup.md) - Remove debug/release build output and recover approximately 8.7 GiB.
 
 ## Backlog
+- [ ] Coordinate native desktop/cloud/CLI writers with shared locking before promising concurrent external mutations; current MCP usage requires paused desktop editing — [4-10](plans/4-10-agent-task-api.md).
 
 - [ ] Revisit whether Star Focus archive retention needs a wider preset range or a dedicated settings-panel home beyond the first local-only `6` / `12` / `24` control pass.
 - [ ] Add a lightweight undo path for task deletion without introducing a confirmation modal.

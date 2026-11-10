@@ -25,3 +25,13 @@
 
 - CLI aliases support `input` for `create`, `list` for `extract`, and `update` for `edit`.
 - The detailed contract and examples live in [llm-api-guide.md](../llm-api-guide.md).
+
+## 4-10-1: Local application MCP access
+
+- [x] Isolate implementation on `feat/task-mcp`; preserve the dirty main checkout.
+- [x] Expose existing native task CRUD via bounded stdio MCP with read-only mode.
+- [x] Require revision preconditions for MCP edits/deletes and creation in existing archives.
+- [x] Document client configuration, meeting-summary workflow and local/concurrency limits.
+- [x] Verify native regressions and real CLI/MCP process interoperability on disposable data: 45 Rust tests and `tests/mcp-smoke.py` pass; native debug CLI builds.
+
+Decisions: reuse the native CLI binary and Markdown task API without new dependencies or a second store. Target initialize-based MCP 2025-11-25. This slice exposes task text/status/steps only; project/focus/UI-only commands and remote hosting remain outside scope. No install, release or personal-data mutation.
