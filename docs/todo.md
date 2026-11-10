@@ -1,5 +1,14 @@
 # Todo
 
+- [x] Remove stale empty directories, Python packaging leftovers and empty build logs; retain required tooling markers — [9-folder-cleanup](plans/9-folder-cleanup.md).
+
+- [x] Second cleanup pass: remove 404 disposable local files, 20 empty directories and retired demo seeder — [9-folder-cleanup](plans/9-folder-cleanup.md).
+
+- [x] Deliver signed shared-service Android 2.1.16+24 (Android versionCode 2024); preserve original signer and replace previous root APK — [17-1-canonical-sync.md](plans/17-1-canonical-sync.md).
+
+
+- [x] Repository-wide consolidation — 120 fewer tracked files, merged history and corrected phone CI; Node/Rust/Flutter checks pass — [9-folder-cleanup](plans/9-folder-cleanup.md).
+
 - [x] [18-hosted-task-execution](plans/18-hosted-task-execution.md) — product-owned Run/Open/Review, compact project binding and bounded saved-session retrieval; 34 tests, strict types/build/package/host-contract checks pass. Standalone apps unchanged; host integration/live acceptance tracked separately.
 
 - [x] Plugin0.1.6 editable capability lists and aligned direct machine controls and quiet preparation refresh — [17-1](plans/17-1-canonical-sync.md).
@@ -10,33 +19,33 @@
 
 - [ ] Independent app releases and shared Diane services — [plan](plans/17-diane-shared-apps.md).
 
-- [x] [16-4-phone-sync-shortcut](plans/16-4-phone-sync-shortcut.md) — phone cloud control syncs directly with result feedback; Account remains in Settings. All 127 phone tests pass; original-key APK +19 delivered.
+- [x] [16-4-phone-sync-shortcut](plans/16-sync-efficiency.md#16-4-phone-sync-shortcut) — phone cloud control syncs directly with result feedback; Account remains in Settings. All 127 phone tests pass; original-key APK +19 delivered.
 
 - [x] [4-54-text-emphasis-consistency](plans/4-54-text-emphasis-consistency.md) — shared plain-content/semibold-heading rules, clear read-only backups, final Mac reinstall and original-key APK +18 delivered.
 
-- [x] [16-3-false-local-change-detection](plans/16-3-false-local-change-detection.md) — reproduced and fixed the absent-date mismatch; both clients quietly retry genuine changes and preserve write guards. Mac/APK delivery complete.
+- [x] [16-3-false-local-change-detection](plans/16-sync-efficiency.md#16-3-false-local-change-detection) — reproduced and fixed the absent-date mismatch; both clients quietly retry genuine changes and preserve write guards. Mac/APK delivery complete.
 
 - [x] [4-53-footer-control-shape](plans/4-53-footer-control-shape.md) — native bezel removed; consistent rounded rectangles/focus verified in WebKit/Chrome and installed on Mac.
 
-- [x] [16-2-smart-merge-and-stable-review](plans/16-2-smart-merge-and-stable-review.md) — independent edits merge, genuine conflicts have individual choices and background review is stable; Mac 2.1.16 installed and original-key APK +16 delivered.
-- [x] [4-52-publish-2-1-16](plans/4-52-publish-2-1-16.md) — committed/pushed and published as latest; hosted desktop/Android checks, public updater signatures and both universal Mac binaries verify.
+- [x] [16-2-smart-merge-and-stable-review](plans/16-sync-efficiency.md#16-2-smart-merge-and-stable-review) — independent edits merge, genuine conflicts have individual choices and background review is stable; Mac 2.1.16 installed and original-key APK +16 delivered.
+- [x] [4-52-publish-2-1-16](plans/4-19-github-in-app-updates.md#4-52-publish-2-1-16) — committed/pushed and published as latest; hosted desktop/Android checks, public updater signatures and both universal Mac binaries verify.
 
-- [x] [16-1-automatic-sync-frequency](plans/16-1-automatic-sync-frequency.md) — 15-second sync changes installed on Mac with data preserved; all 102 phone tests pass and original-key production APK +15 is delivered.
+- [x] [16-1-automatic-sync-frequency](plans/16-sync-efficiency.md#16-1-automatic-sync-frequency) — 15-second sync changes installed on Mac with data preserved; all 102 phone tests pass and original-key production APK +15 is delivered.
 
-- [x] [15-4-project-editing-review](plans/15-4-project-editing-review.md) — consistent Save/Cancel editing, inline scheduled text/work-date revision, draft protection and direct review return; tested and reinstalled with data preserved.
+- [x] [15-4-project-editing-review](plans/15-project-goals-and-multiday-planning.md#15-4-project-editing-review) — consistent Save/Cancel editing, inline scheduled text/work-date revision, draft protection and direct review return; tested and reinstalled with data preserved.
 
 - [x] [16-sync-efficiency](plans/16-sync-efficiency.md) — sync efficiency verified; Android +14 delivered and Mac installed with the project-parity build.
 
-- [x] [15-2-minimal-copy-pass](plans/15-2-minimal-copy-pass.md) — three small clarity changes; 97 tests and normal/enlarged screenshots pass; same-key APK +13 delivered.
+- [x] [15-2-minimal-copy-pass](plans/15-project-goals-and-multiday-planning.md#15-2-minimal-copy-pass) — three small clarity changes; 97 tests and normal/enlarged screenshots pass; same-key APK +13 delivered.
 
-- [x] [14-1-compact-phone-grip](plans/14-1-compact-phone-grip.md) — tighter leading inset and aligned controls verified; original-key APK +11 rebuilt.
+- [x] [14-1-compact-phone-grip](plans/14-task-control-spacing.md#14-1-compact-phone-grip) — tighter leading inset and aligned controls verified; original-key APK +11 rebuilt.
 
 - [x] [15-project-goals-and-multiday-planning](plans/15-project-goals-and-multiday-planning.md) — Android project planning delivered; Mac parity installed with descriptions/steps, assignment, dated links and editable multi-day proposals.
-  - [x] [15-3-mac-project-planning](plans/15-3-mac-project-planning.md) — project descriptions/steps, planning and attribution installed on Mac, verified and pushed in coherent batches.
+  - [x] [15-3-mac-project-planning](plans/15-project-goals-and-multiday-planning.md#15-3-mac-project-planning) — project descriptions/steps, planning and attribution installed on Mac, verified and pushed in coherent batches.
 - [x] [14-task-control-spacing](plans/14-task-control-spacing.md) — consistent visible gaps and first-line/nested alignment verified; Mac installed with data preserved, signed Android +10 rebuilt.
 
 - [x] [13-goal-planning-and-mobile-drag](plans/13-goal-planning-and-mobile-drag.md) — goal workflows and dragging delivered; schema-2 backend deployed, Mac rebuilt/installed, original-key production Android +9 delivered.
-  - [x] [13-1-production-deployment](plans/13-1-production-deployment.md) — live capability/auth checks pass; Mac data preserved; Android same-key emulator update verified.
+  - [x] [13-1-production-deployment](plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment) — live capability/auth checks pass; Mac data preserved; Android same-key emulator update verified.
 
 - [x] [12-paragraph-friendly-tasks](plans/12-paragraph-friendly-tasks.md) — paragraph capture/editing/storage and Mac/phone UI review complete; Mac reinstalled with data preserved, signed Android +8 delivered (no phone attached).
 
@@ -44,12 +53,12 @@
 
 ## User workflow refinement
 
-- [x] [10-3-goals-material](plans/10-3-goals-material.md) — Goals/Routines now honor the selected material in compact and wide layouts; all three materials verified and Mac reinstalled with data/settings preserved.
+- [x] [10-3-goals-material](plans/10-user-workflow-improvements.md#10-3-goals-material) — Goals/Routines now honor the selected material in compact and wide layouts; all three materials verified and Mac reinstalled with data/settings preserved.
 
-- [x] [10-2-review-install-and-android](plans/10-2-review-install-and-android.md) — second review and Android parity complete; Mac installed with 56 task files/settings unchanged; signed APK +7 delivered and emulator update verified.
+- [x] [10-2-review-install-and-android](plans/10-user-workflow-improvements.md#10-2-review-install-and-android) — second review and Android parity complete; Mac installed with 56 task files/settings unchanged; signed APK +7 delivered and emulator update verified.
 
 - [x] [10-user-workflow-improvements](plans/10-user-workflow-improvements.md) — desktop/Android workflows implemented, reviewed and locally delivered. Schedules remain device-local; physical-device/user studies and optional shared schedule definitions are follow-on work. Goal linking was subsequently activated in plan 13; completion redesign remains deferred.
-  - [x] [10-1-desktop-workflow](plans/10-1-desktop-workflow.md) — backlog cue, Search, constrained Plan, safe recurrence, Progress, focus review and compact sync status; automated and browser checks pass.
+  - [x] [10-1-desktop-workflow](plans/10-user-workflow-improvements.md#10-1-desktop-workflow) — backlog cue, Search, constrained Plan, safe recurrence, Progress, focus review and compact sync status; automated and browser checks pass.
 
 - [x] [7-4-phone-task-controls](plans/7-4-phone-task-controls.md) — visible drag grips, icon-only task actions and horizontal more menu; signed Android +6.
 
@@ -85,17 +94,17 @@
 
 - [x] [4-51-review-reliability](plans/4-51-review-reliability.md) — preserve edits during moves, retain unreadable goals, clean up native listeners, reopen moved-step parents, and retain outcome-editor focus; all 14 Node suites and 33 native tests pass.
 
-- [x] [4-49-publish-2-1-15](plans/4-49-publish-2-1-15.md) — approved changes merged, merged branches/worktrees pruned, and signed 2.1.15 published and verified; demo work restored.
+- [x] [4-49-publish-2-1-15](plans/4-19-github-in-app-updates.md#4-49-publish-2-1-15) — approved changes merged, merged branches/worktrees pruned, and signed 2.1.15 published and verified; demo work restored.
 
 - [x] [4-48-earlier-tasks-and-materials](plans/4-48-earlier-tasks-and-materials.md) — approved earlier-to-Today drag and optional glass materials integrated into main; release tracked in 4-49.
 
-- [x] [4-47-equal-task-spacing-and-release-2-1-14](plans/4-47-equal-task-spacing-and-release-2-1-14.md) — equalize visible control gaps and publish the final spacing refinement.
+- [x] [4-47-equal-task-spacing-and-release-2-1-14](plans/4-19-github-in-app-updates.md#4-47-equal-task-spacing-and-release-2-1-14) — equalize visible control gaps and publish the final spacing refinement.
 
-- [x] [4-46-checkbox-and-release-2-1-13](plans/4-46-checkbox-and-release-2-1-13.md) — align visible checkboxes with title text and publish the final updated release.
+- [x] [4-46-checkbox-and-release-2-1-13](plans/4-19-github-in-app-updates.md#4-46-checkbox-and-release-2-1-13) — align visible checkboxes with title text and publish the final updated release.
 
 - [x] [4-45-readme-demos](plans/4-45-readme-demos.md) — refresh README and five scenario GIFs/MP4s using isolated fictional tasks; add reproducible recording instructions.
 
-- [x] [4-45-publish-2-1-12](plans/4-45-publish-2-1-12.md) — publish UI refinements as the latest signed update.
+- [x] [4-45-publish-2-1-12](plans/4-19-github-in-app-updates.md#4-45-publish-2-1-12) — publish UI refinements as the latest signed update.
 
 - [x] Integrate reviewed UI refinements into local main and remove feature/build worktrees → [4-44](plans/4-44-ui-interaction-refinement.md).
 
@@ -112,13 +121,13 @@
 - [ ] [4-44-ui-interaction-refinement](plans/4-44-ui-interaction-refinement.md) — integrated into main and installed on macOS; automated checks pass. Broader platform/native interaction and real-person usability acceptance remain.
 
 - [x] [4-42-compact-goals](plans/4-42-compact-goals.md) — compact inline long-term/recurring entry and editing.
-- [x] [4-43-publish-2-1-11](plans/4-43-publish-2-1-11.md) — merge, install, push and publish the verified refinements.
+- [x] [4-43-publish-2-1-11](plans/4-19-github-in-app-updates.md#4-43-publish-2-1-11) — merge, install, push and publish the verified refinements.
 
-- [x] Outcome editor edge refinement → [4-41-2](plans/4-41-2-outcome-due-presentation.md).
+- [x] Outcome editor edge refinement → [4-41-2](plans/4-41-finish-promises.md#4-41-2-outcome-due-presentation).
 
-- [x] [4-41-2-outcome-due-presentation](plans/4-41-2-outcome-due-presentation.md) — consistent metadata rows, selection/edit separation, and local reinstall.
+- [x] [4-41-2-outcome-due-presentation](plans/4-41-finish-promises.md#4-41-2-outcome-due-presentation) — consistent metadata rows, selection/edit separation, and local reinstall.
 
-- [x] [4-41-1-finish-ghost-suggestions](plans/4-41-1-finish-ghost-suggestions.md) — simplify finish/deadline editing, switch local OpenRouter to DeepSeek V4.1 Flash, and reinstall.
+- [x] [4-41-1-finish-ghost-suggestions](plans/4-41-finish-promises.md#4-41-1-finish-ghost-suggestions) — simplify finish/deadline editing, switch local OpenRouter to DeepSeek V4.1 Flash, and reinstall.
 
 - [x] [4-41-finish-promises](plans/4-41-finish-promises.md) — implemented and locally installed the finish/deadline workflow; user review pending on the separate feature branch.
 
@@ -132,18 +141,18 @@ Deferred ideas (not implementation commitments): [AI-tool integration cart](idea
 
 - [x] [4-37-backlog-cleanup](plans/4-37-backlog-cleanup.md) — mark previous tasks done, preserving current/future work and a backup.
 
-- [x] [4-36-publish-2-1-10](plans/4-36-publish-2-1-10.md) — publish the fast-loading correction.
+- [x] [4-36-publish-2-1-10](plans/4-19-github-in-app-updates.md#4-36-publish-2-1-10) — publish the fast-loading correction.
 - [x] [4-35-fast-task-loading](plans/4-35-fast-task-loading.md) — show Today before history, deduplicate repeated archive sections by calendar ownership, and batch carried rows.
 
-- [x] [4-34-publish-2-1-9](plans/4-34-publish-2-1-9.md) — publish completion cascade and cumulative daily rollover.
+- [x] [4-34-publish-2-1-9](plans/4-19-github-in-app-updates.md#4-34-publish-2-1-9) — publish completion cascade and cumulative daily rollover.
 
 - [x] [4-33-completion-and-cumulative-rollover](plans/4-33-completion-and-cumulative-rollover.md) — cascade parent completion and show unfinished past work under an aligned collapsible bar on Today. Published in v2.1.9.
 
-- [x] [4-32-publish-2-1-8](plans/4-32-publish-2-1-8.md) — publish the optional local Diane connection setting.
+- [x] [4-32-publish-2-1-8](plans/4-19-github-in-app-updates.md#4-32-publish-2-1-8) — publish the optional local Diane connection setting.
 
-- [x] [4-31-publish-2-1-7](plans/4-31-publish-2-1-7.md) — publish standalone-safe Todo with optional Diane integration.
+- [x] [4-31-publish-2-1-7](plans/4-19-github-in-app-updates.md#4-31-publish-2-1-7) — publish standalone-safe Todo with optional Diane integration.
 
-- [x] [3-4-diane-credential-fallback](plans/3-4-diane-credential-fallback.md) — use Diane file-backed keys by default, then Todo’s own keys; preserve .env and Keychain. Source implemented; installed-app acceptance pending.
+- [x] [3-4-diane-credential-fallback](plans/3-kimi-moonshot-default-provider.md#3-4-diane-credential-fallback) — use Diane file-backed keys by default, then Todo’s own keys; preserve .env and Keychain. Source implemented; installed-app acceptance pending.
 
 ## Diane Integration
 
@@ -167,65 +176,21 @@ Deferred ideas (not implementation commitments): [AI-tool integration cart](idea
 - [x] Decide how active focus sessions transition between launch cinematic and persistent starmap state.
 - [x] Define what is intentionally out of scope for v1 so the sticky todo workflow stays lightweight.
 
-## Phase 2 - Follow-Up Plans
+## Phase 2 - Star Focus implementation
 
-- [x] Create the first implementation sub-plan after the Star Focus design is approved.
-- [x] [1-1-star-focus-mission-control-shell](plans/1-1-star-focus-mission-control-shell.md) - Add the frontend-only right sidebar shell, local Star Focus state, and task-selection handoff.
-- [x] [1-2-star-focus-session-controls-and-animation](plans/1-2-star-focus-session-controls-and-animation.md) - Tighten session lifecycle and upgrade the sidebar-only cinematic feel.
-- [x] [1-3-star-focus-persistence-hardening](plans/1-3-star-focus-persistence-hardening.md) - Move Star Focus beyond browser-local persistence while keeping task markdown untouched and finish native verification.
-- [x] [1-4-star-focus-overlay-reassessment](plans/1-4-star-focus-overlay-reassessment.md) - Reassess whether the persistent sidebar is enough or whether Star Focus now needs an expanded tracking-station surface.
-- [x] [1-5-star-focus-tracking-station-overlay-shell](plans/1-5-star-focus-tracking-station-overlay-shell.md) - Add the first expanded Tracking Station overlay while keeping the right rail as the quick-control entry point.
-- [x] [1-6-star-focus-compact-layout-and-overlay-polish](plans/1-6-star-focus-compact-layout-and-overlay-polish.md) - Tighten the compact sticky-note baseline and polish overlay entry/exit behavior.
-- [x] [1-7-star-focus-archive-retention-and-browsing](plans/1-7-star-focus-archive-retention-and-browsing.md) - Decide how much mission history to retain and whether Tracking Station needs deeper archive browsing controls.
-- [x] [1-8-star-focus-markdown-sync-reassessment](plans/1-8-star-focus-markdown-sync-reassessment.md) - Lock that Star Focus mission history remains native-local instead of syncing into markdown/project storage.
-- [x] [1-9-star-focus-archive-retention-settings](plans/1-9-star-focus-archive-retention-settings.md) - Let users adjust the local Star Focus archive cap without expanding into markdown sync.
-- [x] [1-10-star-focus-copy-density-polish](plans/1-10-star-focus-copy-density-polish.md) - Keep the Star Focus visual direction but trim the amount of descriptive UI copy.
-- [x] [1-11-star-focus-guided-copy-minimization](plans/1-11-star-focus-guided-copy-minimization.md) - Push Star Focus further toward labels, metrics, and actions instead of descriptive helper text.
-- [x] [1-12-star-focus-hierarchy-trim](plans/1-12-star-focus-hierarchy-trim.md) - Remove duplicate secondary labels and quiet the Star Focus hierarchy without changing the layout model.
-- [x] [1-13-star-focus-orbital-map-realism-pass](plans/1-13-star-focus-orbital-map-realism-pass.md) - Rebuild the Star Focus orbital map so it feels like mission telemetry instead of a placeholder diagram.
-- [x] [1-14-star-focus-orbital-map-camera-controls](plans/1-14-star-focus-orbital-map-camera-controls.md) - Add drag, zoom, and above/below camera controls to the shared Star Focus orbital map.
-- [x] [1-15-star-focus-compressed-solar-system-pass](plans/1-15-star-focus-compressed-solar-system-pass.md) - Add celestial bodies and astronomical texture so the shared orbital map feels closer to a real solar-system view.
-- [x] [1-16-star-focus-orbital-map-declutter-pass](plans/1-16-star-focus-orbital-map-declutter-pass.md) - Trim the shared orbital map so it stays real-looking without feeling messy.
-- [x] [1-17-star-focus-sidebar-map-simplification](plans/1-17-star-focus-sidebar-map-simplification.md) - Remove sidebar map chrome so Tracking Station remains the richer orbital surface.
-- [x] [1-18-star-focus-orbital-map-materials-pass](plans/1-18-star-focus-orbital-map-materials-pass.md) - Improve planetary materials and scene atmosphere so the orbital map feels more premium.
-- [x] [1-19-star-focus-tracking-station-cinematic-polish](plans/1-19-star-focus-tracking-station-cinematic-polish.md) - Push the shared orbital scene toward a more cinematic Tracking Station finish without adding new chrome.
-- [x] [1-20-star-focus-projected-3d-orbital-pass](plans/1-20-star-focus-projected-3d-orbital-pass.md) - Rebuild the shared orbital scene as a projected 3D view with orbit-camera interaction instead of a flat tilted map.
-- [x] [1-21-star-focus-planet-detail-pass](plans/1-21-star-focus-planet-detail-pass.md) - Add finer-grained planet, moon, and ring detail so the projected orbital scene holds up better at close inspection.
-- [x] [1-22-star-focus-planet-motion-and-atmosphere-pass](plans/1-22-star-focus-planet-motion-and-atmosphere-pass.md) - Add restrained planet motion, atmosphere shells, and stronger ring-shadow treatment so the projected scene feels more alive.
-- [x] [1-23-star-focus-lighting-and-ring-occlusion-pass](plans/1-23-star-focus-lighting-and-ring-occlusion-pass.md) - Make planetary lighting follow the scene geometry more believably and let Saturn's ring occlusion follow the projected ring path.
-- [x] [1-24-star-focus-ring-structure-and-scattering-pass](plans/1-24-star-focus-ring-structure-and-scattering-pass.md) - Add richer Saturn ring breakup and better atmospheric scattering falloff so local depth holds up better under close inspection.
-- [x] [1-25-star-focus-disc-microtexture-pass](plans/1-25-star-focus-disc-microtexture-pass.md) - Add fine disc-level currents, swirls, dunes, and micro-bands so the planets keep their read when you zoom in.
-- [x] [1-26-star-focus-phase-responsive-material-pass](plans/1-26-star-focus-phase-responsive-material-pass.md) - Let the shared orbital scene shift its materials, atmosphere, and motion pacing with the live mission phase instead of adding more chrome.
-- [x] [1-27-star-focus-weather-layer-lock-pass](plans/1-27-star-focus-weather-layer-lock-pass.md) - Lock cloud and weather motion back onto the planets so close-up inspection stays coherent instead of sloppy.
-- [x] [1-28-star-focus-spherical-falloff-pass](plans/1-28-star-focus-spherical-falloff-pass.md) - Strengthen the spherical read with quieter weather motion, stronger limb falloff, and less posterized cloud/band contrast.
-- [x] [1-29-star-focus-true-3d-tracking-foundation](plans/1-29-star-focus-true-3d-tracking-foundation.md) - Start the first true 3D/WebGL Star Focus renderer in Tracking Station while keeping the sidebar on the lighter projected map.
-- [x] [1-30-star-focus-3d-material-realism-pass](plans/1-30-star-focus-3d-material-realism-pass.md) - Deepen the true 3D Tracking Station renderer with layered planet materials, cloud shells, and textured rings.
-- [x] [1-31-star-focus-3d-atmosphere-and-shadow-pass](plans/1-31-star-focus-3d-atmosphere-and-shadow-pass.md) - Add fresnel atmosphere glow, shadow-enabled lighting, and stronger ring occlusion cues to the true 3D renderer.
-- [x] [1-32-star-focus-3d-solar-lighting-and-depth-pass](plans/1-32-star-focus-3d-solar-lighting-and-depth-pass.md) - Make the true 3D renderer react more directly to the sun angle and add layered background depth behind the system.
-- [x] [1-33-star-focus-3d-occultation-and-night-detail-pass](plans/1-33-star-focus-3d-occultation-and-night-detail-pass.md) - Add Earth dark-side lights and Saturn ring-shadow detail to the true 3D renderer.
-- [x] [1-34-star-focus-3d-reflected-light-pass](plans/1-34-star-focus-3d-reflected-light-pass.md) - Add Earth ocean glint and Moon Earthshine cues to the true 3D renderer.
-- [x] [1-35-star-focus-3d-eclipse-and-transit-pass](plans/1-35-star-focus-3d-eclipse-and-transit-pass.md) - Add Earth-Moon eclipse and transit cues to the true 3D renderer.
-- [x] [1-36-star-focus-3d-phase-rim-pass](plans/1-36-star-focus-3d-phase-rim-pass.md) - Add clearer phase and crescent rims to the true 3D renderer.
-- [x] [1-37-star-focus-3d-scattering-pass](plans/1-37-star-focus-3d-scattering-pass.md) - Add color-separated atmospheric terminators and stronger ring scattering to the true 3D renderer.
-- [x] [1-38-star-focus-3d-cloud-shadow-coupling-pass](plans/1-38-star-focus-3d-cloud-shadow-coupling-pass.md) - Add Earth/Venus cloud-shadow coupling so the true 3D bodies feel more light-linked and less like stacked layers.
-- [x] [1-39-star-focus-3d-cloud-shell-scattering-pass](plans/1-39-star-focus-3d-cloud-shell-scattering-pass.md) - Upgrade Earth/Venus cloud shells with darker night sides, stronger terminators, and restrained silver-lining behavior.
-- [x] [1-40-star-focus-3d-atmosphere-shell-depth-pass](plans/1-40-star-focus-3d-atmosphere-shell-depth-pass.md) - Replace the flat front atmosphere shell with a deeper day/terminator/limb haze pass in the true 3D renderer.
-- [x] [1-41-star-focus-3d-background-depth-pass](plans/1-41-star-focus-3d-background-depth-pass.md) - Add layered nebula and dust-haze depth behind the true 3D system so the scene feels less empty.
-- [x] [1-42-star-focus-3d-solar-scatter-pass](plans/1-42-star-focus-3d-solar-scatter-pass.md) - Add richer solar flare structure and a restrained sun-lit scatter band through the true 3D system.
-- [x] [1-43-star-focus-3d-shadow-interaction-pass](plans/1-43-star-focus-3d-shadow-interaction-pass.md) - Let cloud shells and rings participate more cleanly in the shared solar shadow path.
-- [x] [1-44-star-focus-solar-route-layout-pass](plans/1-44-star-focus-solar-route-layout-pass.md) - Reframe Focus Mode around a named solar route and a responsive task-first layout.
+- [x] [1-1 implementation history](plans/1-1-star-focus-mission-control-shell.md) — session lifecycle, native persistence, archive controls, compact/expanded views and SVG/WebGL solar-route rendering. Completed slices 1-1 through 1-44 are consolidated here.
 
 ## Phase 3 - Developer Tools
 
 - [x] [2-dev-mode-task-debug-panel](plans/2-dev-mode-task-debug-panel.md) - Add a development-only panel for seeding, clearing, and reloading tasks during local debugging.
-  - [x] [2-1-dev-mode-star-focus-time-scale](plans/2-1-dev-mode-star-focus-time-scale.md) - Add dev-only Star Focus mission time-speed controls for inspecting track progress.
+  - [x] [2-1-dev-mode-star-focus-time-scale](plans/2-dev-mode-task-debug-panel.md#2-1-dev-mode-star-focus-time-scale) - Add dev-only Star Focus mission time-speed controls for inspecting track progress.
 
 ## Phase 4 - AI Provider Defaults
 
 - [x] [3-kimi-moonshot-default-provider](plans/3-kimi-moonshot-default-provider.md) - Make Moonshot Kimi the default AI provider and use Kimi's recommended temperature.
-  - [x] [3-1-openrouter-provider-adapter](plans/3-1-openrouter-provider-adapter.md) - Add first-class OpenRouter configuration and routed-model support.
-  - [x] [3-2-quick-provider-switching](plans/3-2-quick-provider-switching.md) - Switch between saved provider profiles from the main action bar.
-  - [x] [3-3-codex-background-provider](plans/3-3-codex-background-provider.md) - Use the locally authenticated Codex CLI as a keyless background provider.
+  - [x] [3-1-openrouter-provider-adapter](plans/3-kimi-moonshot-default-provider.md#3-1-openrouter-provider-adapter) - Add first-class OpenRouter configuration and routed-model support.
+  - [x] [3-2-quick-provider-switching](plans/3-kimi-moonshot-default-provider.md#3-2-quick-provider-switching) - Switch between saved provider profiles from the main action bar.
+  - [x] [3-3-codex-background-provider](plans/3-kimi-moonshot-default-provider.md#3-3-codex-background-provider) - Use the locally authenticated Codex CLI as a keyless background provider.
 
 ## Phase 5 - Ready-To-Use Frontend
 
@@ -260,22 +225,22 @@ Deferred ideas (not implementation commitments): [AI-tool integration cart](idea
 
   - [x] [4-21-pointer-task-reordering](plans/4-21-pointer-task-reordering.md) - Replace HTML dragging with captured pointer gestures and explicit handle focus.
 
-  - [x] [4-22-publish-2-1-1](plans/4-22-publish-2-1-1.md) - Publish and verify the signed patch release.
+  - [x] [4-22-publish-2-1-1](plans/4-19-github-in-app-updates.md#4-22-publish-2-1-1) - Publish and verify the signed patch release.
 
-  - [x] [4-23-publish-2-1-2](plans/4-23-publish-2-1-2.md) - Publish the integrated input-background patch.
+  - [x] [4-23-publish-2-1-2](plans/4-19-github-in-app-updates.md#4-23-publish-2-1-2) - Publish the integrated input-background patch.
 
   - [x] [4-24-automatic-update-indicators](plans/4-24-automatic-update-indicators.md) - Check for updates quietly every 15 minutes and show Settings/action dots.
   - [x] [4-25-hover-step-entry](plans/4-25-hover-step-entry.md) - Reveal idle step entry on hover, focus, or plus activation.
 
-  - [x] [4-26-publish-2-1-3](plans/4-26-publish-2-1-3.md) - Publish update indicators and hover step entry.
+  - [x] [4-26-publish-2-1-3](plans/4-19-github-in-app-updates.md#4-26-publish-2-1-3) - Publish update indicators and hover step entry.
 
 - [x] [4-27-inline-top-level-task-entry](plans/4-27-inline-top-level-task-entry.md) - Add a hover-revealed root-aligned task box below the list, without a plus button.
 
-- [x] [4-28-publish-2-1-4](plans/4-28-publish-2-1-4.md) - Publish hover-revealed top-level task entry.
+- [x] [4-28-publish-2-1-4](plans/4-19-github-in-app-updates.md#4-28-publish-2-1-4) - Publish hover-revealed top-level task entry.
 
-- [x] [4-29-publish-2-1-5](plans/4-29-publish-2-1-5.md) - Publish root-aligned entry without a plus button.
+- [x] [4-29-publish-2-1-5](plans/4-19-github-in-app-updates.md#4-29-publish-2-1-5) - Publish root-aligned entry without a plus button.
 
-- [x] [4-30-publish-2-1-6](plans/4-30-publish-2-1-6.md) - Publish 15-minute automatic update checks.
+- [x] [4-30-publish-2-1-6](plans/4-19-github-in-app-updates.md#4-30-publish-2-1-6) - Publish 15-minute automatic update checks.
 
 ## Maintenance
 

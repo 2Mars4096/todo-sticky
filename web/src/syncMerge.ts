@@ -1,4 +1,4 @@
-// JSON-only, deterministic merge policy mirrored in mobile/services/sync_merge.dart.
+// JSON-only, deterministic merge policy mirrored in phone/services/sync_merge.dart.
 export type MergeChoices = Record<string, 'local' | 'cloud'>
 export interface MergeIssue { path: string; label: string; local: unknown; cloud: unknown }
 export interface MergeResult { payload: Record<string, unknown> | null; issues: MergeIssue[] }

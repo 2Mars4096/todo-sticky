@@ -24,4 +24,4 @@
 - Source remains on `feat/earlier-tasks-materials`; no merge, push, tag or public release. Main's existing uncommitted demo/docs work remains untouched. Physical drag and material preference acceptance are for the user's installed-app review.
 
 ## Accepted integration
-- 2026-10-23: User approved the installed preview and requested merge, pruning and release. Main fast-forwarded to `7e6ff6d`; publication and cleanup continue in [4-49](4-49-publish-2-1-15.md).
+- 2026-10-23: User approved the installed preview and requested merge, pruning and release. Main fast-forwarded to `7e6ff6d`; publication and cleanup continue in [4-49](4-19-github-in-app-updates.md#4-49-publish-2-1-15).

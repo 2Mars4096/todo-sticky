@@ -19,7 +19,7 @@
 - Existing historical “All” subtasks remain read-only context, separate from the editable task tree.
 - Reordering persists within original dates. The shared bar defaults expanded; no cards or extra indentation.
 - Explicitly browsed dates remain selected at midnight; an open Today view advances.
-- Publication followed in [4-34-publish-2-1-9](4-34-publish-2-1-9.md). No local installation or real-task data migration.
+- Publication followed in [4-34-publish-2-1-9](4-19-github-in-app-updates.md#4-34-publish-2-1-9). No local installation or real-task data migration.
 
 ## Notes
 - Passed: frontend build; task-completion, task-rollover, calendar-rollover, update-persistence; narrow browser alignment/disclosure/edit/complete/delete/reload checks; 25 native unit tests.

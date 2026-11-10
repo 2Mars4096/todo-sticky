@@ -25,4 +25,4 @@ The recorder accepts the same `PLAYWRIGHT_MODULE`, `CHROME_EXECUTABLE` and brows
 
 Capture is 600 × 720; GIF export is 10 fps with a generated palette and infinite looping. MP4 copies use H.264 at 15 fps. Intermediate WebM files and inspection screenshots go to ignored `output/playwright/readme/`. Review the GIFs after recording, especially menus, text and Focus rendering. The script fails on uncaught page errors.
 
-Do not use the legacy `seed-demo` command for these recordings: it writes Markdown into a configured knowledge base. This recorder needs only the browser fixture.
+The recorder uses only the isolated browser fixture; it does not seed a real knowledge base.

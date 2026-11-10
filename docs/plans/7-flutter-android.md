@@ -19,7 +19,7 @@
 - [ ] Perform physical Android acceptance with the user's provider configuration.
 
 ## Decisions
-- Keep existing desktop code on its own platform; the new app lives under `mobile/` and shares its JSON task/finish contracts.
+- Keep existing desktop code on its own platform; the new app lives under `phone/` and shares its JSON task/finish contracts.
 - Use app-private atomic JSON storage on Android, with desktop-compatible Markdown interchange; Google/Firebase transport belongs to the separate account branch.
 - Android cannot access a computer's local Codex executable. Diane does have a remote API, but its separate Todo companion router explicitly rejects non-local clients/URL hosts regardless of bearer authentication. Preserve Copy agent prompt; a supported remote companion contract requires Dear Diane backend work, tracked by [7-1](7-1-diane-remote-feasibility.md).
 - The native orbital scene supports the same session/route/history workflow while adapting the visual treatment to phones.
@@ -27,7 +27,7 @@
 
 ## Notes
 - No release publication, production signing, installed-user-data migration or provider credentials are included.
-- Feature matrix, setup and validation instructions live in `mobile/README.md`.
+- Feature matrix, setup and validation instructions live in `phone/README.md`.
 
 ## Validation result
 

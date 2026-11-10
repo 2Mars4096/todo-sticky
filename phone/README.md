@@ -7,7 +7,7 @@ A native Flutter client for the same daily workflow as the desktop app: fast cap
 Use Flutter **3.47.8 stable**, Dart 3.13, a **JDK 17** (not only a JRE), and the Android SDK. Android 7 / API 24 or newer is supported. The application ID is `io.github.twomars4096.sticky_todo`.
 
 ```bash
-cd mobile
+cd phone
 flutter pub get --enforce-lockfile
 flutter analyze
 flutter test
@@ -152,7 +152,7 @@ The current local production release is 2.1.15+11 (versionCode 2011), 19.62 MB, 
 
 ### Production goal-plan delivery — 2026-11-01
 
-The compatible schema-2 backend is live and the original signing key was available for the production build. `../release/todo-sticky.apk` is now the normal **Sticky Todo** package, 2.1.15+9 / 2009, 19.62 MB; it updates an existing original-key release in place. The separate Preview APK remains a different app and notebook. Analysis and 86 tests pass; signature/alignment and a dedicated emulator update preserve the previous notebook. [Delivery evidence](../docs/plans/13-1-production-deployment.md).
+The compatible schema-2 backend is live and the original signing key was available for the production build. `../release/todo-sticky.apk` is now the normal **Sticky Todo** package, 2.1.15+9 / 2009, 19.62 MB; it updates an existing original-key release in place. The separate Preview APK remains a different app and notebook. Analysis and 86 tests pass; signature/alignment and a dedicated emulator update preserve the previous notebook. [Delivery evidence](../docs/plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment).
 
 
 Android +10 aligns the six-dot grip, checkbox and task text with consistent visible gaps while retaining 44px touch targets. Daily and Earlier handles share the same visual; nested steps and expanded controls follow the parent title column. First-line alignment adapts to enlarged text.
@@ -171,3 +171,5 @@ Android +11 tightens the phone task row: visible grip inset 14px, title inset 66
 The +13 UI clarity pass labels the undated breakdown action **Suggest steps**, puts minute units in the daily project budget selector, and exposes an edit icon on each proposed task. Planning, storage and sync behavior are unchanged.
 
 Android +14 batches unchanged sync acknowledgements, skips idle notebook writes, compares only the affected incoming record and resumes sync after editing. Empty capture focus does not defer sync; actual drafts retain protection. The debounce is 900ms and progress counts changed records, with the existing conflict and pending-write durability rules unchanged.
+
+The current connected shared-backend candidate is `../todo-sticky-latest.apk`, version code2024. It opts existing Android installs into Diane account sync with `DIANE_SHARED_CUTOVER=true`; first launch verifies the original account link before changing sync origin. Standard production builds remain standalone unless explicitly built with that define. The original package and release signer are retained.

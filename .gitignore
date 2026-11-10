@@ -1,72 +1,27 @@
-node_modules/
-dist/
-target/
-src-tauri/gen/
-.env
-*.log
-.DS_Store
-.cursor/
-content/
-
-# Local browser recording intermediates
-output/playwright/
-
-# Optional cloud account service
-backend/.venv/
-backend/__pycache__/
-backend/tests/__pycache__/
-backend/env.yaml
-
-# Downloaded local installation artifacts
-output/account-sync/
-
-# Local release downloads
-/release/
-
-# Local linked checkouts (managed with git worktree)
-/.worktrees/
-
-# Local browser sessions, review data and delivery verification
-/.playwright-cli/
-/output/
-
-# Canonical product release paths; preserve legacy exclusions.
+# Installed dependencies and generated builds
 node_modules/
 dist/
 target/
 desktop/src-tauri/gen/
+src-tauri/gen/
+/plugin/backend/build/
+/plugin/backend/*.egg-info/
+**/__pycache__/
+backend/.venv/
+
+# Private configuration and local task data
 .env
+backend/env.yaml
+content/
+
+# Local deliveries, browser evidence and linked checkouts
+/release/
+/output/
+/.playwright-cli/
+/.worktrees/
+/*.apk
+
+# Editor / operating system intermediates
 *.log
 .DS_Store
 .cursor/
-content/
-
-# Local browser recording intermediates
-output/playwright/
-
-# Optional cloud account service
-backend/.venv/
-backend/__pycache__/
-backend/tests/__pycache__/
-backend/env.yaml
-
-# Downloaded local installation artifacts
-output/account-sync/
-
-# Local release downloads
-/release/
-
-# Local linked checkouts (managed with git worktree)
-/.worktrees/
-
-# Local browser sessions, review data and delivery verification
-/.playwright-cli/
-/output/
-
-/plugin/dist/
-/plugin/backend/build/
-/plugin/backend/*.egg-info/
-/plugin/node_modules/
-
-# Product backend/test bytecode
-plugin/backend/**/__pycache__/

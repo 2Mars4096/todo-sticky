@@ -11,7 +11,6 @@
     "test": "node scripts/run-tests.cjs",
     "task-api": "cargo run --quiet --manifest-path src-tauri/Cargo.toml --bin sticky-todo-api --",
     "release": "npm version patch && git push --follow-tags",
-    "seed-demo": "node scripts/seed-demo.js",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -240,7 +240,7 @@ The 2026-10-30 functional review is tracked in [plan 10](docs/plans/10-user-work
 
 ## Desktop workflow implementation review
 
-Search focuses its input immediately; Progress uses date/period selection, quiet totals and ordinary task lists. Both replace the center content on demand and offer Tasks to return. Keep new footer entries as named accessible icons and the account status as a small symbol; 340px normal-text production layout fits one row, with wrapping for enlarged text. Plan closes optional adjustments and brings a valid proposal into view. Scheduled routines have one Pause/Resume action and a noninteractive repeat symbol, avoiding a second checkbox-like action. Device-local scope is stated once beside Routines. Review evidence and remaining acceptance limits: [10-1](docs/plans/10-1-desktop-workflow.md).
+Search focuses its input immediately; Progress uses date/period selection, quiet totals and ordinary task lists. Both replace the center content on demand and offer Tasks to return. Keep new footer entries as named accessible icons and the account status as a small symbol; 340px normal-text production layout fits one row, with wrapping for enlarged text. Plan closes optional adjustments and brings a valid proposal into view. Scheduled routines have one Pause/Resume action and a noninteractive repeat symbol, avoiding a second checkbox-like action. Device-local scope is stated once beside Routines. Review evidence and remaining acceptance limits: [10-1](docs/plans/10-user-workflow-improvements.md#10-1-desktop-workflow).
 
 
 ## Phone workflow review

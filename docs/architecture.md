@@ -6,7 +6,7 @@
 - Optional sync generations permit quiet polling through five point reads. A complete immutable client snapshot remains necessary for offline three-way merge; upload/account/error invalidates the cache.
 - Android native links and macOS URL events retain canonical task IDs until authenticated lookup/sync can reveal their exact dated original task. Links never execute tasks.
 - Vite roots directly at `web/` and outputs root `dist/index.html`; compatibility symlinks do not determine bundler entry identity.
-- Product-owned Python source is `plugin/backend/diane/plugins/`. `todo_sync.py` projects the original standalone sync envelope from the same canonical records used by the embedded plugin; `todo_sync_protocol.py` preserves original validation and schema-1 metadata protection.
+- Product-owned Python source is `plugin/backend/src/diane/plugins/`. `todo_sync.py` projects the original standalone sync envelope from the same canonical records used by the embedded plugin; `todo_sync_protocol.py` preserves original validation and schema-1 metadata protection.
 - Revision/hash/container-shape metadata and hash-only mutation receipts live in the existing owner-scoped settings/receipt namespaces. No duplicate live day payload database is introduced. Canonical plugin edits are reflected in legacy sync revisions.
 - Offline/admin `CanonicalTodoSync.seed_records` seeds immutable original envelopes/revisions with a stable source namespace; divergent existing data refuses. Central identity, quota, migration execution and deployment belong to Diane.
 - `backend/` is the old deployment retained for rollback until verified cutover; standalone UI/source paths remain as documented in `folder-guide.md`.
@@ -18,7 +18,7 @@
 - Daily phone rows expose a `ReorderableDragStartListener` grip; the sliver contains visible rows only and maps reorder positions back to the stored list so hidden completed tasks remain intact. Task actions use named icon buttons, with editing and secondary actions under horizontal dots.
 - Earlier rows expose a separate handle-only `Draggable`. Today provides header, empty-list and row insertion targets; edge scrolling keeps the source row alive until drop/cancel. `StickyStore.moveTask(beforeId:)` performs the full-tree date move, preserving IDs and hidden completed rows.
 
-- `mobile/` is the native phone client. `models/` preserves Task/FinishPromise/Goal/Mission JSON contracts; `state/sticky_store.dart` owns independently usable local state and `services/persistence.dart` serializes atomic app-private saves with readable backups. API credentials use Android secure storage and never enter notebook exports or sync records.
+- `phone/` is the native phone client. `models/` preserves Task/FinishPromise/Goal/Mission JSON contracts; `state/sticky_store.dart` owns independently usable local state and `services/persistence.dart` serializes atomic app-private saves with readable backups. API credentials use Android secure storage and never enter notebook exports or sync records.
 - `services/ai_service.dart` provides explicit HTTPS provider operations with real error diagnostics and strict plan validation; phone `screens/` and `widgets/` keep capture, proposals, completion review and recovery close to their task.
 - Android Kotlin handles user-chosen file imports/exports through the Storage Access Framework and validated task deep-link delivery. No broad external storage permission or local desktop bridge is introduced. The native Focus painter is a mobile visual adaptation, retaining lifecycle/history behavior.
 - `StickyStore.syncRecords()`, `applySyncRecord()`, per-account `syncMetadata`, and `StickyApp.accountBuilder` are the integration seam for the separate Google account/sync branch. Active timers, provider keys and device settings remain local.
@@ -60,15 +60,15 @@
 
 - [ ] Languages: TypeScript/TSX for the frontend, Rust for the Tauri native layer, Markdown for task storage.
 - [ ] Frameworks: React 18, Vite 6, Tauri 2, Three.js, date-fns, react-day-picker.
-- [ ] Build and test tools: TypeScript, Vite, Tauri, `npm test` for twelve Node regression suites, and isolated Playwright browser fixtures for full-shell interactions.
+- [ ] Build and test tools: TypeScript, Vite, Tauri, `npm test` for 30 Node regression suites, and isolated Playwright browser fixtures for full-shell interactions.
 - [ ] Runtime or deployment targets: desktop app for macOS, Windows, and Linux.
 
 ## Repository Layout
 
 See [folder guide](folder-guide.md) for hidden directories, script purposes and safe cleanup boundaries. Local `.worktrees/` checkouts are ignored but must be managed through Git.
 
-- [ ] `src/`: React application shell, task UI components, hooks, API bridge, and global sticky-note styling.
-- [ ] `src-tauri/`: Rust commands, config, markdown/file-sync logic, tray/window behavior, and native app packaging.
+- [ ] `web/src/` (`src/` compatibility alias): React application shell, task UI components, hooks, API bridge, and global sticky-note styling.
+- [ ] `desktop/src-tauri/` (`src-tauri/` compatibility alias): Rust commands, config, markdown/file-sync logic, tray/window behavior, and native app packaging.
 - [ ] `plugin/`: separately packaged Dear Diane UI and compatibility backend; see the hosted plugin architecture above.
 - [ ] `docs/`: live project tracking, roadmap, plans, changelog, bugs, and architecture notes.
 - [ ] `content/`: markdown-backed task data under `content/to-do/`.
@@ -316,7 +316,7 @@ Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and
 
 - `release/` holds ignored local deliverables; the optimized ARM64 release APK is available at `release/todo-sticky.apk`. Original download and verification evidence remain under `output/account-sync/`.
 
-- Android local distribution uses an ARM64 release APK (AOT, R8/resource shrinking and icon tree shaking), with the sync-service origin supplied by `SYNC_SERVER_URL`. The private persistent signing key is outside the repo; ignored `mobile/android/key.properties` references it. CI debug artifacts remain review-only. See [release build instructions](../mobile/README.md).
+- Android local distribution uses an ARM64 release APK (AOT, R8/resource shrinking and icon tree shaking), with the sync-service origin supplied by `SYNC_SERVER_URL`. The private persistent signing key is outside the repo; ignored `phone/android/key.properties` references it. CI debug artifacts remain review-only. See [release build instructions](../phone/README.md).
 
 - Android screen copy prioritizes actions and current state over static explanations. `AccountScreen` renders a status region only when a message exists; signed-in identity, explicit upload scope and conflict recovery remain visible. The copy pass leaves the sync protocol and persistence unchanged.
 
@@ -346,11 +346,11 @@ Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and
 
 ## Android workflow parity (2026-10-30)
 
-- `mobile/lib/models/workflow.dart` shares desktop-compatible UTF-16 plan fingerprints and routine occurrence IDs, plus recursive archive rows/search. `ArchiveScreen` provides Search and day/week Progress; `TaskReviewScreen` edits the original dated tree and expands the matching step path. Both listen to the notebook rather than keeping a second task store.
+- `phone/lib/models/workflow.dart` shares desktop-compatible UTF-16 plan fingerprints and routine occurrence IDs, plus recursive archive rows/search. `ArchiveScreen` provides Search and day/week Progress; `TaskReviewScreen` edits the original dated tree and expands the matching step path. Both listen to the notebook rather than keeping a second task store.
 - `StickyStore` saves device-local `routineSchedules` alongside ordinary tasks in one atomic notebook snapshot. Initialization, local changes and day rollover generate only current due occurrences; Pause/Skip/Manual retain handled dates. Invalid schedules preserve their raw data and disable only scheduling. Generated tasks use existing sync; schedules remain excluded from sync records.
 - Preferences retain planning window/machines. `AiService` carries optional composite-ID budgets/unavailable periods and validates every response. Replanning replaces only matching untouched todo fingerprints, including steps received from desktop; legacy, edited, started and nested work remains.
 - `CloudSyncController.upToDate` compares the current sync payload against acknowledged content/owner and clears it on changes. An optional app-level indicator builder keeps account presentation outside standalone core startup. Phone Focus places controls before the route graphic and returns to the original task after finishing.
-- `mobile/lib/widgets/cloud_sync_button.dart` owns the phone cloud command/status control. It calls the existing manual synchronize operation directly, stays on Notes, prevents unavailable/overlapping requests and briefly displays the controller's result. Configuration and conflict details remain under Settings → Account & sync; no account navigation or implicit enablement occurs from the cloud control.
+- `phone/lib/widgets/cloud_sync_button.dart` owns the phone cloud command/status control. It calls the existing manual synchronize operation directly, stays on Notes, prevents unavailable/overlapping requests and briefly displays the controller's result. Configuration and conflict details remain under Settings → Account & sync; no account navigation or implicit enablement occurs from the cloud control.
 
 
 ## Shared note material surface
@@ -372,7 +372,7 @@ As of 2026-11-01 the personal Cloud Run service runs `sticky-todo-sync-00012-z9w
 
 ## Task control geometry
 
-`mobile/lib/widgets/task_grip.dart` owns the six-dot visual, 44px drag slot and text-scaled first-line control height, shared by daily reorder and Earlier drag. TaskTile derives action/history insets from whether a grip exists. Desktop task controls retain fixed 24px flex sizing and text has zero decorative horizontal padding/margin, keeping paragraph and short-title geometry consistent.
+`phone/lib/widgets/task_grip.dart` owns the six-dot visual, 44px drag slot and text-scaled first-line control height, shared by daily reorder and Earlier drag. TaskTile derives action/history insets from whether a grip exists. Desktop task controls retain fixed 24px flex sizing and text has zero decorative horizontal padding/margin, keeping paragraph and short-title geometry consistent.
 
 
 The compact phone correction in plan 14-1 narrows TaskGrip to 24px and TaskTile's checkbox slot to 40px, removes the root handle-row outer inset and derives its content inset as 66px. Child leading inset is 36px when the parent has a handle, preserving a 12px text indentation. Daily/Earlier share this geometry.
@@ -389,7 +389,7 @@ Both clients batch equal-record acknowledgements before transfers and avoid savi
 
 Both clients poll remote history every 15 seconds while visible/foregrounded, also providing automatic failure retries. Desktop handles visibility/focus/online and coalesces overlapping work; Android's `syncInterval` is separate from the browser sign-in `pollInterval` and a background-to-foreground transition starts sync immediately. Nonempty drafts and unsafe local operations still defer sync. Mac active Focus defers incoming `focus:` history only; task/goal sync and history uploads continue, and ending Focus schedules another pass. Deferred history is not reported as fully acknowledged. Android has no closed-app/background sync worker. Polling still downloads the existing paginated history; this changes frequency, not the protocol or network cost per check.
 
-`src/syncMerge.ts` and `mobile/lib/services/sync_merge.dart` implement the same JSON-only three-way merge, tested with shared `tests/fixtures/sync-merge.json`. ID collections merge additions/deletions and individual fields against the acknowledged ancestor; no-ancestor absence never proves deletion. Ordering uses ancestral order plus insertion constraints with stable-ID tie breaking. Incompatible fields, edit/delete and order constraints produce individually keyed issues. Project/step identity stays atomic; newly unfinished children reopen completed parents. Invalid cross-parent tree combinations fall back to root-task issues and must pass schema validation before persistence. Combined records beyond limits require local editing.
+`src/syncMerge.ts` and `phone/lib/services/sync_merge.dart` implement the same JSON-only three-way merge, tested with shared `tests/fixtures/sync-merge.json`. ID collections merge additions/deletions and individual fields against the acknowledged ancestor; no-ancestor absence never proves deletion. Ordering uses ancestral order plus insertion constraints with stable-ID tie breaking. Incompatible fields, edit/delete and order constraints produce individually keyed issues. Project/step identity stays atomic; newly unfinished children reopen completed parents. Invalid cross-parent tree combinations fall back to root-task issues and must pass schema validation before persistence. Combined records beyond limits require local editing.
 
 Controllers preserve both original versions before applying a merged local record durably, then upload with the existing expected revision and persisted mutation identity. An already-matching cloud result is acknowledged without an unnecessary PUT. Conflict choices recompute the merged result and retain all independent edits; fingerprints protect stale review. Mac `ItemInspector` and Android `ConflictItems` preserve unchanged per-issue selections, invalidate changed issues and suppress background progress panels. Desktop radio/button blur never triggers editing retries. Public builds can recover a unique enabled service origin already bound to the owner/folder; defaults are persisted on successful account setup. Flutter CI falls back to the exact official 3.47.8 Git commit if its release archive is unavailable.
 
@@ -409,3 +409,10 @@ Written-content typography uses shared regular (400) and heading/emphasis (600) 
 ### Project editing and review
 
 ProjectPage uses one draft editor for project text, unscheduled steps and actual scheduled tasks, retaining an original snapshot for stale-edit checks. Scheduled root work-date moves use destination-first `ProjectOperation` date changes and reject destination subtree ID collisions. The existing journal/compare/backups handle retries; plan templates are not duplicated. Draft navigation guards keep changed text in place until Save/Cancel, and editor focus restores after save/cancel. App retains a transient project return target when opening linked daily work; DateHeader exposes that return beside existing date controls.
+
+
+## Repository maintenance
+
+The root package.json owns desktop/web dependencies and commands. Vite and TypeScript address web/src directly; phone source/CI uses phone/. Only src and src-tauri root compatibility aliases and desktop package/dist aliases remain. Plugin builds use plugin/build.mjs directly. Completed follow-up plans are consolidated under existing feature records with explicit historical anchors; new implementation work should extend an existing record when its scope fits.
+
+Showcase recording uses scripts/record-demos.cjs with isolated browser fixtures. The legacy knowledge-base-writing seed-demo script has been retired. Review screenshots, UI dumps and intermediate recordings under output/ are disposable after verification; preserve notebook snapshots and delivery manifests.

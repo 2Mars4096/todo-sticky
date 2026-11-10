@@ -1,10 +1,10 @@
 name: Flutter Android
 on:
   pull_request:
-    paths: ['mobile/**', '.github/workflows/flutter-android.yml']
+    paths: ['phone/**', '.github/workflows/flutter-android.yml']
   push:
     branches: [main, 'feature/flutter-android', 'feature/google-account-sync']
-    paths: ['mobile/**', '.github/workflows/flutter-android.yml']
+    paths: ['phone/**', '.github/workflows/flutter-android.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 30
     defaults:
       run:
-        working-directory: mobile
+        working-directory: phone
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -52,6 +52,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: sticky-todo-android-review
-          path: mobile/build/app/outputs/flutter-apk/app-debug.apk
+          path: phone/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
           retention-days: 14

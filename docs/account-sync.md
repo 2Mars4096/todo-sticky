@@ -1,12 +1,12 @@
 # Google accounts and cross-platform sync
 
-The current `main` source includes optional Google accounts and synchronization for the Tauri desktop app and the Flutter Android app under `mobile/`. Both clients keep working locally without an account. The deployed personal service uses project `sticky-todo-20261028`.
+The current `main` source includes optional Google accounts and synchronization for the Tauri desktop app and the Flutter Android app under `phone/`. Both clients keep working locally without an account. The deployed personal service uses project `sticky-todo-20261028`.
 
 ## Personal deployment
 
 Service origin: `https://sticky-todo-sync-507920948662.asia-southeast1.run.app`.
 
-On 2026-11-01 the compatible backend was deployed as `sticky-todo-sync-00012-z9w`, advertising payload schemas `[1,2]` and `goalPlanning:true`. The Mac app was rebuilt/reinstalled and original-key Android 2.1.15+9 delivered with this origin prefilled. Existing configuration and consent are preserved. See [deployment and installation verification](plans/13-1-production-deployment.md).
+On 2026-11-01 the compatible backend was deployed as `sticky-todo-sync-00012-z9w`, advertising payload schemas `[1,2]` and `goalPlanning:true`. The Mac app was rebuilt/reinstalled and original-key Android 2.1.15+9 delivered with this origin prefilled. Existing configuration and consent are preserved. See [deployment and installation verification](plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment).
 
 Use this exact origin in desktop **Settings → Account** or Android **Settings → Account & sync**, choose **Connect service**, then **Continue with Google**. The deployed service is restricted to the project owner’s Google account through the ignored `backend/env.yaml` allowlist. After confirming the account in your browser, explicitly enable **Sync this task folder** / **Sync this notebook**. Existing local files are not uploaded just by deploying the backend or signing in.
 
@@ -16,7 +16,7 @@ Public health checks use `/v1/health`: `/healthz` returned a Google frontend 404
 
 ## What was reused from Dear Diane
 
-The current `2Mars4096/dear-diane` main revision inspected was `2581669`. Its Android app connects to a configurable backend using a bearer access token and a native phone-settings bridge (`mobile/lib/main.dart`), with an optional WireGuard connection. It does not implement Firebase Google login or provide a confirmed Google Cloud account/sync deployment. This implementation keeps the same separation between a phone client and a remote service, with Firebase handling identity. It does not share Diane's execution credentials or change Diane.
+The current `2Mars4096/dear-diane` main revision inspected was `2581669`. Its Android app connects to a configurable backend using a bearer access token and a native phone-settings bridge (`phone/lib/main.dart`), with an optional WireGuard connection. It does not implement Firebase Google login or provide a confirmed Google Cloud account/sync deployment. This implementation keeps the same separation between a phone client and a remote service, with Firebase handling identity. It does not share Diane's execution credentials or change Diane.
 
 ## User flow
 
@@ -94,13 +94,13 @@ The code enforces the five-minute expiry independently of Firestore's later TTL 
 
 This browser handoff does **not** require `google-services.json`, FlutterFire setup, an Android Firebase app registration, SHA certificate fingerprints or a native Google OAuth client. Google login runs on the hosted Web page; the phone reads the Firebase public Web configuration from `/v1/config` and uses the documented Firebase Auth REST endpoints after the handoff. Native Google sign-in would require its own Android setup if introduced later.
 
-Enter the HTTPS service URL in **Settings → Account & sync**, or prefill a build from `mobile/`:
+Enter the HTTPS service URL in **Settings → Account & sync**, or prefill a build from `phone/`:
 
 ```sh
 flutter build apk --debug --dart-define=SYNC_SERVER_URL=https://YOUR_SERVICE_HOST
 ```
 
-The URL is optional at build time. Without it, the app starts as a local notebook and the service can be configured later. Android's release manifest blocks cleartext HTTP; use an HTTPS service that the phone can reach. No Firebase token or service-account credential belongs in a Dart define or APK source. Android packaging, signing and the rest of the phone feature setup are described in [mobile/README.md](../mobile/README.md).
+The URL is optional at build time. Without it, the app starts as a local notebook and the service can be configured later. Android's release manifest blocks cleartext HTTP; use an HTTPS service that the phone can reach. No Firebase token or service-account credential belongs in a Dart define or APK source. Android packaging, signing and the rest of the phone feature setup are described in [phone/README.md](../phone/README.md).
 
 ## API contract, protocol 1
 
@@ -143,7 +143,7 @@ backend/.venv/bin/python -m unittest discover -s backend/tests -v
 
 The API tests exercise real FastAPI routes with an injected verifier/store: authentication rejection, user isolation, revision conflicts, idempotent retries, tombstone protection, pagination, schema/secret rejection, payload limits, email allowlisting and the proof-bound login route. Native tests verify stale downloads cannot overwrite local changes and backup creation. They do not claim live Google login or a live Firestore transaction round-trip. A production Firebase project, authorized domain, runtime IAM and the physical two-device acceptance above are still required.
 
-The Flutter account controller and screen are implemented, including secure session restoration/renewal, account binding, foreground reconciliation, conflict resolution and recovery export. The combined phone app passes 44 tests, including 20 account/protocol regressions and two Account-screen checks at 360 px with 150% text. Analysis is clean, the ARM64 debug APK builds, and its v2 signature verifies. The auth tests use the documented Google response shapes and exercise cancellation, secure-store write races, numeric project-number refresh responses, offline retries, account isolation, malformed downloads and conflict recovery. From `mobile/`, the verification commands are:
+The Flutter account controller and screen are implemented, including secure session restoration/renewal, account binding, foreground reconciliation, conflict resolution and recovery export. The combined phone app passes 44 tests, including 20 account/protocol regressions and two Account-screen checks at 360 px with 150% text. Analysis is clean, the ARM64 debug APK builds, and its v2 signature verifies. The auth tests use the documented Google response shapes and exercise cancellation, secure-store write races, numeric project-number refresh responses, offline retries, account isolation, malformed downloads and conflict recovery. From `phone/`, the verification commands are:
 
 ```sh
 flutter pub get
@@ -182,7 +182,7 @@ Recovery backups are historical originals saved before combining changes, not a 
 
 Clients now debounce saved changes for 900ms. An active nonempty text draft defers sync; empty focused capture does not. Leaving the editor promptly schedules deferred work. Android still syncs only while foregrounded; desktop accounts remain optional and independent of capture.
 
-Both clients poll remote changes every 15 seconds while visible/foregrounded. Mac also checks on visibility return, focus and online events; Android starts a check immediately after a background-to-foreground transition. Failed attempts retry on subsequent polls. Mac syncs tasks/goals during Focus and defers only incoming focus history until the active session finishes. This is periodic reconciliation, not push delivery; network time, drafts, protected operations and conflict review can extend the delay. Each poll retains the existing paginated history download, so more frequent polling increases network requests. These changes are installed on Mac and included in the verified local Android +15 APK; see [16-1](plans/16-1-automatic-sync-frequency.md).
+Both clients poll remote changes every 15 seconds while visible/foregrounded. Mac also checks on visibility return, focus and online events; Android starts a check immediately after a background-to-foreground transition. Failed attempts retry on subsequent polls. Mac syncs tasks/goals during Focus and defers only incoming focus history until the active session finishes. This is periodic reconciliation, not push delivery; network time, drafts, protected operations and conflict review can extend the delay. Each poll retains the existing paginated history download, so more frequent polling increases network requests. These changes are installed on Mac and included in the verified local Android +15 APK; see [16-1](plans/16-sync-efficiency.md#16-1-automatic-sync-frequency).
 
 Progress counts changed records and conflicts rather than all equal records. Equal acknowledgements are batched; already-current baselines require no save. Desktop performs one initial archive snapshot, targeted date checks before download application, and one list refresh after a download batch. Native compare-before-write, exact conflict copies and pending mutation IDs retain their original safety ordering. Android compares only the relevant record before incoming changes and avoids per-record whole-notebook saves for idle acknowledgements.
 

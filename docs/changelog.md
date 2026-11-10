@@ -1,3 +1,22 @@
+# Changelog
+
+## 2026-11-10 — Empty-file cleanup
+- [maintenance] Remove obsolete backend namespace directories, stale Python build/egg-info artifacts and 17 empty phone build logs. No empty tracked source files found; retain tooling locks/markers. Backend source hashes unchanged.
+
+## 2026-11-10 — Remove remaining local intermediates
+- [maintenance] Remove 404 generated/stale local files (63.2 MiB) and 20 empty directories, including one hash-identical APK duplicate. Keep the latest APK, unique backups, notebook snapshots and verification records.
+- [cleanup] Remove retired demo-seeding script/npm command; retain the isolated browser recorder. Protected app/source hashes and package script paths verified; no application behavior changed.
+
+## 2026-11-10 — Shared Android rebuild
+- [release] Original-key 2.1.16+24 (Android versionCode 2024) delivered at repository root; previous root APK replaced. Shared Diane Google popup fix is deployed. Physical login remains acceptance work.
+
+
+## 2026-11-10 — Repository consolidation
+
+- [maintenance] Audit 558 tracked paths; consolidate 79 completed plans into existing records with anchored links, retaining decisions and evidence. Merge plugin module documentation; remove unused Tauri mobile icons, four obsolete symlinks, build forwarding script and empty shared scaffold. 438 tracked paths remain, with no new tracked files.
+- [fix] Android CI now watches/builds phone/; canonical web paths replace stale TypeScript/Vite aliases. Simplify ignore rules and remove temporary browser/Finder files. Preserve pre-existing work, data, artifacts, private configuration and linked checkout.
+- [test] 30 Node suites, 42 Rust tests, TypeScript, frontend/plugin builds, Flutter analysis and 138 Flutter tests pass (one existing skip). Plan content/anchor preservation, local links, native assets and diff hygiene verified.
+
 ## 2026-11-10 — Preserve shipped Android login fix
 - [fix] Carry forward the existing native Google sign-in browser bridge and shipped APK version into main. This is the already-delivered fix; no APK rebuilt.
 
@@ -34,7 +53,12 @@
 ## 2026-11-10
 - [perf] Release canonical sync adapter 0.1.4: owner/schema-scoped generation checks avoid full canonical scans on quiet polling; empty-container changes advance the clock. 17 backend tests pass.
 
-# Changelog
+
+## 2026-11-10
+- [fix] Route Android Google sign-in browser launch through the registered native links channel. Deliver original-signer shared-backend APK2.1.16+23/code2023 at the repository root; six account/link checks pass.
+
+## 2026-11-10
+- [android] Build shared-backend ARM64 APK 2.1.16+22 / code2022 with `DIANE_SHARED_CUTOVER=true`; original release signer retained. Existing production builds remain standalone unless this explicit define is set. APK verification recorded in `docs/plans/6-diane-handoff.md`.
 
 ## 2026-11-10 — Product-owned hosted task execution
 
@@ -65,7 +89,7 @@
 ## 2026-11-08 — Phone cloud button syncs directly
 
 - [mobile] Replace cloud-to-Account navigation with the existing manual sync command, a compact busy indicator and brief controller-result feedback. Keep configuration/conflict details in Settings and preserve draft/save/offline guards; no implicit account enablement.
-- [verification] All 127 phone tests and analysis pass, including route preservation, direct requests, busy/off states and deferred feedback. Original-key APK delivery tracked in [16-4](plans/16-4-phone-sync-shortcut.md).
+- [verification] All 127 phone tests and analysis pass, including route preservation, direct requests, busy/off states and deferred feedback. Original-key APK delivery tracked in [16-4](plans/16-sync-efficiency.md#16-4-phone-sync-shortcut).
 - [delivery] Signed production 2.1.16+19 / 2019 delivered at `release/todo-sticky.apk` (19.88 MB), with matching original certificate, v2 signature, ZIP integrity, 16 KB alignment and service origin verified. Prior +18 APK retained.
 
 ## 2026-11-08 — Install final sync, typography and recovery clarification
@@ -83,48 +107,48 @@
 
 - [sync] Reproduce the reported missing-date mismatch without edits. Align canonical targeted reads with history for absent, empty and duplicate sections while preserving default task-API behavior. Both clients preserve genuine concurrent local work and retry neutrally, with one prompt retry before normal polling.
 - [ui] Remove native button appearance from the footer so Goals and neighboring controls share one 4px rounded rectangle. Keep visible keyboard focus; WebKit/Chrome compact checks pass.
-- [verification] 41 native tests, 26 Node suites, TypeScript and 124 Flutter tests/analysis pass. Mac reinstall and original-key Android +17 delivery are tracked in [16-3](plans/16-3-false-local-change-detection.md) and [4-53](plans/4-53-footer-control-shape.md).
+- [verification] 41 native tests, 26 Node suites, TypeScript and 124 Flutter tests/analysis pass. Mac reinstall and original-key Android +17 delivery are tracked in [16-3](plans/16-sync-efficiency.md#16-3-false-local-change-detection) and [4-53](plans/4-53-footer-control-shape.md).
 
 ## 2026-11-08 — Publish and verify 2.1.16
 
 - [release] Publish [v2.1.16](https://github.com/2Mars4096/todo-sticky/releases/tag/v2.1.16) as latest with 14 assets. macOS universal, Windows, Linux and publication workflow `42438376556` succeed; both Android CI runs succeed.
-- [verification] Validate public manifest coverage for all four desktop targets, download all three unique update packages and verify their trusted-key signatures and trusted comments. Published Mac GUI/task-helper binaries both contain ARM64/Intel slices and pass strict bundle-signature checks. Source, tag and delivery records are pushed; [receipt](plans/4-52-publish-2-1-16.md).
+- [verification] Validate public manifest coverage for all four desktop targets, download all three unique update packages and verify their trusted-key signatures and trusted comments. Published Mac GUI/task-helper binaries both contain ARM64/Intel slices and pass strict bundle-signature checks. Source, tag and delivery records are pushed; [receipt](plans/4-19-github-in-app-updates.md#4-52-publish-2-1-16).
 
 ## 2026-11-08 — Deliver 2.1.16 locally and start public release
 
 - [desktop] Rebuild/sign/install Mac 2.1.16 and verify launch, exact bundle hashes, signature and unchanged task/config files; retain app/task/native/WebKit rollback copies.
 - [android] Deliver original-key 2.1.16+16 / 2016 at `release/todo-sticky.apk` (19.88 MB), with verified v2 signature, package/version, ZIP integrity, 16 KB alignment and service origin.
-- [publication] Commit source as `47d2271`, bump/tag `df8c0c2` and push both to origin/main. Hosted release `42438376556` and Android CI are running; public verification follows in [4-52](plans/4-52-publish-2-1-16.md).
+- [publication] Commit source as `47d2271`, bump/tag `df8c0c2` and push both to origin/main. Hosted release `42438376556` and Android CI are running; public verification follows in [4-52](plans/4-19-github-in-app-updates.md#4-52-publish-2-1-16).
 
 ## 2026-11-08 — Merge independent sync edits and review individual conflicts
 
 - [sync] Merge goals, steps and nested daily tasks by stable ID and acknowledged ancestor. Combine separate additions/fields and safe deletions; retain genuine field, edit-versus-delete and order choices. Each choice preserves unrelated changes. Save exact originals and the combined local record before revision-guarded upload; interrupted retries reuse their mutation identity.
 - [ui] Replace whole-record replacement controls with individual item/field choices on Mac and Android. Background checks stay quiet, text-editor blur alone can schedule an editing retry, and unchanged choices/scroll remain stable. Changed fields invalidate only their own selection; saved-copy identity remains stable as history grows.
-- [release readiness] Preserve an existing owner/folder service URL when upgrading to a public build, and add an official pinned-Git fallback for unavailable Flutter archives in CI. All 25 Node suites, TypeScript, Android analysis/121 tests and compact/wide browser review pass. [Implementation](plans/16-2-smart-merge-and-stable-review.md); publication tracked in [2.1.16](plans/4-52-publish-2-1-16.md).
+- [release readiness] Preserve an existing owner/folder service URL when upgrading to a public build, and add an official pinned-Git fallback for unavailable Flutter archives in CI. All 25 Node suites, TypeScript, Android analysis/121 tests and compact/wide browser review pass. [Implementation](plans/16-sync-efficiency.md#16-2-smart-merge-and-stable-review); publication tracked in [2.1.16](plans/4-19-github-in-app-updates.md#4-52-publish-2-1-16).
 
 ## 2026-11-07 — Install automatic-sync Mac build and deliver Android +15
 
 - [desktop] Restore the Rust toolchain, rebuild/sign and reinstall Mac with exact bundle verification and successful launch. All 56 task-folder files and native config remain unchanged; app/task/native/WebKit rollback copies retained. All 23 Node suites and TypeScript pass.
-- [android] Restore official Flutter 3.47.8 / Dart 3.13.7, fix a guarded assertion in the new fake-clock test and pass all 102 tests, analyzer and changed-file formatting. Deliver production +15 / 2015 at `release/todo-sticky.apk` (19.75 MB); original-key v2 signature, package/version, ZIP integrity, 16 KB alignment and service origin verify. Previous APK retained; no phone installation, public release or backend change. Delivery evidence: [16-1](plans/16-1-automatic-sync-frequency.md).
+- [android] Restore official Flutter 3.47.8 / Dart 3.13.7, fix a guarded assertion in the new fake-clock test and pass all 102 tests, analyzer and changed-file formatting. Deliver production +15 / 2015 at `release/todo-sticky.apk` (19.75 MB); original-key v2 signature, package/version, ZIP integrity, 16 KB alignment and service origin verify. Previous APK retained; no phone installation, public release or backend change. Delivery evidence: [16-1](plans/16-sync-efficiency.md#16-1-automatic-sync-frequency).
 
 ## 2026-11-07 — More automatic Mac and phone sync
 
 - [sync] Reduce both clients' foreground remote checks from 60 to 15 seconds; retain 900ms saved-change debounce and automatic periodic retries. Mac checks on visibility return as well as focus/online; Android resumes immediately.
 - [fix] Empty focused Mac capture no longer suppresses polling. Active Mac Focus defers only incoming focus history, allowing task/goal sync; ending Focus schedules the deferred history. Preserve draft protection, conflict review, compare-before-write and offline core operation.
-- [validation] All 23 Node suites, TypeScript and frontend production build pass, including synthetic automatic arrivals, draft resume, offline retry, overlap, hidden/paused polling and Focus deferral. Android lifecycle/retry regressions added but cannot run: default Dart 3.11.5 is below required 3.13 and the former temporary Flutter 3.47.8 SDK is missing. No installed-app/backend/public-release changes. [Plan](plans/16-1-automatic-sync-frequency.md).
+- [validation] All 23 Node suites, TypeScript and frontend production build pass, including synthetic automatic arrivals, draft resume, offline retry, overlap, hidden/paused polling and Focus deferral. Android lifecycle/retry regressions added but cannot run: default Dart 3.11.5 is below required 3.13 and the former temporary Flutter 3.47.8 SDK is missing. No installed-app/backend/public-release changes. [Plan](plans/16-sync-efficiency.md#16-1-automatic-sync-frequency).
 
 ## 2026-11-02 — Simplify project editing and review
 
 - [ui] Use consistent inline Save/Cancel and Cmd/Ctrl+Enter/Escape for project text and steps. Edit actual scheduled task text/work date in place; provide a compact Project return from full daily-task review. Preserve changed drafts on attempted navigation and restore editor focus.
 - [safety] Capture original edit snapshots; reject newer external changes. Date moves preserve status/deadline/children/goal links, save destination before source cleanup and use existing journal recovery. Pending writes retain one immutable edit until retry/discard.
-- [delivery] 22 Node suites, TypeScript/build and production browser edit/cancel/stale/retry/date/navigation/layout checks pass. Mac rebuilt/reinstalled and launched with all 56 task files/settings unchanged; no backend or Android changes. [15-4](plans/15-4-project-editing-review.md).
+- [delivery] 22 Node suites, TypeScript/build and production browser edit/cancel/stale/retry/date/navigation/layout checks pass. Mac rebuilt/reinstalled and launched with all 56 task files/settings unchanged; no backend or Android changes. [15-4](plans/15-project-goals-and-multiday-planning.md#15-4-project-editing-review).
 
 ## 2026-11-02 — Mac project editor and phone-created goal details
 
 - [desktop] Open long-term goal titles to view/edit their existing descriptions and steps. Add manual or reviewed AI steps, schedule selected work, open linked tasks, assign existing tasks to projects and filter Progress. Add editable multi-day project proposals with date/budget/weekday validation.
 - [recovery] Preserve the shared goal/task schema; journal cross-file writes, compare before replacing dates and retain backups. Retry skips acknowledged dates; removing a step or discarding remaining writes keeps daily work. Stale/duplicate proposals are rejected before mutation.
 - [ui] Apply self-explanatory-ui with flat lists, direct title entry, concise actions, accessible labels and contextual deletion/recovery consequences. Preserve selected texture and existing paragraph/drag behavior.
-- [delivery] Mac rebuilt, signed, installed and reopened, including pending sync efficiency. Android, sync, Mac and documentation source batches pushed to main and remote verified. All 56 task files/settings unchanged. 22 Node suites, TypeScript, 40 native tests, production browser workflows and existing 100 Android tests pass. [15-3](plans/15-3-mac-project-planning.md).
+- [delivery] Mac rebuilt, signed, installed and reopened, including pending sync efficiency. Android, sync, Mac and documentation source batches pushed to main and remote verified. All 56 task files/settings unchanged. 22 Node suites, TypeScript, 40 native tests, production browser workflows and existing 100 Android tests pass. [15-3](plans/15-project-goals-and-multiday-planning.md#15-3-mac-project-planning).
 
 ## 2026-11-01 — Faster, quieter client sync
 
@@ -135,18 +159,18 @@
 ## 2026-11-01 — Minimal project UI clarity pass
 
 - [ui] Rename goal Generate plan to Suggest steps, clarify the daily project budget with minute-valued choices, and remove the repeated proposal instruction in favor of an accessible Edit proposed task icon. Preserve removal, apply/discard, labels, warnings and save recovery.
-- [scope] One self-explanatory-ui pass; no task/planning logic or navigation changes. All 97 tests and normal/enlarged visual review pass; original-key APK +13 rebuilt and verified. [Delivery](plans/15-2-minimal-copy-pass.md).
+- [scope] One self-explanatory-ui pass; no task/planning logic or navigation changes. All 97 tests and normal/enlarged visual review pass; original-key APK +13 rebuilt and verified. [Delivery](plans/15-project-goals-and-multiday-planning.md#15-2-minimal-copy-pass).
 
 ## 2026-11-01 — Android project attribution and multi-day AI planning
 
 - [features] Add Assign to project in the task menu, linked-work access in Project tasks, and Plan across days with range, daily project budget and weekdays-only controls. Reuse existing goal steps or review/edit/remove AI suggestions before adding them to daily lists.
 - [reliability] Keep generation/discard read-only; reject changed notebooks, invalid dates/budgets, duplicate tasks and already scheduled steps before applying. Save project steps and all dates together; Retry persists the same mutation without duplicating tasks. Keep explicit child-project links when assigning a parent.
-- [delivery] Original-key Android +12 / 2012 delivered at `release/todo-sticky.apk` (19.75 MB). Analyzer/formatting and all 97 tests pass; normal/enlarged screenshots reviewed and emulator update preserves notebook bytes. [Evidence](plans/15-1-android-project-planning.md). No new database/schema/backend deployment; Mac project editor remains follow-up.
+- [delivery] Original-key Android +12 / 2012 delivered at `release/todo-sticky.apk` (19.75 MB). Analyzer/formatting and all 97 tests pass; normal/enlarged screenshots reviewed and emulator update preserves notebook bytes. [Evidence](plans/15-project-goals-and-multiday-planning.md#15-1-android-project-planning). No new database/schema/backend deployment; Mac project editor remains follow-up.
 
 ## 2026-11-01 — Tighten phone drag controls
 
 - [ui] Reduce space before the visible grip from 44px to 14px and the root text inset from 104px to 66px. Use equal 12px optical gaps, first-line vertical alignment and shared Today/Earlier geometry; preserve nested indentation and drag actions.
-- [validation] Flutter formatting/analyzer and all 86 tests pass; normal/enlarged screenshots and expanded nested rows reviewed. Original-key Android +11 delivery tracked in [14-1](plans/14-1-compact-phone-grip.md).
+- [validation] Flutter formatting/analyzer and all 86 tests pass; normal/enlarged screenshots and expanded nested rows reviewed. Original-key Android +11 delivery tracked in [14-1](plans/14-task-control-spacing.md#14-1-compact-phone-grip).
 
 ## 2026-11-01 — Publish local spacing and deployment records
 
@@ -164,7 +188,7 @@
 - [backend] Deploy source ba07999 to Cloud Run revision `sticky-todo-sync-00012-z9w` at 100% traffic. Verify payload schemas 1/2 and goal planning, health, rejected anonymous/invalid tokens and unchanged environment/runtime/scaling settings; no user records accessed.
 - [desktop] Rebuild and install the signed Mac app with goal-metadata compatibility. Launch and exact bundle verification pass; all 56 task files/native settings unchanged, with a verified rollback backup.
 - [android] Build original-key production 2.1.15+9 / 2009 at `release/todo-sticky.apk` (19.62 MB). Signature, package and 16 KB alignment verified; dedicated emulator update preserves notebook bytes. This updates production, unlike the separate preview.
-- [validation] 19 backend tests, 20 Node suites, TypeScript, 40 native tests, Flutter formatting/analyzer and 86 Flutter tests pass; desktop paragraph workflows checked in production assets. Evidence and hashes: [13-1](plans/13-1-production-deployment.md).
+- [validation] 19 backend tests, 20 Node suites, TypeScript, 40 native tests, Flutter formatting/analyzer and 86 Flutter tests pass; desktop paragraph workflows checked in production assets. Evidence and hashes: [13-1](plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment).
 
 ## 2026-10-31 — Goal plans and Earlier dragging on Android
 
@@ -192,21 +216,21 @@
 ## 2026-10-30 — Goals follows the selected note material
 
 - [fix] Share the Frosted/Liquid surface with Goals and Routines, replacing both base and compact fixed-yellow overrides while preserving Paper defaults and the saved preference.
-- [verification] Existing material/promotion browser suite now checks open Goals for all three materials at 340/460/1000px; screenshots reviewed. Production/native builds pass; Mac reinstalled and launched with exact bundle/signature checks and all 56 task files/native settings unchanged. [Details](plans/10-3-goals-material.md).
+- [verification] Existing material/promotion browser suite now checks open Goals for all three materials at 340/460/1000px; screenshots reviewed. Production/native builds pass; Mac reinstalled and launched with exact bundle/signature checks and all 56 task files/native settings unchanged. [Details](plans/10-user-workflow-improvements.md#10-3-goals-material).
 
 ## 2026-10-30 — Workflow review, Mac installation and Android +7
 
 - [mobile] Add matching Search/Progress, optional local recurrence, remembered planning setup with time budgets/breaks, original-step fingerprint protection, focus-task review and compact account state. Generated task identities match desktop; routine definitions remain local.
 - [review] Harden desktop routine lookup; fix phone enlarged-text header/confirmation overflow, move Focus controls ahead of graphics and reveal Review task after completion. Stopped tasks no longer inflate completion counts.
 - [delivery] Install and launch the verified Mac bundle with all 56 task files/native settings unchanged. Deliver same-key ARM64 APK `release/todo-sticky.apk`, 2.1.15+7 / 2007, 19.49 MB. Isolated emulator update preserves notebook bytes and exposes new controls.
-- [validation] 19 Node suites/TypeScript/desktop browser workflows and 60 Flutter tests/analyzer pass; production builds/signatures and phone screenshots reviewed. Backup, hashes and acceptance boundaries: [10-2](plans/10-2-review-install-and-android.md). No public release/backend changes.
+- [validation] 19 Node suites/TypeScript/desktop browser workflows and 60 Flutter tests/analyzer pass; production builds/signatures and phone screenshots reviewed. Backup, hashes and acceptance boundaries: [10-2](plans/10-user-workflow-improvements.md#10-2-review-install-and-android). No public release/backend changes.
 
 ## 2026-10-30 — Desktop workflow improvements and UI/UX review
 
 - [features] Add original-date task/step Search, a day/week Progress page, quiet Earlier tasks awareness, device-local optional recurrence, inline plan budgets/breaks, remembered planning window/machines, post-focus task review and a compact truthful sync indicator.
 - [recovery] Retain edited/started/legacy plan steps when replanning; validate unavailable time and budgets; acknowledge routine occurrences only after task save, deduplicate retries, and preserve unreadable schedules. History reads remain lazy, bounded and shared while pending.
 - [review] Inspect compact/default/wide screenshots and user flows. Fix hidden plan proposals, duplicate pause controls, internal status labels, invalid date display and footer wrapping. Keep capture, manual completion, independent goals and task ordering intact.
-- [validation] TypeScript/build, 19 Node suites, 36 native tests and four production browser suites pass. See [10-1](plans/10-1-desktop-workflow.md). Desktop source only; Android UI, installed apps, releases and live user data unchanged.
+- [validation] TypeScript/build, 19 Node suites, 36 native tests and four production browser suites pass. See [10-1](plans/10-user-workflow-improvements.md#10-1-desktop-workflow). Desktop source only; Android UI, installed apps, releases and live user data unchanged.
 
 ## 2026-10-30 — Functional improvement scope and design safeguards
 
@@ -315,7 +339,7 @@
 
 - [mobile] Add a native Flutter app with offline tasks, hierarchy, date/backlog/moves, finish promises, goals/routines, provider suggestions and validated planning, scoped Undo, album recommendations and reload-safe Focus.
 - [mobile] Adapt the warm note to phone navigation, large touch targets, explicit drafts, note materials and a native orbital route. Add Android file import/export, secure API keys and a documented cross-platform sync seam.
-- [validation] Flutter analysis is clean; all 22 domain/provider/phone tests plus optional visual capture pass. Inspect four phone screens, verify enlarged text, build ARM64 debug APK and verify its manifest/signature/native binary headers. Add Android review-build CI. Full feature matrix and desktop-specific boundaries are in `mobile/README.md`; physical-device/provider acceptance remains pending.
+- [validation] Flutter analysis is clean; all 22 domain/provider/phone tests plus optional visual capture pass. Inspect four phone screens, verify enlarged text, build ARM64 debug APK and verify its manifest/signature/native binary headers. Add Android review-build CI. Full feature matrix and desktop-specific boundaries are in `phone/README.md`; physical-device/provider acceptance remains pending.
 
 ## 2026-10-24 — Integrated review verification
 

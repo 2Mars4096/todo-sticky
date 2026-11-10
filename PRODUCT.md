@@ -51,10 +51,10 @@ Target WCAG 2.2 AA for contrast, focus visibility, keyboard access, reduced-moti
 
 ## Desktop workflow refinement
 
-Search and Progress are intentional secondary pages. Search opens the original dated task/step; Progress separates parent tasks, steps and retained planned focus time and never infers historical completion dates. Plan keeps optional budgets and breaks together and remembers the work window. Device-local routines generate ordinary tasks using the normal save/retry path. Compact sync status reports acknowledged current content. Goal linking, sequencing and task completion semantics are unchanged. See docs/plans/10-1-desktop-workflow.md for scope and validation.
+Search and Progress are intentional secondary pages. Search opens the original dated task/step; Progress separates parent tasks, steps and retained planned focus time and never infers historical completion dates. Plan keeps optional budgets and breaks together and remembers the work window. Device-local routines generate ordinary tasks using the normal save/retry path. Compact sync status reports acknowledged current content. Goal linking, sequencing and task completion semantics are unchanged. See docs/plans/10-user-workflow-improvements.md#10-1-desktop-workflow for scope and validation.
 
 
-Android 2.1.15+7 now mirrors Search, Progress, optional routines, constrained planning, edited-step protection, focus review and compact sync status. Each platform retains local schedule definitions while generated tasks share compatible identities. The desktop build is installed locally; delivery evidence lives in docs/plans/10-2-review-install-and-android.md.
+Android 2.1.15+7 now mirrors Search, Progress, optional routines, constrained planning, edited-step protection, focus review and compact sync status. Each platform retains local schedule definitions while generated tasks share compatible identities. The desktop build is installed locally; delivery evidence lives in docs/plans/10-user-workflow-improvements.md#10-2-review-install-and-android.
 
 
 ## Paragraph capture and editing

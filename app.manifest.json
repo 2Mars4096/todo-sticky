@@ -9,7 +9,6 @@
     "web": "web/",
     "phone": "phone/",
     "plugin": "plugin/",
-    "shared": "shared/",
     "backend": "backend/",
     "scripts": "scripts/",
     "docs": "docs/"

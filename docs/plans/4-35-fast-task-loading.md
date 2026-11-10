@@ -22,4 +22,4 @@
 - Frontend build, five task/persistence/calendar suites, and 26 native tests pass.
 - Browser fixtures verify delayed/stalled history, edits during loading, and 10,000-task pagination (40 rows initially, 80 after Show more).
 - Existing 16 Star Focus TypeScript diagnostics remain; no new diagnostics.
-- Publication tracked in [4-36-publish-2-1-10](4-36-publish-2-1-10.md).
+- Publication tracked in [4-36-publish-2-1-10](4-19-github-in-app-updates.md#4-36-publish-2-1-10).

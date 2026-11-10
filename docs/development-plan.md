@@ -6,19 +6,19 @@
 
 ## Automatic sync and 2.1.16 delivered
 
-- [16-2](plans/16-2-smart-merge-and-stable-review.md) delivers acknowledged-ancestor merges for independent edits and individual review for genuine conflicts, with stable background refresh. Mac 2.1.16 is installed, original-key Android +16 is delivered, and [2.1.16](plans/4-52-publish-2-1-16.md) is committed/pushed and published as latest with verified signed updates. Existing local-first storage, backend protocol and explicit conflict safeguards remain.
+- [16-2](plans/16-sync-efficiency.md#16-2-smart-merge-and-stable-review) delivers acknowledged-ancestor merges for independent edits and individual review for genuine conflicts, with stable background refresh. Mac 2.1.16 is installed, original-key Android +16 is delivered, and [2.1.16](plans/4-19-github-in-app-updates.md#4-52-publish-2-1-16) is committed/pushed and published as latest with verified signed updates. Existing local-first storage, backend protocol and explicit conflict safeguards remain.
 
 ## Mac project parity delivered
 
-- [15-3](plans/15-3-mac-project-planning.md) completes Mac project visibility, planning, assignment and progress using existing Android data. The Mac reinstall also completes plan 16 sync-efficiency delivery. No backend/schema change or new Android build is part of this slice.
+- [15-3](plans/15-project-goals-and-multiday-planning.md#15-3-mac-project-planning) completes Mac project visibility, planning, assignment and progress using existing Android data. The Mac reinstall also completes plan 16 sync-efficiency delivery. No backend/schema change or new Android build is part of this slice.
 
 ## Minimal project planning expansion
 
-- [15-1](plans/15-1-android-project-planning.md) delivers the user-requested APK slice: attribute existing daily work to projects and review AI plans across dates using the existing goal/task data model. Desktop project-editor parity remains in parent plan 15.
+- [15-1](plans/15-project-goals-and-multiday-planning.md#15-1-android-project-planning) delivers the user-requested APK slice: attribute existing daily work to projects and review AI plans across dates using the existing goal/task data model. Desktop project-editor parity remains in parent plan 15.
 
 ## Production goal-workflow delivery
 
-- [13-1](plans/13-1-production-deployment.md) is complete: compatible backend deployed, Mac rebuilt/installed, and original-key Android +9 delivered. The old-service/signing-key blockers from the preview environment are resolved. Physical-phone/live-user acceptance remains separate.
+- [13-1](plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment) is complete: compatible backend deployed, Mac rebuilt/installed, and original-key Android +9 delivered. The old-service/signing-key blockers from the preview environment are resolved. Physical-phone/live-user acceptance remains separate.
 
 ## Goal planning and phone task movement
 
@@ -26,7 +26,7 @@
 
 ## User workflow improvement direction
 
-- [Plan 10](plans/10-user-workflow-improvements.md) records the 2026-10-30 functional feedback and reviewed design constraints. Prioritize awareness/retrieval, easier planning setup, optional recurrence and progress review. Preserve existing sequencing/subtask editing; goal linking is now active in plan 13, while completion redesign remains deferred. Desktop source implementation and UI/UX review are complete in [10-1](plans/10-1-desktop-workflow.md). Matching Android UI, second review, Mac installation and signed APK +7 delivery are complete in [10-2](plans/10-2-review-install-and-android.md). Schedule definitions remain local; optional shared schedules and physical-device/user studies are follow-on work.
+- [Plan 10](plans/10-user-workflow-improvements.md) records the 2026-10-30 functional feedback and reviewed design constraints. Prioritize awareness/retrieval, easier planning setup, optional recurrence and progress review. Preserve existing sequencing/subtask editing; goal linking is now active in plan 13, while completion redesign remains deferred. Desktop source implementation and UI/UX review are complete in [10-1](plans/10-user-workflow-improvements.md#10-1-desktop-workflow). Matching Android UI, second review, Mac installation and signed APK +7 delivery are complete in [10-2](plans/10-user-workflow-improvements.md#10-2-review-install-and-android). Schedule definitions remain local; optional shared schedules and physical-device/user studies are follow-on work.
 
 ## Authorized cloud deployment
 
@@ -68,18 +68,18 @@
 - [x] Create follow-up numbered plans for the first implementation slice after the design is approved.
 - [x] Land [1-1-star-focus-mission-control-shell](plans/1-1-star-focus-mission-control-shell.md).
 - [x] Validate that Star Focus v1 can stay local-only and sidebar-only before opening deeper persistence or overlay tracks.
-- [x] Land [1-2-star-focus-session-controls-and-animation](plans/1-2-star-focus-session-controls-and-animation.md).
+- [x] Land [1-2-star-focus-session-controls-and-animation](plans/1-1-star-focus-mission-control-shell.md#1-2-star-focus-session-controls-and-animation).
 - [x] Decide whether the next plan should target deeper persistence or a larger tracking-station surface.
-- [x] Land [1-3-star-focus-persistence-hardening](plans/1-3-star-focus-persistence-hardening.md).
-- [x] Land [1-4-star-focus-overlay-reassessment](plans/1-4-star-focus-overlay-reassessment.md).
-- [x] Land [1-5-star-focus-tracking-station-overlay-shell](plans/1-5-star-focus-tracking-station-overlay-shell.md).
-- [x] Land [1-6-star-focus-compact-layout-and-overlay-polish](plans/1-6-star-focus-compact-layout-and-overlay-polish.md).
-- [x] Land [1-7-star-focus-archive-retention-and-browsing](plans/1-7-star-focus-archive-retention-and-browsing.md).
-- [x] Land [1-8-star-focus-markdown-sync-reassessment](plans/1-8-star-focus-markdown-sync-reassessment.md).
-- [x] Land [1-9-star-focus-archive-retention-settings](plans/1-9-star-focus-archive-retention-settings.md).
-- [x] Land [1-10-star-focus-copy-density-polish](plans/1-10-star-focus-copy-density-polish.md).
-- [x] Land [1-11-star-focus-guided-copy-minimization](plans/1-11-star-focus-guided-copy-minimization.md).
-- [x] Land [1-12-star-focus-hierarchy-trim](plans/1-12-star-focus-hierarchy-trim.md).
+- [x] Land [1-3-star-focus-persistence-hardening](plans/1-1-star-focus-mission-control-shell.md#1-3-star-focus-persistence-hardening).
+- [x] Land [1-4-star-focus-overlay-reassessment](plans/1-1-star-focus-mission-control-shell.md#1-4-star-focus-overlay-reassessment).
+- [x] Land [1-5-star-focus-tracking-station-overlay-shell](plans/1-1-star-focus-mission-control-shell.md#1-5-star-focus-tracking-station-overlay-shell).
+- [x] Land [1-6-star-focus-compact-layout-and-overlay-polish](plans/1-1-star-focus-mission-control-shell.md#1-6-star-focus-compact-layout-and-overlay-polish).
+- [x] Land [1-7-star-focus-archive-retention-and-browsing](plans/1-1-star-focus-mission-control-shell.md#1-7-star-focus-archive-retention-and-browsing).
+- [x] Land [1-8-star-focus-markdown-sync-reassessment](plans/1-1-star-focus-mission-control-shell.md#1-8-star-focus-markdown-sync-reassessment).
+- [x] Land [1-9-star-focus-archive-retention-settings](plans/1-1-star-focus-mission-control-shell.md#1-9-star-focus-archive-retention-settings).
+- [x] Land [1-10-star-focus-copy-density-polish](plans/1-1-star-focus-mission-control-shell.md#1-10-star-focus-copy-density-polish).
+- [x] Land [1-11-star-focus-guided-copy-minimization](plans/1-1-star-focus-mission-control-shell.md#1-11-star-focus-guided-copy-minimization).
+- [x] Land [1-12-star-focus-hierarchy-trim](plans/1-1-star-focus-mission-control-shell.md#1-12-star-focus-hierarchy-trim).
 - [x] Land [4-ready-shell-and-ux-path-pass](plans/4-ready-shell-and-ux-path-pass.md).
 
 ## Open Questions

@@ -1,3 +1,15 @@
+# Bugs And Failed Approaches
+
+## 2026-11-10 — Phone-only build staging omits shared test fixture
+
+A temporary phone-only copy cannot run sync_merge_test.dart without the repository's sibling tests/fixtures/sync-merge.json. The started suite reported122 passed, one skip and that fixture-load error; no rerun per user's minimal-test request. Release compilation and original-key artifact verification remain independent and passed.
+
+
+## 2026-11-10 — Cleanup verification
+- Android workflow filters still watched mobile/** after canonical source moved to phone/, so actual phone edits could miss CI. Filters, working directory and upload paths now use phone/.
+- Team-leader external CLI audits could not connect from the sandbox; escalation was rejected for repository transmission without explicit payload/destination authorization. Local inventory and verification continued.
+- Local checks require `RUSTUP_HOME=/private/tmp/sticky-rustup` for the installed Rust toolchain and writable `XDG_CONFIG_HOME` for Flutter. Flutter tests need localhost socket permission; the restricted sandbox rejects binding 127.0.0.1 before tests load.
+
 ## 2026-11-10 — Capability comma entry
 - Plugin machine capabilities parsed split/trim/filter during every input event, immediately dropping the comma and preventing a second item. Keep a raw capabilitiesText draft; normalize only in the save payload, excluding the draft field. Failed saves retain raw input.
 
@@ -10,7 +22,6 @@
 - Limitation: standalone React browser local-note APIs still require Tauri. Shared sign-in/transport support does not constitute a complete independent browser client.
 - Build environment: the host Diane venv has no pip; build product wheels with uv build. A local Mac app build initially requested a public updater signature; staging uses createUpdaterArtifacts=false, keeping updater release credentials out of the build.
 
-# Bugs And Failed Approaches
 
 ## 2026-11-10: Hosted plugin source and execution-state gaps
 
@@ -47,7 +58,7 @@
 - Mac's periodic/focus/online wrapper rejected any focused input, contradicting the inner nonempty-draft guard. An empty capture could suppress remote checks indefinitely. Use the draft guard consistently and handle visibility return.
 - Mac blocked all sync during active Focus because incoming focus-history application rejects an active timer. Defer only incoming focus records and resume after Focus; keep tasks/goals syncing independently.
 - Both clients waited up to 60 seconds for remote changes and automatic failure retries. Poll every 15 seconds in the foreground; retain draft/save/conflict protections.
-- Phone test execution is currently blocked by tooling: `/opt/homebrew/bin/flutter` resolves to the SDK with Dart 3.11.5, below the notebook's Dart 3.13 minimum. `mobile/.dart_tool/package_config.json` and `android/local.properties` reference missing `/private/tmp/sticky-flutter-3.47.8`. Attempts to retrieve the pinned official archive/manifest returned HTTP 404. Restore a compatible SDK before claiming Android test/build acceptance; do not lower project requirements to bypass this.
+- Phone test execution is currently blocked by tooling: `/opt/homebrew/bin/flutter` resolves to the SDK with Dart 3.11.5, below the notebook's Dart 3.13 minimum. `phone/.dart_tool/package_config.json` and `android/local.properties` reference missing `/private/tmp/sticky-flutter-3.47.8`. Attempts to retrieve the pinned official archive/manifest returned HTTP 404. Restore a compatible SDK before claiming Android test/build acceptance; do not lower project requirements to bypass this.
   - Resolved for this delivery: restore official Flutter Git tag `3.47.8` into `/private/tmp/sticky-flutter-3.47.8`, then bootstrap its engine/Dart components with `bin/flutter --version`. It supplies Dart 3.13.7; use its explicit binary instead of the older PATH SDK. All 102 phone tests and analysis pass without changing requirements or the lockfile.
 
 ## 2026-11-02: Project editing friction
@@ -292,3 +303,5 @@
 - 2026-10-30: Sync retries repeatedly failed with 422 because old Markdown contained blank checklist titles. Local read-only validation reproduced this without exposing task text; backend and both clients now preserve valid blank string titles. No notes are dropped to satisfy validation.
 - 2026-10-30: Mac sync awaited animation frames around local writes, which could remain suspended in a hidden WebKit window. A bounded render yield releases the UI wait while preserving serialized writes. Added measured progress and failure stage/date context.
 - 2026-10-30: Date-key-only conflict choices could apply a newer version than the one reviewed. Both clients now require the reviewed fingerprint/revision to match, save both copies on detection, and reject stale decisions.
+
+- 2026-11-10: Android sign-in reported MissingPluginException. Browser launch now uses the app-owned sticky_todo/links channel and native HTTPS ACTION_VIEW handler instead of the external launcher plugin.

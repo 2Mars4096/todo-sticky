@@ -57,3 +57,5 @@
 - Reinstalled `/Applications/Sticky Todo.app`, ARM64/ad-hoc signature verified; native process relaunched. Protected backup under `~/Library/Application Support/Todo Reinstall Backups/20261110-workspace-f83237c` retains original app/profile/WebKit/task files. All 56 task files and profile bytes unchanged through installation.
 - Android: `release/todo-sticky-current-service-2.1.16-21.apk`, package `io.github.twomars4096.sticky_todo`, split versionCode2021, original signer verified. SHA256 `b8e0888a5631d344285c9057df6b1bb6ef4a842f022768cf4a92694af350d914`.
 - Shared cutover disabled in both builds; original release APK and shared candidate retained. No APK installed, no iOS work. Real paired agent execution remains pending; UI verification used mock requests and did not call a model.
+
+- Shared-account Android release +22 / versionCode2022 was rebuilt from the current shared-service source with explicit `DIANE_SHARED_CUTOVER=true`; the original production signer/package are retained. The existing current-service +21 APK remains standalone. No iOS build.

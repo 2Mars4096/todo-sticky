@@ -19,7 +19,7 @@ Todo's [`src-tauri/src/diane.rs`](../../src-tauri/src/diane.rs) sends its projec
 
 The current simplified desktop task row in [`src/components/TaskItem.tsx`](../../src/components/TaskItem.tsx) does not render `DianeAction`; the [desktop README](../../README.md#run-in-diane-companion-update-required) explicitly records this UI omission while retaining integration settings and saved links.
 
-Dear Diane's [`src/diane/server/routers/chat_v2.py`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/src/diane/server/routers/chat_v2.py) and its [`mobile/lib/main.dart`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/mobile/lib/main.dart) demonstrate remotely usable generic agent-run endpoints. Those endpoints require their own project/session/execution inputs and do not expose the companion's published defaults or dispatch receipts. Replacing the companion path with a generic run would change its behavior and requires a separately specified durable client workflow.
+Dear Diane's [`src/diane/server/routers/chat_v2.py`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/src/diane/server/routers/chat_v2.py) and its [`phone/lib/main.dart`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/phone/lib/main.dart) demonstrate remotely usable generic agent-run endpoints. Those endpoints require their own project/session/execution inputs and do not expose the companion's published defaults or dispatch receipts. Replacing the companion path with a generic run would change its behavior and requires a separately specified durable client workflow.
 
 ## Decision and remaining work
 

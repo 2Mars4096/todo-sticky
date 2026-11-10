@@ -43,3 +43,14 @@
 - [x] Plugin0.1.5 CSS-only footer alignment: equal14px markers plus6px gap, direct summaries only; narrow full-host-style label positions all x72px. Native Enter/Space disclosure behavior and save/retry checks pass.
 
 - [x] Plugin0.1.6 capability entry fix: character-by-character browser typing `gpu, batch` stays intact through failure/retry, saves `["gpu","batch"]`, and omits the local draft field from persisted schema. Strict host typing and narrow footer checks pass.
+
+## 2026-11-10 — Shared-service Android rebuild
+
+- Delivered **2.1.16+24 (Android versionCode 2024)** to `todo-sticky-latest.apk` in this repository root; replaced the prior root APK only.
+- Original signing certificate verified against the prior release; package/version and copied SHA-256 checked. SHA-256: `d2f545603bcf3312ab309ce3f833307ff40ffb810487254cc866b97391a0e26a`.
+- Built with Flutter3.47.8, cached dependencies, ARM64 release and shared Diane origin. Signing material stays outside Git.
+- Shared Google popup fix is live in Diane API `diane-api-00019-vil`; public Google account-entry verified. Phone account completion remains user acceptance.
+
+Build command (temporary source copy): `flutter build apk --release --no-pub --target-platform android-arm64 --split-per-abi --dart-define=SYNC_SERVER_URL=https://dear-diane-202610-api.web.app --dart-define=DIANE_SHARED_CUTOVER=true`. `flutter pub get --offline` succeeded. `apksigner verify --print-certs` and `aapt dump badging` verified original signer/package/version; source hashes matched repository at delivery.
+
+The already-started test attempt passed122 with one skip but could not load sync_merge_test.dart because its sibling `tests/fixtures/sync-merge.json` was absent from the temporary phone-only copy. No product failure is inferred and no full-suite pass is claimed. Per the user's minimal-check instruction it was not rerun; release build and artifact checks are the delivery gate.

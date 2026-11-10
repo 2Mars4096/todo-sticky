@@ -2,6 +2,24 @@
 
 This directory owns the embedded Todo interface and its compatibility backend. Diane consumes a versioned package and supplies account, record, project and execution services through `@diane/plugin-sdk/*`. The standalone React 18/Tauri app and phone client keep their existing build and data paths; the plugin has its own React 19 development environment.
 
+0.1.4: Footer controls are direct peers (Import & backup, Scheduling machines, AI settings). Machine saves require changed drafts. Active Todo quietly requests scoped preparation after saved task changes and every60s; the host owns preparation/results and explicit Send execution.
+
+## Module contract
+
+Host import: `import TodoPort from '@diane-app/todo-plugin'`.
+
+The default component takes the existing plugin `active` and optional `context` props. It consumes `PluginInputContext` for explicit discussion drafts and `PluginHostContext.selection` for exact task navigation. `TaskExecution` presents canonical Diane dispatch/results through the existing host APIs. There is no independent agent loop or account database.
+
+Frontend source is copied/adapted from Todo Sticky `909afeb94e0d8fdeccf04792fabb184482a1f60f`. `src/SOURCE.json` records pre-adaptation hashes; `src/LICENSE.todo-sticky` retains the original license. Focus, Star Map and focus-progress totals are deliberately excluded.
+
+`api.ts` adapts original Tauri commands to `POST /api/plugins/todo/compat/{command}`. `createTodoApi(scope)` captures the account; old asynchronous operations reject after account changes. Day saves use a whole-day revision fingerprint and durable request receipt. Original task objects remain the frontend contract; canonical flat task records remain server authority.
+
+Goal drafts and project partial-write journals are separately scoped local recovery records. Actual tasks/goals/routines and planning settings persist through Diane's plugin repository. Full backup includes canonical records, planning settings, and retained unfinished project operations; restoration never executes agent work.
+
+Agent calls use the injected provider boundary, which the host must route through Universal Cell. Provider choices, accounts and app updates belong to Diane. `diane:plugin-settings` with `{section:'ai'}` asks the host to reveal those settings.
+
+Keep imported styles scoped under `.diane-todo-port`. Narrow layouts use `@container todo-port`; do not restore global source reset rules or viewport-sized app shells.
+
 ## Task execution
 
 The selected task uses one compact project/action row. **Run** explicitly starts work and keeps Todo open. **Open** returns to the saved Diane session. **Review** presents the versioned result and the existing accept/request-changes actions. Session links remain available for completed tasks and previous attempts returned by the host.

@@ -12,7 +12,7 @@ Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16 with
 
 Local Android release build: `release/todo-sticky.apk` (2.1.16+19, ARM64, 19.88 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
 
-Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](mobile/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
+Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](phone/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
 Download the latest installer from [Releases](https://github.com/2Mars4096/todo-sticky/releases):
 
@@ -280,9 +280,9 @@ The current `main` source includes **Settings → Account**, Google sign-in and 
 
 ## Android app (Flutter)
 
-The native phone app lives in [`mobile/`](mobile/README.md). Daily tasks have visible drag grips for reordering and icon-only actions with a horizontal dots menu. It carries task capture, nested steps, outcomes/deadlines, goals/routines, AI planning, music suggestions and Focus into a phone layout, with offline persistence and secure provider keys. See the mobile README for build instructions, feature parity, account integration and platform-specific boundaries. The Flutter Android workflow produces an installable review APK; production distribution requires your release signing key.
+The native phone app lives in [`phone/`](phone/README.md). Daily tasks have visible drag grips for reordering and icon-only actions with a horizontal dots menu. It carries task capture, nested steps, outcomes/deadlines, goals/routines, AI planning, music suggestions and Focus into a phone layout, with offline persistence and secure provider keys. See the mobile README for build instructions, feature parity, account integration and platform-specific boundaries. The Flutter Android workflow produces an installable review APK; production distribution requires your release signing key.
 
-Live Diane companion handoff remains a known phone gap: Dear Diane's `/api/sticky-todo` protocol explicitly enforces local-only access independently of its remote bearer authentication. Android retains Copy agent prompt. The [protocol review](mobile/README.md#dear-diane-companion-protocol-review) identifies the backend work required for remote support.
+Live Diane companion handoff remains a known phone gap: Dear Diane's `/api/sticky-todo` protocol explicitly enforces local-only access independently of its remote bearer authentication. Android retains Copy agent prompt. The [protocol review](phone/README.md#dear-diane-companion-protocol-review) identifies the backend work required for remote support.
 
 
 ### Project tasks and planning across days
@@ -313,3 +313,6 @@ Open a long-term title in Goals. Use the pencil to edit its description or a ste
 The staged shared build retains the Todo interface and local notes, and signs in through the shared Diane account for synchronized tasks/goals and AI quota. Existing direct AI provider choices remain available. Meeting task links open the exact Todo task after sign-in and sync; they never run it automatically. Release-time flags `STICKY_SHARED_CUTOVER=1` (desktop) and `DIANE_SHARED_CUTOVER=true` (Flutter) opt into the verified shared service; ordinary source defaults remain unchanged. Deployment and account migration must pass the release gate before distributing these candidates. See [shared sync plan](docs/plans/17-1-canonical-sync.md).
 
 Task handoff: select a task, choose its Diane icon, confirm the suggested workspace or use **Choose folder…**, then **Run in Diane**. Uncertain matches stay blank; choosing a folder alone never starts work.
+
+
+Repository maintenance: run npm commands from the root; canonical sources are web/src, desktop/src-tauri, phone and plugin. See the [folder guide](docs/folder-guide.md) for retained compatibility paths, generated artifacts and consolidated implementation history. Build the embedded package with `npm --prefix plugin run build`.
