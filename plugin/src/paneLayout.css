@@ -1,0 +1,49 @@
+/* Product-owned pane geometry shared by every page and disclosure.
+   The host supplies palette tokens and the pane-toolbar height. */
+.diane-todo-port { --plugin-inset: 12px; --plugin-control: 32px; }
+.diane-todo-port :is(input, textarea, select) { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.diane-todo-port :is(button, input, textarea, select) { border-radius: 5px; }
+.diane-todo-port details > summary {
+  display: flex; align-items: center; gap: 6px; min-height: 32px; box-sizing: border-box;
+  padding-block: 6px; list-style: none; cursor: pointer; font-size: 12px; color: var(--wb-muted);
+}
+.diane-todo-port details > summary::-webkit-details-marker { display: none; }
+.diane-todo-port details > summary::marker { content: ''; }
+.diane-todo-port details > summary::before {
+  content: ''; display: block; flex: 0 0 14px; width: 14px; height: 14px;
+  background: currentColor; clip-path: polygon(5px 3px, 10px 7px, 5px 11px);
+}
+.diane-todo-port details[open] > summary::before { clip-path: polygon(3px 5px, 11px 5px, 7px 10px); }
+.diane-todo-port details > summary:focus-visible { outline: 2px solid var(--wb-accent); outline-offset: -2px; }
+
+/* Todo: align task, archive, project and settings pages to the same gutter. */
+.diane-todo-port :is(.sticky-header, .archive-heading) { min-height: var(--wb-column-toolbar, 40px); padding: 6px var(--plugin-inset); box-sizing: border-box; }
+.diane-todo-port .archive-heading { gap: 8px; }
+.diane-todo-port .archive-heading h2 { font-size: 14px; }
+.diane-todo-port :is(.task-list, .archive-controls, .archive-scroll, .todo-port-data, .project-footer) { padding-inline: var(--plugin-inset); }
+.diane-todo-port .task-entry-selected { background: color-mix(in srgb, var(--wb-accent) 5%, var(--wb-paper)); }
+.diane-todo-port .task-primary-actions { align-items: center; gap: 6px; }
+.diane-todo-port .task-entry .finish-field { gap: 8px; grid-template-columns: minmax(64px, max-content) minmax(0, 1fr); }
+.diane-todo-port .project-window { gap: 10px 12px; }
+.diane-todo-port .project-window :is(input, select), .diane-todo-port .project-proposal-fields input { min-height: var(--plugin-control); }
+.diane-todo-port .project-toolbar { gap: 6px; margin-block: 10px; }
+.diane-todo-port .project-steps > li { padding-block: 10px; }
+.diane-todo-port .project-scheduled-row { gap: 6px; margin-top: 5px; }
+.diane-todo-port .todo-port-settings .machine-card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding-block: 10px; }
+.diane-todo-port .todo-port-settings .machine-card + .machine-card { border-top: 1px solid var(--wb-line); }
+.diane-todo-port .settings-machine-heading { gap: 8px; margin-bottom: 4px; }
+.diane-todo-port .settings-machine-heading strong { font-size: 12px; }
+.diane-todo-port .todo-port-settings .machine-card > label { padding-top: 5px; color: var(--wb-muted); font-size: 11px; }
+.diane-todo-port .todo-port-settings .machine-card > :is(input, select) { min-height: var(--plugin-control); padding: 6px 8px; }
+.diane-todo-port .todo-port-data details[open] { padding-bottom: 8px; }
+.diane-todo-port .todo-port-backup > :not(summary) { margin-top: 8px; }
+
+@container todo-port (min-width: 480px) {
+  .diane-todo-port .todo-port-settings .machine-card { grid-template-columns: minmax(100px, 32%) minmax(0, 1fr); align-items: center; gap: 8px 12px; }
+  .diane-todo-port .settings-machine-heading { grid-column: 1 / -1; }
+  .diane-todo-port .todo-port-settings .machine-card > label { padding-top: 0; }
+}
+@media (pointer: coarse) {
+  .diane-todo-port { --plugin-control: 40px; }
+  .diane-todo-port details > summary { min-height: 40px; }
+}

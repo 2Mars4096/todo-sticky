@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [18-hosted-task-execution](plans/18-hosted-task-execution.md) — product-owned Run/Open/Review, compact project binding and bounded saved-session retrieval; 34 tests, strict types/build/package/host-contract checks pass. Standalone apps unchanged; host integration/live acceptance tracked separately.
+
 - [x] Plugin0.1.6 editable capability lists and aligned direct machine controls and quiet preparation refresh — [17-1](plans/17-1-canonical-sync.md).
 
 - [x] Conservative workspace selection, quiet plugin details and local reinstall — [6-diane-handoff](plans/6-diane-handoff.md).

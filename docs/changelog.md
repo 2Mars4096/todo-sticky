@@ -1,3 +1,6 @@
+## 2026-11-10 — GitHub integration
+- [refactor] Merge reviewed plugin workflows with existing independent-app history; preserve canonical app folders and adapter regressions. Product gates, actual host SDK checks and26 backend checks pass.
+
 ## 2026-11-10
 - [fix] Plugin0.1.6 preserves machine capability text while typing and parses comma-separated values only for saving. Failed saves retain the draft; persisted records contain only the clean capabilities array.
 - [test] Actual browser typing of gpu, batch preserves the comma, survives a failed save and saves [gpu,batch]; strict host React19/SDK typing and footer alignment/keyboard checks pass.
@@ -29,6 +32,14 @@
 - [perf] Release canonical sync adapter 0.1.4: owner/schema-scoped generation checks avoid full canonical scans on quiet polling; empty-container changes advance the clock. 17 backend tests pass.
 
 # Changelog
+
+## 2026-11-10 — Product-owned hosted task execution
+
+- [source] Recover the exact pinned Todo UI 0.1.6 and compatibility backend 0.1.4 into additive `plugin/`, with checksums/provenance and an independent React 19 build. The missing producer commits remain documented; standalone React 18/Tauri/Flutter sources and backend behavior are unchanged. UI candidate: 0.1.7 on `feat/plugin-workflow-review`.
+- [workflow] Replace the selected-task handoff stack with a compact project/action row: Run stays in Todo, Open uses the saved session/project, and Review exposes exact-version Accept & complete / Request changes. Keep automatic preparation, explicit local project correction and idempotent retries; retrieve bounded previous-attempt sessions from existing host history.
+- [reliability] Preserve review drafts across task-record refreshes, wait for canonical task saves, keep save failures retryable, fence account/task changes, and coalesce active-run status requests. Stale displayed results require Review latest. Stop run stops execution without implicitly stopping or accepting the Todo task.
+- [validation] Clean independent install, strict types, 8 suites/34 tests, production build, actual-dist render without global React/network, package/import/peer gates and real Diane SDK export checking pass. The backend wheel rebuild retains exact original module bytes. No live execution, installed-app or production-browser acceptance is claimed.
+- [scope] Shared project binding, complete historical workflow retrieval and whole-run Git isolation/diff/checks/merge remain host work. No simulated Merge control or new approval flow is added. See [plan 18](plans/18-hosted-task-execution.md) for verification and acceptance limits.
 
 ## 2026-11-10
 - [fix] Backend0.1.3 preserves canonical goal relationships on standalone reassignment and refuses invalid/cross-date task graphs instead of returning a destructive empty snapshot.

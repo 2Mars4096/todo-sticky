@@ -28,6 +28,8 @@ import {PlanningSettings,type PlanningPreferences} from './PlanningSettings';
 import {storageForAccount} from './storage';
 import './styles/sticky.css';
 import './port.css';
+import './paneLayout.css';
+import './styles/task-execution.css';
 
 type Props=Pick<SidePanelProps,'active'>&Partial<Pick<SidePanelProps,'context'>>;
 export default function TodoPort(props:Props){const scope=usePluginScope();return scope?<TodoBody key={scope} {...props} scope={scope}/>:<p role="status">Connecting Todo…</p>;}

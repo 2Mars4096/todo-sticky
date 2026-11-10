@@ -1,5 +1,9 @@
 # Development Plan
 
+## Product-owned hosted task workflow
+
+- [17-hosted-task-execution](plans/17-hosted-task-execution.md) recovers the shipped plugin source into this repository and adds compact Run/Open/Review controls on `feat/plugin-workflow-review`. The usable slice preserves existing task editing, retrieves sessions through current host APIs, and keeps ordinary completion separate from acceptance. Shared binding, complete execution history and whole-run Git isolation/review/merge need an explicit host contract; they are not represented by inactive or simulated controls. Standalone Mac/phone releases are unchanged.
+
 ## Automatic sync and 2.1.16 delivered
 
 - [16-2](plans/16-2-smart-merge-and-stable-review.md) delivers acknowledged-ancestor merges for independent edits and individual review for genuine conflicts, with stable background refresh. Mac 2.1.16 is installed, original-key Android +16 is delivered, and [2.1.16](plans/4-52-publish-2-1-16.md) is committed/pushed and published as latest with verified signed updates. Existing local-first storage, backend protocol and explicit conflict safeguards remain.

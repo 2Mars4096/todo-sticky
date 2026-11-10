@@ -1,7 +1,7 @@
 {
   "repository": "todo-sticky",
   "commit": "909afeb94e0d8fdeccf04792fabb184482a1f60f",
-  "source": "/Volumes/data/Dropbox/Projects/todo-sticky",
+  "source": "todo-sticky",
   "files": {
     "types.ts": "9de88526eaf6b0dd815b58e6082613f35c008b7e80d31421f047f52538479e20",
     "taskCarryForward.ts": "de8bd9296bc33318d259cf504591ea0fc2ba2169c3f715863d41911e636a19f7",
@@ -45,5 +45,6 @@
       "source_sha256": "43557ee205a29f9a014cbdf2cf61ce52026cf9ccb3359ca797ad2495cb1e34b9",
       "fragment": "Scheduling machines controls"
     }
-  }
+  },
+  "recovery_note": "Historical source and hashes are retained; an original machine-local source path was omitted during repository recovery."
 }

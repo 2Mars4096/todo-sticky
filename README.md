@@ -248,7 +248,15 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 | **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
 | **Double-click** | Edit task text |
 
-## Run in Diane (companion update required)
+## Todo inside Diane
+
+The product-owned [`plugin/`](plugin/README.md) package provides the embedded Todo pane in Dear Diane. Its selected task shows a compact project selector and **Run**. Automatic preparation can bind a known project; a manual correction takes precedence. Run starts work without leaving Todo. **Open** returns to the saved Diane session, and **Review** opens its result with **Accept & complete** and **Request changes**.
+
+The host supplies the current session and up to five prior attempts on that workflow. **Previous runs** reopens those returned sessions; it is not a complete execution archive. Manual project choices are saved on this device. Ordinary Todo completion remains separate from result acceptance, and accepting a result does not merge code. Branch/worktree isolation, Git diff/checks/merge and shared project binding still require host support.
+
+The plugin has a separate Node 22/React 19 build: `npm --prefix plugin ci` followed by `npm --prefix plugin run check`. The source recovery record and package/host integration instructions are in [plugin/README.md](plugin/README.md). These commands do not build or install the standalone apps.
+
+## Standalone Run in Diane (companion update required)
 
 Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and focus without it. If Diane is disconnected or unavailable, only its dispatch/status controls are affected. Independently configured AI providers continue to use their own configuration.
 

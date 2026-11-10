@@ -1,0 +1,361 @@
+{
+  "schema_version": 1,
+  "recovered_on": "2026-11-10",
+  "source_repository": "https://github.com/2Mars4096/todo-sticky",
+  "published_base_commit": "909afeb94e0d8fdeccf04792fabb184482a1f60f",
+  "status": "Recovered from verified shipped artifacts; this is not the unavailable producer Git history.",
+  "recovery_source": "https://github.com/2Mars4096/dear-diane/tree/914c98c5709a3510fa5e3adf6af0c3ed9e82d304/vendor/plugins",
+  "artifacts": [
+    {
+      "kind": "ui",
+      "filename": "diane-app-todo-plugin-0.1.6.tgz",
+      "sha256": "203f4318bbc17070d0421acb4db25c6ec772e799b9bcc5404bbe9289cb2069e8",
+      "bytes": 157825,
+      "recorded_producer": {
+        "repository": "https://github.com/2Mars4096/todo-sticky",
+        "commit": "96e6fc040dda9e8bcba52a6dbe733fa74d16d47a",
+        "path": "plugin"
+      },
+      "members": [
+        {
+          "path": "src/styles/day-planning.css",
+          "sha256": "265ced1dd01d465197f941f376a46988057bb2a2f0e19e90cedceb19b0c878d6",
+          "bytes": 5371
+        },
+        {
+          "path": "dist/index.css",
+          "sha256": "289cbc597c9184cfbae3197e71bfd18afca32708b377d899c4f634cfbf4dd5da",
+          "bytes": 108680
+        },
+        {
+          "path": "src/port.css",
+          "sha256": "a8c38f175a913177a123c7577dc39c36506af49439a2108f5309e8cb995da22a",
+          "bytes": 9784
+        },
+        {
+          "path": "src/styles/project-planning.css",
+          "sha256": "bedf65bdfa99f099f3fad57532283729f5ec1b1ec07ba58f2d73309c949f7b87",
+          "bytes": 5029
+        },
+        {
+          "path": "src/styles/settings-navigation.css",
+          "sha256": "458f74fc57b27fe276bb8a0b72c6ed332a07b0b68d802cfe9eaf78aab93e87d9",
+          "bytes": 9417
+        },
+        {
+          "path": "src/styles/sticky.css",
+          "sha256": "706ebd3aa96b1c4091547ac51d9328638c82c9c9d767eac7f9a12abf31a23a84",
+          "bytes": 61541
+        },
+        {
+          "path": "src/styles/task-interactions.css",
+          "sha256": "48804037164e12f761f8131c7e5d2106eb2dde2504b199f31e4fd44ef26928c9",
+          "bytes": 11559
+        },
+        {
+          "path": "src/styles/workflow.css",
+          "sha256": "cd8f7c412d111c44fb758da1a4d04c42b989a72995030288ba15a32aa567c846",
+          "bytes": 4447
+        },
+        {
+          "path": "dist/index.js",
+          "sha256": "700c5b5adef2b3251930538d980b62145f3e8e83b195d52989a9de4f7ab42b94",
+          "bytes": 232646
+        },
+        {
+          "path": "manifest.json",
+          "sha256": "bb78df477bda2c5641fc9041231663fd41d863b42cd8395a8959df9969cd14fc",
+          "bytes": 262
+        },
+        {
+          "path": "package.json",
+          "sha256": "6bbfc59919bede8f6bf1505f73bbef37572943a2ebb25746c6e64e0b6e5db53d",
+          "bytes": 690
+        },
+        {
+          "path": "src/SOURCE.json",
+          "sha256": "c1fd690f144cfe2422461d068fba496eb2eda34f5055f8fe77aad5e20b9408a2",
+          "bytes": 3799
+        },
+        {
+          "path": "HOST-CONTRACT.md",
+          "sha256": "f3c361e9d5389cbfa8400004f471181fa71aae5f59f13fcdda16493026738284",
+          "bytes": 1085
+        },
+        {
+          "path": "README.md",
+          "sha256": "4be177ee72d2bf08778e5866e4f7df351c6afaa2dc0ce1682d86cc0195619658",
+          "bytes": 525
+        },
+        {
+          "path": "src/README.md",
+          "sha256": "e1ef53d16d6156ef0ee6b82a73f955922417ad5912475f23bc85f6241b0b7c23",
+          "bytes": 1768
+        },
+        {
+          "path": "build.mjs",
+          "sha256": "c6f18ba52f084a4c99fd940b03d5840bfa964d38f1400a464ab97a06f52ab157",
+          "bytes": 375
+        },
+        {
+          "path": "src/LICENSE.todo-sticky",
+          "sha256": "7d5d780a3025ba80a958781475bc83208f305531870d896987a6bd3cd0a58ef5",
+          "bytes": 1062
+        },
+        {
+          "path": "src/aiErrors.ts",
+          "sha256": "ab186b97a6a87f769c0b842b1c26bce0dbcd71046d7a3341d5d6bb8eb9d47714",
+          "bytes": 414
+        },
+        {
+          "path": "src/__tests__/api.test.ts",
+          "sha256": "4d3a9b9c1da422ad70237a0c0c558c3f222712c14b8eccc02a531552f73f7d12",
+          "bytes": 4323
+        },
+        {
+          "path": "src/api.ts",
+          "sha256": "56d295ff9c3de11e50d84a797b6c863054a1cf03a517ae5e9029c176c7596ee1",
+          "bytes": 7373
+        },
+        {
+          "path": "src/cloudSync.ts",
+          "sha256": "bb2fa6a562dca04dbeb3687c423e53caeba93e2cf209466b7b057449c7664983",
+          "bytes": 11306
+        },
+        {
+          "path": "src/__tests__/editorAuthority.test.ts",
+          "sha256": "6a8b4cee83b7c3196ad6991c14bbf315b404210e1b586209dab958174ce7ce03",
+          "bytes": 3296
+        },
+        {
+          "path": "src/__tests__/goals.test.ts",
+          "sha256": "cb9d916247432756e5f48c781489289fc737a7f4d8f92be2f277552b16822e08",
+          "bytes": 3682
+        },
+        {
+          "path": "src/index.ts",
+          "sha256": "88d9041536c61f5a4c6e41bf2b226d114fb5965b9f6ff21bac7eed3a66800afc",
+          "bytes": 165
+        },
+        {
+          "path": "src/__tests__/planningOwner.test.ts",
+          "sha256": "ccaed018b204433fde354409be12f706274bb831f562c6d16beffce7b01de50e",
+          "bytes": 1662
+        },
+        {
+          "path": "src/projectPlanning.ts",
+          "sha256": "1a2f2717130f89cccae8020ed301cae3ffaa6019b69a6c7689aeacf45bbd0e35",
+          "bytes": 9890
+        },
+        {
+          "path": "src/projectStorage.ts",
+          "sha256": "10222bc0209cc1194da13060c2c94c67f186fff3b7715e0d51c31216881bb233",
+          "bytes": 3190
+        },
+        {
+          "path": "src/__tests__/retainedBehavior.test.ts",
+          "sha256": "a006f3c04199625d8ad1bc387d2495b61f8fb5928e3d843459e793d9c68fcb55",
+          "bytes": 2879
+        },
+        {
+          "path": "src/routines.ts",
+          "sha256": "592027910d80f0e9c8d34a3d549fce191e80ffd876b6915baa8b922270aee80d",
+          "bytes": 2463
+        },
+        {
+          "path": "src/storage.ts",
+          "sha256": "116a179bd9ffc59f5f9a8cf5c5e01db749a46164d60e61fc1ee5552b3a185e63",
+          "bytes": 407
+        },
+        {
+          "path": "src/syncMerge.ts",
+          "sha256": "574c216810ed976c0418696542ad6409012765873c87748a4a6bbc5143e2453b",
+          "bytes": 9638
+        },
+        {
+          "path": "src/taskArchive.ts",
+          "sha256": "236fac5a91cb60ff18c6dbf09420327acff2106598539618682d8998fb3c0a42",
+          "bytes": 2244
+        },
+        {
+          "path": "src/taskArchiveReader.ts",
+          "sha256": "60f8cc6af3552a6afe1cff2029f63e70aad1a305350c6f2256b14b8720cf6e2d",
+          "bytes": 914
+        },
+        {
+          "path": "src/taskCarryForward.ts",
+          "sha256": "de8bd9296bc33318d259cf504591ea0fc2ba2169c3f715863d41911e636a19f7",
+          "bytes": 1225
+        },
+        {
+          "path": "src/taskHistory.ts",
+          "sha256": "d66be238986275f91b0904ac9df941843b095d98a8dec8518c1eeb0860a2501e",
+          "bytes": 6487
+        },
+        {
+          "path": "src/__tests__/TaskItem.test.ts",
+          "sha256": "0077b7b030a7da560fa4637c913b6fda2a857f821ff58c57c853b2653dfe3d5b",
+          "bytes": 3129
+        },
+        {
+          "path": "src/taskPlanning.ts",
+          "sha256": "03792387dcb5d4ef11795786e5cfebe58c5430adc766a0f9c6febc0e9f26a529",
+          "bytes": 5766
+        },
+        {
+          "path": "src/taskRollover.ts",
+          "sha256": "01b18d049f12eaba0263b3962735eb8f5391c217d5b274c4b069533d77f25ddf",
+          "bytes": 3243
+        },
+        {
+          "path": "src/taskTransfer.ts",
+          "sha256": "e0fb2c8b5c3cdb337e1d2bad71e6b6577c8a4155d3d3b1c1eb615c1daf726c0f",
+          "bytes": 1157
+        },
+        {
+          "path": "src/types.ts",
+          "sha256": "88f44360bee564e7bfafa97869a6989e92752711028d5b698efe50850b21d240",
+          "bytes": 2159
+        },
+        {
+          "path": "src/hooks/useCalendar.ts",
+          "sha256": "56ed5264ee328a534eda1604ef2097b027872f516069e094f0a2b4acde647819",
+          "bytes": 2577
+        },
+        {
+          "path": "src/hooks/useDialogFocus.ts",
+          "sha256": "820bd16336a743ab2b9cbcf30217d3596bf02967285e488ff060f2de652c1ac3",
+          "bytes": 4411
+        },
+        {
+          "path": "src/hooks/useGoals.ts",
+          "sha256": "ecc7b8ebdc7c1e2c8efb9d33ec70adf102a84a9176c09fa801136aebbc11a8f5",
+          "bytes": 7929
+        },
+        {
+          "path": "src/hooks/useTaskPreparation.ts",
+          "sha256": "db15ec19a6b8034c9704cefd5a2e29e06eedc6cb8742d13382bcf71c91b68399",
+          "bytes": 1218
+        },
+        {
+          "path": "src/hooks/useTasks.ts",
+          "sha256": "699836011fcb510ea563a6d6e9167e748449ac99f6574b76d7e379f8530601a9",
+          "bytes": 26736
+        },
+        {
+          "path": "src/components/AddTask.tsx",
+          "sha256": "8a950b8760ec041282944fae448907847b0c48a6847ead7bbf6d24a2532ecf83",
+          "bytes": 2436
+        },
+        {
+          "path": "src/components/AlbumRecommendations.tsx",
+          "sha256": "a877afb53c53edfd191584067e5a34d883cbb06cdd94d817abc4f434d9cedc0a",
+          "bytes": 2463
+        },
+        {
+          "path": "src/components/ArchivePage.tsx",
+          "sha256": "1f7a161cca519b3fce4e8e8131c21165845f214cc13331093fc2761fcc563461",
+          "bytes": 7471
+        },
+        {
+          "path": "src/BackupTools.tsx",
+          "sha256": "4cea7bf44f1f9c854632059b452c403c22574161537da7c181c5c0ea005f3c99",
+          "bytes": 6366
+        },
+        {
+          "path": "src/components/DateHeader.tsx",
+          "sha256": "2726646db8040018ffddc51e62b399a9a18bcdc66c2bbe05361d4c0905235d72",
+          "bytes": 2986
+        },
+        {
+          "path": "src/components/GoalsSidebar.tsx",
+          "sha256": "63fbcc5637d096df0461e320b88c1c99564f2477706932373cc7238bf2ee0054",
+          "bytes": 11535
+        },
+        {
+          "path": "src/components/MiniCalendar.tsx",
+          "sha256": "228864b1c23c97e1d71bed6d2b8624a59f6f193c77cc28df490f2c678dc5f561",
+          "bytes": 386
+        },
+        {
+          "path": "src/components/ParagraphInput.tsx",
+          "sha256": "aff82de756dc0fdef0447822f0776fc2707c44e7c68cf8082d4edb518bf50f84",
+          "bytes": 1203
+        },
+        {
+          "path": "src/PlanningSettings.tsx",
+          "sha256": "294494169d1a0d1c655227f06c71bbfbbc938d769cbc33a277cd4ad17c41faaf",
+          "bytes": 3808
+        },
+        {
+          "path": "src/components/ProjectPage.tsx",
+          "sha256": "936c1c405ccd936f1fa9eaffe13f214e0379a354077552e7ab684f1b21c515b3",
+          "bytes": 21893
+        },
+        {
+          "path": "src/components/ScheduleView.tsx",
+          "sha256": "758dd2df0fb02fb3f9560b8675a130d774d0bb4c397c410576005cfae88290b1",
+          "bytes": 11954
+        },
+        {
+          "path": "src/TaskDianeAction.tsx",
+          "sha256": "bce20c5153e4e6cc7227237b85cd7fc14b237a3e25a90722187c44eb70ed77a5",
+          "bytes": 1605
+        },
+        {
+          "path": "src/components/TaskFinish.tsx",
+          "sha256": "705be323cfe4937224c96be8fd73ff5eda109704d7fe35eb6471c4cd852c9052",
+          "bytes": 10258
+        },
+        {
+          "path": "src/components/TaskItem.tsx",
+          "sha256": "a709807e2722e05bc71bdb14f0166bfeaf83bad3204107f30383231048281898",
+          "bytes": 18524
+        },
+        {
+          "path": "src/components/TaskList.tsx",
+          "sha256": "085dce14295d7732fb6bdfd5a04c194796fc1a7161dbd8390f87437fb363c550",
+          "bytes": 15110
+        },
+        {
+          "path": "src/TodoPort.tsx",
+          "sha256": "a0996e95407919622c5dca86ea3cc237e59e1661b18c1239a1817af657fa62f1",
+          "bytes": 13141
+        },
+        {
+          "path": "src/TodoPortContext.tsx",
+          "sha256": "426f3056c12dc7d2e3b17cc52f66f75d952140fe80c9500327366ad21077afce",
+          "bytes": 305
+        }
+      ]
+    },
+    {
+      "kind": "backend",
+      "filename": "diane_todo_plugin-0.1.4-py3-none-any.whl",
+      "sha256": "164ea47f1a6499085e211d89604dd83a416cf0d1deab8e38de8373724a394994",
+      "bytes": 20717,
+      "recorded_producer": {
+        "repository": "https://github.com/2Mars4096/todo-sticky",
+        "commit": "7b486bfd8dfa56d1df20a0b0de04d6de1148a42c",
+        "path": "plugin/backend"
+      },
+      "members": [
+        {
+          "path": "backend/src/diane/plugins/todo_compat.py",
+          "sha256": "a1e62ef890814865cfc93f5b28a7243f63e5f6e5c4e9afe6e0c01579e1cc2ec8",
+          "bytes": 32636
+        },
+        {
+          "path": "backend/src/diane/plugins/todo_sync.py",
+          "sha256": "781a3abaf5db35b8bf4622238be8033d1e113c81d8dcb1afb8bae60b4c55a199",
+          "bytes": 29746
+        },
+        {
+          "path": "backend/src/diane/plugins/todo_sync_protocol.py",
+          "sha256": "6d9d5b6b90c959443072dc2c72e34ee1829aa0962d45af3d32a1db6d78ef46f2",
+          "bytes": 9275
+        }
+      ]
+    }
+  ]
+}
