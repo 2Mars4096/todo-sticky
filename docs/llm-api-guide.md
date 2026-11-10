@@ -41,6 +41,8 @@ Build the native binary as above, then configure a **local stdio** MCP client (r
 }
 ```
 
+On macOS, the installed app bundles the CLI at `/Applications/Sticky Todo.app/Contents/MacOS/sticky-todo-api`; use that entire path as the MCP `command` (the spaces are part of the path). With `args: ["mcp"]`, it discovers the saved notebook settings.
+
 The knowledge-base path is the root containing `content/to-do`, not that subfolder. Omit `--kb-path` to use the CLI's existing discovery order. Add `--read-only` after `mcp` to expose only reading. Launch the binary directly: `npm run` banners can corrupt MCP stdout. This server supports the initialize-based MCP **2025-11-25** protocol over newline-delimited JSON-RPC. It has no HTTP endpoint, credentials, network listener, or dependency on Diane. A remote meeting-summary service needs a local companion capable of spawning this process; it cannot connect directly over the internet.
 
 | Tool | Arguments |

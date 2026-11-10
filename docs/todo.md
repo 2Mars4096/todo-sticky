@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Push merged CLI/MCP main and reinstall the signed Mac bundle, preserving task data/settings; installed MCP smoke passes — [4-10-2](plans/4-10-agent-task-api.md#4-10-2-push-and-local-mac-delivery).
+
 - [x] Local app CLI/MCP task access merged into `main` — [4-10-1](plans/4-10-agent-task-api.md#4-10-1-local-application-mcp-access).
 
 - [x] Reinstall shared-backend Mac app and repair live cold-instance login exchange; commit in focused batches — [17-1](plans/17-1-canonical-sync.md). Fresh user sign-in acceptance remains pending.

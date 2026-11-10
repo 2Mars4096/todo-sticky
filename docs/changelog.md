@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-10 — Deliver CLI/MCP Mac build
+- [delivery] Push merged main to the user-confirmed GitHub origin; rebuild/reinstall and reopen Sticky Todo 2.1.16 with the bundled CLI/MCP executable. Preserve shared-backend settings.
+- [test] Signed bundle/hash checks and installed CLI/MCP subprocess smoke pass. All 56 task-store files and native config unchanged; app running and runtime backend verified.
+- [recovery] Keep prior app/profile/tasks backup; delivery receipt is `output/mcp-install/macos-verification.json`. Document the installed executable path for MCP clients.
+
+
 ## 2026-11-10 — Merge task MCP access
 - [integration] Merge the tested CLI/MCP feature into main, preserving newer desktop changes and both sets of tracking entries. Retire its feature branch/worktree; keep unrelated worktrees.
 - [test] Merged main passes all 45 native tests, CLI build and CLI/MCP subprocess smoke on disposable data.
