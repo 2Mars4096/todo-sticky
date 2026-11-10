@@ -5779,3 +5779,9 @@ select:focus-visible {
 .diane-details select { width:100%;min-width:0;min-height:32px;background:var(--bg);color:inherit; }
 .diane-workspace-path { overflow-wrap:anywhere;opacity:.75; }
 .diane-detail-close { align-self:flex-end;min-width:28px;min-height:28px; }
+
+.diane-details label { display: flex; flex-direction: column; gap: 4px; }
+.diane-details select, .diane-details textarea { width: 100%; box-sizing: border-box; font: inherit; color: inherit; background: transparent; border: 1px solid var(--text-muted); border-radius: 4px; padding: 5px; }
+.diane-details textarea { resize: vertical; }
+.diane-setup-context { white-space: pre-wrap; }
+.diane-detail-actions button:disabled { opacity: .45; cursor: not-allowed; }

@@ -18,7 +18,12 @@ if (failure === 'corrupt') localStorage.setItem('sticky-todo-diane-v1', '{broken
 ;(window as any).__TAURI_INTERNALS__ = { invoke: async (_: string, args: any) => {
  (window as any).calls.push(args)
  if (_ === 'plugin:dialog|open') return '/tmp/chosen-workspace'
+ if (args.action === 'connection') return {scope:'test-account'}
+ if (args.action === 'preparation-records') return {items:[{schema_version:1,record_type:'task',record_id:'new',revision:1,title:'Inspect this project',text:'Inspect this project',status:'todo',tags:[],relationships:[],attachments:[],extensions:{date:'2026-10-10'}}]}
+ if (args.action === 'prepare') { await new Promise(r=>setTimeout(r,new URLSearchParams(location.search).has('slow')?1000:100)); return {suggestion:{project_id:'project-a',context:'Inspect the project and verify the change.',reason:''}} }
+ if (args.action === 'preparation-status') return {status:'completed',result:{suggestion:{project_id:'project-a',context:'Inspect the project and verify the change.',reason:''}}}
  if (args.action === 'choose-project') return {version:1,projects:[{id:'project-a',name:'Test project',root:'/tmp'},{id:'chosen',name:'Chosen workspace',root:'/private/tmp/chosen-workspace'}],active_project_id:'project-a',selected_project_id:'chosen'}
+ if ((window as any).offline) throw Error('Connection unavailable')
  if (failure === 'offline') throw Error('Diane is not installed or connected')
  if (failure === 'pending') return new Promise(() => {})
  if (failure === 'malformed') return {}
