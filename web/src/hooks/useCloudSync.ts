@@ -162,7 +162,7 @@ export function useCloudSync(hooks: Hooks) {
   }, [auth, key])
 
   const toggleEnabled = useCallback((value: boolean) => {
-    if (!key || !owner || running.current) return
+    if (!key || !owner || running.current) return false
     try {
       const linked = localStorage.getItem(OWNER_KEY)
       if (value && linked && linked !== owner) throw new Error('These local notes belong to another account. Sign in with the original account, or use a separate app data profile.')
@@ -171,7 +171,8 @@ export function useCloudSync(hooks: Hooks) {
       const meta = metadata(key); meta.enabled = value
       localStorage.setItem(key, JSON.stringify(meta)); setEnabled(value); setError(null)
       setMessage(value ? 'Sync on' : 'Sync paused')
-    } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
+      return true
+    } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); return false }
   }, [key, owner])
 
   const snapshot = useCallback(async (reading?: () => void, recordKey?: string) => {
@@ -188,7 +189,8 @@ export function useCloudSync(hooks: Hooks) {
 
   const synchronize = useCallback(async (resolution?: { key: string; choice?: 'local' | 'cloud'; choices?: MergeChoices; fingerprint: string }, manual = false) => {
     const changeAtStart = hooksRef.current.changeKey
-    if (!user || !auth || !enabled || !key || !hooksRef.current.ready) return
+    if (!user || !auth || !key || !hooksRef.current.ready) return
+    if (!enabled && (!manual || !toggleEnabled(true))) return
     if (running.current) { followUp.current = true; return }
     if (hooksRef.current.blocked) { setMessage('Waiting for current task'); return }
     if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
@@ -431,7 +433,7 @@ export function useCloudSync(hooks: Hooks) {
         followUpTimer.current = setTimeout(() => { void syncRef.current() }, 900)
       }
     }
-  }, [user, auth, enabled, key, owner, server, snapshot, report, advance])
+  }, [user, auth, enabled, key, owner, server, snapshot, report, advance, toggleEnabled])
 
   const exportRecovery = useCallback((filter?: { key: string; at?: string }) => {
     try {

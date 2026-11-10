@@ -127,6 +127,9 @@ async function main() {
   f.render().toggleEnabled(false); await f.flush()
   const beforePause = f.reads(); await f.advance(30_000)
   assert.equal(f.reads(), beforePause, 'Explicit pause stops polling')
+  await f.render().sync(); await f.flush()
+  assert.equal(f.render().enabled, true, 'Explicit Sync enables a paused folder')
+  assert.ok(f.reads() > beforePause, 'The same click performs synchronization')
   f.dispose(); assert.equal(f.timers.size, 0); assert.equal(f.listeners.size, 0); assert.equal(f.docListeners.size, 0)
 
   f = await fixture(); f.hooks.focusActive = true; f.render()
