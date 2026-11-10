@@ -8,6 +8,7 @@ import type {SidePanelProps} from '@diane/plugin-sdk/panel-context';
 import {TodoPortContext} from './TodoPortContext';
 import {createTodoApi} from './api';
 import {useTasks} from './hooks/useTasks';
+import {useTaskPreparation} from './hooks/useTaskPreparation';
 import {useCalendar} from './hooks/useCalendar';
 import {useGoals} from './hooks/useGoals';
 import {TaskList} from './components/TaskList';
@@ -55,6 +56,7 @@ function TodoBody({active,scope}:Props&{scope:string}){
  const openProject=(id:string)=>{void perform(()=>navigate(()=>{setProject(id);setPage('tasks');goals.setSidebarCollapsed(true);}));};
  const breakdown=async(id:string)=>{if(op.current)return;const task=tasks.tasks.find(t=>t.id===id);if(!task)return;const key=planningTaskKey([task]),day=calendar.dateStr;await perform(async()=>{setBusy(id);try{const result=await api.llmBreakdown({taskText:[task.text,task.finish?.doneWhen&&`Done when: ${task.finish.doneWhen}`,task.finish?.by&&`Due: ${task.finish.by}`].filter(Boolean).join('\n'),existingSubtasks:task.todaySubtasks.map(t=>t.text)});tasks.addAISubtasks(id,result.subtasks,day,key);await tasks.flushPendingSave();}finally{if(alive.current)setBusy('');}});};
  const recommend=async()=>{setShowAlbums(true);await perform(async()=>{setBusy('albums');try{const value=await api.llmRecommendAlbums({tasks:tasks.tasks.filter(t=>!['done','stopped'].includes(t.status)).map(t=>({text:t.text,finish:t.finish,steps:t.todaySubtasks.map(s=>s.text)}))});if(alive.current)setAlbums(value);}finally{if(alive.current)setBusy('');}});};
+ useTaskPreparation({active,enabled,loading:tasks.loading,scope,taskKey:planningTaskKey(tasks.tasks),flush:tasks.flushPendingSave});
  const handoff=useMemo(()=>({scope,active,enabled,flush:tasks.flushPendingSave,selection,taskKey:planningTaskKey(tasks.tasks)}),[scope,active,enabled,tasks.flushPendingSave,selection,tasks.tasks]);
  return <TodoPortContext.Provider value={handoff}><div className="diane-todo-port" aria-label="Todo plugin"><div className="app-shell is-compact">
   <GoalsSidebar saving={goals.busy||goals.pending||!enabled} onDiscardDraft={()=>void goals.discardPending().catch(e=>setError(String(e)))} collapsed={goals.sidebarCollapsed} targets={goals.targets} recurring={goals.recurring} routines={goals.routines} storageError={goals.storageError} onRetrySave={goals.retrySave} onToggleCollapse={goals.toggleSidebar} onAddGoal={goals.addGoal} onUpdateGoal={goals.updateGoal} onDeleteGoal={goals.deleteGoal} onToggleGoal={goals.toggleGoal} onOpenProject={openProject}/>

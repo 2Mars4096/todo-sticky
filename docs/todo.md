@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Plugin0.1.4 direct machine controls and quiet preparation refresh — [17-1](plans/17-1-canonical-sync.md).
+
 - [x] Conservative workspace selection, quiet plugin details and local reinstall — [6-diane-handoff](plans/6-diane-handoff.md).
 
 - [ ] Canonical shared sync and unchanged standalone clients implemented/tested; staged releases await shared-backend acceptance — [17-1](plans/17-1-canonical-sync.md).

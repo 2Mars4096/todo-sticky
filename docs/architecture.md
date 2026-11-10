@@ -1,6 +1,7 @@
 # Architecture
 
 ## Shared Diane backend (staged cutover)
+- Embedded Todo preparation uses `hooks/useTaskPreparation.ts`: active/enabled saved task changes debounce to a scoped preparation-only refresh, then quiet60s repeats. Account/unmount cancellation prevents stale requests; backend owns canonical unfinished-task selection, deduplication and Universal Cell preparation.
 - Standalone clients negotiate central broker configuration, sign in with app-scoped custom Firebase tokens, and copy pending/baseline state only from a server-verified original issuer+UID. Shared AI uses the compatibility endpoint; explicit direct provider mode is retained.
 - Optional sync generations permit quiet polling through five point reads. A complete immutable client snapshot remains necessary for offline three-way merge; upload/account/error invalidates the cache.
 - Android native links and macOS URL events retain canonical task IDs until authenticated lookup/sync can reveal their exact dated original task. Links never execute tasks.

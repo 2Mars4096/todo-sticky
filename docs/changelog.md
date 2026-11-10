@@ -1,4 +1,9 @@
 ## 2026-11-10
+- [refactor] Plugin0.1.4 exposes Scheduling machines directly beside Import & backup and AI settings; remove nested Planning settings and disable Save machines until edits.
+- [feat] Quiet scoped preparation refresh after saved Todo changes, with debounce, periodic refresh and lifecycle/account fencing. Explicit Send remains required to execute work.
+- [test] Strict host React19/SDK typing, 360px full-host-style footer capture/save retry, and preparation lifecycle checks pass without model calls.
+
+## 2026-11-10
 - [infra] Reinstall original Todo Mac app with protected rollback/profile/task backup; verify all 56 task files and profile unchanged. Deliver same-key Android build21 (split2021), preserving current service and disabling shared cutover.
 - [test] Native 42 tests and selected-task browser folder-registration checks pass; no model execution or phone installation.
 
