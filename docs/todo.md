@@ -1,5 +1,14 @@
 # Todo
 
+- [x] Reinstall shared-backend Mac app and repair live cold-instance login exchange; commit in focused batches — [17-1](plans/17-1-canonical-sync.md). Fresh user sign-in acceptance remains pending.
+
+- [x] Reinstall the current verified Mac build at user request; preserve profiles/data and prior app bundle.
+
+- [x] Install original Mac app with shared Diane backend and reviewed two-step local handoff — [17-1](plans/17-1-canonical-sync.md), [6](plans/6-diane-handoff.md). Runtime backend and preserved tasks verified; live sign-in/model-session acceptance remains pending.
+
+- [x] Simplify account sync to one Sync button; explicit Sync enables the existing guarded folder binding — [17-1](plans/17-1-canonical-sync.md).
+
+
 - [x] Remove stale empty directories, Python packaging leftovers and empty build logs; retain required tooling markers — [9-folder-cleanup](plans/9-folder-cleanup.md).
 
 - [x] Second cleanup pass: remove 404 disposable local files, 20 empty directories and retired demo seeder — [9-folder-cleanup](plans/9-folder-cleanup.md).

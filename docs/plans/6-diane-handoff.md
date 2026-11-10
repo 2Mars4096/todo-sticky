@@ -4,7 +4,7 @@
 **Goal:** Dispatch a todo once into Diane's existing project/session structure and keep follow-up in that session.
 
 ## Tasks
-- [x] Add an opt-in local Diane connection setting, explicit destination/project details, hidden controls when off, and grey unavailable dispatch.
+- [x] Add an opt-in local Diane connection setting, explicit destination/project details, grey controls when off or unavailable.
 - [x] Lock standalone Todo operation and test core task controls with absent, stalled, malformed and corrupt Diane data.
 - [x] Inspect both products and isolate work in separate Git worktrees.
 - [x] Publish Diane project identities, absolute folders, and the existing composer execution payload without credentials.
@@ -59,3 +59,14 @@
 - Shared cutover disabled in both builds; original release APK and shared candidate retained. No APK installed, no iOS work. Real paired agent execution remains pending; UI verification used mock requests and did not call a model.
 
 - Shared-account Android release +22 / versionCode2022 was rebuilt from the current shared-service source with explicit `DIANE_SHARED_CUTOVER=true`; the original production signer/package are retained. The existing current-service +21 APK remains standalone. No iOS build.
+
+## 2026-11-10 — Original-app setup and session handoff
+- [x] Keep selected-task Push visible and grey when the opt-in/local connection is unavailable; preserve saved-session inspection and reconnect polling.
+- [x] Add Universal Cell suggestions through the local scoped Todo intelligence API, matching original task identity/date and synced text before sending context. Preserve preparation request IDs and inspect receipts on retry.
+- [x] Allow editable workspace/context, explicit Review, then Start session with an immutable dispatch snapshot; use existing local Diane session/profile and Open action.
+- [x] Verify 31 Node suites, TypeScript and browser setup/review/dispatch, disconnected core capture and reconnection. Live local project/account endpoints respond; no live model or execution request made.
+- [x] Reinstall the shared-backend Mac build with this handoff and enable the local connection setting.
+
+Decisions: preparation is one bounded model request for the selected synced task, using known local workspace names/paths. User edits win over late suggestions. Unsynced tasks can use manual setup. No hosted plugin UI or Diane installation is changed.
+
+Installation: signed bundle matches the build and is running; all56 task files unchanged after launch, config preserved except requested connectDiane=true. Shared backend/cutover marker verified from runtime storage. Backup: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-shared-backend-install-20261110-203058`. Live Universal Cell/session acceptance remains user-driven.

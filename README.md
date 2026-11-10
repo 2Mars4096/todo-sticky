@@ -8,7 +8,7 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16 with the reviewed sync-read/retry corrections, shared typography, consistent footer shape and clear read-only recovery labels (2026-11-08). The deployed sync service URL is prefilled. Open **Settings → Account → Continue with Google**, then enable **Sync this task folder** when ready. See [account setup](docs/account-sync.md).
+Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, rebuilt and reinstalled with the **Diane shared backend** and editable local setup/session handoff (2026-11-10). Your original Todo interface and local notes remain. Open **Settings → Account → Continue with Google** with the same account as Diane, then **Sync**. Local Diane connection is enabled on this installation; Push stays grey when Diane is unavailable.
 
 Local Android release build: `release/todo-sticky.apk` (2.1.16+19, ARM64, 19.88 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
 
@@ -260,7 +260,9 @@ The plugin has a separate Node 22/React 19 build: `npm --prefix plugin ci` follo
 
 Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and focus without it. If Diane is disconnected or unavailable, only its dispatch/status controls are affected. Independently configured AI providers continue to use their own configuration.
 
-In **Settings → Integrations**, enable **Connect to Dear Diane on this computer** and Save. It is off by default; off hides task controls and stops connection attempts without deleting session links or stopping existing Diane runs. The separate credential preference controls key reuse. Open Dear Diane and select the project/folder you want to use; Settings shows that destination when you enable the connection. The simplified task row currently omits Diane dispatch controls. Existing integration settings and stored links are preserved.
+In **Settings → Integrations**, enable **Connect to Dear Diane on this computer** and Save. Selected tasks show **Push to Diane**. The button stays grey while the connection is off, unavailable, or incompatible; no connection attempts run when the setting is off.
+
+Push opens editable workspace/context setup. For a synced task, local Diane routes a bounded setup suggestion through its Universal Cell API using the known workspace names/paths and task context. You can revise either field or choose a folder. **Review** shows the exact setup; only **Start session** dispatches it into a normal local Diane agent session. Todo stays open. **Open in Diane** returns to that session for follow-up and approvals. Preparation errors leave manual setup available, and uncertain model requests retain their receipt instead of silently charging again.
 
 Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. Todo 2.1.7 includes the Todo side of this integration; running tasks requires the separate Diane companion update.
 
@@ -270,7 +272,7 @@ For an isolated native development launch:
 STICKY_TODO_DEV_DATA_DIR=/private/tmp/sticky-todo-diane-data npm run tauri -- dev --config src-tauri/tauri.diane-dev.conf.json
 ```
 
-Browser controls can be checked without native data or an agent: run Vite on port 15173, then `python tests/check_diane_ui.py` with Python Playwright installed. `CHROME_EXECUTABLE` and `TODO_TEST_URL` override the test browser and preview URL.
+Browser controls can be checked without native data or an agent: serve the repository-root `tests/diane-ui.html` fixture with Vite, then run `node tests/workspace-ui.mjs`. `PLAYWRIGHT_MODULE` and `TODO_TEST_URL` override the Playwright module and fixture origin. The test covers setup/review, single dispatch, connection loss/recovery and independent task capture.
 
 Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.
 
@@ -316,3 +318,5 @@ Task handoff: select a task, choose its Diane icon, confirm the suggested worksp
 
 
 Repository maintenance: run npm commands from the root; canonical sources are web/src, desktop/src-tauri, phone and plugin. See the [folder guide](docs/folder-guide.md) for retained compatibility paths, generated artifacts and consolidated implementation history. Build the embedded package with `npm --prefix plugin run build`.
+
+Signed-in account settings provide one **Sync** action; the first manual sync enables syncing for the current folder after account ownership checks.

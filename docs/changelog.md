@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-11-10 — Reinstall and login exchange repair
+- [release] Rebuilt/reinstalled the original Mac app; runtime shared backend, signature and all56 unchanged task files verified. Rollback backup retained.
+- [fix] Mac return URI worked; the shared backend could fail token minting on a fresh instance. Diane fix a9508536 passes27 sign-in tests and is live at diane-api-00021-gup. Failed consumed attempts require a new sign-in.
+- [delivery] Group source into guarded Sync, reviewed local setup/session handoff, and documentation commits. Real post-fix Google sign-in awaits user verification.
+
+## 2026-11-10 — Shared Mac installed
+- [release] Original Sticky Todo 2.1.16 rebuilt, signed, installed and relaunched with the Diane shared backend and two-step local setup/session handoff. Runtime backend selection verified; local Diane connection enabled.
+- [preservation] All56 task files unchanged after launch. Previous app/profile/WebKit/tasks backed up; native settings preserved except connectDiane=true. Receipt: output/shared-mac-delivery/macos-verification.json. Real Google sync/model execution remains user acceptance.
+
+## 2026-11-10 — Requested desktop reinstall
+- [infra] Install the current verified Sticky Todo app alongside Diane at user request; retain original app rollback bundles and preserve profiles/data. Strict signature check and reopened app process verified.
+
+## 2026-11-10 — Original-app Diane setup
+- [feat] Grey disconnected Push; Universal Cell workspace/context suggestions remain editable, followed by Review and explicit Start session. Existing local Diane sessions retain Open/Stop and immutable retry receipts.
+- [test] 31 Node suites, TypeScript and browser checks pass; live local project/account endpoints and shared cloud health/config respond. No live model/session execution performed.
+
+## 2026-11-10 — One sync action
+- [fix] Remove the folder-sync checkbox and label the action Sync. Explicit manual sync enables the existing owner-checked binding; background sync remains gated.
+
+
 ## 2026-11-10 — Empty-file cleanup
 - [maintenance] Remove obsolete backend namespace directories, stale Python build/egg-info artifacts and 17 empty phone build logs. No empty tracked source files found; retain tooling locks/markers. Backend source hashes unchanged.
 

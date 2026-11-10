@@ -215,7 +215,7 @@ Settings uses the official Tauri updater `check`, `download`, and `install` oper
 
 ## Diane dispatch contract
 
-Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
+Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `choose-project`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
 
 Never treat network failure as run failure, Stop submission as stop completion, or a completed agent run as a completed todo. Open uses the linked desktop session. Approvals, clarification, and further work belong in Diane.
 
@@ -259,3 +259,6 @@ Android `AiService.planProject(preferences, goal, window, scheduledProjectWork, 
 `api.llmProjectPlan(request)` invokes native `llm_project_plan`. Requests use `{mode: "steps" | "schedule", goal, window, tasks, scheduledStepIds, contextTruncated}`; `window` contains `{from, until, minutesPerDay, weekdaysOnly}`. Responses are `{steps: string[]}` or `{actions: [{stepId: string | null, text, date, minutes}]}`. The frontend generates new IDs and validates dates/budgets, existing step identities, duplicate work and a fresh goal/archive fingerprint before saving. Generate/Discard never creates tasks; task/goal API schemas remain unchanged.
 
 Mac project operations persist a local recovery journal before sequential writes to existing stores. This is not a new agent-facing task database or CLI transaction command. Existing native per-date compare/backups protect edits; pending operations remain retryable with stable IDs.
+
+### Standalone setup preparation
+`diane_request` also supports `connection`, `preparation-records` (body `{scope,cursor?}`), `prepare` (body `{scope,payload}` with `action: "prepare"`) and `preparation-status` (requestId plus `{scope}`). These use only local Diane `/api/plugins/connection` and scoped `/api/plugins/todo/records` or `/intelligence` routes. Prepare requires a canonical source revision, execution-contract digest and known workspace candidates. Persist the request ID before sending; uncertain retries inspect the same receipt. Approved context is included after the original task in dispatch `text`; no schema change or execution happens during preparation/review.

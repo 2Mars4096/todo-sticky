@@ -1,5 +1,15 @@
 # Bugs And Failed Approaches
 
+## 2026-11-10 — Mac return succeeded, token exchange failed
+The macOS Open Sticky Todo prompt and token-free return URI work. Shared auth/exchange returned500 because Firebase initialization happened only during browser identity verification, which can run on another Cloud Run instance. Diane now initializes under a shared process lock before minting;27 tests pass and revision00021-gup is live. Reinstalling alone does not repair backend exchange; begin a new sign-in after the fix.
+
+## 2026-11-10 — Standalone handoff availability
+- The workspace popover trigger was enabled when the local project request failed. Track connection separately from project count, grey new dispatch when unavailable, and keep prior session details readable.
+- Browser capture regression initially used Enter, which now inserts a paragraph; use the actual Add action. Browser verification passes with the current input contract.
+
+## 2026-11-10 — Local package toolchain
+- Default Rust shim and the OS-account toolchain had no configured default. Use the documented isolated RUSTUP_HOME=/private/tmp/sticky-rustup and RUSTUP_TOOLCHAIN=1.99.1-aarch64-apple-darwin; do not modify global defaults.
+
 ## 2026-11-10 — Phone-only build staging omits shared test fixture
 
 A temporary phone-only copy cannot run sync_merge_test.dart without the repository's sibling tests/fixtures/sync-merge.json. The started suite reported122 passed, one skip and that fixture-load error; no rerun per user's minimal-test request. Release compilation and original-key artifact verification remain independent and passed.
@@ -305,3 +315,5 @@ A temporary phone-only copy cannot run sync_merge_test.dart without the reposito
 - 2026-10-30: Date-key-only conflict choices could apply a newer version than the one reviewed. Both clients now require the reviewed fingerprint/revision to match, save both copies on detection, and reject stale decisions.
 
 - 2026-11-10: Android sign-in reported MissingPluginException. Browser launch now uses the app-owned sticky_todo/links channel and native HTTPS ACTION_VIEW handler instead of the external launcher plugin.
+
+- November10 local .app packaging completed; automatic updater archive signing then refused because no private release key was supplied. The staged .app is separately ad-hoc-signed and verified; it is not an updater release.

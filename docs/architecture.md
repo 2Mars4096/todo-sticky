@@ -416,3 +416,8 @@ ProjectPage uses one draft editor for project text, unscheduled steps and actual
 The root package.json owns desktop/web dependencies and commands. Vite and TypeScript address web/src directly; phone source/CI uses phone/. Only src and src-tauri root compatibility aliases and desktop package/dist aliases remain. Plugin builds use plugin/build.mjs directly. Completed follow-up plans are consolidated under existing feature records with explicit historical anchors; new implementation work should extend an existing record when its scope fits.
 
 Showcase recording uses scripts/record-demos.cjs with isolated browser fixtures. The legacy knowledge-base-writing seed-demo script has been retired. Review screenshots, UI dumps and intermediate recordings under output/ are disposable after verification; preserve notebook snapshots and delivery manifests.
+
+- AccountPanel exposes one Sync action. A manual request first enables the existing owner-bound folder metadata if paused; a failed binding/storage check blocks synchronization. Background sync still requires enabled metadata.
+
+## Original-app Diane setup
+The local bridge exposes only connection, scoped task records, preparation and receipt endpoints in addition to the existing handoff operations. `dianePreparation.ts` matches canonical source IDs/date to local tasks, verifies synced text and the server execution-contract hash, and persists model request identities before sending. Universal Cell suggestions never execute work. `DianeAction` separates editable setup, review and explicit immutable session dispatch, fences late suggestions against task/user edits, and disables outbound controls on local disconnect.
