@@ -7,7 +7,6 @@ import '../models/workflow.dart';
 import 'archive_screen.dart';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../app.dart';
 import '../widgets/sync_progress.dart';
@@ -41,8 +40,8 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
     WidgetsBinding.instance.addObserver(this);
     account = CloudSyncController(
       store: widget.store,
-      openBrowser: (uri) =>
-          launchUrl(uri, mode: LaunchMode.externalApplication),
+      openBrowser: (uri) async =>
+          await links.invokeMethod<bool>('openExternal', {'url': uri.toString()}) ?? false,
       isEditing: () {
         final context = FocusManager.instance.primaryFocus?.context;
         final editor = context?.widget is EditableText

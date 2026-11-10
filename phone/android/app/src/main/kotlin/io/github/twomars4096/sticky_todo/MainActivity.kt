@@ -36,8 +36,20 @@ class MainActivity : FlutterActivity() {
         pendingTaskLink = acceptedTaskLink(intent?.dataString)
         linkChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sticky_todo/links").apply {
             setMethodCallHandler { call, result ->
-                if (call.method == "take") { val value = pendingTaskLink; pendingTaskLink = null; result.success(value) }
-                else result.notImplemented()
+                when (call.method) {
+                    "take" -> { val value = pendingTaskLink; pendingTaskLink = null; result.success(value) }
+                    "openExternal" -> {
+                        try {
+                            val uri = android.net.Uri.parse(call.argument<String>("url") ?: "")
+                            require(uri.scheme == "https" && !uri.host.isNullOrBlank() && uri.userInfo == null) { "A secure sign-in address is required." }
+                            startActivity(Intent(Intent.ACTION_VIEW, uri))
+                            result.success(true)
+                        } catch (_: Exception) {
+                            result.error("browser", "Could not open the sign-in browser.", null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
             }
         }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sticky_todo/files")

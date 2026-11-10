@@ -1,3 +1,6 @@
+## 2026-11-10 — Preserve shipped Android login fix
+- [fix] Carry forward the existing native Google sign-in browser bridge and shipped APK version into main. This is the already-delivered fix; no APK rebuilt.
+
 ## 2026-11-10 — GitHub integration
 - [refactor] Merge reviewed plugin workflows with existing independent-app history; preserve canonical app folders and adapter regressions. Product gates, actual host SDK checks and26 backend checks pass.
 
