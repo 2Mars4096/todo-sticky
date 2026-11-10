@@ -1,4 +1,8 @@
 ## 2026-11-10
+- [fix] Plugin0.1.6 preserves machine capability text while typing and parses comma-separated values only for saving. Failed saves retain the draft; persisted records contain only the clean capabilities array.
+- [test] Actual browser typing of gpu, batch preserves the comma, survives a failed save and saves [gpu,batch]; strict host React19/SDK typing and footer alignment/keyboard checks pass.
+
+## 2026-11-10
 - [fix] Plugin0.1.5 aligns all three footer labels with a shared14px marker/icon slot and6px gap. Native summary keyboard behavior remains; full-host-style360px browser check measured identical text x positions and verified Enter/Space toggling.
 
 ## 2026-11-10

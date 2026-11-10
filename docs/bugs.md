@@ -1,3 +1,6 @@
+## 2026-11-10 — Capability comma entry
+- Plugin machine capabilities parsed split/trim/filter during every input event, immediately dropping the comma and preventing a second item. Keep a raw capabilitiesText draft; normalize only in the save payload, excluding the draft field. Failed saves retain raw input.
+
 ## 2026-11-10 — Hidden handoff entry
 - Current standalone TaskItem had stopped rendering DianeAction while provider/settings remained. Restore its selected-task icon and exercise the actual reachable browser path; testing the detached component alone missed this regression.
 - Path-prefix matching must not choose todo-sticky from a different folder named todo-sticky-copy. Strip path tokens from name matching and require an explicit path boundary.

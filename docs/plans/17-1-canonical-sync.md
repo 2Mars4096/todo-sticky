@@ -41,3 +41,5 @@
 - Preparation backend and per-task presentation are owned by Diane; no live model calls were made during these checks. Standalone apps and APKs were not rebuilt for this plugin change.
 
 - [x] Plugin0.1.5 CSS-only footer alignment: equal14px markers plus6px gap, direct summaries only; narrow full-host-style label positions all x72px. Native Enter/Space disclosure behavior and save/retry checks pass.
+
+- [x] Plugin0.1.6 capability entry fix: character-by-character browser typing `gpu, batch` stays intact through failure/retry, saves `["gpu","batch"]`, and omits the local draft field from persisted schema. Strict host typing and narrow footer checks pass.
