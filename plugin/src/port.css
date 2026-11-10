@@ -82,3 +82,11 @@
 
 .diane-todo-port .todo-port-settings[open]>summary {position:sticky;top:0;z-index:1;flex-shrink:0;background:var(--wb-paper);}
 .diane-todo-port .todo-port-data button:disabled {opacity:.45;cursor:default;}
+
+/* A shared 14px marker slot keeps all three footer labels on one axis. */
+.diane-todo-port .todo-port-data>details>summary {display:flex;align-items:center;gap:6px;list-style:none;}
+.diane-todo-port .todo-port-data>details>summary::-webkit-details-marker {display:none;}
+.diane-todo-port .todo-port-data>details>summary::marker {content:"";}
+.diane-todo-port .todo-port-data>details>summary::before {content:"";display:block;flex:0 0 14px;width:14px;height:14px;background:currentColor;clip-path:polygon(5px 3px,10px 7px,5px 11px);}
+.diane-todo-port .todo-port-data>details[open]>summary::before {clip-path:polygon(3px 5px,11px 5px,7px 10px);}
+.diane-todo-port .todo-port-data>.todo-port-ai-settings>svg {flex:0 0 14px;width:14px;height:14px;}

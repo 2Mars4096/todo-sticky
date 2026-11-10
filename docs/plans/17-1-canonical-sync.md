@@ -39,3 +39,5 @@
 - [x] On active/enabled Todo, debounce task changes for 1s, flush pending saves, then POST /api/sticky-todo/preparations/refresh with current scope. Quiet refresh repeats after60s; loading/account changes/unmount fence or cancel requests. No task execution.
 - [x] Strict host React19/SDK TypeScript passes; 360px fixture under complete host styles verifies flat controls, dirty/save/failure behavior and AI settings event. Lifecycle test covers disabled/loading, flush ordering, account changes during flush and abort.
 - Preparation backend and per-task presentation are owned by Diane; no live model calls were made during these checks. Standalone apps and APKs were not rebuilt for this plugin change.
+
+- [x] Plugin0.1.5 CSS-only footer alignment: equal14px markers plus6px gap, direct summaries only; narrow full-host-style label positions all x72px. Native Enter/Space disclosure behavior and save/retry checks pass.

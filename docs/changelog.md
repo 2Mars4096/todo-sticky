@@ -1,4 +1,7 @@
 ## 2026-11-10
+- [fix] Plugin0.1.5 aligns all three footer labels with a shared14px marker/icon slot and6px gap. Native summary keyboard behavior remains; full-host-style360px browser check measured identical text x positions and verified Enter/Space toggling.
+
+## 2026-11-10
 - [refactor] Plugin0.1.4 exposes Scheduling machines directly beside Import & backup and AI settings; remove nested Planning settings and disable Save machines until edits.
 - [feat] Quiet scoped preparation refresh after saved Todo changes, with debounce, periodic refresh and lifecycle/account fencing. Explicit Send remains required to execute work.
 - [test] Strict host React19/SDK typing, 360px full-host-style footer capture/save retry, and preparation lifecycle checks pass without model calls.
