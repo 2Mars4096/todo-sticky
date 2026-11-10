@@ -250,7 +250,7 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 
 ## Todo inside Diane
 
-The product-owned [`plugin/`](plugin/README.md) package provides the embedded Todo pane in Dear Diane. Its selected task shows a compact project selector and **Run**. Automatic preparation can bind a known project; a manual correction takes precedence. Run starts work without leaving Todo. **Open** returns to the saved Diane session, and **Review** opens its result with **Accept & complete** and **Request changes**.
+The product-owned [`plugin/`](plugin/README.md) package provides the embedded Todo pane in Dear Diane. Its selected task shows a compact project selector and **Run**. Automatic preparation can bind a known project; a manual correction takes precedence. Run starts work without leaving Todo. **Open** returns to the saved Diane session, and **Review** opens its result with **Accept & complete**, **Request changes**, and **Discard result**. Discard keeps the task and its edits unchanged. **Run again** is directly visible after failed or stopped work. A result for an older task or step scope explains what changed and remains discardable.
 
 The host supplies the current session and up to five prior attempts on that workflow. **Previous runs** reopens those returned sessions; it is not a complete execution archive. Manual project choices are saved on this device. Ordinary Todo completion remains separate from result acceptance, and accepting a result does not merge code. Branch/worktree isolation, Git diff/checks/merge and shared project binding still require host support.
 

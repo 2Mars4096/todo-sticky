@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Hosted result recovery and visible Run again — [18-hosted-task-execution](plans/18-hosted-task-execution.md#result-recovery--november-10). UI 0.1.8 uses the coordinated host workflow-only discard contract; installed-app acceptance remains separate.
+
 - [x] Remove stale empty directories, Python packaging leftovers and empty build logs; retain required tooling markers — [9-folder-cleanup](plans/9-folder-cleanup.md).
 
 - [x] Second cleanup pass: remove 404 disposable local files, 20 empty directories and retired demo seeder — [9-folder-cleanup](plans/9-folder-cleanup.md).

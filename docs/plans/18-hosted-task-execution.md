@@ -36,3 +36,18 @@
 ## Local integration — November 10
 - Merge the GitHub workflow review with the original product-owned release history and canonical app folders. Retain backend adapter tests; consolidate identical backend modules into the reviewed src package layout.
 - Product type/test/build/package and actual Diane SDK checks pass; combined adapter suite26 passes. Plugin runtime matches the artifacts integrated in Diane.
+
+## Result recovery — November 10
+
+- [x] Expose versioned Discard result directly in Review only when the host advertises `can_discard_result: true`, using workflow-only `stop` semantics while preserving task text, status and steps. Older hosts show an update explanation.
+- [x] Show `review_conflict` from current host reads and disable accept/revise, including already-open revision drafts. Keep the exact displayed result version pinned for every review mutation.
+- [x] Place Run again directly in the compact row for failed/stopped workflows; retain session Open and keep completed tasks closed.
+- [x] Keep Stop run available for attention workflows, including interrupted revisions without a run ID. Preserve the host acknowledgment: a still-pending stop does not enable Run again or claim completion.
+- [x] Cover edited-task discard→rerun, changed-step feedback guards, interrupted discard request identity, stale-result discard, visible retry and closed-task behavior.
+- [x] Complete UI 0.1.8 production package and real-host contract validation; record results below.
+
+Verification: `npm --prefix plugin run check` passes strict TypeScript, **8 suites / 43 tests**, the production build, generated-module render without global React/network, and package/import ownership checks. `npm --prefix plugin run check:host -- /workspace/scratch/04cd7aca8bcd/dear-diane/editor` passes against the current host exports. `git diff --check` passes. The saved-subtree regression reloads a same-revision root record and confirms an open feedback draft is blocked when the host reports changed steps.
+
+Rendered-browser acceptance was attempted but not completed: the local Browser extension was unavailable in this session and the cloud browser could not reach the executor's loopback fixture (`ERR_CONNECTION_REFUSED`). The generated-module render gate is a separate automated result, not a visual or installed-app check.
+
+The host integration must ship the corresponding workflow-only discard contract. These product checks do not constitute a real agent run or installation of Dear Diane on macOS.

@@ -22,7 +22,9 @@ Keep imported styles scoped under `.diane-todo-port`. Narrow layouts use `@conta
 
 ## Task execution
 
-The selected task uses one compact project/action row. **Run** explicitly starts work and keeps Todo open. **Open** returns to the saved Diane session. **Review** presents the versioned result and the existing accept/request-changes actions. Session links remain available for completed tasks and previous attempts returned by the host.
+The selected task uses one compact project/action row. **Run** explicitly starts work and keeps Todo open. **Open** returns to the saved Diane session. **Review** presents the versioned result with **Accept & complete**, **Request changes**, and **Discard result**. Discard closes that result and keeps the current task unchanged. **Run again** is directly visible after a failed or stopped run. Session links remain available for completed tasks and previous attempts returned by the host.
+
+When the host reports that the task or its steps changed after dispatch, Review explains the mismatch and keeps Discard result available. Accept and Request changes remain blocked until a result for the current scope is available. Discard uses the exact displayed result version; a newer result requires **Review latest** before it can be discarded or accepted. UI 0.1.8 shows Discard only when the host advertises `can_discard_result: true`; older hosts show an update explanation, so their task-stop operation is never invoked under a misleading label.
 
 Automatic preparation is separate from execution. A manual project correction wins over a late suggestion and remains account/task scoped. The current host stores that correction on this device; a shared cross-device binding and a complete paginated execution history need a host API extension. Ordinary task editing and completion do not depend on these controls.
 

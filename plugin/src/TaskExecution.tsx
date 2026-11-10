@@ -56,7 +56,9 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
     }).catch(reason => { if (current() && token === reads.current) setError(describeError(reason)); })
       .finally(() => { if (current() && token === reads.current) setLoading(false); });
     return () => { reads.current++; operations.current++; locked.current = false; };
-  }, [active, version, refreshCycle]);
+  // TaskDianeAction reloads this canonical object after saved subtree edits even
+  // when the root revision is unchanged. Refresh the host's scope conflict too.
+  }, [active, version, task, refreshCycle]);
 
   useEffect(() => {
     let disposed = false;
@@ -154,17 +156,24 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
       // Session creation and navigation are separate user actions.
     });
   };
-  const review = (decision: 'accept' | 'revise' | 'defer') => {
+  const reviewConflict = reviewableWorkflow(workflow) && workflow?.review_conflict;
+  const canDiscardResult = workflow?.can_discard_result === true;
+  const review = (decision: 'accept' | 'revise' | 'defer' | 'stop') => {
     const snapshot = decision === 'defer' ? workflow : reviewSnapshot;
-    if (!snapshot || !reviewableWorkflow(workflow) || snapshot.workflow_id !== workflow?.workflow_id || snapshot.result_version !== workflow.result_version || decision === 'revise' && (!enabled || !feedback.trim())) return;
-    const key = JSON.stringify([snapshot.workflow_id, snapshot.result_version, decision, feedback]);
+    if (!snapshot || !reviewableWorkflow(workflow) || snapshot.workflow_id !== workflow?.workflow_id || snapshot.result_version !== workflow.result_version || decision === 'stop' && !canDiscardResult || reviewConflict && (decision === 'accept' || decision === 'revise') || decision === 'revise' && (!enabled || !feedback.trim())) return;
+    const reviewFeedback = decision === 'revise' ? feedback : '';
+    const key = JSON.stringify([snapshot.workflow_id, snapshot.result_version, decision, reviewFeedback]);
     const id = requestIds.current.get(key) || newId(); requestIds.current.set(key, id);
     void action(async valid => {
-      const next = await pluginApi.review(snapshot, decision, feedback, id);
+      const next = await pluginApi.review(snapshot, decision, reviewFeedback, id);
       if (!valid()) return;
       receive(next); recordsChanged('todo', scope);
       if (decision === 'revise') { setRevising(false); setFeedback(''); }
       if (decision === 'accept') setDetailsOpen(false);
+      if (decision === 'stop') {
+        setDetailsOpen(false); setReviewSnapshot(undefined); setRevising(false); setFeedback('');
+        setNotice('Result discarded.');
+      }
     });
   };
   const refresh = () => { if (!busy && !loading) { setRefreshCycle(value => value + 1); setPreparationCycle(value => value + 1); } };
@@ -188,17 +197,16 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
       {!workflow || canRunAgain ? <select aria-label="Diane project" title={project?.root || 'Choose a project for this task'} value={project?.id || ''} disabled={busy || saving} onChange={event => chooseProject(event.target.value)}>
         <option value="">Choose project</option>{(choice !== undefined || project) && <option value="__automatic__">Automatic</option>}{projects.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
       </select> : bound ? <span className="todo-execution-project" title={bound.root}>{bound.name}</span> : null}
-      <span className="todo-execution-state" role="status">{saving ? 'Saving…' : loading ? 'Loading…' : workflow ? workflowLabel(workflow.state) : preparationLabel}</span>
-      {!workflow && unfinishedTask(task) && <button type="button" className="todo-execution-primary" disabled={!canRun} onClick={run}>Run</button>}
+      <span className="todo-execution-state" role="status">{saving ? 'Saving…' : loading ? 'Loading…' : reviewConflict ? 'Task changed' : workflow ? workflowLabel(workflow.state) : preparationLabel}</span>
+      {(!workflow || canRunAgain) && unfinishedTask(task) && <button type="button" className="todo-execution-primary" disabled={!canRun} onClick={run}>{workflow ? 'Run again' : 'Run'}</button>}
       {reviewableWorkflow(workflow) ? <button ref={reviewTrigger} type="button" className="todo-execution-primary" disabled={loading || saving} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={showDetails}>Review</button> : workflow && open(workflow)}
       <details className="todo-execution-options" ref={options} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); options.current!.open = false; options.current?.querySelector('summary')?.focus(); } }}>
         <summary aria-label="More Diane actions" title="More Diane actions">···</summary>
         <div>
           <button type="button" disabled={busy || loading} onClick={() => { refresh(); if (options.current) options.current.open = false; }}>Refresh</button>
           <button type="button" onClick={() => { showDetails(); if (options.current) options.current.open = false; }} aria-expanded={detailsOpen} aria-controls={detailsId}>Run details</button>
-          {canRunAgain && <button type="button" disabled={!canRun} onClick={run}>Run again</button>}
           {workflow?.state === 'pending_dispatch' && <button type="button" disabled={busy || loading || saving || !enabled} onClick={() => void action(async valid => { const next = await pluginApi.run({ ...task, revision: workflow.task_revision }, workflow.project_id, workflow.request_id); if (valid()) receive(next); })}>Retry start</button>}
-          {activeWorkflow(workflow) && workflow?.state !== 'attention' && <button type="button" disabled={busy || loading || saving} onClick={() => void action(async valid => { const next = await pluginApi.stop(workflow!); if (valid()) { receive(next); setNotice(next.state === 'stopped' ? 'Run stopped.' : 'Stop requested.'); } })}>Stop run</button>}
+          {activeWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => void action(async valid => { const next = await pluginApi.stop(workflow!); if (valid()) { receive(next); setNotice(next.state === 'stopped' ? 'Run stopped.' : 'Stop requested.'); } })}>Stop run</button>}
           {reviewableWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => review('defer')}>Review later</button>}
         </div>
       </details>
@@ -207,18 +215,21 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
       <header><strong>{workflow ? workflowLabel(workflow.state) : 'Run details'}</strong><button type="button" onClick={closeDetails} aria-label="Close Diane run details">×</button></header>
       {displayed?.result?.summary && <p className="todo-execution-result">{displayed.result.summary}</p>}
       {staleReview && reviewableWorkflow(workflow) && <p role="status">A newer result is available. <button type="button" onClick={() => setReviewSnapshot(workflow)}>Review latest</button></p>}
+      {reviewConflict && <p className="todo-execution-conflict" role="status">{reviewConflict}</p>}
       {bound && <p className="todo-execution-root">{bound.root}</p>}
       {!workflow && fingerprint && preparation?.context && <p>{preparation.context}</p>}
       {!workflow && !project && preparation?.reason && <p>{preparation.reason}</p>}
       {origin?.meeting_id && host && <button type="button" onClick={() => host.open('meeting', origin.meeting_id, origin.transcript_revision)}>{origin.title || 'Source meeting'}</button>}
       {workflow && open(workflow)}
       {reviewableWorkflow(workflow) && <div className="todo-execution-review-actions">
-        <button type="button" className="todo-execution-primary" disabled={busy || loading || saving || staleReview || !reviewSnapshot} onClick={() => review('accept')}>Accept & complete</button>
-        <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot || !enabled} aria-expanded={revising} onClick={() => setRevising(value => !value)}>Request changes</button>
+        <button type="button" className="todo-execution-primary" disabled={busy || loading || saving || staleReview || !reviewSnapshot || Boolean(reviewConflict)} onClick={() => review('accept')}>Accept & complete</button>
+        <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot || !enabled || Boolean(reviewConflict)} aria-expanded={revising} onClick={() => setRevising(value => !value)}>Request changes</button>
+        {canDiscardResult && <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot} onClick={() => review('stop')} title="Discard this result and keep the task unchanged">Discard result</button>}
       </div>}
+      {reviewableWorkflow(workflow) && !canDiscardResult && <p>Update Diane to discard a result without closing its task.</p>}
       {revising && reviewableWorkflow(workflow) && <form className="todo-execution-revision" onSubmit={event => { event.preventDefault(); review('revise'); }}>
         <label>Changes requested<textarea autoFocus value={feedback} onChange={event => setFeedback(event.target.value)} placeholder="What needs to change?" disabled={busy}/></label>
-        <div><button type="submit" disabled={busy || saving || staleReview || !enabled || !feedback.trim()}>Send changes</button><button type="button" disabled={busy} onClick={() => setRevising(false)}>Cancel</button></div>
+        <div><button type="submit" disabled={busy || saving || staleReview || !enabled || !feedback.trim() || Boolean(reviewConflict)}>Send changes</button><button type="button" disabled={busy} onClick={() => setRevising(false)}>Cancel</button></div>
       </form>}
       {previous.length > 0 && <details className="todo-execution-history"><summary>Previous runs <span>{previous.length}</span></summary><ul>{previous.map((item, index) => <li key={item.key}><span>{item.label}</span>{open(item.workflow, 'Open', `Open previous Diane session ${index + 1}`)}</li>)}</ul></details>}
     </section>}

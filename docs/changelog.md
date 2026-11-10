@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-10 — Recover edited results and expose retries
+
+- [fix] Add versioned **Discard result** to hosted Review so edited tasks/steps can release their old result and run again. Consume the host's `review_conflict` explanation and block accept/revise while keeping dismissal available; the coordinated host preserves task content and status.
+- [ui] Put **Run again** directly in the compact action row after failed/stopped work. Preserve saved session Open, explicit project corrections, closed-task state, and retry identities. Keep **Stop run** available for attention states, including an interrupted revision without a run ID; show Run again only after the host acknowledges stopped.
+- [test] Add edited-task discard→rerun, changed-step draft blocking, interrupted discard identity, stale-result dismissal guard, visible failed/stopped retry, and completed-task regressions. Candidate plugin UI: 0.1.8; standalone app sources unchanged.
+- [validation] Strict types, 8 suites/43 tests, production build/dist render, package/import checks and actual Diane SDK check pass. Browser visual verification remains uncompleted because the connected browser was unavailable and the cloud browser could not reach the local fixture; no installation or real-agent evidence is claimed by these product tests.
+
 ## 2026-11-10 — Empty-file cleanup
 - [maintenance] Remove obsolete backend namespace directories, stale Python build/egg-info artifacts and 17 empty phone build logs. No empty tracked source files found; retain tooling locks/markers. Backend source hashes unchanged.
 

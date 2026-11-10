@@ -1,5 +1,13 @@
 # Bugs And Failed Approaches
 
+## 2026-11-10 — Edited result dead end and hidden retries
+
+- Hosted Review offered only Accept/Request changes even though both correctly rejected a task whose execution scope changed. The existing review `stop` was not exposed, and its prior host semantics could stop the task itself. UI 0.1.8 exposes **Discard result** with a coordinated host fix that ends only the workflow; accept/revise remain scope- and version-guarded.
+- A task or step can change while a feedback draft is open. Use the host's current `review_conflict` to disable Send changes as well as the top-level acceptance/revision controls; preserve the draft until the user discards the result.
+- Failed/stopped **Run again** lived only in the more menu. It now occupies the primary action row without duplicate hidden controls, while keeping the previous session available through Open. Closed tasks are not implicitly reopened.
+- A saved parent/step edit can leave the root task revision unchanged. Refresh workflow scope validation when the canonical root object is reloaded after a save, rather than depending only on its revision counter; preserve the active feedback form.
+- Validation environment: the optional host-contract check first failed because the new host checkout had no frontend dependencies. It passes after restoring the host's pinned dependencies. A visual browser attempt could not connect: local Browser extension unavailable, cloud browser `ERR_CONNECTION_REFUSED` for the local fixture. Automated module rendering does not replace that visual check.
+
 ## 2026-11-10 — Phone-only build staging omits shared test fixture
 
 A temporary phone-only copy cannot run sync_merge_test.dart without the repository's sibling tests/fixtures/sync-merge.json. The started suite reported122 passed, one skip and that fixture-load error; no rerun per user's minimal-test request. Release compilation and original-key artifact verification remain independent and passed.
