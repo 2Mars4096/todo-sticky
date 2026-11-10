@@ -9,12 +9,13 @@ use std::path::PathBuf;
 const HELP: &str = r#"Sticky Todo task API
 
 Usage:
+  sticky-todo-api [--kb-path PATH] mcp [--read-only]
   sticky-todo-api [--kb-path PATH] extract [--date YYYY-MM-DD | --from YYYY-MM-DD --to YYYY-MM-DD | --all]
   sticky-todo-api [--kb-path PATH] create --date YYYY-MM-DD --text TEXT [--status STATUS] [--subtask TEXT]... [--parent-id ID] [--expected-revision REV]
   sticky-todo-api [--kb-path PATH] edit --date YYYY-MM-DD --id ID [--text TEXT] [--status STATUS] [--expected-revision REV]
   sticky-todo-api [--kb-path PATH] delete --date YYYY-MM-DD --id ID [--expected-revision REV]
 
-All successful commands print JSON to stdout. STATUS is todo, done, partial, or question.
+All successful commands print JSON to stdout. STATUS is todo, done, partial, question, or stopped.
 The knowledge-base path resolves from --kb-path, STICKY_TODO_KB_PATH, saved app settings,
 or the app default, in that order.
 "#;
@@ -79,9 +80,22 @@ where
     }
     let kb_path = take_option(&mut args, "--kb-path")?.map(PathBuf::from);
     let kb_path = get_kb_path_for_cli(kb_path);
+    if args.is_empty() {
+        return Err("Missing command. Run with --help.".into());
+    }
     let command = args.remove(0);
 
     match command.as_str() {
+        "mcp" => {
+            let read_only = take_flag(&mut args, "--read-only");
+            reject_unknown(&args)?;
+            crate::mcp::serve(
+                &kb_path,
+                read_only,
+                std::io::stdin().lock(),
+                std::io::stdout().lock(),
+            )
+        }
         "extract" | "list" => {
             let request = ExtractTasksRequest {
                 date: take_option(&mut args, "--date")?,

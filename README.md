@@ -210,6 +210,9 @@ The shared `tests/helpers/browser-fixture.cjs` also accepts `PLAYWRIGHT_MODULE` 
 
 ## Agent Task API
 
+Other local apps, including meeting-summary tools, can also use MCP: build `sticky-todo-api`, then configure it with `args: ["--kb-path", "/your/knowledge-base", "mcp"]`. It exposes list/create/edit/delete tools over stdio; `--read-only` limits access to reading. See the [MCP setup and meeting-summary workflow](docs/llm-api-guide.md#mcp-for-other-applications), including revision and concurrent-editing limits.
+
+
 The repository includes a local command API that resolves the knowledge-base path from the app's saved settings and prints machine-readable JSON:
 
 ```bash

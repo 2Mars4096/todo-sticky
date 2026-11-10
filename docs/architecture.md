@@ -1,5 +1,10 @@
 # Architecture
 
+## Local application task access
+
+`desktop/src-tauri/src/mcp.rs` serves initialize-based MCP 2025-11-25 over bounded newline-delimited stdio through `sticky-todo-api mcp`. It wraps `task_api` directly, validates narrow tool schemas and serializes requests per process. Read-only mode advertises and permits only listing. There is no listener, alternate store or Diane dependency. MCP requires weekly revisions for edits/deletes and creates into existing archives; existing native persistence is optimistic, not cross-process atomic. See [agent contract](llm-api-guide.md#mcp-for-other-applications).
+
+
 ## Shared Diane backend (staged cutover)
 - Embedded Todo preparation uses `hooks/useTaskPreparation.ts`: active/enabled saved task changes debounce to a scoped preparation-only refresh, then quiet60s repeats. Account/unmount cancellation prevents stale requests; backend owns canonical unfinished-task selection, deduplication and Universal Cell preparation.
 - Standalone clients negotiate central broker configuration, sign in with app-scoped custom Firebase tokens, and copy pending/baseline state only from a server-verified original issuer+UID. Shared AI uses the compatibility endpoint; explicit direct provider mode is retained.

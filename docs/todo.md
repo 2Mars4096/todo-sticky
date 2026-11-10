@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Local app CLI/MCP task access merged into `main` — [4-10-1](plans/4-10-agent-task-api.md#4-10-1-local-application-mcp-access).
+
 - [x] Reinstall shared-backend Mac app and repair live cold-instance login exchange; commit in focused batches — [17-1](plans/17-1-canonical-sync.md). Fresh user sign-in acceptance remains pending.
 
 - [x] Reinstall the current verified Mac build at user request; preserve profiles/data and prior app bundle.
@@ -7,7 +9,6 @@
 - [x] Install original Mac app with shared Diane backend and reviewed two-step local handoff — [17-1](plans/17-1-canonical-sync.md), [6](plans/6-diane-handoff.md). Runtime backend and preserved tasks verified; live sign-in/model-session acceptance remains pending.
 
 - [x] Simplify account sync to one Sync button; explicit Sync enables the existing guarded folder binding — [17-1](plans/17-1-canonical-sync.md).
-
 
 - [x] Remove stale empty directories, Python packaging leftovers and empty build logs; retain required tooling markers — [9-folder-cleanup](plans/9-folder-cleanup.md).
 
@@ -260,6 +261,7 @@ Deferred ideas (not implementation commitments): [AI-tool integration cart](idea
 - [x] [5-build-artifact-cleanup](plans/5-build-artifact-cleanup.md) - Remove debug/release build output and recover approximately 8.7 GiB.
 
 ## Backlog
+- [ ] Coordinate native desktop/cloud/CLI writers with shared locking before promising concurrent external mutations; current MCP usage requires paused desktop editing — [4-10](plans/4-10-agent-task-api.md).
 
 - [ ] Revisit whether Star Focus archive retention needs a wider preset range or a dedicated settings-panel home beyond the first local-only `6` / `12` / `24` control pass.
 - [ ] Add a lightweight undo path for task deletion without introducing a confirmation modal.

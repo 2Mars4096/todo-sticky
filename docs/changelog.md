@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-11-10 — Merge task MCP access
+- [integration] Merge the tested CLI/MCP feature into main, preserving newer desktop changes and both sets of tracking entries. Retire its feature branch/worktree; keep unrelated worktrees.
+- [test] Merged main passes all 45 native tests, CLI build and CLI/MCP subprocess smoke on disposable data.
+
+
+## 2026-11-10 — Local task MCP interface
+- [feat] Add stdio MCP list/create/edit/delete tools to the native task CLI, with read-only mode, strict inputs, bounded frames and required existing-archive revisions. Reuses local Markdown storage without Diane.
+- [fix] Return a JSON error rather than panic when CLI receives only `--kb-path`; document `stopped` status.
+- [test] All 45 native tests and a real CLI/MCP subprocess round-trip pass on disposable data; native debug CLI builds.
+- [docs] Add local client configuration and meeting-summary integration examples; explicitly document concurrent-writer and UI-operation limits.
+
 ## 2026-11-10 — Reinstall and login exchange repair
 - [release] Rebuilt/reinstalled the original Mac app; runtime shared backend, signature and all56 unchanged task files verified. Rollback backup retained.
 - [fix] Mac return URI worked; the shared backend could fail token minting on a fresh instance. Diane fix a9508536 passes27 sign-in tests and is live at diane-api-00021-gup. Failed consumed attempts require a new sign-in.

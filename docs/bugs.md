@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## 2026-11-10 — MCP verification and existing write boundary
+- Reusing the desktop target cache from an isolated worktree failed because generated Tauri permission files were missing. Verify with `/private/tmp/sticky-task-mcp-target` and the existing isolated Rust toolchain instead.
+- Native task mutations check revisions but do not lock across processes. MCP serializes one connection only; pause desktop edits and serialize external writers. Shared locking across every desktop/cloud/CLI writer remains follow-up work, not a claimed guarantee of this adapter.
+
 ## 2026-11-10 — Mac return succeeded, token exchange failed
 The macOS Open Sticky Todo prompt and token-free return URI work. Shared auth/exchange returned500 because Firebase initialization happened only during browser identity verification, which can run on another Cloud Run instance. Diane now initializes under a shared process lock before minting;27 tests pass and revision00021-gup is live. Reinstalling alone does not repair backend exchange; begin a new sign-in after the fix.
 
