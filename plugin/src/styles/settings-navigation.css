@@ -1,0 +1,275 @@
+/* Ported from Todo Sticky; selectors scoped to Diane plugin root. */
+/* Compact navigation and settings share the note's readable, quiet controls. */
+.diane-todo-port .sticky-header.compact-date-header {
+  padding: 4px 10px 4px;
+}
+
+.diane-todo-port .compact-date-header .window-drag-bar {
+  height: 7px;
+  margin: 0 0 2px;
+}
+
+.diane-todo-port .compact-date-header .window-drag-pill {
+  height: 3px;
+  background: var(--wb-paper);
+}
+
+.diane-todo-port .compact-date-header .date-nav {
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  max-width: 420px;
+  gap: 3px;
+}
+
+.diane-todo-port .compact-date-header .date-nav .date-title {
+  font-weight: var(--heading-weight);
+  font-size: 13px;
+  min-height: 30px;
+  color: var(--wb-ink);
+  padding: 2px;
+}
+
+.diane-todo-port .compact-date-header .date-nav .date-step {
+  width: 30px;
+  height: 30px;
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .compact-date-header .cal-chevron {
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .compact-date-header .header-row {
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 0;
+  min-height: 28px;
+}
+
+.diane-todo-port .compact-date-header .today-jump {
+  margin-right: auto;
+  min-height: 28px;
+  color: var(--wb-ink);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.diane-todo-port .historical-steps-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--wb-ink);
+  cursor: pointer;
+}
+
+.diane-todo-port .historical-steps-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: #7b5a12;
+}
+
+.diane-todo-port .compact-date-header button:focus-visible,
+.diane-todo-port .historical-steps-toggle:focus-within,
+.diane-todo-port .goals-sidebar button:focus-visible,
+.diane-todo-port .goals-sidebar .goal-text:focus-visible,
+.diane-todo-port .goals-sidebar input:focus-visible,
+.diane-todo-port .goals-sidebar textarea:focus-visible {
+  outline: 2px solid var(--wb-accent);
+  outline-offset: 2px;
+}
+
+.diane-todo-port .goals-sidebar:not(.collapsed) .sidebar-toggle {
+  width: auto;
+  min-width: 48px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 4px;
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .goals-close-label { font-size: 12px; }
+.diane-todo-port .goals-sidebar .goal-section-header h2 { color: var(--wb-ink); }
+.diane-todo-port .goals-sidebar .goal-section-header > span,
+.diane-todo-port .goals-sidebar .goal-composer-input::placeholder { color: var(--wb-muted); }
+
+.diane-todo-port .goals-sidebar .goal-section-description {
+  margin: -3px 0 8px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--wb-ink);
+}
+
+.diane-todo-port .goals-sidebar .goal-row {
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.diane-todo-port .goals-sidebar .goal-row.done { opacity: 1; }
+.diane-todo-port .goals-sidebar .goal-text {
+  min-height: 26px;
+  padding-block: 3px;
+  font-size: 13px;
+  color: var(--wb-ink);
+}
+.diane-todo-port .goals-sidebar .goal-row.done .goal-text { color: var(--wb-ink); }
+.diane-todo-port .goals-sidebar .goal-delete {
+  width: 26px;
+  height: 26px;
+  color: color-mix(in oklch, oklch(65% .17 30) 80%, var(--wb-ink));
+}
+.diane-todo-port .goals-sidebar .goal-toggle,
+.diane-todo-port .goals-sidebar .goal-toggle.done {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  margin-top: 0;
+  border: 0;
+  background: transparent;
+}
+.diane-todo-port .goals-sidebar .goal-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1.5px solid var(--wb-line);
+  border-radius: 3px;
+}
+.diane-todo-port .goals-sidebar .goal-toggle.done::before {
+  background: var(--wb-paper);
+  border-color: var(--wb-line);
+}
+.diane-todo-port .goals-sidebar .goal-toggle.done::after {
+  position: absolute;
+  inset: 4px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--wb-ink);
+}
+.diane-todo-port .goals-sidebar .goal-composer { grid-template-columns: 26px minmax(0, 1fr); column-gap: 5px; }
+.diane-todo-port .goals-sidebar .goal-edit-input,
+.diane-todo-port .goals-sidebar .goal-composer-input { min-height: 30px; font-size: 13px; }
+
+.diane-todo-port .settings-overlay .settings-panel.settings-refined {
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  max-width: 450px;
+  height: min(600px, calc(100dvh - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+  padding: 14px;
+  color: var(--wb-ink);
+}
+.diane-todo-port .settings-refined .settings-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.diane-todo-port .settings-refined .settings-dialog-header h2 { font-size: 16px; font-weight: 650; margin: 0; }
+.diane-todo-port .settings-panel.settings-refined .settings-close { width: 30px; min-height: 30px; padding: 0; font-size: 21px; }
+.diane-todo-port .settings-panel.settings-refined .settings-section-nav {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-bottom: 12px;
+  overflow-x: auto;
+}
+.diane-todo-port .settings-panel.settings-refined .settings-section-nav button {
+  min-height: 32px;
+  padding: 5px 6px;
+  flex: 1 0 auto;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--wb-ink);
+  background: transparent;
+}
+.diane-todo-port .settings-panel.settings-refined .settings-section-nav button[aria-pressed="true"] {
+  color: var(--wb-ink);
+  background: var(--wb-paper);
+  border-color: var(--wb-line);
+  font-weight: 650;
+}
+.diane-todo-port .settings-panel.settings-refined .settings-scroll {
+  min-height: 0;
+  scrollbar-gutter: stable;
+  margin: 0 -3px;
+  padding: 0 3px;
+}
+.diane-todo-port .settings-panel.settings-refined .section-title {
+  color: var(--wb-ink);
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.diane-todo-port .settings-panel.settings-refined label { font-size: 12px; color: var(--wb-muted); }
+.diane-todo-port .settings-panel.settings-refined .settings-description,
+.diane-todo-port .settings-panel.settings-refined .settings-subtitle,
+.diane-todo-port .settings-panel.settings-refined .hint,
+.diane-todo-port .settings-panel.settings-refined .settings-status {
+  color: var(--wb-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.diane-todo-port .settings-refined .settings-description { margin: 4px 0 12px; }
+.diane-todo-port .settings-refined .settings-path {
+  margin: 6px 0 12px;
+  padding: 8px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  background: var(--wb-paper);
+  border: 1px solid var(--wb-line);
+  border-radius: 4px;
+}
+.diane-todo-port .settings-refined .settings-details { margin-top: 14px; }
+.diane-todo-port .settings-refined .settings-details > summary {
+  min-height: 30px;
+  padding: 6px 2px;
+  color: var(--wb-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.diane-todo-port .settings-panel.settings-refined input,
+.diane-todo-port .settings-panel.settings-refined select {
+  box-sizing: border-box;
+  min-height: 32px;
+  min-width: 0;
+  font-size: 13px;
+  border-color: var(--wb-line);
+}
+.diane-todo-port .settings-panel.settings-refined input[type="checkbox"] { min-height: 20px; width: 20px; height: 20px; flex-shrink: 0; accent-color: #7b5a12; }
+.diane-todo-port .settings-panel.settings-refined .diane-credentials-choice { min-height: 32px; align-items: flex-start; line-height: 1.5; }
+.diane-todo-port .settings-panel.settings-refined button { min-height: 30px; min-width: 30px; }
+.diane-todo-port .settings-panel.settings-refined .input-row-btn { width: auto; padding-inline: 8px; }
+.diane-todo-port .settings-panel.settings-refined button.primary { color: var(--wb-ink); background: var(--wb-paper); border-color: var(--wb-line); }
+.diane-todo-port .settings-panel.settings-refined button.primary:hover { background: var(--wb-soft); }
+.diane-todo-port .settings-panel.settings-refined button:focus-visible,
+.diane-todo-port .settings-panel.settings-refined input:focus-visible,
+.diane-todo-port .settings-panel.settings-refined select:focus-visible,
+.diane-todo-port .settings-panel.settings-refined summary:focus-visible {
+  outline: 2px solid var(--wb-accent);
+  outline-offset: 2px;
+}
+.diane-todo-port .settings-refined .settings-machine-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+.diane-todo-port .settings-panel.settings-refined .machine-rm { width: auto; padding-inline: 8px; }
+.diane-todo-port .settings-refined .settings-error { color: color-mix(in oklch, oklch(65% .17 30) 80%, var(--wb-ink)); font-size: 12px; line-height: 1.5; margin-bottom: 10px; }
+.diane-todo-port .settings-refined .settings-error p { margin: 0 0 5px; }
+.diane-todo-port .settings-panel.settings-refined .test-result { font-size: 12px; overflow-wrap: anywhere; }
+.diane-todo-port .settings-panel.settings-refined .test-result.ok { color: var(--wb-ink); }
+.diane-todo-port .settings-panel.settings-refined .test-result.fail { color: var(--wb-ink); }
+.diane-todo-port .settings-panel.settings-refined .btn-row { margin-top: 10px; padding-top: 10px; }
+
+@media (max-height: 500px) {
+  .diane-todo-port .settings-overlay .settings-panel.settings-refined { padding: 10px; height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
+  .diane-todo-port .settings-refined .settings-dialog-header { margin-bottom: 6px; }
+  .diane-todo-port .settings-panel.settings-refined .settings-section-nav { padding-bottom: 6px; gap: 4px; }
+}

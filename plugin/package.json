@@ -1,0 +1,59 @@
+{
+  "name": "@diane-app/todo-plugin",
+  "version": "0.1.7",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css",
+    "./source/*": "./src/*"
+  },
+  "files": [
+    "src",
+    "!src/**/__tests__/*preview*",
+    "README.md",
+    "manifest.json",
+    "dist/index.js",
+    "dist/index.css",
+    "build.mjs",
+    "HOST-CONTRACT.md",
+    "RECOVERY.json"
+  ],
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "*",
+    "date-fns": "^4.0.0",
+    "react-day-picker": "^9.0.0"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:dist": "node dev/check-dist.mjs",
+    "package:check": "node dev/check-package.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run test:dist && npm run package:check",
+    "check:host": "node dev/check-host-contract.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.13",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "esbuild": "0.27.3",
+    "happy-dom": "20.8.4",
+    "lucide-react": "0.575.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "typescript": "5.9.3",
+    "vitest": "4.0.18",
+    "date-fns": "4.4.0",
+    "react-day-picker": "9.14.0"
+  },
+  "types": "./src/index.ts",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

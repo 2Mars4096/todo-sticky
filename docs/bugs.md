@@ -1,5 +1,12 @@
 # Bugs And Failed Approaches
 
+## 2026-11-10: Hosted plugin source and execution-state gaps
+
+- The public repository lacked the `plugin/` source referenced by Diane's pinned release metadata, and its producer commits were unavailable. Recover from the exact shipped UI 0.1.6 archive and backend 0.1.4 wheel, retain hashes in `plugin/RECOVERY.json`, and keep the first recovery separate from subsequent edits. Do not attribute this source to the unrelated public main snapshot.
+- A task-record revision in the hosted handoff key remounted the review form, discarding its draft. Key by account/task instead; flush and gate mutations until the canonical record is saved, without remounting the form. Show Retry even when an older record remains visible after save failure.
+- The prior shared host control navigated immediately after Run and did not expose returned prior attempts. Product controls now separate Run from Open and validate the host's bounded inline history. The host's active-workflow pointer still prevents a complete past-workflow archive; do not substitute a local cache for a durable history API.
+- Accepting whichever result happens to be newest can act on content the user has not reviewed. Pin the displayed result version and block acceptance/revision after a newer result arrives until Review latest is chosen. No code merge is inferred from result acceptance.
+
 ## 2026-11-08: Conditional text emphasis and confusing recovery snapshots
 
 - `::first-line` made bold words depend on window width, while a 160-character task classifier and separate phone rule changed emphasis by content length. Remove those rules and use shared content/heading roles.

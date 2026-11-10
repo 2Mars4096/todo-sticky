@@ -1,0 +1,50 @@
+{
+  "repository": "todo-sticky",
+  "commit": "909afeb94e0d8fdeccf04792fabb184482a1f60f",
+  "source": "todo-sticky",
+  "files": {
+    "types.ts": "9de88526eaf6b0dd815b58e6082613f35c008b7e80d31421f047f52538479e20",
+    "taskCarryForward.ts": "de8bd9296bc33318d259cf504591ea0fc2ba2169c3f715863d41911e636a19f7",
+    "taskRollover.ts": "01b18d049f12eaba0263b3962735eb8f5391c217d5b274c4b069533d77f25ddf",
+    "taskHistory.ts": "d66be238986275f91b0904ac9df941843b095d98a8dec8518c1eeb0860a2501e",
+    "taskPlanning.ts": "03792387dcb5d4ef11795786e5cfebe58c5430adc766a0f9c6febc0e9f26a529",
+    "taskArchive.ts": "236fac5a91cb60ff18c6dbf09420327acff2106598539618682d8998fb3c0a42",
+    "taskArchiveReader.ts": "174350484947d49964e3ce0eb0f43d81e07e45d89d07113194e729f1942c4641",
+    "taskTransfer.ts": "e0fb2c8b5c3cdb337e1d2bad71e6b6577c8a4155d3d3b1c1eb615c1daf726c0f",
+    "projectPlanning.ts": "1a2f2717130f89cccae8020ed301cae3ffaa6019b69a6c7689aeacf45bbd0e35",
+    "projectStorage.ts": "bb0283b6512e1206b2e0e9fe8664d2230137798a492c1cfe388cec7111a40beb",
+    "routines.ts": "592027910d80f0e9c8d34a3d549fce191e80ffd876b6915baa8b922270aee80d",
+    "aiErrors.ts": "ab186b97a6a87f769c0b842b1c26bce0dbcd71046d7a3341d5d6bb8eb9d47714",
+    "cloudSync.ts": "bb2fa6a562dca04dbeb3687c423e53caeba93e2cf209466b7b057449c7664983",
+    "syncMerge.ts": "574c216810ed976c0418696542ad6409012765873c87748a4a6bbc5143e2453b",
+    "hooks/useTasks.ts": "72ed2009ad43312eaab4d10d266788e2ca04f7217f74ef42f9cd4e72de47d848",
+    "hooks/useCalendar.ts": "d941972ae3dd93559a4f99e2a76b4b9870a6ecdd7f9f697ab5d451906902f0ad",
+    "hooks/useDialogFocus.ts": "820bd16336a743ab2b9cbcf30217d3596bf02967285e488ff060f2de652c1ac3",
+    "components/TaskList.tsx": "79495d45698a56cf6681182cd35df7274b6348d32462482e90ba86d6a01db4ac",
+    "components/TaskItem.tsx": "fc5c091c135090ac4b92ef2493befd7294e93c80d7fd2f44a5a238fa414436c6",
+    "components/TaskFinish.tsx": "e9e8845ca90a7b2b5e453f9e69b6e8ab1845ac39900580fc3c07377dd3910aa1",
+    "components/AddTask.tsx": "8a950b8760ec041282944fae448907847b0c48a6847ead7bbf6d24a2532ecf83",
+    "components/ParagraphInput.tsx": "aff82de756dc0fdef0447822f0776fc2707c44e7c68cf8082d4edb518bf50f84",
+    "components/DateHeader.tsx": "0b6ba4484eeb092781a9d62a5a3da6737dad3fa87789df376da8b8bdb19e541f",
+    "components/MiniCalendar.tsx": "228864b1c23c97e1d71bed6d2b8624a59f6f193c77cc28df490f2c678dc5f561",
+    "components/GoalsSidebar.tsx": "2270e8b5415d38dbd2fc835c775062ed1e02574ace4da7e82267ddee79eb8641",
+    "components/ProjectPage.tsx": "d253ef054c32994c70573e52736abb9abccf1747d1922c14d4a8abc07bef49e6",
+    "components/ArchivePage.tsx": "3f0a1d953a0500fa3acc938663b77d9ebd863deb2b0dd823fdaada364cfc9ef6",
+    "components/ScheduleView.tsx": "9dea99922062357d39d4a0fd56b6673a6e619f124909189f6d950cfd3296e2e7",
+    "components/AlbumRecommendations.tsx": "a877afb53c53edfd191584067e5a34d883cbb06cdd94d817abc4f434d9cedc0a",
+    "styles/sticky.css": "0287e4ef307d97e2110ad8ecd8da7c4b95e159371fa9d990cf1649717ed1cf78",
+    "styles/task-interactions.css": "9c9057ce92d72edce5a824b777834234e3d9a34d57b7c3d23ea93575704971ab",
+    "styles/day-planning.css": "f6347292ed4bd114d8818d60a69661119bda40d693ffdc3c8f62aa8ef0aaec4a",
+    "styles/workflow.css": "4595eef5dea89292680c2fbb8dcb0ddf037961d07be5b78c8b4c00acce261c14",
+    "styles/settings-navigation.css": "84fde5aa81e2bd845c10e5961ae54d56710cf294ad1070ca05e9e0aa73be85dc",
+    "styles/project-planning.css": "5b6e4aa09e37b96d897d18f8306ebb3a9e7a42a626c50887704fcf9a958dd56d"
+  },
+  "adapted_fragments": {
+    "PlanningSettings.tsx": {
+      "source": "components/SettingsPanel.tsx",
+      "source_sha256": "43557ee205a29f9a014cbdf2cf61ce52026cf9ccb3359ca797ad2495cb1e34b9",
+      "fragment": "Scheduling machines controls"
+    }
+  },
+  "recovery_note": "Historical source and hashes are retained; an original machine-local source path was omitted during repository recovery."
+}

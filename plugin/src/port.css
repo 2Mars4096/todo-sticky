@@ -1,0 +1,92 @@
+/* Diane palette over the original Todo geometry and interaction classes. */
+.diane-todo-port {--sticky-bg:var(--wb-paper);--sticky-bg-dark:var(--wb-soft);--sticky-border:var(--wb-line);--sidebar-bg:var(--wb-paper);--sidebar-bg-dark:var(--wb-soft);--sidebar-ink:var(--wb-ink);--text-primary:var(--wb-ink);--text-secondary:var(--wb-muted);--text-muted:var(--wb-muted);--accent:var(--wb-accent);--accent-hover:var(--wb-accent);--done-color:var(--wb-muted);--delete-color:var(--wb-ink);--focus-ring:var(--wb-accent);container:todo-port / inline-size;position:relative;isolation:isolate;display:flex;flex-direction:column;width:100%;height:100%;min-height:0;min-width:0;overflow:hidden;font:13px/1.5 var(--diane-font-text,system-ui);color:var(--wb-ink);background:var(--wb-paper);}
+.diane-todo-port .app-shell {position:relative;display:flex;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;background:var(--wb-paper);border-radius:0;box-shadow:none;}
+.diane-todo-port .sticky-container {display:flex;flex-direction:column;flex:1;width:100%;min-width:0;min-height:0;padding:0;background:var(--wb-paper);border-radius:0;box-shadow:none;}
+.diane-todo-port .sticky-header {flex:none;background:var(--wb-paper);padding:10px 12px;border-bottom:1px solid var(--wb-line);}
+.diane-todo-port .task-list {padding-inline:12px;scrollbar-gutter:stable;}
+.diane-todo-port .task-checkbox {flex-shrink:0;padding:0;margin-inline:0;}
+.diane-todo-port .task-entry,.diane-todo-port .task-item {min-width:0;}
+.diane-todo-port .task-content-flow {min-width:0;overflow-wrap:anywhere;}
+.diane-todo-port .action-bar {flex:none;display:flex;flex-wrap:wrap;gap:4px;padding:8px;border-top:1px solid var(--wb-line);background:var(--wb-paper);}
+.diane-todo-port .action-bar button {padding:6px;min-height:30px;color:var(--wb-muted);font:inherit;border:1px solid transparent;border-radius:5px;}
+.diane-todo-port .action-bar button:hover {background:var(--wb-soft);color:var(--wb-ink);}
+.diane-todo-port .goals-sidebar.collapsed {display:none;}
+.diane-todo-port .goals-sidebar:not(.collapsed) {position:absolute;inset:0 0 0 auto;z-index:60;width:min(340px,100%);min-width:0;background:var(--wb-paper);border-left:1px solid var(--wb-line);box-shadow:none;}
+.diane-todo-port .sidebar-backdrop {position:absolute;inset:0;z-index:55;background:color-mix(in srgb,var(--wb-paper) 65%,transparent);border:0;}
+.diane-todo-port .goals-sidebar .sidebar-top {background:var(--wb-paper);}
+.diane-todo-port .todo-diane-handoff {padding:10px 0;border-top:1px solid var(--wb-line);display:flex;flex-direction:column;gap:8px;}
+.diane-todo-port .todo-diane-handoff :is(button,input,select,textarea) {font:inherit;color:inherit;background:var(--wb-paper);border:1px solid var(--wb-line);border-radius:5px;min-height:30px;padding:5px 8px;max-width:100%;}
+.diane-todo-port .todo-diane-handoff .wb-plugin-workflow {border:0;padding:0;}
+.diane-todo-port .todo-diane-handoff .wb-plugin-input-action {display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.diane-todo-port .todo-diane-handoff small {color:var(--wb-muted);}
+.diane-todo-port .todo-port-error {padding:8px 12px;border-bottom:1px solid var(--wb-line);font-size:12px;overflow-wrap:anywhere;}
+.diane-todo-port .todo-port-error button {padding:3px 6px;text-decoration:underline;}
+.diane-todo-port .todo-port-data {flex:none;padding:8px 12px;border-top:1px solid var(--wb-line);font-size:12px;}
+.diane-todo-port .todo-port-data details[open] {max-height:40vh;overflow:auto;}
+.diane-todo-port .todo-port-data summary {cursor:pointer;color:var(--wb-muted);}
+.diane-todo-port .todo-port-data :is(button,input) {padding:5px;border:1px solid var(--wb-line);border-radius:4px;background:var(--wb-paper);font:inherit;color:inherit;}
+.diane-todo-port .todo-port-data .wb-plugin-actions {display:flex;gap:6px;flex-wrap:wrap;}
+.diane-todo-port :focus-visible {outline:2px solid var(--wb-accent);outline-offset:2px;}
+.diane-todo-port .task-text-input {font:inherit;}
+.diane-todo-port .schedule-overlay {position:absolute;inset:0;}
+.diane-todo-port .schedule-panel {width:100%;max-width:100%;max-height:100%;box-shadow:none;border:1px solid var(--wb-line);}
+.diane-todo-port .workflow-page,.diane-todo-port .project-page {min-width:0;overflow:auto;}
+.diane-todo-port button {box-shadow:none;}
+@container todo-port (max-width:420px) {.diane-todo-port .task-primary-actions {flex-wrap:wrap;}.diane-todo-port .task-primary-actions button {min-width:30px;min-height:30px;}.diane-todo-port .date-nav {gap:4px;}}
+.diane-todo-port .todo-port-settings,.diane-todo-port .todo-port-backup {margin-bottom:8px;}
+.diane-todo-port .todo-port-settings[open],.diane-todo-port .todo-port-backup[open] {display:flex;flex-direction:column;gap:8px;}
+.diane-todo-port .todo-port-settings .machine-card {display:grid;gap:5px;padding:10px 0;border-bottom:1px solid var(--wb-line);box-shadow:none;background:var(--wb-paper);}
+.diane-todo-port .todo-port-settings .settings-machine-heading {display:flex;align-items:center;justify-content:space-between;}
+.diane-todo-port .todo-port-backup small {color:var(--wb-muted);font-size:11px;}
+.diane-todo-port .todo-task-guard {display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;margin:0;padding:0;border:0;}
+.diane-todo-port .todo-task-guard:disabled button {cursor:default;}
+.diane-todo-port .todo-goal-write-guard {min-width:0;border:0;padding:0;margin:0;}
+.diane-todo-port .app-shell :is(button,.calendar-popup,.goals-sidebar,.schedule-panel) {box-shadow:none!important;}
+
+/* Keep short field labels intact in narrow docks; theme the source controls. */
+.diane-todo-port .task-entry .finish-field { grid-template-columns:max-content minmax(0,1fr); gap:8px; }
+.diane-todo-port .finish-field-label { white-space:nowrap; color:var(--wb-muted); }
+.diane-todo-port .sticky-container :is(input,textarea,select) { color:var(--wb-ink); border-color:var(--wb-line); }
+.diane-todo-port .sticky-container :is(input,textarea,select):focus { border-color:var(--wb-accent); box-shadow:none; }
+.diane-todo-port .action-bar { flex-wrap:nowrap; justify-content:space-between; }
+.diane-todo-port .action-bar button { display:inline-flex; align-items:center; justify-content:center; min-width:34px; min-height:34px; background:transparent; }
+.diane-todo-port { container-type:size; }
+.diane-todo-port .calendar-popup { max-width:calc(100cqw - 24px); max-height:calc(100cqh - 60px); overflow:auto; background:var(--wb-paper); border-color:var(--wb-line); box-shadow:none; }
+.diane-todo-port .calendar-popup .rdp-root { --rdp-day-width:32px; --rdp-day-height:32px; --rdp-day_button-width:30px; --rdp-day_button-height:30px; --rdp-nav_button-width:30px; --rdp-nav_button-height:30px; --rdp-accent-color:var(--wb-accent); --rdp-accent-background-color:var(--wb-soft); }
+.diane-todo-port .task-entry .finish-field-label { white-space:nowrap; color:var(--wb-muted); }
+
+/* One task is one group: spacing connects its fields, steps and actions. */
+.diane-todo-port .sticky-header { border-bottom:0; padding-bottom:6px; }
+.diane-todo-port .task-entry { padding-block:8px; border:0; }
+.diane-todo-port .task-entry + .task-entry { margin-top:6px; }
+.diane-todo-port .task-entry-selected { background:var(--wb-soft); border-radius:6px; }
+.diane-todo-port .task-entry :is(.task-primary-actions,.todo-diane-handoff,.task-step-summary,.task-history) { border:0; }
+.diane-todo-port .todo-diane-handoff { gap:6px; padding-block:8px 2px; }
+.diane-todo-port .task-project select { width:100%; min-height:30px; }
+.diane-todo-port .task-project { margin-block:6px; }
+.diane-todo-port .action-bar { border-top:0; gap:4px; padding:6px 10px; }
+.diane-todo-port .todo-port-data { border-top:0; padding:2px 12px 10px; }
+.diane-todo-port .todo-port-data>details { margin-block:0; }
+.diane-todo-port .todo-port-data summary { padding-block:5px; }
+.diane-todo-port .todo-port-settings .machine-card { border:0; padding-block:8px; }
+/* Keep task execution and discussion together, including narrow plugin panes. */
+.diane-todo-port .todo-diane-handoff { flex-direction:row; align-items:flex-end; gap:6px; }
+.diane-todo-port .todo-diane-handoff>.wb-plugin-workflow { flex:1; min-width:0; }
+.diane-todo-port .todo-diane-handoff>.wb-plugin-input-action { flex:none; }
+.diane-todo-port .todo-diane-handoff>p { flex:1; }
+
+/* Footer peers: no extra planning wrapper between the action and its controls. */
+.diane-todo-port .todo-port-data .todo-port-ai-settings {display:flex;align-items:center;gap:6px;width:100%;padding:5px 0;border:0;background:transparent;color:var(--wb-muted);text-align:left;}
+.diane-todo-port .todo-port-data :is(summary,.todo-port-ai-settings):focus-visible {outline:2px solid var(--wb-accent);outline-offset:2px;}
+.diane-todo-port .todo-port-settings :is(input,select) {width:100%;min-width:0;box-sizing:border-box;}
+
+.diane-todo-port .todo-port-settings[open]>summary {position:sticky;top:0;z-index:1;flex-shrink:0;background:var(--wb-paper);}
+.diane-todo-port .todo-port-data button:disabled {opacity:.45;cursor:default;}
+
+/* A shared 14px marker slot keeps all three footer labels on one axis. */
+.diane-todo-port .todo-port-data>details>summary {display:flex;align-items:center;gap:6px;list-style:none;}
+.diane-todo-port .todo-port-data>details>summary::-webkit-details-marker {display:none;}
+.diane-todo-port .todo-port-data>details>summary::marker {content:"";}
+.diane-todo-port .todo-port-data>details>summary::before {content:"";display:block;flex:0 0 14px;width:14px;height:14px;background:currentColor;clip-path:polygon(5px 3px,10px 7px,5px 11px);}
+.diane-todo-port .todo-port-data>details[open]>summary::before {clip-path:polygon(3px 5px,11px 5px,7px 10px);}
+.diane-todo-port .todo-port-data>.todo-port-ai-settings>svg {flex:0 0 14px;width:14px;height:14px;}

@@ -1,0 +1,40 @@
+/* Ported from Todo Sticky; selectors scoped to Diane plugin root. */
+.diane-todo-port .archive-page { display:flex; flex-direction:column; flex:1; min-height:0; color:var(--text-primary); font-size:13px; }
+.diane-todo-port .archive-heading { display:flex; align-items:center; gap:12px; padding:10px 12px; flex-shrink:0; border-bottom:1px solid var(--sticky-border); }
+.diane-todo-port .archive-heading h2 { font-size:16px; margin:0; flex:1; }
+.diane-todo-port .archive-page button, .diane-todo-port .archive-page input, .diane-todo-port .archive-page select, .diane-todo-port .routine-options button, .diane-todo-port .routine-options select { font:inherit; color:var(--text-primary); border:1px solid var(--sticky-border); border-radius:4px; background:transparent; min-height:30px; padding:4px 8px; }
+.diane-todo-port .archive-page button { cursor:pointer; }
+.diane-todo-port .archive-page button:disabled { opacity:.55; cursor:default; }
+.diane-todo-port .archive-page :focus-visible, .diane-todo-port .routine-options :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.diane-todo-port .archive-controls { display:flex; gap:8px; flex-wrap:wrap; padding:10px 12px; }
+.diane-todo-port .archive-controls input { flex:1; width:100%; min-width:0; }
+.diane-todo-port .archive-controls > input { flex-basis:160px; }
+.diane-todo-port .archive-scroll { overflow:auto; min-height:0; padding:0 12px 12px; overscroll-behavior:contain; }
+.diane-todo-port .archive-results { list-style:none; padding:0; margin:0; }
+.diane-todo-port .archive-results li { border-top:1px solid var(--sticky-border); }
+.diane-todo-port .archive-results button { display:flex; flex-direction:column; width:100%; text-align:left; border:0; padding:10px 2px; gap:4px; }
+.diane-todo-port .archive-results button:hover { background:var(--sticky-bg-dark); }
+.diane-todo-port .archive-result-title { overflow-wrap:anywhere; }
+.diane-todo-port .archive-meta { color:var(--text-secondary); font-size:12px; overflow-wrap:anywhere; }
+.diane-todo-port .progress-period { display:flex; gap:8px; flex:1; min-width:180px; }
+.diane-todo-port .progress-summary { padding:2px 0 12px; }
+.diane-todo-port .progress-summary p { margin:8px 0; line-height:1.5; }
+.diane-todo-port .progress-summary progress { width:100%; height:6px; accent-color:var(--accent); }
+.diane-todo-port .progress-summary summary { cursor:pointer; color:var(--text-secondary); min-height:28px; }
+.diane-todo-port .progress-summary details p { color:var(--text-secondary); font-size:12px; }
+.diane-todo-port .workflow-error { color:var(--danger, #853a2d); }
+.diane-todo-port .action-bar .workflow-entry { padding:4px 7px; min-width:28px; }
+.diane-todo-port .action-bar .workflow-entry svg { width:16px; height:16px; display:block; fill:none; stroke:currentColor; stroke-width:1.5; }
+.diane-todo-port .action-bar .sync-indicator { min-width:28px; padding:5px; display:inline-flex; align-items:center; justify-content:center; }
+.diane-todo-port .sync-mark { display:inline-flex; align-items:center; justify-content:center; width:12px; height:12px; border-radius:50%; font-size:10px; line-height:1; border:1px solid currentColor; color:var(--text-secondary); }
+.diane-todo-port .sync-mark.synced { color:oklch(46% .08 140); }
+.diane-todo-port .sync-mark.waiting, .diane-todo-port .sync-mark.syncing { color:oklch(48% .09 80); }
+.diane-todo-port .sync-mark.attention { color:oklch(46% .12 30); }
+.diane-todo-port .carried-attention { width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.diane-todo-port .routine-options { margin:0 0 8px 26px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12px; color:var(--text-secondary); }
+.diane-todo-port .routine-symbol { display:inline-flex; align-items:center; justify-content:center; width:18px; flex-shrink:0; color:var(--text-secondary); }
+.diane-todo-port .progress-summary progress { appearance:none; border:0; background:var(--sticky-bg-dark); border-radius:3px; overflow:hidden; }
+.diane-todo-port .progress-summary progress::-webkit-progress-bar { background:var(--sticky-bg-dark); }
+.diane-todo-port .progress-summary progress::-webkit-progress-value { background:var(--accent); }
+.diane-todo-port .progress-summary progress::-moz-progress-bar { background:var(--accent); }
+@container todo-port (max-width:380px) { .diane-todo-port .app-shell.is-compact .action-bar > button { padding-inline:4px; } }

@@ -21,7 +21,17 @@
 - The backend advertises `goalPlanning:true` and payload schemas `[1,2]` under protocol 1. Updated clients request/write schema 2; legacy readers receive a projection, and matching legacy edits retain stored metadata. Same-revision v1 baselines recover hidden metadata before acknowledging the upgrade. Clients with linked data stop sync safely against an old service. See [account-sync.md](account-sync.md).
 - An explicit Gradle `stickyReviewBuild=true` creates a separate optimized preview application ID and debug signature. `STICKY_PREVIEW=true` uses manual browser return. Default release builds still require the original production keystore; preview data is isolated from the installed production application.
 
-## Diane Handoff
+## Hosted Todo plugin
+
+- `plugin/` is the product-owned React 19 UI package consumed by Dear Diane. It has an independent lockfile, strict TypeScript/Vitest checks, an external-SDK production build, package audit and generated-module render smoke. The standalone React 18/Tauri and Flutter trees retain their own builds and storage paths.
+- The initial source was recovered from the checksum-verified UI 0.1.6 archive and backend 0.1.4 wheel already shipped by Diane; the recorded producer commits were unavailable on GitHub. `plugin/RECOVERY.json` records that historical baseline. Candidate UI 0.1.7 changes the hosted source only. The backend's three modules rebuild byte-for-byte unchanged from 0.1.4.
+- `plugin/src/TaskDianeAction.tsx` flushes canonical task saves before enabling execution. Identity is account/task scoped, so record revision refreshes preserve the open review input; pending or failed saves disable mutation and expose local Retry. Ordinary task/step editing keeps its existing handlers.
+- `TaskExecution.tsx` owns one compact state-dependent Run/Open/Review row over the existing host APIs. Preparation is quiet, revision/account checked and separate from dispatch. Manual project selection takes precedence over late preparation. Task/account changes fence late reads and actions; in-flight mutation locks prevent duplicate clicks. Status polling coalesces focus/visibility events and pauses when the pane is inactive or the document hidden.
+- `taskExecutionState.ts` retains account/task-scoped project corrections and dispatch request identities locally, including interrupted retry identity. Workflow/session truth comes from the host. Existing inline history contains at most five prior attempts on the current workflow; only validated session/dispatch references become read-only Open links. The current host does not expose a complete historical workflow listing or shared task-to-project binding.
+- Review pins the displayed result version until the user chooses Review latest. Accept & complete and Request changes send that exact version; the latter preserves its draft through task revision refreshes. Stop run calls the execution-stop endpoint, not the task-stop review decision. Ordinary completion, runtime approvals and Git integration remain separate responsibilities.
+- `plugin/src/paneLayout.css` owns shared page/disclosure alignment, while `styles/task-execution.css` keeps selected-task controls compact. Diane supplies palette and toolbar-height tokens. The package exposes no branch/worktree, diff/checks or Merge capability.
+
+## Standalone Diane Handoff
 
 - `connectDiane` is a native-persisted, default-off handoff preference. The provider mounts only when enabled; disabling retains stored receipts and hides controls. Settings identifies local Dear Diane and its selected project/folder. File-backed credential preference is separate.
 
@@ -45,6 +55,7 @@ See [folder guide](folder-guide.md) for hidden directories, script purposes and 
 
 - [ ] `src/`: React application shell, task UI components, hooks, API bridge, and global sticky-note styling.
 - [ ] `src-tauri/`: Rust commands, config, markdown/file-sync logic, tray/window behavior, and native app packaging.
+- [ ] `plugin/`: separately packaged Dear Diane UI and compatibility backend; see the hosted plugin architecture above.
 - [ ] `docs/`: live project tracking, roadmap, plans, changelog, bugs, and architecture notes.
 - [ ] `content/`: markdown-backed task data under `content/to-do/`.
 - [ ] Other top-level directories: `demo/` for assets, `scripts/` for build/demo utilities, `dist/` for built frontend assets.

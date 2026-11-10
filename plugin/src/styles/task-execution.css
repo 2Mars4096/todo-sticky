@@ -1,0 +1,36 @@
+.diane-todo-port .todo-diane-handoff { align-items:flex-start; flex-wrap:wrap; }
+.diane-todo-port .todo-diane-handoff > p { flex-basis:100%; margin:0; }
+.diane-todo-port .todo-execution { flex:1; min-width:0; font-size:12px; }
+.diane-todo-port .todo-execution-row { display:flex; align-items:center; flex-wrap:wrap; gap:5px; min-width:0; }
+.diane-todo-port .todo-execution-row > select { flex:1 1 100px; width:100px; min-width:0; max-width:180px; padding:4px 20px 4px 6px; border-color:transparent; background:transparent; }
+.diane-todo-port .todo-execution-project { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--wb-muted); }
+.diane-todo-port .todo-execution-state { color:var(--wb-muted); font-size:11px; }
+.diane-todo-port .todo-execution-state:empty { display:none; }
+.diane-todo-port .todo-execution :is(button,a) { display:inline-flex; align-items:center; justify-content:center; gap:5px; min-height:30px; padding:4px 8px; border:1px solid var(--wb-line); border-radius:5px; background:transparent; color:var(--wb-ink); font:inherit; text-decoration:none; cursor:pointer; }
+.diane-todo-port .todo-execution :is(button,a):hover { background:var(--wb-soft); }
+.diane-todo-port .todo-execution button:disabled { opacity:.5; cursor:default; }
+.diane-todo-port .todo-execution .todo-execution-primary { border-color:var(--wb-accent); color:var(--wb-accent); font-weight:600; }
+.diane-todo-port .todo-execution-options { position:relative; flex:none; }
+.diane-todo-port .todo-execution-options > summary { display:grid; place-items:center; min-width:28px; min-height:30px; list-style:none; cursor:pointer; border-radius:5px; font-weight:600; }
+.diane-todo-port .todo-execution-options > summary::-webkit-details-marker { display:none; }
+.diane-todo-port .todo-execution-options > summary::before { display:none; }
+.diane-todo-port .todo-execution-options > div { position:absolute; right:0; top:100%; z-index:4; display:flex; flex-direction:column; min-width:136px; padding:4px; border:1px solid var(--wb-line); border-radius:6px; background:var(--wb-paper); }
+.diane-todo-port .todo-execution-options button { justify-content:flex-start; border:0; white-space:nowrap; }
+.diane-todo-port .todo-execution-details { margin-top:8px; padding:8px 0 0; border-top:1px solid var(--wb-line); }
+.diane-todo-port .todo-execution-details > header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.diane-todo-port .todo-execution-details > header strong { font-size:12px; font-weight:600; }
+.diane-todo-port .todo-execution-details > header button { border:0; padding:2px 6px; }
+.diane-todo-port .todo-execution-details p { margin:6px 0; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.diane-todo-port .todo-execution-result { white-space:pre-wrap; }
+.diane-todo-port .todo-execution-root { color:var(--wb-muted); font:11px/1.5 ui-monospace,monospace!important; }
+.diane-todo-port .todo-execution-review-actions,.diane-todo-port .todo-execution-revision > div { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.diane-todo-port .todo-execution-revision label { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
+.diane-todo-port .todo-execution-revision textarea { width:100%; min-height:72px; box-sizing:border-box; resize:vertical; }
+.diane-todo-port .todo-execution-history { margin-top:10px; border-top:1px solid var(--wb-line); }
+.diane-todo-port .todo-execution-history > summary { display:flex; align-items:center; gap:8px; padding:7px 0; cursor:pointer; }
+.diane-todo-port .todo-execution-history > summary > span { color:var(--wb-muted); font-size:11px; }
+.diane-todo-port .todo-execution-history ul { list-style:none; margin:0; padding:0; }
+.diane-todo-port .todo-execution-history li { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 0; }
+.diane-todo-port .todo-execution-error,.diane-todo-port .todo-execution-notice { margin:6px 0 0; font-size:12px; overflow-wrap:anywhere; }
+.diane-todo-port .todo-execution-error { color:var(--wb-ink); }
+@media (pointer:coarse) { .diane-todo-port .todo-execution :is(button,a,select),.diane-todo-port .todo-execution-options > summary { min-height:40px; } }

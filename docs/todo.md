@@ -1,5 +1,7 @@
 # Todo
 
+- [x] [17-hosted-task-execution](plans/17-hosted-task-execution.md) — product-owned Run/Open/Review, compact project binding and bounded saved-session retrieval; 34 tests, strict types/build/package/host-contract checks pass. Standalone apps unchanged; host integration/live acceptance tracked separately.
+
 - [x] [16-4-phone-sync-shortcut](plans/16-4-phone-sync-shortcut.md) — phone cloud control syncs directly with result feedback; Account remains in Settings. All 127 phone tests pass; original-key APK +19 delivered.
 
 - [x] [4-54-text-emphasis-consistency](plans/4-54-text-emphasis-consistency.md) — shared plain-content/semibold-heading rules, clear read-only backups, final Mac reinstall and original-key APK +18 delivered.
