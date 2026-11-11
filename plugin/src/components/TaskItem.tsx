@@ -1,5 +1,7 @@
 import { useTodoPort } from '../TodoPortContext'
 import { TaskDianeAction } from '../TaskDianeAction'
+import { TaskStepProposal } from '../TaskStepProposal'
+import { TaskWorkflowStatus } from '../TaskWorkflowStatus'
 import { ParagraphInput } from './ParagraphInput'
 import { useState, useRef, useEffect, useId, type PointerEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
@@ -281,6 +283,7 @@ export function TaskItem({
           {statusLabel && <span className={`task-state-label state-${status}`}>{statusLabel}</span>}
           {dateLabel && <span className="task-source-label">{dateLabel}</span>}
         </div>}
+        {!isOtherDate && <TaskWorkflowStatus taskId={recordId ?? id} />}
         {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
           selected={selected && !editing} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
         {!isOtherDate && projects.length>0 && selected && <div className="task-project">
@@ -307,6 +310,7 @@ export function TaskItem({
             onClick={onDelete} aria-label={`Delete ${text}`}><DeleteIcon /></button>}
         </div>}
         {selected && !isOtherDate && !editing && <TaskDianeAction id={recordId ?? id} />}
+        {!isOtherDate && <TaskStepProposal taskId={id} />}
         {breakingDown && <span className="task-inline-status" role="status">Preparing suggested steps…</span>}
       </div>
     </div>

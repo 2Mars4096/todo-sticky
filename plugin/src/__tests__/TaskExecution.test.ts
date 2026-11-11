@@ -14,7 +14,7 @@ const task = (patch: Partial<PluginRecord> = {}): PluginRecord => ({
 });
 const prepared = { state: 'ready' as const, task_revision: 1, project_id: 'research', workspace_root: '/work/research', fingerprint: 'prepared-1', context: 'Read the existing research notes.', _scope: 'owner-a' };
 const run: Workflow = { workflow_id: 'attempt-1', task_id: 'task-a', task_revision: 1, project_id: 'research', dispatch_id: 'dispatch-1', request_id: 'request-1', session_id: 'session-1', state: 'running', _scope: 'owner-a' };
-const result: Workflow = { ...run, state: 'awaiting_review', result_version: 'result-1', result: { summary: 'Notes reviewed.' } };
+const result: Workflow = { ...run, state: 'awaiting_review', result_version: 'result-1', result: { summary: 'Notes reviewed.' }, can_discard_result: true };
 let host: HTMLDivElement, root: ReturnType<typeof createRoot>;
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -153,10 +153,71 @@ it('pins the displayed result until the user explicitly opens a newer version', 
   await click('Refresh');
   expect(host.textContent).toContain('Notes reviewed.'); expect(host.textContent).not.toContain('New result.');
   expect(button('Accept & complete').disabled).toBe(true);
+  expect(button('Discard result').disabled).toBe(true);
   await click('Accept & complete'); expect(client.pluginApi.review).not.toHaveBeenCalled();
   await click('Review latest'); expect(host.textContent).toContain('New result.');
   await click('Accept & complete');
   expect(vi.mocked(client.pluginApi.review).mock.calls[0][0].result_version).toBe('result-2');
+});
+
+it('discards a changed task result and runs its saved edits without reverting or completing the task', async () => {
+  const changed = task({ revision: 2, text: 'Review the notes and the appendix.', extensions: { outcome: 'Include appendix references.' } });
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [{ ...result,
+    review_conflict: 'This task changed after the run. Discard this result, then run the updated task.',
+  }] });
+  vi.mocked(client.pluginApi.preparation).mockResolvedValue({ ...prepared, task_revision: 2, fingerprint: 'prepared-2' });
+  vi.mocked(client.pluginApi.review).mockResolvedValue({ ...result, state: 'stopped' });
+  await render(changed); await click('Review');
+  expect(host.textContent).toContain('This task changed after the run.');
+  expect(button('Accept & complete').disabled).toBe(true);
+  expect(button('Request changes').disabled).toBe(true);
+  expect(button('Discard result').disabled).toBe(false);
+  await click('Accept & complete'); expect(client.pluginApi.review).not.toHaveBeenCalled();
+  await click('Discard result');
+  expect(client.pluginApi.review).toHaveBeenCalledWith(expect.objectContaining({ result_version: 'result-1' }), 'stop', '', expect.any(String));
+  expect(client.pluginApi.stop).not.toHaveBeenCalled();
+  expect(host.textContent).toContain('Result discarded.');
+  expect(host.querySelector('.todo-execution-details')).toBeNull();
+  expect(button('Run again').closest('details')).toBeNull();
+  await click('Run again');
+  expect(client.pluginApi.run).toHaveBeenCalledWith(changed, 'research', expect.any(String), 'prepared-2');
+});
+
+it('blocks a drafted revision when the host reports a changed parent or step, while allowing result discard', async () => {
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [result] });
+  await render(); await click('Review'); await click('Request changes');
+  const input = host.querySelector<HTMLTextAreaElement>('textarea')!;
+  act(() => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(input, 'Check the appendix.'); input.dispatchEvent(new Event('input', { bubbles: true })); });
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [{ ...result, review_conflict: 'The task steps changed. Discard this result, then run again.' }] });
+  // A saved child/parent edit reloads the root record without changing its revision.
+  await render(task());
+  expect(input.value).toBe('Check the appendix.');
+  expect(button('Send changes').disabled).toBe(true);
+  expect(button('Discard result').disabled).toBe(false);
+  await click('Send changes'); expect(client.pluginApi.review).not.toHaveBeenCalled();
+  await click('Discard result');
+  expect(client.pluginApi.review).toHaveBeenCalledWith(expect.anything(), 'stop', '', expect.any(String));
+});
+
+it('keeps discard available on unflagged results and retries an interrupted discard with the same request identity', async () => {
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [result] });
+  vi.mocked(client.pluginApi.review).mockRejectedValueOnce(new Error('Connection interrupted')).mockResolvedValue({ ...result, state: 'stopped' });
+  await render(); await click('Review'); await click('Discard result');
+  expect(host.querySelector('[role="alert"]')?.textContent).toContain('Connection interrupted');
+  expect(button('Discard result').disabled).toBe(false);
+  await click('Discard result');
+  const calls = vi.mocked(client.pluginApi.review).mock.calls;
+  expect(calls[0][3]).toBe(calls[1][3]);
+  expect(button('Run again')).toBeTruthy();
+});
+
+it('never labels the older host task-stop operation as result discard', async () => {
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [{ ...result, can_discard_result: undefined }] });
+  await render(); await click('Review');
+  expect(button('Discard result')).toBeUndefined();
+  expect(host.textContent).toContain('Update Diane to discard a result without closing its task.');
+  expect(client.pluginApi.review).not.toHaveBeenCalled();
+  expect(client.pluginApi.stop).not.toHaveBeenCalled();
 });
 
 it('preserves a requested-change draft while the same task record revision refreshes', async () => {
@@ -183,6 +244,44 @@ it('stops only the active run through its stop endpoint without accepting or sto
   await render(); await click('Stop run');
   expect(client.pluginApi.stop).toHaveBeenCalledWith(run); expect(client.pluginApi.review).not.toHaveBeenCalled();
   expect(host.textContent).toContain('Run stopped.'); expect(button('Run again')).toBeTruthy();
+  expect(button('Run again').closest('details')).toBeNull();
+});
+
+it.each(['stopped', 'attention'])('can stop an attention workflow without a run ID and honors the %s acknowledgment', async state => {
+  const interrupted = { ...run, state: 'attention' };
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [interrupted] });
+  vi.mocked(client.pluginApi.stop).mockResolvedValue({ ...interrupted, state });
+  await render();
+  expect(host.textContent).toContain('Needs input');
+  await click('Stop run');
+  expect(client.pluginApi.stop).toHaveBeenCalledWith(interrupted);
+  expect(client.pluginApi.review).not.toHaveBeenCalled();
+  if (state === 'stopped') {
+    expect(host.textContent).toContain('Run stopped.'); expect(button('Run again')).toBeTruthy();
+  } else {
+    expect(host.textContent).toContain('Stop requested.'); expect(host.textContent).toContain('Needs input');
+    expect(button('Run again')).toBeUndefined(); expect(button('Stop run')).toBeTruthy();
+  }
+});
+
+it.each(['failed', 'stopped'])('shows Run again directly for a %s run and keeps Open pointed at the previous session', async state => {
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [{ ...run, state }] });
+  await render();
+  const retry = button('Run again');
+  expect(retry.closest('.todo-execution-row')).toBeTruthy();
+  expect(retry.closest('details')).toBeNull();
+  expect(retry.disabled).toBe(false);
+  expect([...host.querySelectorAll('button')].filter(item => item.textContent === 'Run again')).toHaveLength(1);
+  await click('Open');
+  expect(client.pluginApi.openWorkflow).toHaveBeenCalledWith(expect.objectContaining({ session_id: 'session-1', project_id: 'research' }));
+  await click('Run again'); expect(client.pluginApi.run).toHaveBeenCalledOnce();
+});
+
+it('keeps closed tasks closed after a stopped run without offering Run again', async () => {
+  vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [{ ...run, state: 'stopped' }] });
+  await render(task({ status: 'done' }));
+  expect(button('Run again')).toBeUndefined(); expect(button('Open')).toBeTruthy();
+  expect(client.pluginApi.run).not.toHaveBeenCalled();
 });
 
 it('ignores late execution responses after task scope changes or the view becomes inactive', async () => {

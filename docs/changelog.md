@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-11-10 — Preserve current main and complete staged failure receipts
+
+- [integration] Incorporate existing main `2531781de69abe5b83a0b599f5c4746cceabf81e` from merge base `7f64acd8081884b9f608adf245f0619fd757bb6e`, retaining the recovery branch's UI 0.1.8 behavior and the new 0.1.9 work. Inherited changes include local stdio MCP, guarded one-button Sync, and editable/reviewed standalone Diane setup. Preserve both branches' documentation history.
+- [fix] Allow 390 seconds only for the desktop native `prepare` operation; connection, record and receipt reads use 20 seconds. The web setup adapter already awaits the native transport and stores request identity before sending, so receipt checks cannot silently submit a duplicate preparation.
+- [receipts] Preserve staged execution and partial usage coverage when the provider raises before returning a result. Failed acceptance records `domain_validated: false` while retaining the Cell's original schema result and source evidence.
+- [validation] Standalone workspace/preparation/shared-account/shared-agent and updated sync-frequency checks pass. The full standalone runner passed its first 18 suites before the environment's missing `firebase/app` dependency blocked an unrelated suite. Rust/browser/native-install verification is not claimed for this integration. Plugin package sources are unaffected by the inherited main changes; the receipt fix requires a new backend wheel.
+
+## 2026-11-10 — Contextual suggestions and task-list execution status
+
+- [ai] Supply revision-bound canonical task trees, project details and frozen Meeting passages to Diane's shared Universal Cell profiles. Keep source content untrusted, permission/schema checks intact, and usage receipts after source-race rejection. Older supplied-context clients remain compatible.
+- [ui] Present editable suggested steps before Add steps. Cap breakdowns at eight, reject stale task/day proposals, and provide Undo that preserves subsequent user edits.
+- [workflow] Show saved workflow progress on unselected task rows using bounded parent-level batch reads. Coalesce focus/change refreshes; mark lost contact unavailable and fence late results after account changes.
+- [runtime] Raise only shared AI timeouts to 390 seconds for bounded multistep processing; standalone direct providers and ordinary sync limits retain their behavior. Candidate UI 0.1.9 and backend 0.1.5 require matching Diane integration.
+- [validation] Strict TypeScript, 53 UI tests, build/dist/package gates, the actual-host SDK contract and 43 contextual/compatibility/sync backend tests pass, including the composed three-stage Cell using deterministic transport and failed-stage receipt preservation. The status regression checks every render while switching accounts with the same task ID. Existing standalone shared-agent/shared-account suites pass. Installed-app, phone build and real-provider validation are not claimed.
+
+## 2026-11-10 — Recover edited results and expose retries
+
+- [fix] Add versioned **Discard result** to hosted Review so edited tasks/steps can release their old result and run again. Consume the host's `review_conflict` explanation and block accept/revise while keeping dismissal available; the coordinated host preserves task content and status.
+- [ui] Put **Run again** directly in the compact action row after failed/stopped work. Preserve saved session Open, explicit project corrections, closed-task state, and retry identities. Keep **Stop run** available for attention states, including an interrupted revision without a run ID; show Run again only after the host acknowledges stopped.
+- [test] Add edited-task discard→rerun, changed-step draft blocking, interrupted discard identity, stale-result dismissal guard, visible failed/stopped retry, and completed-task regressions. Candidate plugin UI: 0.1.8; standalone app sources unchanged.
+- [validation] Strict types, 8 suites/43 tests, production build/dist render, package/import checks and actual Diane SDK check pass. Browser visual verification remains uncompleted because the connected browser was unavailable and the cloud browser could not reach the local fixture; no installation or real-agent evidence is claimed by these product tests.
+
 ## 2026-11-10 — Deliver CLI/MCP Mac build
 - [delivery] Push merged main to the user-confirmed GitHub origin; rebuild/reinstall and reopen Sticky Todo 2.1.16 with the bundled CLI/MCP executable. Preserve shared-backend settings.
 - [test] Signed bundle/hash checks and installed CLI/MCP subprocess smoke pass. All 56 task-store files and native config unchanged; app running and runtime backend verified.

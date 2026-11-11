@@ -16,7 +16,7 @@ export interface Project { id: string; name: string; root: string }
 export interface Workflow {
   workflow_id: string; task_id: string; task_revision: number; state: string; request_id: string;
   project_id: string; dispatch_id: string; session_id?: string; run_id?: string;
-  result_version?: string; result?: { summary?: string; [key: string]: unknown }; feedback?: string; _scope?: string;
+  result_version?: string; result?: { summary?: string; [key: string]: unknown }; feedback?: string; review_conflict?: string; can_discard_result?: boolean; _scope?: string;
 }
 export interface TaskPreparation {
   state: 'pending' | 'ready' | 'unmatched' | 'unavailable' | 'stale';

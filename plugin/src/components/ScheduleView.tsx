@@ -4,6 +4,7 @@ import { storageForAccount } from '../storage'
 import { useEffect, useId, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { createTodoApi } from '../api'
+import { useTodoPort } from '../TodoPortContext'
 import { aiErrorMessage } from '../aiErrors'
 import { useDialogFocus } from '../hooks/useDialogFocus'
 import { minutesOfDay, validUnavailable, type UnavailableTime, planningTaskKey, validateDayPlan, type DayPlan, type PlannedBlock, type PlanningContext } from '../taskPlanning'
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onClose }: Props) {
+  const port=useTodoPort()
   const scope=useMemo(()=>pluginScope(),[])
   const api=useMemo(()=>createTodoApi(scope),[scope])
   const scopedStorage=useMemo(()=>storageForAccount(scope),[scope])
@@ -76,6 +78,8 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
     setError(null)
     setProposal(null)
     try {
+      await port?.flush()
+      if (generation !== generationRef.current) return
       const result = await api.llmSchedule({
         tasks: eligible.map((task, order) => ({ ...task, planning: { preferenceOrder: order + 1, maximumMinutes: estimates[task.id] ?? null, unavailable } })), machines: selected, dateStr: date, availableStart: start, availableEnd: end,
       })

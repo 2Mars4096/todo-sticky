@@ -332,8 +332,12 @@ class TodoCompatService:
         required={'breakdown':'intelligence.steps','schedule':'intelligence.day_plan','project':'intelligence.project','albums':'intelligence.albums'}[action]
         if required not in self.plugins.registry.manifests['todo'].get('actions',[]):raise PluginError(403,'Todo has not declared this AI action')
         source=payload.get('input',{})
+        if not isinstance(source,dict):raise PluginError(422,'Suggestion input must be an object')
         digest=fingerprint(payload,max_bytes=200000)
         key='todo-port-ai:'+request_id
+        from .todo_context import TodoSuggestionContext
+        prior=self.repository.read(owner,'todo','receipts',key)
+        context=TodoSuggestionContext(self.plugins,owner,None if prior else payload.get('sources'))
         def reserve(state):
             self.plugins._enabled(state)
             prior=state['receipts'].get(key)
@@ -341,14 +345,16 @@ class TodoCompatService:
                 if prior['fingerprint']!=digest:raise PluginError(409,'Request ID belongs to different input')
                 if prior['status']=='completed':return copy.deepcopy(prior['result'])
                 raise PluginError(409,'This AI request already started. Its outcome is '+prior['status']+'; do not replay it automatically.')
+            context.check(state)
             revision=state['settings'].get('config',{}).get('revision',0)
             state['receipts'][key]={'fingerprint':digest,'status':'running','settings_revision':revision,'created_at':now()}
             return None
         replay=self.repository.transact(owner,'todo',reserve)
         if replay is not None:return replay
         schema=AI_SCHEMAS['project_steps' if action=='project' and source.get('mode')=='steps' else action]
+        usage={};agent_execution=None
         try:
-            result=self.provider('todo_'+action,{'task_request':source},schema)
+            result=self.provider('todo_'+action,{'task_request':source,**context.payload()},schema)
             if not isinstance(result,dict):raise PluginError(502,'The provider returned an incomplete suggestion')
             result=copy.deepcopy(result)
             usage=result.pop('_usage',{})
@@ -362,15 +368,20 @@ class TodoCompatService:
                 if not state['settings'].get('config',{}).get('enabled',True) or state['settings'].get('config',{}).get('revision',0)!=receipt['settings_revision']:
                     state['receipts'][key]={**receipt,'status':'revoked','usage':usage,'agent_execution':agent_execution}
                     return None
+                context.check(state)
                 state['receipts'][key]={**receipt,'status':'completed','result':result,'usage':usage,'agent_execution':agent_execution,'completed_at':now()}
                 return result
             accepted=self.repository.transact(owner,'todo',settle)
             if accepted is None:raise PluginError(409,'Todo permissions changed during the request. The suggestion was not applied.')
             return accepted
         except Exception as error:
+            if agent_execution is None:
+                agent_execution=copy.deepcopy(getattr(error,'execution',None))
+            if isinstance(agent_execution,dict):
+                agent_execution={**agent_execution,'domain_validated':False}
             def failed(state):
                 receipt=state['receipts'].get(key)
-                if receipt and receipt['status']=='running':state['receipts'][key]={**receipt,'status':'uncertain' if getattr(error,'uncertain',False) else 'failed','usage':getattr(error,'usage',{}),'completed_at':now()}
+                if receipt and receipt['status']=='running':state['receipts'][key]={**receipt,'status':'uncertain' if getattr(error,'uncertain',False) else 'failed','usage':getattr(error,'usage',usage),'agent_execution':agent_execution,'completed_at':now()}
             self.repository.transact(owner,'todo',failed)
             if getattr(error,'uncertain',False):
                 raise PluginError(502,'The provider outcome is uncertain. A new Generate action starts a separate request and may incur another charge; saved tasks are unchanged.') from error
@@ -457,7 +468,7 @@ def prepare_backup(value):
 
 
 AI_SCHEMAS={
- 'breakdown':{'type':'object','required':['subtasks'],'properties':{'finishSuggestion':{'type':'string'},'subtasks':{'type':'array','maxItems':40,'items':{'type':'object','required':['text'],'properties':{'text':{'type':'string'},'estimatedMinutes':{'type':'integer','minimum':1},'machineTask':{'type':'boolean'}},'additionalProperties':False}}},'additionalProperties':False},
+ 'breakdown':{'type':'object','required':['subtasks'],'properties':{'finishSuggestion':{'type':'string'},'subtasks':{'type':'array','maxItems':8,'items':{'type':'object','required':['text'],'properties':{'text':{'type':'string'},'estimatedMinutes':{'type':'integer','minimum':1},'machineTask':{'type':'boolean'}},'additionalProperties':False}}},'additionalProperties':False},
  'schedule':{'type':'object','required':['plan','schedule'],'properties':{'plan':{'type':'string'},'schedule':{'type':'array','maxItems':100,'items':{'type':'object','required':['taskId','parentTask','time','endTime','action','assignedTo'],'properties':{name:{'type':'string'} for name in ('taskId','parentTask','time','endTime','action','assignedTo')},'additionalProperties':False}}},'additionalProperties':False},
  'project_steps':{'type':'object','required':['steps'],'properties':{'steps':{'type':'array','minItems':1,'maxItems':30,'items':{'type':'string','minLength':1,'maxLength':5000}}},'additionalProperties':False},
  'project':{'type':'object','required':['actions'],'properties':{'actions':{'type':'array','maxItems':30,'items':{'type':'object','required':['text','date','minutes'],'properties':{'text':{'type':'string'},'date':{'type':'string'},'minutes':{'type':'integer'},'stepId':{'type':'string'}},'additionalProperties':False}}},'additionalProperties':False},

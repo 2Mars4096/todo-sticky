@@ -143,7 +143,7 @@ export async function runSharedTodoAgent<T>(action: string, input: unknown, kbPa
   const result=await requestJson(origin,'/api/plugins/todo/compat/ai',{
     method:'POST',headers:{'Idempotency-Key':requestId},
     body:JSON.stringify({request_id:requestId,payload:{action,input,intent_id:requestId}}),
-  },token,120_000)
+  },token,390_000)
   if(auth.currentUser?.uid!==user.uid)throw new Error('Account changed while Diane was working; the result belongs to the earlier account.')
   return result as T
 }

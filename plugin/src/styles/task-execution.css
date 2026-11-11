@@ -34,3 +34,13 @@
 .diane-todo-port .todo-execution-error,.diane-todo-port .todo-execution-notice { margin:6px 0 0; font-size:12px; overflow-wrap:anywhere; }
 .diane-todo-port .todo-execution-error { color:var(--wb-ink); }
 @media (pointer:coarse) { .diane-todo-port .todo-execution :is(button,a,select),.diane-todo-port .todo-execution-options > summary { min-height:40px; } }
+.diane-todo-port .todo-workflow-badge { display: inline-block; font-size: 11px; color: var(--text-muted, #64748b); margin: 2px 0; }
+.diane-todo-port .todo-workflow-badge.is-unavailable { color: var(--text-muted, #64748b); }
+.diane-todo-port .todo-step-proposal { margin: 8px 0; padding: 8px 0; border-block: 1px solid var(--border, #dce0e5); }
+.diane-todo-port .todo-step-proposal strong { font-size: 12px; font-weight: 600; }
+.diane-todo-port .todo-step-proposal ol { padding-left: 20px; margin: 6px 0; }
+.diane-todo-port .todo-step-proposal li { padding-right: 24px; position: relative; margin: 4px 0; }
+.diane-todo-port .todo-step-proposal li > button { position: absolute; right: 0; top: 0; }
+.diane-todo-port .todo-step-proposal textarea { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; background: transparent; color: inherit; border: 1px solid var(--border, #dce0e5); border-radius: 5px; padding: 5px; }
+.diane-todo-port .todo-step-proposal > div { display: flex; gap: 8px; }
+.diane-todo-port .todo-step-proposal p, .diane-todo-port .todo-port-status { font-size: 12px; color: var(--text-muted, #64748b); }

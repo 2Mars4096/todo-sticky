@@ -1,5 +1,11 @@
 # Todo
 
+- [x] Preserve current-main MCP/Sync/reviewed-setup work with recovery UI, align desktop preparation bounds and retain failed-stage receipts — [19-contextual-task-refinement](plans/19-contextual-task-refinement.md). Native installation and real-provider acceptance remain separate.
+
+- [ ] Contextual task refinement and visible execution — [19-contextual-task-refinement](plans/19-contextual-task-refinement.md). Source/product gates pass; matching host integration and installed acceptance remain separate.
+
+- [x] Hosted result recovery and visible Run again — [18-hosted-task-execution](plans/18-hosted-task-execution.md#result-recovery--november-10). UI 0.1.8 uses the coordinated host workflow-only discard contract; installed-app acceptance remains separate.
+
 - [x] Push merged CLI/MCP main and reinstall the signed Mac bundle, preserving task data/settings; installed MCP smoke passes — [4-10-2](plans/4-10-agent-task-api.md#4-10-2-push-and-local-mac-delivery).
 
 - [x] Local app CLI/MCP task access merged into `main` — [4-10-1](plans/4-10-agent-task-api.md#4-10-1-local-application-mcp-access).

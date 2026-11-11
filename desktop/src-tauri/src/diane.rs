@@ -36,7 +36,8 @@ pub async fn diane_request(action: String, request_id: Option<String>, body: Opt
 async fn preparation_request(action: &str, request_id: Option<String>, body: Option<Value>) -> Result<Value, String> {
     let body = body.unwrap_or(serde_json::json!({}));
     let base = "http://127.0.0.1:45173/api/plugins";
-    let client = reqwest::Client::builder().timeout(Duration::from_secs(125))
+    let timeout = if action == "prepare" { 390 } else { 20 };
+    let client = reqwest::Client::builder().timeout(Duration::from_secs(timeout))
         .redirect(reqwest::redirect::Policy::none()).no_proxy().build().map_err(|e| e.to_string())?;
     let mut request = match action {
         "connection" => client.get(format!("{base}/connection")),

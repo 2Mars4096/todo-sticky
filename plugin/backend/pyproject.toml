@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "diane-todo-plugin"
-version = "0.1.4"
+version = "0.1.5"
 description = "Product-owned Diane compatibility release"
 requires-python = ">=3.11"
 

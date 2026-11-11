@@ -1,5 +1,17 @@
 # Bugs And Failed Approaches
 
+## 2026-11-10 — Integrated standalone verification prerequisites
+
+- The isolated release environment has the plugin's test dependencies but lacks standalone `firebase/app` and a Rust toolchain. The full Node runner reaches review-reliability after 18 passing suites and stops at dependency resolution; targeted preparation, account, workspace and sync-frequency checks pass. Do not treat earlier main's Mac installation/MCP receipts as a new installation or native test of this candidate.
+
+## 2026-11-10 — Edited result dead end and hidden retries
+
+- Hosted Review offered only Accept/Request changes even though both correctly rejected a task whose execution scope changed. The existing review `stop` was not exposed, and its prior host semantics could stop the task itself. UI 0.1.8 exposes **Discard result** with a coordinated host fix that ends only the workflow; accept/revise remain scope- and version-guarded.
+- A task or step can change while a feedback draft is open. Use the host's current `review_conflict` to disable Send changes as well as the top-level acceptance/revision controls; preserve the draft until the user discards the result.
+- Failed/stopped **Run again** lived only in the more menu. It now occupies the primary action row without duplicate hidden controls, while keeping the previous session available through Open. Closed tasks are not implicitly reopened.
+- A saved parent/step edit can leave the root task revision unchanged. Refresh workflow scope validation when the canonical root object is reloaded after a save, rather than depending only on its revision counter; preserve the active feedback form.
+- Validation environment: the optional host-contract check first failed because the new host checkout had no frontend dependencies. It passes after restoring the host's pinned dependencies. A visual browser attempt could not connect: local Browser extension unavailable, cloud browser `ERR_CONNECTION_REFUSED` for the local fixture. Automated module rendering does not replace that visual check.
+
 ## 2026-11-10 — MCP verification and existing write boundary
 - Reusing the desktop target cache from an isolated worktree failed because generated Tauri permission files were missing. Verify with `/private/tmp/sticky-task-mcp-target` and the existing isolated Rust toolchain instead.
 - Native task mutations check revisions but do not lock across processes. MCP serializes one connection only; pause desktop edits and serialize external writers. Shared locking across every desktop/cloud/CLI writer remains follow-up work, not a claimed guarantee of this adapter.
