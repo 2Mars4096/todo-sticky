@@ -12,6 +12,15 @@
 - A saved parent/step edit can leave the root task revision unchanged. Refresh workflow scope validation when the canonical root object is reloaded after a save, rather than depending only on its revision counter; preserve the active feedback form.
 - Validation environment: the optional host-contract check first failed because the new host checkout had no frontend dependencies. It passes after restoring the host's pinned dependencies. A visual browser attempt could not connect: local Browser extension unavailable, cloud browser `ERR_CONNECTION_REFUSED` for the local fixture. Automated module rendering does not replace that visual check.
 
+## 2026-11-11 — Empty band above setup heading
+The close button was a standalone flex-column child, consuming an entire row above the heading. Setup and result states now use one shared flex header; avoid separate close-only bands in compact panels.
+
+## 2026-11-11 — Finished Diane task looked unstarted
+Earlier-task rows decorate IDs with the source date. Handoff lookup used that display ID, missing intact receipts keyed by the stored ID. The reported task had ready receipts; no data was lost. Normalize lookup, retain original request identity, prefer same-date receipt, and use cross-date recovery only for a unique match within the same folder.
+
+## 2026-11-10 — Setup panel clipped below the window
+Placement assumed a300px panel despite workspace paths, textarea and errors making it taller. Measure the real panel, flip above where needed, clamp to the visual viewport and observe content changes. Scroll excess content without shrinking controls.
+
 ## 2026-11-10 — MCP verification and existing write boundary
 - Reusing the desktop target cache from an isolated worktree failed because generated Tauri permission files were missing. Verify with `/private/tmp/sticky-task-mcp-target` and the existing isolated Rust toolchain instead.
 - Native task mutations check revisions but do not lock across processes. MCP serializes one connection only; pause desktop edits and serialize external writers. Shared locking across every desktop/cloud/CLI writer remains follow-up work, not a claimed guarantee of this adapter.

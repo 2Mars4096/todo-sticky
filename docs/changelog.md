@@ -22,6 +22,21 @@
 - [test] Add edited-task discard→rerun, changed-step draft blocking, interrupted discard identity, stale-result dismissal guard, visible failed/stopped retry, and completed-task regressions. Candidate plugin UI: 0.1.8; standalone app sources unchanged.
 - [validation] Strict types, 8 suites/43 tests, production build/dist render, package/import checks and actual Diane SDK check pass. Browser visual verification remains uncompleted because the connected browser was unavailable and the cloud browser could not reach the local fixture; no installation or real-agent evidence is claimed by these product tests.
 
+## 2026-11-11 — Compact setup and session headers
+- [ux] Align heading and close control on a single shared row, removing the empty upper band in setup and linked-session details. Consolidate duplicate field styles.
+- [delivery] Signed Mac app reinstalled/reopened; all56 task files and settings unchanged, shared backend verified and rollback copy retained.
+- [test] TypeScript and browser workflow pass; setup/result headers visually verified at340px and600px with keyboard dismissal. Other page header structures reviewed; no unrelated redesign.
+
+## 2026-11-11 — Recover Diane task status
+- [fix] Resolve carried-row display IDs to saved session receipts, including older date-prefixed keys; preserve immutable dispatches and avoid ambiguous cross-date/folder matches.
+- [ux] Linked tasks show their run status beside the icon, including Finished · Review and Disconnected. No automatic task completion or rerun.
+- [delivery] Identity/browser/type checks pass; narrow finished-status visual verified. Signed Mac reinstalled with all56 task files/settings preserved and existing shared backend verified.
+
+## 2026-11-10 — Visible Diane setup and direct Start
+- [fix] Measure and constrain the setup panel to the visible window; adapt to content changes, scrolling and resizing, with accessible actions in short windows.
+- [ux] Remove the extra Review screen. Start dispatches the workspace/context edited in the setup panel.
+- [delivery] TypeScript and short-window browser workflow pass; signed Mac app reinstalled/reopened with matching bundle and shared backend. All56 task files and native settings unchanged; backup retained.
+
 ## 2026-11-10 — Deliver CLI/MCP Mac build
 - [delivery] Push merged main to the user-confirmed GitHub origin; rebuild/reinstall and reopen Sticky Todo 2.1.16 with the bundled CLI/MCP executable. Preserve shared-backend settings.
 - [test] Signed bundle/hash checks and installed CLI/MCP subprocess smoke pass. All 56 task-store files and native config unchanged; app running and runtime backend verified.

@@ -70,3 +70,21 @@
 Decisions: preparation is one bounded model request for the selected synced task, using known local workspace names/paths. User edits win over late suggestions. Unsynced tasks can use manual setup. No hosted plugin UI or Diane installation is changed.
 
 Installation: signed bundle matches the build and is running; all56 task files unchanged after launch, config preserved except requested connectDiane=true. Shared backend/cutover marker verified from runtime storage. Backup: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-shared-backend-install-20261110-203058`. Live Universal Cell/session acceptance remains user-driven.
+
+## 2026-11-10 — Visible setup and direct Start
+- [x] Replace the guessed300px anchor with measured placement, flipping above the task and clamping to the visible viewport; update on content growth, resize and scroll. Keep controls unshrunk and action row accessible in short windows.
+- [x] Remove the separate review screen; edited workspace/context go directly to explicit Start with the existing immutable dispatch receipt.
+- [x] Verify340×440 browser bounds, enlarged textarea, reachable Start and single dispatch; TypeScript passes. Reinstall/relaunch the signed shared-backend Mac app with all56 task files/settings preserved. Receipt: `output/diane-panel-install/macos-verification.json`.
+This supersedes the earlier extra Review step at the user's request. The cloud-match requirement for AI suggestions remains a separate follow-up.
+
+## 2026-11-11 — Recover carried-task run status
+- [x] Diagnose the real saved task: two intact receipts report ready; carried-row date prefixes prevented the current-date link lookup.
+- [x] Normalize display IDs during receipt lookup; preserve original dispatch bodies/keys, recover legacy prefixed keys, follow unique moved-task links, and refuse ambiguous cross-date or cross-folder matches.
+- [x] Show a visible linked status: Queued, Running, Needs input, Finished · Review, Failed/Stopped or Disconnected. Completion stays manual.
+- [x] TypeScript, receipt identity regressions and browser carried-row/reload recovery pass without redispatch. Visually verify Finished · Review at340px width. Signed Mac update installed/reopened; all56 task files and settings preserved, runtime shared backend verified. Receipt: `output/diane-status-install/macos-verification.json`.
+
+## 2026-11-11 — Cohesive compact panel headers
+- [x] Put title/status and close on one aligned28px row for both setup and linked-session details; remove the separate close-only band.
+- [x] Consolidate duplicate field styling; retain28px select/close geometry,4px field gaps and existing theme. Compare existing Settings/Account/Project/Search header structure; preserve their already-grouped actions.
+- [x] TypeScript and browser workflow pass; visually inspect setup/result at340px and600px, verify aligned centers and Escape.
+- [x] Reinstall/reopen the signed Mac refinement; all56 task files and settings preserved. Runtime shared backend verified; receipt: `output/diane-header-install/macos-verification.json`.

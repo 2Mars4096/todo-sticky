@@ -427,4 +427,10 @@ Showcase recording uses scripts/record-demos.cjs with isolated browser fixtures.
 - AccountPanel exposes one Sync action. A manual request first enables the existing owner-bound folder metadata if paused; a failed binding/storage check blocks synchronization. Background sync still requires enabled metadata.
 
 ## Original-app Diane setup
-The local bridge exposes only connection, scoped task records, preparation and receipt endpoints in addition to the existing handoff operations. `dianePreparation.ts` matches canonical source IDs/date to local tasks, verifies synced text and the server execution-contract hash, and persists model request identities before sending. Universal Cell suggestions never execute work. `DianeAction` separates editable setup, review and explicit immutable session dispatch, fences late suggestions against task/user edits, and disables outbound controls on local disconnect.
+The local bridge exposes only connection, scoped task records, preparation and receipt endpoints in addition to the existing handoff operations. `dianePreparation.ts` matches canonical source IDs/date to local tasks, verifies synced text and the server execution-contract hash, and persists model request identities before sending. Universal Cell suggestions never execute work. `DianeAction` provides editable setup and direct explicit immutable session dispatch, fences late suggestions against task/user edits, and disables outbound controls on local disconnect.
+
+Diane setup placement measures the rendered panel in a layout effect and observes resizing, scrolling and visual-viewport changes. The panel flips/clamps within12px edges, scrolls excess content, and keeps its action row sticky.
+
+`dianeReceiptKey` resolves carried display IDs and legacy prefixed receipt keys within one notebook. Same-date matches take priority; unique cross-date matches survive moves. Original receipt/request keys remain immutable for status/open/retry. Ambiguous cross-date matches are not guessed.
+
+Diane setup and linked-session details share one compact flex header for heading/close, with28px controls and the existing4px radius/field spacing. Heading/close remain in normal flow rather than absolute offsets.

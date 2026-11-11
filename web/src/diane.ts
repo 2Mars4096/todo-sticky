@@ -74,5 +74,20 @@ export async function dianeRequest<T>(action: string, requestId?: string, body?:
   return value as T
 }
 export const statusLabels: Record<DianeStatus, string> = {
-  queued: 'Queued', running: 'Running', attention: 'Needs attention', ready: 'Result ready', stopped: 'Stopped', failed: 'Failed',
+  queued: 'Queued', running: 'Running', attention: 'Needs input', ready: 'Finished · Review', stopped: 'Stopped', failed: 'Failed',
+}
+
+/** Carried rows decorate IDs for rendering; session identity uses the stored task ID. */
+export function dianeReceiptKey(entries: Record<string, DianeReceipt>, folder: string, date: string, id: string): string {
+  const taskId = id.startsWith(date + ':') ? id.slice(date.length + 1) : id
+  const canonicalKey = `${folder}|${date}|${taskId}`
+  if (entries[canonicalKey]) return canonicalKey
+  const candidates = Object.keys(entries).filter(key => {
+    const parts = key.split('|'), savedId = parts.pop()!, savedDate = parts.pop()!
+    return parts.join('|') === folder && (savedId.startsWith(savedDate + ':') ? savedId.slice(savedDate.length + 1) : savedId) === taskId
+  })
+  const sameDay = candidates.filter(key => key.split('|').slice(-2, -1)[0] === date)
+  if (sameDay.length === 1) return sameDay[0]
+  // Follow a uniquely identified moved task, never guess between different runs.
+  return !sameDay.length && candidates.length === 1 ? candidates[0] : canonicalKey
 }

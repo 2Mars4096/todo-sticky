@@ -267,7 +267,7 @@ Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and f
 
 In **Settings → Integrations**, enable **Connect to Dear Diane on this computer** and Save. Selected tasks show **Push to Diane**. The button stays grey while the connection is off, unavailable, or incompatible; no connection attempts run when the setting is off.
 
-Push opens editable workspace/context setup. For a synced task, local Diane routes a bounded setup suggestion through its Universal Cell API using the known workspace names/paths and task context. You can revise either field or choose a folder. **Review** shows the exact setup; only **Start session** dispatches it into a normal local Diane agent session. Todo stays open. **Open in Diane** returns to that session for follow-up and approvals. Preparation errors leave manual setup available, and uncertain model requests retain their receipt instead of silently charging again.
+Push opens editable workspace/context setup. For a synced task, local Diane routes a bounded setup suggestion through its Universal Cell API using the known workspace names/paths and task context. You can revise either field or choose a folder. **Start** dispatches the workspace/context you edited into a normal local Diane agent session. The panel stays within the visible window and scrolls when needed. Todo stays open. **Open in Diane** returns to that session for follow-up and approvals. Preparation errors leave manual setup available, and uncertain model requests retain their receipt instead of silently charging again.
 
 Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. Todo 2.1.7 includes the Todo side of this integration; running tasks requires the separate Diane companion update.
 
@@ -325,3 +325,5 @@ Task handoff: select a task, choose its Diane icon, confirm the suggested worksp
 Repository maintenance: run npm commands from the root; canonical sources are web/src, desktop/src-tauri, phone and plugin. See the [folder guide](docs/folder-guide.md) for retained compatibility paths, generated artifacts and consolidated implementation history. Build the embedded package with `npm --prefix plugin run build`.
 
 Signed-in account settings provide one **Sync** action; the first manual sync enables syncing for the current folder after account ownership checks.
+
+Linked Diane tasks show Queued, Running, Needs input or Finished · Review beside the status icon. Disconnected retains the session link. Earlier-task rows recover the same saved run after reopening; moving a task also preserves access when its saved run is unique within the notebook. Todo completion stays manual.

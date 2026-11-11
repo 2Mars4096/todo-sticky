@@ -14,17 +14,24 @@ try {
  await page.getByRole('button',{name:'Choose folder…',exact:true}).click();await page.waitForFunction(()=>document.querySelector('select')?.value==='chosen');
  assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='choose-project').length),1);
  await picker.selectOption('project-a');
- await page.getByRole('button',{name:'Review',exact:true}).click();
+ assert.equal(await page.getByRole('button',{name:'Review',exact:true}).count(),0);
  assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='dispatch').length),0);
- await page.getByRole('button',{name:'Edit setup',exact:true}).click();
- assert.equal(await page.getByRole('textbox',{name:'Session context'}).inputValue(),'Review my edited context before implementing.');
- await page.getByRole('button',{name:'Review',exact:true}).click();
+ await page.setViewportSize({width:340,height:440});
+ await page.getByRole('textbox',{name:'Session context'}).evaluate(el=>el.style.height='450px');
+ await page.waitForFunction(()=>{const p=document.querySelector('.diane-details').getBoundingClientRect();return p.top>=11&&p.left>=11&&p.bottom<=innerHeight-11&&p.right<=innerWidth-11});
+ await page.getByRole('button',{name:'Start',exact:true}).scrollIntoViewIfNeeded();
+ const startBox=await page.getByRole('button',{name:'Start',exact:true}).boundingBox();assert.ok(startBox.y>=0&&startBox.y+startBox.height<=440);
  await page.screenshot({path:'/private/tmp/todo-workspace-picker.png'});
- await page.getByRole('button',{name:'Start session',exact:true}).dblclick();await page.waitForTimeout(250);
+ await page.getByRole('button',{name:'Start',exact:true}).dblclick();await page.waitForTimeout(250);
  assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='dispatch').length),1);
  assert.match(await page.evaluate(()=>calls.find(x=>x.action==='dispatch').body.text),/Review my edited context/);
  await page.keyboard.press('Escape');await page.reload();await page.getByRole('button',{name:'Inspect this project',exact:true}).click();await page.getByRole('button',{name:'Running. Open details for Inspect this project'}).waitFor();assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='dispatch').length),0);
- await page.getByRole('button',{name:'ready',exact:true}).click();await page.getByRole('button',{name:'Result ready. Open details for ready'}).click();await page.getByRole('button',{name:'Open in Diane',exact:true}).click();assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='open').length),1);
+ await page.goto((process.env.TODO_TEST_URL||'http://127.0.0.1:15173')+'/tests/diane-ui.html?carried=1');
+ await page.getByRole('button',{name:'Inspect this project',exact:true}).click();
+ await page.getByRole('button',{name:'Running. Open details for Inspect this project'}).waitFor();
+ assert.equal(await page.locator('.diane-status-label').textContent(),'Running');
+ assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='dispatch').length),0);
+ await page.getByRole('button',{name:'ready',exact:true}).click();await page.getByRole('button',{name:'Finished · Review. Open details for ready'}).click();await page.getByRole('button',{name:'Open in Diane',exact:true}).click();assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='open').length),1);
  for (const failure of ['offline','pending','malformed','corrupt','disabled']) {
   const isolated=await browser.newContext();const check=await isolated.newPage();
   await check.goto((process.env.TODO_TEST_URL||'http://127.0.0.1:15173')+'/tests/diane-ui.html?failure='+failure);
@@ -54,5 +61,5 @@ try {
  await reconnect.evaluate(()=>window.offline=false);
  await reconnect.waitForFunction(()=>!document.querySelector('.diane-action').disabled,{},{timeout:10000});
  await fresh.close();
- assert.deepEqual(errors,[]);console.log('PASS Universal Cell setup, editable context, review before single dispatch, receipt reopening, disabled/disconnected controls and reconnection');
+ assert.deepEqual(errors,[]);console.log('PASS Universal Cell setup, editable context, direct single dispatch, receipt reopening, disabled/disconnected controls and reconnection');
 } finally {await browser.close()}

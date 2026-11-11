@@ -6,6 +6,12 @@
 
 - [x] Hosted result recovery and visible Run again — [18-hosted-task-execution](plans/18-hosted-task-execution.md#result-recovery--november-10). UI 0.1.8 uses the coordinated host workflow-only discard contract; installed-app acceptance remains separate.
 
+- [x] Compact Diane setup/result header spacing using cohesive-ui; rendered checks pass and Mac reinstalled — [6](plans/6-diane-handoff.md).
+
+- [x] Recover existing Diane status for carried tasks and show linked-state labels; verified and reinstalled — [6](plans/6-diane-handoff.md).
+
+- [x] Keep Diane setup visible and replace Review with direct Start; browser verified and Mac reinstalled — [6](plans/6-diane-handoff.md).
+
 - [x] Push merged CLI/MCP main and reinstall the signed Mac bundle, preserving task data/settings; installed MCP smoke passes — [4-10-2](plans/4-10-agent-task-api.md#4-10-2-push-and-local-mac-delivery).
 
 - [x] Local app CLI/MCP task access merged into `main` — [4-10-1](plans/4-10-agent-task-api.md#4-10-1-local-application-mcp-access).
