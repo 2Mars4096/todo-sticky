@@ -9,6 +9,7 @@ import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection, moveCarr
 import { applyPlanWithUndo, deleteWithUndo, restoreTaskChange, type TaskUndo } from '../taskHistory'
 import { assignTaskProject } from '../projectPlanning'
 import { planningTaskKey, type PlannedBlock } from '../taskPlanning'
+import { applyStepsWithUndo } from '../stepProposal'
 
 // A stalled archive must not leave the entire task surface waiting forever.
 function readWithTimeout<T>(request: Promise<T>, milliseconds = 8000): Promise<T> {
@@ -594,25 +595,17 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   },[persist,setTasks])
 
   const addAISubtasks = useCallback((taskId: string, subtasks: { text: string }[], expectedDate: string, expectedTaskKey: string) => {
-    if (loadingRef.current) return
+    if (loadingRef.current) throw new Error('Wait for the current tasks before adding suggestions.')
     setTasks(prev => {
-      if (loadingRef.current || expectedDate !== loadedDateRef.current) return prev
+      if (loadingRef.current || expectedDate !== loadedDateRef.current) throw new Error('The selected day changed. Generate new suggestions.')
       const target = prev.find(task => task.id === taskId)
       if (!target || target.status === 'done' || target.status === 'stopped'
-        || planningTaskKey([target]) !== expectedTaskKey || !subtasks.length) return prev
-      const next = prev.map(t => {
-        if (t.id !== taskId) return t
-        const newSubs: Task[] = subtasks.map(s => ({
-          id: newId(),
-          text: s.text,
-          status: 'todo' as const,
-          subtasks: [],
-          ...(t.goalId ? { goalId: t.goalId } : {}),
-        }))
-        return { ...t, finish: t.finish ? { ...t.finish, reviewReady: false } : undefined, todaySubtasks: [...t.todaySubtasks, ...newSubs] }
-      })
-      persist(next)
-      return next
+        || planningTaskKey([target]) !== expectedTaskKey) throw new Error('The task changed. Generate new suggestions before adding steps.')
+      const change = applyStepsWithUndo(prev, expectedDate, taskId, subtasks.map(step => step.text), newId)
+      if (!change) return prev
+      setUndo(change.undo)
+      persist(change.tasks)
+      return change.tasks
     })
   }, [persist])
 

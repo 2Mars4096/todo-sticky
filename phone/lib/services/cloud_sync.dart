@@ -1275,7 +1275,7 @@ class CloudSyncController extends ChangeNotifier {
       method: 'POST',
       token: token,
       headers: {'Idempotency-Key': requestId},
-      timeout: const Duration(seconds: 120),
+      timeout: const Duration(seconds: 390),
       body: {
         'request_id': requestId,
         'payload': {'action': action, 'input': input, 'intent_id': requestId},

@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## 2026-11-10 — Integrated standalone verification prerequisites
+
+- The isolated release environment has the plugin's test dependencies but lacks standalone `firebase/app` and a Rust toolchain. The full Node runner reaches review-reliability after 18 passing suites and stops at dependency resolution; targeted preparation, account, workspace and sync-frequency checks pass. Do not treat earlier main's Mac installation/MCP receipts as a new installation or native test of this candidate.
+
 ## 2026-11-10 — Edited result dead end and hidden retries
 
 - Hosted Review offered only Accept/Request changes even though both correctly rejected a task whose execution scope changed. The existing review `stop` was not exposed, and its prior host semantics could stop the task itself. UI 0.1.8 exposes **Discard result** with a coordinated host fix that ends only the workflow; accept/revise remain scope- and version-guarded.
@@ -7,6 +11,20 @@
 - Failed/stopped **Run again** lived only in the more menu. It now occupies the primary action row without duplicate hidden controls, while keeping the previous session available through Open. Closed tasks are not implicitly reopened.
 - A saved parent/step edit can leave the root task revision unchanged. Refresh workflow scope validation when the canonical root object is reloaded after a save, rather than depending only on its revision counter; preserve the active feedback form.
 - Validation environment: the optional host-contract check first failed because the new host checkout had no frontend dependencies. It passes after restoring the host's pinned dependencies. A visual browser attempt could not connect: local Browser extension unavailable, cloud browser `ERR_CONNECTION_REFUSED` for the local fixture. Automated module rendering does not replace that visual check.
+
+## 2026-11-10 — MCP verification and existing write boundary
+- Reusing the desktop target cache from an isolated worktree failed because generated Tauri permission files were missing. Verify with `/private/tmp/sticky-task-mcp-target` and the existing isolated Rust toolchain instead.
+- Native task mutations check revisions but do not lock across processes. MCP serializes one connection only; pause desktop edits and serialize external writers. Shared locking across every desktop/cloud/CLI writer remains follow-up work, not a claimed guarantee of this adapter.
+
+## 2026-11-10 — Mac return succeeded, token exchange failed
+The macOS Open Sticky Todo prompt and token-free return URI work. Shared auth/exchange returned500 because Firebase initialization happened only during browser identity verification, which can run on another Cloud Run instance. Diane now initializes under a shared process lock before minting;27 tests pass and revision00021-gup is live. Reinstalling alone does not repair backend exchange; begin a new sign-in after the fix.
+
+## 2026-11-10 — Standalone handoff availability
+- The workspace popover trigger was enabled when the local project request failed. Track connection separately from project count, grey new dispatch when unavailable, and keep prior session details readable.
+- Browser capture regression initially used Enter, which now inserts a paragraph; use the actual Add action. Browser verification passes with the current input contract.
+
+## 2026-11-10 — Local package toolchain
+- Default Rust shim and the OS-account toolchain had no configured default. Use the documented isolated RUSTUP_HOME=/private/tmp/sticky-rustup and RUSTUP_TOOLCHAIN=1.99.1-aarch64-apple-darwin; do not modify global defaults.
 
 ## 2026-11-10 — Phone-only build staging omits shared test fixture
 
@@ -313,3 +331,5 @@ A temporary phone-only copy cannot run sync_merge_test.dart without the reposito
 - 2026-10-30: Date-key-only conflict choices could apply a newer version than the one reviewed. Both clients now require the reviewed fingerprint/revision to match, save both copies on detection, and reject stale decisions.
 
 - 2026-11-10: Android sign-in reported MissingPluginException. Browser launch now uses the app-owned sticky_todo/links channel and native HTTPS ACTION_VIEW handler instead of the external launcher plugin.
+
+- November10 local .app packaging completed; automatic updater archive signing then refused because no private release key was supplied. The staged .app is separately ad-hoc-signed and verified; it is not an updater release.

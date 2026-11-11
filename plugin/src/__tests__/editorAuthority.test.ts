@@ -9,6 +9,7 @@ vi.mock('@diane/plugin-sdk/records',()=>({subscribeToPluginChanges:()=>()=>{},PL
 import {useTasks} from '../hooks/useTasks';
 import {createTodoApi} from '../api';
 import type {Task} from '../types';
+import {planningTaskKey} from '../taskPlanning';
 let host:HTMLDivElement,root:ReturnType<typeof createRoot>,tasks:ReturnType<typeof useTasks>;
 let server:{revision:string;tasks:Task[]},writes:string[],serial:number;
 const task=(id:string,text=id):Task=>({id,text,status:'todo',subtasks:[]});
@@ -38,4 +39,17 @@ it('advances authority only after the hook’s own acknowledged save',async()=>{
  await act(async()=>{tasks.updateTaskText('a','First edit');await tasks.flushPendingSave();});
  await act(async()=>{tasks.updateTaskText('a','Second edit');await tasks.flushPendingSave();});
  expect(writes).toEqual(['r1','r2']);expect(server.tasks[0].text).toBe('Second edit');
+});
+it('rejects proposal application after a same-turn edit without losing that edit',async()=>{
+ await act(async()=>root.render(h(Harness)));
+ const key=planningTaskKey([tasks.tasks[0]]);
+ await act(async()=>{tasks.updateTaskText('a','User refined objective');expect(()=>tasks.addAISubtasks('a',[{text:'Old suggestion'}],'2026-11-09',key)).toThrow('task changed');await tasks.flushPendingSave();});
+ expect(server.tasks[0].text).toBe('User refined objective');expect(server.tasks[0].subtasks).toEqual([]);
+});
+it('applies reviewed steps once with undo, preserving existing steps',async()=>{
+ await act(async()=>root.render(h(Harness)));
+ const key=planningTaskKey([tasks.tasks[0]]);
+ await act(async()=>{tasks.addAISubtasks('a',[{text:'Read evidence'}],'2026-11-09',key);expect(()=>tasks.addAISubtasks('a',[{text:'Read evidence'}],'2026-11-09',key)).toThrow('changed');await tasks.flushPendingSave();});
+ expect(server.tasks[0].subtasks.map(row=>row.text)).toEqual(['Read evidence']);expect(tasks.undo?.label).toBe('Suggested steps added');
+ await act(async()=>{tasks.undoLastAction();await tasks.flushPendingSave();});expect(server.tasks[0].subtasks).toEqual([]);
 });

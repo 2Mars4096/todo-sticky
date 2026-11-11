@@ -11,6 +11,18 @@ it('rejects late results after account switch',async()=>{let settle!:(value:unkn
 it('retains failed-write request identity while updating only acknowledged day revision',async()=>{const api=createTodoApi('owner-a');mock.request.mockResolvedValueOnce({date:'2026-11-09',tasks:[],filePath:'diane:2026-11-09',weekStart:'2026-11-09',revision:'r1'});await api.getTasks('2026-11-09');mock.request.mockRejectedValueOnce(Error('offline'));const input={filePath:'diane:2026-11-09',dateStr:'2026-11-09',tasks:[],expectedRevision:'r1'};await expect(api.saveTasks(input)).rejects.toThrow('offline');mock.request.mockResolvedValueOnce({revision:'r2',tasks:[],ok:true});await api.saveTasks(input);const first=JSON.parse(mock.request.mock.calls[1][1].body),retry=JSON.parse(mock.request.mock.calls[2][1].body);expect(first.request_id).toBe(retry.request_id);expect(retry.payload.expectedRevision).toBe('r1');expect(JSON.parse(localStorage.getItem('test-plugin-change')!).scope).toBe('owner-a');});
 
 it('separates a new explicit AI action from an uncertain prior request',async()=>{const api=createTodoApi('owner-a');mock.request.mockRejectedValueOnce(Error('Uncertain provider outcome'));await expect(api.llmBreakdown({taskText:'Work',existingSubtasks:[]})).rejects.toThrow('Uncertain');mock.request.mockResolvedValueOnce({subtasks:[{text:'Read evidence'}]});await api.llmBreakdown({taskText:'Work',existingSubtasks:[]});const first=JSON.parse(mock.request.mock.calls[0][1].body),second=JSON.parse(mock.request.mock.calls[1][1].body);expect(first.request_id).not.toBe(second.request_id);expect(first.payload.intent_id).not.toBe(second.payload.intent_id);});
+it('passes explicit canonical source revisions without changing older callers',async()=>{
+ const api=createTodoApi('owner-a');mock.request.mockResolvedValue({subtasks:[]});
+ const sources=[{record_type:'task',record_id:'a',revision:4}];
+ await api.llmBreakdown({taskText:'Work',existingSubtasks:[]},sources);
+ expect(JSON.parse(mock.request.mock.calls[0][1].body).payload.sources).toEqual(sources);
+ await api.llmBreakdown({taskText:'Simple outcome',existingSubtasks:[],suggestFinish:true});
+ expect(JSON.parse(mock.request.mock.calls[1][1].body).payload.sources).toBeUndefined();
+});
+it('refuses incomplete batch status instead of presenting an empty successful state',async()=>{
+ mock.request.mockResolvedValue({workflows:{}});
+ await expect(createTodoApi('owner-a').workflowStatuses(['a'])).rejects.toThrow('incomplete');
+});
 
 it('never takes save authority from a later passive history or project read',async()=>{
  const api=createTodoApi('owner-a');

@@ -21,8 +21,7 @@ export function AccountPanel({ account }: { account: CloudAccount }) {
     </header>
     {account.user ? <>
       <div className="cloud-sync-controls">
-        <label className="cloud-sync-toggle"><input type="checkbox" checked={account.enabled} onChange={event => account.toggleEnabled(event.target.checked)} disabled={account.busy} />Sync this folder</label>
-        <button type="button" className="cloud-primary" onClick={() => { void account.sync() }} disabled={!account.enabled || account.busy}>{account.busy && !account.background ? 'Syncing…' : 'Sync now'}</button>
+        <button type="button" className="cloud-primary" onClick={() => { void account.sync() }} disabled={account.busy}>{account.busy && !account.background ? 'Syncing…' : 'Sync'}</button>
       </div>
       {account.busy && !account.background && account.progress ? <SyncProgressView progress={account.progress} /> : <p role="status" className="cloud-sync-status">{account.message}</p>}
       {account.lastSynced && <time className="cloud-last-sync" title={new Date(account.lastSynced).toLocaleString()}>Checked {new Date(account.lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>}

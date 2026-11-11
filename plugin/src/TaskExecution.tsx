@@ -128,7 +128,7 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
     const valid = () => current() && token === operations.current;
     setBusy(true); setError(''); setNotice('');
     if (options.current) options.current.open = false;
-    try { await work(valid); }
+    try { await work(valid); if (valid()) window.dispatchEvent(new CustomEvent('diane:todo-workflows-changed', {detail: {scope}})); }
     catch (reason) { if (valid()) setError(describeError(reason)); }
     finally { if (token === operations.current) { locked.current = false; if (mounted.current) setBusy(false); } }
   }

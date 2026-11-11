@@ -1,6 +1,13 @@
 # Architecture
 
+## Local application task access
+
+`desktop/src-tauri/src/mcp.rs` serves initialize-based MCP 2025-11-25 over bounded newline-delimited stdio through `sticky-todo-api mcp`. It wraps `task_api` directly, validates narrow tool schemas and serializes requests per process. Read-only mode advertises and permits only listing. There is no listener, alternate store or Diane dependency. MCP requires weekly revisions for edits/deletes and creates into existing archives; existing native persistence is optimistic, not cross-process atomic. See [agent contract](llm-api-guide.md#mcp-for-other-applications).
+
+
 ## Shared Diane backend (staged cutover)
+- `todo_context.py` specializes shared AI material without owning an agent loop. Optional canonical source references bind selected task/project revisions; bounded trees and frozen Meeting excerpts become untrusted `context_sources` for Diane's shared Universal Cell profiles. Admission and delivery recheck relevant source revisions and task-tree membership; failed delivery retains provider usage.
+- Hosted breakdown uses `StepProposalContext` and `stepProposal.ts` for editable proposals, guarded application and operation-specific Undo. `useTaskWorkflowStatuses.ts` owns one active-surface batch-polling lifetime, supplying quiet row badges and explicit unavailable state. Selected-task execution controls retain their existing session/review authority.
 - Embedded Todo preparation uses `hooks/useTaskPreparation.ts`: active/enabled saved task changes debounce to a scoped preparation-only refresh, then quiet60s repeats. Account/unmount cancellation prevents stale requests; backend owns canonical unfinished-task selection, deduplication and Universal Cell preparation.
 - Standalone clients negotiate central broker configuration, sign in with app-scoped custom Firebase tokens, and copy pending/baseline state only from a server-verified original issuer+UID. Shared AI uses the compatibility endpoint; explicit direct provider mode is retained.
 - Optional sync generations permit quiet polling through five point reads. A complete immutable client snapshot remains necessary for offline three-way merge; upload/account/error invalidates the cache.
@@ -37,7 +44,7 @@
 ## Hosted Todo plugin
 
 - `plugin/` is the product-owned React 19 UI package consumed by Dear Diane. It has an independent lockfile, strict TypeScript/Vitest checks, an external-SDK production build, package audit and generated-module render smoke. The standalone React 18/Tauri and Flutter trees retain their own builds and storage paths.
-- The initial source was recovered from the checksum-verified UI 0.1.6 archive and backend 0.1.4 wheel already shipped by Diane; the recorded producer commits were unavailable on GitHub. `plugin/RECOVERY.json` records that historical baseline. Candidate UI 0.1.7 changes the hosted source only. The backend's three modules rebuild byte-for-byte unchanged from 0.1.4.
+- The initial source was recovered from the checksum-verified UI 0.1.6 archive and backend 0.1.4 wheel already shipped by Diane; the recorded producer commits were unavailable on GitHub. `plugin/RECOVERY.json` records that historical baseline. UI 0.1.8 adds result recovery; candidate UI 0.1.9 and backend 0.1.5 add contextual proposals, visible workflow progress and the bounded context adapter.
 - `plugin/src/TaskDianeAction.tsx` flushes canonical task saves before enabling execution. Identity is account/task scoped, so record revision refreshes preserve the open review input; pending or failed saves disable mutation and expose local Retry. Ordinary task/step editing keeps its existing handlers.
 - `TaskExecution.tsx` owns one compact state-dependent Run/Open/Review row over the existing host APIs. Preparation is quiet, revision/account checked and separate from dispatch. Manual project selection takes precedence over late preparation. Task/account changes fence late reads and actions; in-flight mutation locks prevent duplicate clicks. Status polling coalesces focus/visibility events and pauses when the pane is inactive or the document hidden.
 - `taskExecutionState.ts` retains account/task-scoped project corrections and dispatch request identities locally, including interrupted retry identity. Workflow/session truth comes from the host. Existing inline history contains at most five prior attempts on the current workflow; only validated session/dispatch references become read-only Open links. The current host does not expose a complete historical workflow listing or shared task-to-project binding.
@@ -51,7 +58,7 @@
 - Standalone operation is invariant: core task/UI/storage paths do not await Diane readiness. Missing credentials affect only the AI operation that needs them. Response validation and receipt parsing contain malformed integration data; failed parsing preserves the original localStorage value and suspends integration polling.
 
 - `src/diane.ts` defines the companion protocol; `src/components/DianeAction.tsx` owns one app-level receipt store, polling, icon controls and portalled details. WebView-local receipts retain immutable request UUIDs keyed by knowledge-base/date/task identity before network writes.
-- `src-tauri/src/diane.rs` exposes only projects/dispatch/status/stop/open through a fixed loopback endpoint, with no proxying, redirects, credentials, or arbitrary URLs.
+- `src-tauri/src/diane.rs` exposes projects/dispatch/status/stop/open and the narrow account-scoped Todo preparation routes through fixed loopback endpoints, with no arbitrary URLs, redirects or credentials. Only `prepare` allows 390 seconds for staged inference; connection, record and receipt reads retain a 20-second bound. `dianePreparation.ts` stores preparation identity before sending and retrieves the same receipt after an uncertain result.
 - `dianeWorkspace.ts` conservatively suggests a unique known name/path from task context. The native directory chooser registers an explicit folder through local-only POST /api/sticky-todo/projects; canonical selected_project_id handles symlinks. Registration never executes work.
 - Diane owns durable sessions, project roots, execution profiles and runtime state; the companion API and desktop open route are required. The task handoff transfers no credentials. Separately, the optional native credential fallback below can read matching Diane file-backed keys without requiring its process.
 - Debug-only `STICKY_TODO_DEV_DATA_DIR` bypasses legacy settings and forces task/state storage below an absolute test root. Pair with `src-tauri/tauri.diane-dev.conf.json` to isolate WebView storage too.
@@ -60,7 +67,7 @@
 
 - [ ] Languages: TypeScript/TSX for the frontend, Rust for the Tauri native layer, Markdown for task storage.
 - [ ] Frameworks: React 18, Vite 6, Tauri 2, Three.js, date-fns, react-day-picker.
-- [ ] Build and test tools: TypeScript, Vite, Tauri, `npm test` for 30 Node regression suites, and isolated Playwright browser fixtures for full-shell interactions.
+- [ ] Build and test tools: TypeScript, Vite, Tauri, `npm test` for 31 Node regression suites, and isolated Playwright browser fixtures for full-shell interactions.
 - [ ] Runtime or deployment targets: desktop app for macOS, Windows, and Linux.
 
 ## Repository Layout
@@ -416,3 +423,8 @@ ProjectPage uses one draft editor for project text, unscheduled steps and actual
 The root package.json owns desktop/web dependencies and commands. Vite and TypeScript address web/src directly; phone source/CI uses phone/. Only src and src-tauri root compatibility aliases and desktop package/dist aliases remain. Plugin builds use plugin/build.mjs directly. Completed follow-up plans are consolidated under existing feature records with explicit historical anchors; new implementation work should extend an existing record when its scope fits.
 
 Showcase recording uses scripts/record-demos.cjs with isolated browser fixtures. The legacy knowledge-base-writing seed-demo script has been retired. Review screenshots, UI dumps and intermediate recordings under output/ are disposable after verification; preserve notebook snapshots and delivery manifests.
+
+- AccountPanel exposes one Sync action. A manual request first enables the existing owner-bound folder metadata if paused; a failed binding/storage check blocks synchronization. Background sync still requires enabled metadata.
+
+## Original-app Diane setup
+The local bridge exposes only connection, scoped task records, preparation and receipt endpoints in addition to the existing handoff operations. `dianePreparation.ts` matches canonical source IDs/date to local tasks, verifies synced text and the server execution-contract hash, and persists model request identities before sending. Universal Cell suggestions never execute work. `DianeAction` separates editable setup, review and explicit immutable session dispatch, fences late suggestions against task/user edits, and disables outbound controls on local disconnect.

@@ -1,6 +1,7 @@
 mod diane_credentials;
 mod cloud_sync;
 pub mod cli;
+pub mod mcp;
 mod commands;
 mod diane;
 mod config;

@@ -26,6 +26,47 @@ The knowledge-base root resolves in this order:
 
 All successes are JSON on stdout. Errors are JSON on stderr with a nonzero exit code.
 
+## MCP for other applications
+
+Build the native binary as above, then configure a **local stdio** MCP client (replace both absolute paths):
+
+```json
+{
+  "mcpServers": {
+    "sticky-todo": {
+      "command": "/absolute/path/to/sticky-todo-api",
+      "args": ["--kb-path", "/absolute/path/to/knowledge-base", "mcp"]
+    }
+  }
+}
+```
+
+On macOS, the installed app bundles the CLI at `/Applications/Sticky Todo.app/Contents/MacOS/sticky-todo-api`; use that entire path as the MCP `command` (the spaces are part of the path). With `args: ["mcp"]`, it discovers the saved notebook settings.
+
+The knowledge-base path is the root containing `content/to-do`, not that subfolder. Omit `--kb-path` to use the CLI's existing discovery order. Add `--read-only` after `mcp` to expose only reading. Launch the binary directly: `npm run` banners can corrupt MCP stdout. This server supports the initialize-based MCP **2025-11-25** protocol over newline-delimited JSON-RPC. It has no HTTP endpoint, credentials, network listener, or dependency on Diane. A remote meeting-summary service needs a local companion capable of spawning this process; it cannot connect directly over the internet.
+
+| Tool | Arguments |
+| --- | --- |
+| `todo_list` | Optional `date`, `fromDate`/`toDate`, or `all`; defaults to today |
+| `todo_create` | `date`, `text`; optional `status`, `subtasks:[{text,status?}]`, `parentId`, `expectedRevision` |
+| `todo_edit` | `date`, `id`, `expectedRevision`, and `text` and/or `status` |
+| `todo_delete` | `date`, `id`, `expectedRevision`; removes the whole selected subtree |
+
+Tool results contain both JSON text and `structuredContent` using the CLI response shapes below. Validation/storage conflicts return `isError:true`; unknown/disabled tools return JSON-RPC errors. Unknown arguments are rejected. List ranges use canonical date ownership to avoid editing copied historical rows. Text may contain paragraphs. Status accepts `todo`, `done`, `partial`, `question`, or `stopped`.
+
+For a meeting summary:
+
+1. Call `todo_list` for the agreed work date; inspect existing action items to avoid duplicates.
+2. Call `todo_create` with each approved action, including optional steps and the returned `expectedRevision`. When no archive exists yet, omit the revision for the first create.
+3. Use each mutation's new revision for the next action in that weekly file. MCP requires a revision even for creation once the target archive exists.
+4. To revise an action, use its saved date and exact ID with `todo_edit`. Re-read and reconsider on a conflict. Do not automatically retry a create after a lost response: creation is not idempotent.
+
+These are local task operations, not the whole UI command set: goals, dates/moves, focus timers, AI planning and cloud sync are not exposed. Editing status affects the selected item only, without the UI's completion cascade. Existing finish/project metadata is retained. Deletion has no undo.
+
+**Concurrency boundary:** pause desktop editing and serialize external writers while mutating. Existing native persistence checks revisions before writing but has no cross-process lock/transaction; simultaneous desktop/CLI/MCP writes can still race. MCP serializes its own requests only. The desktop's existing file watcher observes saved changes; cloud propagation remains the app's normal sync workflow and requires the app. Test integrations against a disposable `--kb-path` first.
+
+Verification: `python3 tests/mcp-smoke.py /absolute/path/to/sticky-todo-api` exercises both transports against a temporary notebook. The Rust suite covers protocol framing, read-only enforcement, invalid inputs, nested data preservation and stale writes. Protocol reference: [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
+
 ## Safe Agent Workflow
 
 1. Extract the target date.
@@ -215,7 +256,7 @@ Settings uses the official Tauri updater `check`, `download`, and `install` oper
 
 ## Diane dispatch contract
 
-Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
+Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `choose-project`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
 
 Never treat network failure as run failure, Stop submission as stop completion, or a completed agent run as a completed todo. Open uses the linked desktop session. Approvals, clarification, and further work belong in Diane.
 
@@ -259,3 +300,6 @@ Android `AiService.planProject(preferences, goal, window, scheduledProjectWork, 
 `api.llmProjectPlan(request)` invokes native `llm_project_plan`. Requests use `{mode: "steps" | "schedule", goal, window, tasks, scheduledStepIds, contextTruncated}`; `window` contains `{from, until, minutesPerDay, weekdaysOnly}`. Responses are `{steps: string[]}` or `{actions: [{stepId: string | null, text, date, minutes}]}`. The frontend generates new IDs and validates dates/budgets, existing step identities, duplicate work and a fresh goal/archive fingerprint before saving. Generate/Discard never creates tasks; task/goal API schemas remain unchanged.
 
 Mac project operations persist a local recovery journal before sequential writes to existing stores. This is not a new agent-facing task database or CLI transaction command. Existing native per-date compare/backups protect edits; pending operations remain retryable with stable IDs.
+
+### Standalone setup preparation
+`diane_request` also supports `connection`, `preparation-records` (body `{scope,cursor?}`), `prepare` (body `{scope,payload}` with `action: "prepare"`) and `preparation-status` (requestId plus `{scope}`). These use only local Diane `/api/plugins/connection` and scoped `/api/plugins/todo/records` or `/intelligence` routes. Prepare requires a canonical source revision, execution-contract digest and known workspace candidates. Persist the request ID before sending; uncertain retries inspect the same receipt. Approved context is included after the original task in dispatch `text`; no schema change or execution happens during preparation/review.

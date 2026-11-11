@@ -54,3 +54,23 @@
 Build command (temporary source copy): `flutter build apk --release --no-pub --target-platform android-arm64 --split-per-abi --dart-define=SYNC_SERVER_URL=https://dear-diane-202610-api.web.app --dart-define=DIANE_SHARED_CUTOVER=true`. `flutter pub get --offline` succeeded. `apksigner verify --print-certs` and `aapt dump badging` verified original signer/package/version; source hashes matched repository at delivery.
 
 The already-started test attempt passed122 with one skip but could not load sync_merge_test.dart because its sibling `tests/fixtures/sync-merge.json` was absent from the temporary phone-only copy. No product failure is inferred and no full-suite pass is claimed. Per the user's minimal-check instruction it was not rerun; release build and artifact checks are the delivery gate.
+
+## November 10 — Sync control
+- [x] Replace folder-sync checkbox and Sync now with one Sync action; retain owner binding before enabling sync.
+- [x] All30 Node suites pass; the manual-sync regression verifies enabling a paused folder and syncing from the same click. Frontend production build passes.
+- [x] Build and ad-hoc-sign the staged Mac .app; strict deep signature verification passes. User requested leaving the installed app untouched. Updater signing is not performed (no release private key); no publication.
+
+- [x] Subsequent user request: reinstall and reopen current Sticky Todo and Diane builds. Installed signature/process checks pass; profiles/data untouched, rollback copies retained under `/Users/lizhi/.codex-accounts/app/.tmp/desktop-before-reinstall-20261110-203046`.
+
+## November 10 — Shared Mac installation
+- [x] User explicitly authorized shared-backend Mac installation. Build with `STICKY_SHARED_CUTOVER=1 VITE_SYNC_SERVER_URL=https://dear-diane-202610-api.web.app npm run build -- --bundles app --config '{"bundle":{"createUpdaterArtifacts":false}}'`.
+- [x] Install and relaunch `/Applications/Sticky Todo.app` (2.1.16), verify deep signature/bundle equality, runtime shared origin and cutover marker. Preserve all56 task files; only requested native config change is connectDiane=true.
+- [x] Include reviewed two-stage local Diane handoff from plan6, plus the independently prepared single Sync control. 31 Node suites, TypeScript and browser handoff checks pass.
+- Backup and verification receipt: `output/shared-mac-delivery/macos-verification.json`; original bundle/profile/tasks/WebKit retained at `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-shared-backend-install-20261110-203058`.
+- Google sign-in, real cross-device sync and live model/session acceptance remain pending; no public release, backend mutation or Diane reinstall.
+
+## November10 — Requested reinstall, publication and login repair
+- [x] Rebuild/reinstall original Mac app with shared flags, verify runtime backend, signed bundle and all56 unchanged task files. Backup: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-shared-backend-install-20261110-203430`.
+- [x] Reproduce and fix the shared API cold-instance token-mint error in Diane: completion and exchange may hit different processes. All27 backend sign-in regressions pass; narrow two-file image deployed as diane-api-00021-gup with100% traffic. Prior00019-vil remains available for rollback.
+- [x] Separate Todo commits for guarded Sync, editable local setup/session handoff, and delivery documentation. Backend auth fix lives in Diane commit a9508536.
+- [ ] User verifies a fresh Google sign-in after deployment; an earlier failed consumed proof cannot be retried.

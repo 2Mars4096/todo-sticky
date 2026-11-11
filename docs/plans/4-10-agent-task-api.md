@@ -25,3 +25,23 @@
 
 - CLI aliases support `input` for `create`, `list` for `extract`, and `update` for `edit`.
 - The detailed contract and examples live in [llm-api-guide.md](../llm-api-guide.md).
+
+## 4-10-1: Local application MCP access
+
+- [x] Isolate implementation on `feat/task-mcp`; preserve the dirty main checkout.
+- [x] Expose existing native task CRUD via bounded stdio MCP with read-only mode.
+- [x] Require revision preconditions for MCP edits/deletes and creation in existing archives.
+- [x] Document client configuration, meeting-summary workflow and local/concurrency limits.
+- [x] Verify native regressions and real CLI/MCP process interoperability on disposable data: 45 Rust tests and `tests/mcp-smoke.py` pass; native debug CLI builds.
+
+Decisions: reuse the native CLI binary and Markdown task API without new dependencies or a second store. Target initialize-based MCP 2025-11-25. This slice exposes task text/status/steps only; project/focus/UI-only commands and remote hosting remain outside scope. No install, release or personal-data mutation.
+
+- [x] Merge into `main` at user request, retain newer main work and remove the feature branch/worktree after verification.
+
+## 4-10-2: Push and local Mac delivery
+
+- [x] Push merged `main` to the explicitly approved `2Mars4096/todo-sticky` origin.
+- [x] Rebuild and reinstall the Mac bundle, including CLI/MCP, preserving existing shared-backend settings and task/profile data.
+- [x] Verify signed installed bundle, CLI/MCP interoperability and app launch; record rollback location.
+
+Delivery: installed/reopened `/Applications/Sticky Todo.app` 2.1.16 with bundled `Contents/MacOS/sticky-todo-api`; ad-hoc signature and bundle hashes verified, installed CLI/MCP smoke passes on disposable data. All 56 task-store files and native config unchanged; shared backend retained. Rollback: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-mcp-install-20261110-205420`. Receipt: `output/mcp-install/macos-verification.json`. No public release.
