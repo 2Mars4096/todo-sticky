@@ -85,7 +85,7 @@ jobs:
         with:
           name: ${{ matrix.platform }}
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 1
           path: |
             src-tauri/target/**/bundle/**/*.sig
             src-tauri/target/**/bundle/**/*.tar.gz

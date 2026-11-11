@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Clean Actions build artifacts and prevent retained CI outputs; see [5-build-artifact-cleanup.md](plans/5-build-artifact-cleanup.md).
+
 - [x] Package cohesive embedded UI0.1.10 and deliver through the verified Diane reinstall; standalone app unchanged.
 
 - [x] Apply embedded UI cohesion with shared Diane spacing/control tokens;53 plugin checks and source-host rendered review pass. Package in the next coordinated release.

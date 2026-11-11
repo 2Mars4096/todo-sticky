@@ -1,0 +1,46 @@
+name: Clean completed run artifacts
+
+on:
+  workflow_run:
+    workflows: ["Flutter Android", "Release"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Completed workflow run whose artifacts should be deleted'
+        required: true
+        type: string
+
+permissions:
+  actions: write
+
+concurrency:
+  group: artifact-cleanup-${{ github.event.workflow_run.id || inputs.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Never check out or execute code from the triggering branch or its artifacts.
+      - name: Delete only artifacts belonging to the completed run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "Expected a numeric completed run ID" >&2; exit 1; }
+          status="$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID" --jq .status)"
+          [[ "$status" == completed ]] || { echo "Refusing to clean an unfinished run" >&2; exit 1; }
+          artifact_ids="$(gh api --paginate "repos/$GH_REPO/actions/runs/$RUN_ID/artifacts?per_page=100" --jq '.artifacts[].id')"
+          while IFS= read -r artifact_id; do
+            [[ -z "$artifact_id" ]] && continue
+            [[ "$artifact_id" =~ ^[0-9]+$ ]] || exit 1
+            gh api --method DELETE "repos/$GH_REPO/actions/artifacts/$artifact_id"
+          done <<< "$artifact_ids"
+          remaining="$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID/artifacts?per_page=1" --jq .total_count)"
+          [[ "$remaining" == 0 ]] || { echo "Artifacts remain after cleanup" >&2; exit 1; }
+          echo "Completed run $RUN_ID has no stored artifacts."

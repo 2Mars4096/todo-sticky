@@ -49,9 +49,3 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build apk --debug --target-platform android-arm64
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sticky-todo-android-review
-          path: phone/build/app/outputs/flutter-apk/app-debug.apk
-          if-no-files-found: error
-          retention-days: 14

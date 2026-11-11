@@ -1,5 +1,9 @@
 # Architecture
 
+## Actions artifact storage
+
+Routine CI builds and tests do not upload retained build artifacts. A default-branch cleanup workflow deletes artifacts from the listed completed workflows, including runs on older branches. It reads only GitHub metadata, never checks out triggering code, and deletes only artifacts for the completed run. Source code, workflow run logs, dependency caches and GitHub Releases are unaffected. Release jobs still exchange temporary installers until the complete release workflow finishes; cleanup then deletes them. New release artifacts also have a one-day expiry fallback. Re-running a publish-only job after cleanup requires rebuilding its artifacts.
+
 ## Local application task access
 
 `desktop/src-tauri/src/mcp.rs` serves initialize-based MCP 2025-11-25 over bounded newline-delimited stdio through `sticky-todo-api mcp`. It wraps `task_api` directly, validates narrow tool schemas and serializes requests per process. Read-only mode advertises and permits only listing. There is no listener, alternate store or Diane dependency. MCP requires weekly revisions for edits/deletes and creates into existing archives; existing native persistence is optimistic, not cross-process atomic. See [agent contract](llm-api-guide.md#mcp-for-other-applications).
