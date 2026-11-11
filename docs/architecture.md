@@ -434,3 +434,5 @@ Diane setup placement measures the rendered panel in a layout effect and observe
 `dianeReceiptKey` resolves carried display IDs and legacy prefixed receipt keys within one notebook. Same-date matches take priority; unique cross-date matches survive moves. Original receipt/request keys remain immutable for status/open/retry. Ambiguous cross-date matches are not guessed.
 
 Diane setup and linked-session details share one compact flex header for heading/close, with28px controls and the existing4px radius/field spacing. Heading/close remain in normal flow rather than absolute offsets.
+
+- Product-owned paneLayout CSS consumes optional host geometry tokens with standalone fallbacks; the host does not patch the published bundle. Source review can alias this plugin into Diane without releasing it.

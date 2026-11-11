@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-11 — Cohesive plugin packaged for Diane
+- [release] Build local UI0.1.10 from reviewed source and pin its exact archive/hash in Diane. The signed Diane app is reinstalled and verified; standalone apps and hosted services are unchanged.
+
+## 2026-11-11 — Embedded UI cohesion, source only
+- [ux] Use shared host gutter/control/radius tokens, tighten task groups, and map the textarea border alias to the selected host palette.
+- [test]53 plugin tests pass; rendered inside the actual synthetic Diane host through a source-only preview alias. No release package, deployment or app reinstall.
+
 ## 2026-11-11 — Idea execution branch published and pruned
 - [infra] Push verified combined main and delete fully merged feat/idea-execution-cells with an exact-head lease. Remote main equality and branch absence confirmed; preserve safety stashes/backups and unrelated branches.
 

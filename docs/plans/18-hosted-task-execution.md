@@ -51,3 +51,9 @@ Verification: `npm --prefix plugin run check` passes strict TypeScript, **8 suit
 Rendered-browser acceptance was attempted but not completed: the local Browser extension was unavailable in this session and the cloud browser could not reach the executor's loopback fixture (`ERR_CONNECTION_REFUSED`). The generated-module render gate is a separate automated result, not a visual or installed-app check.
 
 The host integration must ship the corresponding workflow-only discard contract. These product checks do not constitute a real agent run or installation of Dear Diane on macOS.
+
+## November 11 — Embedded visual consistency
+- [x] Use shared host gutter/control/radius tokens, tighten task groups, and map the textarea border alias to the selected host palette.
+- [x]53 plugin checks pass and source-host layout inspected; production pins remain unchanged until a future coordinated package release.
+
+- [x] Subsequent user-requested delivery: package UI0.1.10 and consume in the verified local Diane reinstall. No standalone/cloud release.

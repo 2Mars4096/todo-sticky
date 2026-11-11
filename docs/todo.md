@@ -1,5 +1,9 @@
 # Todo
 
+- [x] Package cohesive embedded UI0.1.10 and deliver through the verified Diane reinstall; standalone app unchanged.
+
+- [x] Apply embedded UI cohesion with shared Diane spacing/control tokens;53 plugin checks and source-host rendered review pass. Package in the next coordinated release.
+
 - [x] Integrate combined idea-execution-cells main and verify after the Diane reinstall.
 - [x] Push integrated main and prune the merged feature branch; exact remote head verified.
 
