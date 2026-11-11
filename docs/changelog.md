@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-11 — Combined idea execution integration
+- [integration] Combine feat/idea-execution-cells with current main and preserve the existing local product changes. Build/install precedes the final test pass at the user’s request.
+
 ## 2026-11-10 — Preserve current main and complete staged failure receipts
 
 - [integration] Incorporate existing main `2531781de69abe5b83a0b599f5c4746cceabf81e` from merge base `7f64acd8081884b9f608adf245f0619fd757bb6e`, retaining the recovery branch's UI 0.1.8 behavior and the new 0.1.9 work. Inherited changes include local stdio MCP, guarded one-button Sync, and editable/reviewed standalone Diane setup. Preserve both branches' documentation history.
