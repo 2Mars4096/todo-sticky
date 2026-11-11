@@ -38,3 +38,8 @@
 - Actual-host SDK contract check passes against the integrated Diane checkout. Existing standalone shared-agent and shared-account Node suites pass; helpers issue one request and propagate uncertain transport failures without automatic resubmission.
 - Inherited standalone preparation, workspace matching and changed sync-frequency suites pass. The full standalone runner passed its first 18 suites before the missing `firebase/app` environment dependency blocked review-reliability. No Rust toolchain is available for native/MCP execution in this environment.
 - No installed-app, real-provider, phone build or live deployment is established by these checks.
+
+## November 11 — Combined main delivery
+- [x] Integrate feature branch with current local changes and retain safety stash.
+- [x] Plugin53 tests and type/build/package/distribution/host-SDK gates, standalone31 Node suites and contextual backend9 cases pass.
+- [x] Integrated Diane reinstalled before final tests; no standalone app/phone or cloud deployment claim.

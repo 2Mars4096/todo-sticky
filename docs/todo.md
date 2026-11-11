@@ -1,6 +1,7 @@
 # Todo
 
-- [ ] Finish combined idea-execution-cells main integration, reinstall Diane, run final tests and prune merged feature branches.
+- [x] Integrate combined idea-execution-cells main and verify after the Diane reinstall.
+- [ ] Push integrated main and prune the merged feature branch.
 
 - [x] Preserve current-main MCP/Sync/reviewed-setup work with recovery UI, align desktop preparation bounds and retain failed-stage receipts — [19-contextual-task-refinement](plans/19-contextual-task-refinement.md). Native installation and real-provider acceptance remain separate.
 

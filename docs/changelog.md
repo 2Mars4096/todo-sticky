@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-11 — Combined main integration verified
+- [integration] Merge feat/idea-execution-cells with existing local product changes; preserve source receipts and safety stashes.
+- [test] Plugin53 tests and type/build/package/distribution/host-SDK gates, standalone31 Node suites and contextual backend9 cases pass. Final tests ran after the requested Diane reinstall.
+
 ## 2026-11-11 — Combined idea execution integration
 - [integration] Combine feat/idea-execution-cells with current main and preserve the existing local product changes. Build/install precedes the final test pass at the user’s request.
 
