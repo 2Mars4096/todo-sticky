@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-11 — Idea execution branch published and pruned
+- [infra] Push verified combined main and delete fully merged feat/idea-execution-cells with an exact-head lease. Remote main equality and branch absence confirmed; preserve safety stashes/backups and unrelated branches.
+
 ## 2026-11-11 — Combined main integration verified
 - [integration] Merge feat/idea-execution-cells with existing local product changes; preserve source receipts and safety stashes.
 - [test] Plugin53 tests and type/build/package/distribution/host-SDK gates, standalone31 Node suites and contextual backend9 cases pass. Final tests ran after the requested Diane reinstall.
