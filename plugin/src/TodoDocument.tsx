@@ -5,7 +5,7 @@ import { TaskDianeAction } from './TaskDianeAction';
 export interface TodoDocumentEditorProps {
   documentId: string; content: string; readOnly: boolean; onChange(content: string): void; renderBlockActions?(markdown:string): ReactNode;
 }
-export interface TodoDocumentReviewProps { before: string; after: string; onAccept(): void; onReject(): void; }
+export interface TodoDocumentReviewProps { before: string; after: string; onAccept(content?: string): void; onReject(): void; }
 export type Projection = { token: string; links: Record<string,string>; created: string[]; removed: string[]; initial: boolean; canonicalContent?: string };
 export type Span = { id: string; line: number; task: { text: string; status: string } };
 export type DocumentSnapshot = { path: string; document: string; content: string; normalized: string; revision: string; projection: Projection; tasks: Span[]; pending: boolean };
@@ -50,7 +50,7 @@ export function TodoDocument({scope,host,editor:Editor,review:Review,onClose,onS
       {preview&&<section aria-label="Reconciliation preview">
         <p>{preview.projection.initial?'Initial linkage. ':''}{preview.projection.created.length} new tasks; {preview.projection.removed.length} removed. Removed tasks retain execution history; runs continue.</p>
         {preview.projection.canonicalContent&&preview.projection.canonicalContent!==preview.content&&<section><p>Saved task text or status differs. Choose which version to keep.</p><details><summary>Saved task version</summary><pre>{preview.projection.canonicalContent}</pre></details><button disabled={busy} onClick={()=>setChoice(true)}>Keep document task edits</button><button disabled={busy} onClick={()=>changed(preview.projection.canonicalContent!)}>Use saved task text and status</button></section>}
-        {Review&&<Review before={snapshot.content} after={preview.content} onAccept={()=>setAccepted(true)} onReject={()=>{setPreview(undefined);setAccepted(false);}}/>}
+        {Review&&<Review before={snapshot.content} after={preview.content} onAccept={content=>{if(content!==undefined&&content!==preview.content){changed(content);}else setAccepted(true);}} onReject={()=>{setPreview(undefined);setAccepted(false);}}/>}
         {!Review&&<pre aria-label="Proposed Markdown">{preview.content}</pre>}
         <button disabled={busy||!accepted||!choice} onClick={()=>void perform(async()=>{try {await host.save({...write(),content:preview.content});} catch(error) {try {const fresh=await host.read(snapshot.path);if(current()&&fresh.pending)setSnapshot(fresh);} catch {} throw error;}if(current()){await open(snapshot.path);await onSaved();}})}>Save document and reconcile</button>
       </section>}

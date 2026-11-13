@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Preserve selective document-review content for re-preview; package candidate0.1.12.
+
 - [ ] Aggregate UI0.1.11/backend0.1.6 and shared notebook/review injection; synthetic visual/bundle acceptance and explicit owner/KB configuration remain — [21](plans/21-kb-markdown-document-editor.md).
 
 - [x] Whole-document KB Todo editing and canonical reconciliation — [21](plans/21-kb-markdown-document-editor.md).

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-13 — Selective document review
+- [fix] Accept selectively reviewed Markdown as a new draft and require a fresh reconciliation preview before saving; candidate UI0.1.12.
+
 ## 2026-11-13 — Full KB Todo document candidate
 - [feat] Add product-owned lossless Markdown parsing, ID preview, canonical record reconciliation and a full-document notebook portal with task actions. Cross-date moves retain canonical IDs; deletion retains running sessions/history.
 - [safety] Require document/record revisions and explicit owner/root binding; retain file-first reconciliation journals and prior bytes. Conflicts need review, never title-based merging or implicit execution.
