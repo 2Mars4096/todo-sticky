@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-13 — Document draft recovery
+- [fix] Persist emitted Todo document drafts by owner and binding; restore changed-file drafts for review and guard unload.61 UI tests pass; UI0.1.13.
+
 ## 2026-11-13 — Selective document review
 - [fix] Accept selectively reviewed Markdown as a new draft and require a fresh reconciliation preview before saving; candidate UI0.1.12.
 

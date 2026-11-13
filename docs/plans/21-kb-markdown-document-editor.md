@@ -44,3 +44,5 @@
 - Aggregation gates: pin new UI and backend artifacts, wire shared editor/review exports via host injection, configure explicit KB root and owner connection scope, run combined synthetic visual/bundle checks. Legacy standalone whole-date serialization has not been converted to this document API; do not claim end-to-end prose preservation for concurrent writes by that older client.
 
 - [x] Preserve mixed chunk decisions through optional reviewed-content callback and require fresh reconciliation for partial acceptance.
+
+- [x] Account/document draft recovery across remount and unload protection;61 UI tests pass.

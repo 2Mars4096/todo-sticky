@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Retain account/document drafts across plugin remount and warn before unload; UI0.1.13.
+
 - [x] Preserve selective document-review content for re-preview; package candidate0.1.12.
 
 - [ ] Aggregate UI0.1.11/backend0.1.6 and shared notebook/review injection; synthetic visual/bundle acceptance and explicit owner/KB configuration remain — [21](plans/21-kb-markdown-document-editor.md).

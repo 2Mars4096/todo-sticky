@@ -1,5 +1,8 @@
 # Bugs And Failed Approaches
 
+## 2026-11-13 — Whole-document draft loss
+- Full-document useState was lost on plugin remount. Account/binding-scoped recovery now preserves emitted edits; changed-file drafts require review. Storage failures remain visible.
+
 ## 2026-11-13 — Whole-document implementation findings
 - A suffix metadata regex initially consumed adjacent comments; constrain it to one comment and strip marker whitespace. Multiline preview/metadata disagreement now blocks instead of silently restoring stale text.
 - Host catch-all proxy routes must follow the specific document routes; an ordering regression test prevents shadowing.

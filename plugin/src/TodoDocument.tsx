@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode, type ComponentType } from 'react';
 import { pluginScope } from '@diane/plugin-sdk/client';
+import { storageForAccount } from './storage';
 import { TaskDianeAction } from './TaskDianeAction';
 
 export interface TodoDocumentEditorProps {
@@ -29,10 +30,27 @@ export function TodoDocument({scope,host,editor:Editor,review:Review,onClose,onS
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const perform=async(work:()=>Promise<void>)=>{if(lock.current)return;lock.current=true;setBusy(true);setError('');try{await work();}catch(e){if(current())setError(String(e));}finally{lock.current=false;if(current())setBusy(false);}};
   useEffect(()=>{if(host)void perform(async()=>{const result=await host.list();if(current())setFiles(result.documents);});},[host]);
+  const draftKey=(value:DocumentSnapshot)=>`document-draft:${JSON.stringify([value.document,value.path])}`;
+  useEffect(()=>{
+    if(!snapshot)return;
+    const changed=draft!==snapshot.content;
+    try {
+      const storage=storageForAccount(scope),key=draftKey(snapshot);
+      if(changed)storage.setItem(key,JSON.stringify({content:draft,revision:snapshot.revision}));
+      else storage.removeItem(key);
+    } catch {setError('Draft recovery is unavailable. Keep this document open until saved.');}
+    if(!changed)return;
+    const warn=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue='';};
+    window.addEventListener('beforeunload',warn);
+    return()=>window.removeEventListener('beforeunload',warn);
+  },[scope,snapshot,draft]);
   if(!host||!Editor)return <section><button onClick={onClose}>Back</button><p role="status">This host does not support KB document editing.</p></section>;
   const dirty=!!snapshot&&draft!==snapshot.content;
   const write=():DocumentWrite=>({path:snapshot!.path,document:snapshot!.document,revision:snapshot!.revision,expected:snapshot!.projection.token,content:draft});
-  const open=async(path:string)=>{const value=await host.read(path);if(current()){setSnapshot(value);setDraft(value.content);setPreview(undefined);setSelected(undefined);setAccepted(false);}};
+  const open=async(path:string)=>{const value=await host.read(path);if(current()){let content=value.content;
+      try {const saved=storageForAccount(scope).getItem(draftKey(value));if(saved){const recovered=JSON.parse(saved);if(typeof recovered.content!=='string'||typeof recovered.revision!=='string')throw Error('Invalid draft');content=recovered.content;if(recovered.revision!==value.revision)setError('The file changed since this draft. Review the differences before saving.');}}
+      catch {setError('Could not read the saved draft. Recovery data has been retained.');}
+      setSnapshot(value);setDraft(content);setPreview(undefined);setSelected(undefined);setAccepted(false);}};
   const changed=(value:string)=>{if(!current()||lock.current||latest.current.snapshot!==snapshot||latest.current.draft!==draft)return;setDraft(value);setPreview(undefined);setAccepted(false);};
   return <section className="todo-document" aria-label="KB Todo document">
     <header><button disabled={busy||dirty||snapshot?.pending} onClick={onClose}>Back</button>
@@ -52,7 +70,7 @@ export function TodoDocument({scope,host,editor:Editor,review:Review,onClose,onS
         {preview.projection.canonicalContent&&preview.projection.canonicalContent!==preview.content&&<section><p>Saved task text or status differs. Choose which version to keep.</p><details><summary>Saved task version</summary><pre>{preview.projection.canonicalContent}</pre></details><button disabled={busy} onClick={()=>setChoice(true)}>Keep document task edits</button><button disabled={busy} onClick={()=>changed(preview.projection.canonicalContent!)}>Use saved task text and status</button></section>}
         {Review&&<Review before={snapshot.content} after={preview.content} onAccept={content=>{if(content!==undefined&&content!==preview.content){changed(content);}else setAccepted(true);}} onReject={()=>{setPreview(undefined);setAccepted(false);}}/>}
         {!Review&&<pre aria-label="Proposed Markdown">{preview.content}</pre>}
-        <button disabled={busy||!accepted||!choice} onClick={()=>void perform(async()=>{try {await host.save({...write(),content:preview.content});} catch(error) {try {const fresh=await host.read(snapshot.path);if(current()&&fresh.pending)setSnapshot(fresh);} catch {} throw error;}if(current()){await open(snapshot.path);await onSaved();}})}>Save document and reconcile</button>
+        <button disabled={busy||!accepted||!choice} onClick={()=>void perform(async()=>{try {await host.save({...write(),content:preview.content});} catch(error) {try {const fresh=await host.read(snapshot.path);if(current()&&fresh.pending)setSnapshot(fresh);} catch {} throw error;}if(current()){storageForAccount(scope).removeItem(draftKey(snapshot));await open(snapshot.path);await onSaved();}})}>Save document and reconcile</button>
       </section>}
       <nav aria-label="Task lines">{snapshot.tasks.map(span=><button key={span.id} disabled={busy||dirty||snapshot.pending||!!preview} onClick={()=>setSelected(span.id)}>Line {span.line}: {span.task.text} · {span.task.status}</button>)}</nav>
       {selected&&!dirty&&!preview&&!snapshot.pending&&!snapshot.projection.created.includes(selected)&&snapshot.projection.links[selected]&&<TaskDianeAction id={snapshot.projection.links[selected]}/>}
