@@ -56,3 +56,17 @@ it('leaves Enter and IME confirmation to paragraph editing',async()=>{
  }
  expect(p.onTextChange).not.toHaveBeenCalled();expect(host.querySelector('textarea')).toBe(input);
 });
+
+it('keeps management hidden while editing, opens it only with ellipsis, and preserves its draft on close',async()=>{
+ const p={...props(),finish:{doneWhen:'Existing outcome'},onUpdateFinish:vi.fn(),onReview:vi.fn()};await act(async()=>root.render(h(TaskItem,p)));
+ const panel=host.querySelector<HTMLElement>('.task-details-panel')!,more=host.querySelector<HTMLButtonElement>('.task-more-button')!;
+ expect(panel.hidden).toBe(true);await act(async()=>host.querySelector<HTMLElement>('.task-text')!.click());expect(panel.hidden).toBe(true);
+ await act(async()=>more.click());expect(panel.hidden).toBe(false);expect(more.getAttribute('aria-expanded')).toBe('true');
+ expect(panel.querySelector('[aria-label="Add step"]')).toBeTruthy();expect(host.querySelectorAll('.task-more-button')).toHaveLength(1);
+ await act(async()=>more.click());expect(panel.hidden).toBe(true);expect(host.querySelector('.task-details-panel')).toBe(panel);
+ await act(async()=>more.click());await act(async()=>panel.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})));expect(panel.hidden).toBe(true);expect(document.activeElement).toBe(more);
+});
+it('opens only one task details panel at a time',async()=>{
+ const a=props(),b={...props(),id:'second',text:'Second task'};await act(async()=>root.render(h('div',null,h(TaskItem,a),h(TaskItem,b))));const buttons=host.querySelectorAll<HTMLButtonElement>('.task-more-button'),panels=host.querySelectorAll<HTMLElement>('.task-details-panel');
+ await act(async()=>buttons[0].click());expect(panels[0].hidden).toBe(false);await act(async()=>buttons[1].click());expect(panels[0].hidden).toBe(true);expect(panels[1].hidden).toBe(false);
+});

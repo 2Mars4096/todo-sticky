@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Keep text editing flat; one ellipsis owns metadata/actions, with compact Diane status/run access and shared workspace controls. Plugin0.1.18; plan22 tracks delivery.
+
 - [x] Installed Todo UI0.1.17 in Diane0.1.9; exact ASAR/signature and backend health verified. Task/chat records unchanged; one preparation cache record updated at startup. Rollback: `/Applications/.Diane-previous-84cc4c40-39bf-4599-a183-97c570084876.app`. Product66 and host5 tests pass.
 
 - [x] Rename Weekly notes, group settings, preserve drafts, remove doubled gutter and clarify carried dates; UI0.1.17. Delivery tracked in plan21.

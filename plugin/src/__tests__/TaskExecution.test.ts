@@ -304,3 +304,16 @@ it('refreshes an active run once when focus and visibility return together and s
   await act(async () => vi.advanceTimersByTimeAsync(12000));
   expect(client.pluginApi.workflow).toHaveBeenCalledOnce();
 });
+
+it('keeps a compact status row while the shared task panel owns workspace and secondary actions',async()=>{
+ const panel=document.createElement('div');document.body.append(panel);const configure=vi.fn();
+ try{
+ vi.mocked(client.pluginApi.run).mockResolvedValue({...run,project_id:'writing'});
+ await render(task(),{compact:true,controlsTarget:panel,onConfigure:configure});
+ expect(host.querySelector('select')).toBeNull();expect(host.querySelector('.todo-execution-options')).toBeNull();expect(panel.querySelector('select')).toBeTruthy();expect(client.pluginApi.run).not.toHaveBeenCalled();
+ await click('Diane');expect(configure).toHaveBeenCalledOnce();expect(client.pluginApi.run).not.toHaveBeenCalled();
+ await act(async()=>{const select=panel.querySelector('select')!;select.value='writing';select.dispatchEvent(new Event('change',{bubbles:true}));});
+ await click('Run');expect(client.pluginApi.run).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({record_id:'task-a'}),'writing',expect.any(String),undefined);
+ expect(host.textContent).toContain('Running');expect([...panel.querySelectorAll('button')].some(b=>b.textContent==='Stop run')).toBe(true);
+ }finally{await act(async()=>root.render(null));panel.remove();}
+});

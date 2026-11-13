@@ -441,3 +441,5 @@ Diane setup and linked-session details share one compact flex header for heading
 
 ## Product KB document reconciliation
 `plugin/backend/.../todo_document.py` parses exact source spans and reuses CanonicalTodoSync `_changes`/`_apply` inside one owner transaction. Document bindings store source IDs and idempotent request fingerprints, never runtime copies. Hosted `/api/plugins/todo/documents/{preview,commit}` accepts document hash/content/expected record fingerprint. Unrelated records and execution data survive. `TodoDocument.tsx` owns explicit preview, task-line controls and optional notebook/review injection. The local host confines files to an explicitly owner-bound KB and journals file-first writes before the canonical commit. No dispatch or periodic sync is introduced.
+
+- Plugin TaskItem separates text selection from task-detail disclosure. Compact TaskExecution portals workspace/secondary actions into the retained detail panel while its single execution instance owns polling, dispatch and review state. No host SDK or storage schema changes.

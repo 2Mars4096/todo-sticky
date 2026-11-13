@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useEffect, useId, useRef, useState } from 'react';
 import { isElectron } from '@diane/plugin-sdk/desktop';
 import { useManagedPluginHost } from '@diane/plugin-sdk/host-context';
@@ -5,11 +6,11 @@ import { describeError, newId, pluginApi, pluginScope, type PluginRecord, type P
 import { recordsChanged } from '@diane/plugin-sdk/records';
 import { activeWorkflow, executionProject, previousSessions, readProjectChoice, reviewableWorkflow, runRequestId, saveProjectChoice, sessionHref, unfinishedTask, workflowLabel, type ProjectChoice } from './taskExecutionState';
 
-type Props = { task: PluginRecord; active: boolean; enabled: boolean; saving?: boolean };
+type Props = { task: PluginRecord; active: boolean; enabled: boolean; saving?: boolean; compact?: boolean; controlsTarget?: HTMLElement | null; onConfigure?: () => void };
 const projectSignature = (projects: Project[]) => JSON.stringify(projects.map(project => [project.id, project.name, project.root]).sort((a, b) => a[0].localeCompare(b[0])));
 
 /** Product-owned controls over the existing host workflow and result-version APIs. */
-export function TaskExecution({ task, active, enabled, saving = false }: Props) {
+export function TaskExecution({ task, active, enabled, saving = false, compact = false, controlsTarget, onConfigure }: Props) {
   const host = useManagedPluginHost();
   const scope = task._scope || pluginScope();
   const version = `${scope}:${task.record_id}:${task.revision}`;
@@ -137,10 +138,10 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
   const canRun = enabled && unfinishedTask(task) && Boolean(project) && !loading && !busy && !saving;
   const terminal = Boolean(workflow && ['accepted', 'stopped', 'failed'].includes(workflow.state));
   const canRunAgain = terminal && unfinishedTask(task);
-  const preparationLabel = choice !== undefined ? project ? '' : choice.project_id ? 'Project unavailable' : 'Choose project'
+  const preparationLabel = choice !== undefined ? project ? '' : choice.project_id ? 'Project unavailable' : 'Choose workspace'
     : project ? '' : !preparation || preparation.state === 'pending' ? 'Preparing…'
       : preparation.state === 'stale' || preparation.state === 'ready' && preparation.task_revision !== task.revision ? 'Updating context…'
-        : preparation.state === 'unavailable' ? 'Preparation unavailable' : 'Choose project';
+        : preparation.state === 'unavailable' ? 'Preparation unavailable' : 'Choose workspace';
   const chooseProject = (value: string) => {
     const item = projects.find(candidate => candidate.id === value);
     const next = value === '__automatic__' ? undefined : { project_id: item?.id || '', root: item?.root || '' };
@@ -192,24 +193,26 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
   const previous = previousSessions(runs);
   const origin = task.extensions.meeting_context as { meeting_id?: string; title?: string; transcript_revision?: number } | undefined;
 
-  return <div className="todo-execution" aria-label="Diane task execution" aria-busy={busy || loading || saving}>
-    <div className="todo-execution-row">
-      {!workflow || canRunAgain ? <select aria-label="Diane project" title={project?.root || 'Choose a project for this task'} value={project?.id || ''} disabled={busy || saving} onChange={event => chooseProject(event.target.value)}>
-        <option value="">Choose project</option>{(choice !== undefined || project) && <option value="__automatic__">Automatic</option>}{projects.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-      </select> : bound ? <span className="todo-execution-project" title={bound.root}>{bound.name}</span> : null}
-      <span className="todo-execution-state" role="status">{saving ? 'Saving…' : loading ? 'Loading…' : reviewConflict ? 'Task changed' : workflow ? workflowLabel(workflow.state) : preparationLabel}</span>
-      {(!workflow || canRunAgain) && unfinishedTask(task) && <button type="button" className="todo-execution-primary" disabled={!canRun} onClick={run}>{workflow ? 'Run again' : 'Run'}</button>}
-      {reviewableWorkflow(workflow) ? <button ref={reviewTrigger} type="button" className="todo-execution-primary" disabled={loading || saving} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={showDetails}>Review</button> : workflow && open(workflow)}
-      <details className="todo-execution-options" ref={options} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); options.current!.open = false; options.current?.querySelector('summary')?.focus(); } }}>
-        <summary aria-label="More Diane actions" title="More Diane actions">···</summary>
-        <div>
+  const projectControl = (!workflow || canRunAgain ? <select aria-label="Diane project" title={project?.root || 'Choose a project for this task'} value={project?.id || ''} disabled={busy || saving} onChange={event => chooseProject(event.target.value)}>
+        <option value="">Choose workspace</option>{(choice !== undefined || project) && <option value="__automatic__">Automatic</option>}{projects.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+      </select> : bound ? <span className="todo-execution-project" title={bound.root}>{bound.name}</span> : null);
+  const extraControls = (        <div>
           <button type="button" disabled={busy || loading} onClick={() => { refresh(); if (options.current) options.current.open = false; }}>Refresh</button>
           <button type="button" onClick={() => { showDetails(); if (options.current) options.current.open = false; }} aria-expanded={detailsOpen} aria-controls={detailsId}>Run details</button>
           {workflow?.state === 'pending_dispatch' && <button type="button" disabled={busy || loading || saving || !enabled} onClick={() => void action(async valid => { const next = await pluginApi.run({ ...task, revision: workflow.task_revision }, workflow.project_id, workflow.request_id); if (valid()) receive(next); })}>Retry start</button>}
           {activeWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => void action(async valid => { const next = await pluginApi.stop(workflow!); if (valid()) { receive(next); setNotice(next.state === 'stopped' ? 'Run stopped.' : 'Stop requested.'); } })}>Stop run</button>}
           {reviewableWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => review('defer')}>Review later</button>}
-        </div>
-      </details>
+        </div>);
+  return <div className="todo-execution" aria-label="Diane task execution" aria-busy={busy || loading || saving}>
+    <div className="todo-execution-row">
+      {compact ? <button type="button" className="todo-diane-label" onClick={onConfigure} title="Diane workspace and actions">Diane</button> : projectControl}
+      <span className="todo-execution-state" role="status">{saving ? 'Saving…' : loading ? 'Loading…' : reviewConflict ? 'Task changed' : workflow ? workflowLabel(workflow.state) : compact && project ? 'Ready' : preparationLabel}</span>
+      {(!workflow || canRunAgain) && unfinishedTask(task) && <button type="button" className="todo-execution-primary" disabled={!canRun} onClick={run}>{workflow ? 'Run again' : 'Run'}</button>}
+      {reviewableWorkflow(workflow) ? <button ref={reviewTrigger} type="button" className="todo-execution-primary" disabled={loading || saving} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={showDetails}>Review</button> : workflow && open(workflow)}
+      {compact ? controlsTarget && createPortal(<><label className="task-diane-workspace">Diane workspace{projectControl}</label>{extraControls}</>,controlsTarget) :       <details className="todo-execution-options" ref={options} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); options.current!.open = false; options.current?.querySelector('summary')?.focus(); } }}>
+        <summary aria-label="More Diane actions" title="More Diane actions">···</summary>
+        {extraControls}
+      </details>}
     </div>
     {detailsOpen && <section id={detailsId} className="todo-execution-details" aria-label={reviewableWorkflow(workflow) ? 'Review Diane result' : 'Diane run details'}>
       <header><strong>{workflow ? workflowLabel(workflow.state) : 'Run details'}</strong><button type="button" onClick={closeDetails} aria-label="Close Diane run details">×</button></header>

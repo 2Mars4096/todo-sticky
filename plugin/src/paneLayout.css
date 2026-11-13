@@ -97,3 +97,25 @@
 
 .diane-todo-port .todo-settings-content :is(input,select) { border: 1px solid var(--wb-line); background: var(--wb-paper); color: var(--wb-ink); font: inherit; }
 .diane-todo-port .settings-machine-actions { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; background: var(--wb-paper); }
+
+/* Writing is the resting state; task management opens only from its disclosure. */
+.diane-todo-port .task-entry-selected,
+.diane-todo-port .task-entry > .task-item.task-selected { background: transparent; }
+.diane-todo-port .task-entry + .task-entry { margin-top: 4px; }
+.diane-todo-port .task-context-bar { display: flex; align-items: center; gap: 8px; min-height: 30px; }
+.diane-todo-port .task-context-bar .todo-diane-handoff { flex: 1; min-width: 0; padding: 0; border: 0; margin: 0; }
+.diane-todo-port .task-context-bar .todo-execution { width: 100%; }
+.diane-todo-port .task-more-button { margin-left: auto; }
+.diane-todo-port :is(.task-more-button,.task-diane-connect) { border: 0; background: transparent; color: var(--wb-muted); min-height: 30px; padding: 4px 8px; cursor: pointer; font: inherit; }
+.diane-todo-port .task-more-button { font-size: 20px; min-width: 32px; }
+.diane-todo-port .task-details-panel { padding: 12px; margin-block: 4px 8px; border: 1px solid var(--wb-line); border-radius: var(--wb-radius-control,6px); background: var(--wb-paper); }
+.diane-todo-port .task-details-panel[hidden] { display: none; }
+.diane-todo-port .task-details-panel .task-primary-actions { margin-block: 8px; }
+.diane-todo-port .task-diane-settings { display: grid; gap: 8px; }
+.diane-todo-port .task-diane-settings:empty { display: none; }
+.diane-todo-port .task-diane-settings > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.diane-todo-port .task-diane-workspace { display: grid; gap: 4px; font-size: 12px; }
+.diane-todo-port .task-diane-settings :is(button,select) { min-height: 32px; padding: 4px 8px; border: 1px solid var(--wb-line); border-radius: var(--wb-radius-control,6px); background: var(--wb-paper); color: var(--wb-ink); font: inherit; }
+
+.diane-todo-port .task-entry .diane-todo-notebook-editor .diane-note-append { display: none; }
+.diane-todo-port .task-title-line:focus-within .diane-todo-notebook-editor .diane-note-append { display: block; min-height: 32px; height: 32px; }

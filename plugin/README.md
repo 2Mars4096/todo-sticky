@@ -64,3 +64,7 @@ UI0.1.11 adds the optional full-document KB workflow. Host capability and recove
 ## Settings and weekly notes
 
 **Weekly notes** opens the weekly task files in the configured knowledge base for document editing and reviewed saves. **Settings** groups Machines and Backups, with a direct link to Diane AI settings. Switching sections retains drafts; Save machines commits changes. Carried tasks show their source date.
+
+## Continuous task editing
+
+Task text edits directly without expanding management controls. The single **…** opens Outcome, Due, Todo project, step/move/delete actions and Diane workspace/secondary actions. The compact Diane row retains status and Run/Open/Review. Opening details never dispatches; closing preserves mounted detail state. No right-click menu is added.

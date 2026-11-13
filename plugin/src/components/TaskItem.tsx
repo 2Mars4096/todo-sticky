@@ -113,6 +113,10 @@ export function TaskItem({
   const port = useTodoPort()
   const taskEditor = useTaskEditor()
   const [selected, setSelected] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [dianeControls, setDianeControls] = useState<HTMLDivElement | null>(null)
+  const moreRef = useRef<HTMLButtonElement>(null)
+  const detailsId = useId()
   const [dateOpen, setDateOpen] = useState(false)
   const [stepsOpen, setStepsOpen] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
@@ -134,7 +138,7 @@ export function TaskItem({
   const steps = todaySubtasks ?? []
   const history = otherSubtasks ?? []
   const doneSteps = steps.filter(step => step.status === 'done').length
-  const nextStep = steps.find(step => step.status !== 'done' && step.status !== 'stopped')
+
 
   const revealId = port?.selection?.recordId
   const containsReveal = (items: Task[]): boolean => items.some(task => task.id === revealId || containsReveal(task.subtasks || []))
@@ -176,7 +180,7 @@ export function TaskItem({
       // Diane details render in a portal; their controls still belong to this task.
       if (target?.closest('.diane-details') || path.some(node => node instanceof Element && node.matches('.diane-details'))) return
       if (!belongsTo(groupRef.current)) {
-        setSelected(false); setDateOpen(false); setAddingStep(false)
+        setSelected(false); setDetailsOpen(false); setAddingStep(false)
       }
     }
     document.addEventListener('pointerdown', startPointer, true)
@@ -199,6 +203,15 @@ export function TaskItem({
   }, [editing])
   useEffect(() => { if (addingStep) stepInputRef.current?.focus() }, [addingStep])
 
+  useEffect(() => {
+    const closeOther = (event: Event) => { if ((event as CustomEvent).detail !== detailsId) setDetailsOpen(false) }
+    window.addEventListener('todo:task-details', closeOther)
+    return () => window.removeEventListener('todo:task-details', closeOther)
+  }, [detailsId])
+  const toggleDetails = () => {
+    if (!detailsOpen) window.dispatchEvent(new CustomEvent('todo:task-details', {detail: detailsId}))
+    setDetailsOpen(value => !value)
+  }
   const returnToTitle = () => requestAnimationFrame(() => titleRef.current?.focus())
   const commitEdit = (restoreFocus = false) => {
     if (!titleEditActive.current) return
@@ -276,7 +289,7 @@ export function TaskItem({
       const target = event.relatedTarget as HTMLElement | null
       if (target?.closest('.diane-details')) return
       if (target && !event.currentTarget.contains(target)) {
-        settleLayout(() => { setSelected(false); setDateOpen(false); setAddingStep(false) })
+        settleLayout(() => { setSelected(false); setDetailsOpen(false); setAddingStep(false) })
       }
     }}>
     <div ref={rowRef} onClick={() => setSelected(true)} onFocusCapture={() => settleLayout(() => setSelected(true))}
@@ -315,24 +328,21 @@ export function TaskItem({
           {statusLabel && <span className={`task-state-label state-${status}`}>{statusLabel}</span>}
           {dateLabel && <span className="task-source-label">{dateLabel}</span>}
         </div>}
-        {!isOtherDate && <TaskWorkflowStatus taskId={recordId ?? id} />}
+        {!isOtherDate && <div className="task-context-bar">
+          {selected ? <TaskDianeAction id={recordId ?? id} compact controlsTarget={dianeControls} onConfigure={()=>{window.dispatchEvent(new CustomEvent('todo:task-details', {detail:detailsId}));setDetailsOpen(true)}} /> : <><button type="button" className="task-diane-connect" onClick={()=>setSelected(true)}>Diane</button><TaskWorkflowStatus taskId={recordId ?? id}/></>}
+          <button ref={moreRef} type="button" className="task-more-button" aria-label={`Task details: ${text}`} title="Task details" aria-expanded={detailsOpen} aria-controls={detailsId} onClick={toggleDetails}>…</button>
+        </div>}
+        <div id={detailsId} className="task-details-panel" hidden={!detailsOpen || isOtherDate} onKeyDown={event=>{
+          if(event.key==='Escape' && !event.defaultPrevented){event.preventDefault();event.stopPropagation();setDetailsOpen(false);moreRef.current?.focus()}
+        }}>
         {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
-          selected={selected} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
-        {!isOtherDate && projects.length>0 && selected && <div className="task-project">
-          {selected && onAssignProject ? <select aria-label={`Task project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
+          selected={detailsOpen} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
+        {!isOtherDate && projects.length>0 && detailsOpen && <div className="task-project">
+          {onAssignProject ? <select aria-label={`Task project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
             <option value="" disabled={Boolean(goalId)}>No project</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
           </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title="Open project">{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??'Project'}</button>}
         </div>}
-        {!isSubtask && steps.length > 0 && <div className="task-steps-summary">
-          <button type="button" className="task-steps-toggle" aria-expanded={stepsOpen} aria-controls={stepsId}
-            aria-label={`${stepsOpen ? 'Hide' : 'Show'} steps for ${text}. ${doneSteps} of ${steps.length} done`}
-            onClick={() => setStepsOpen(value => !value)}>
-            <span aria-hidden="true">{stepsOpen ? '▾' : '▸'}</span>
-            {`${doneSteps}/${steps.length} steps done`}
-          </button>
-          {selected && !stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
-        </div>}
-        {(selected && !isOtherDate) && <div className="task-primary-actions">
+        {(!isOtherDate) && <div className="task-primary-actions">
           {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title="Add step" aria-label="Add step" onClick={openStepEntry}><AddStepIcon /></button>}
           {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? 'Preparing suggested steps…' : 'Suggest steps with AI'} disabled={breakingDown}
             onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /></button>}
@@ -341,7 +351,16 @@ export function TaskItem({
           {!isOtherDate && <button type="button" className="task-text-action task-icon-action task-delete-action" title="Delete"
             onClick={onDelete} aria-label={`Delete ${text}`}><DeleteIcon /></button>}
         </div>}
-        {selected && !isOtherDate && <TaskDianeAction id={recordId ?? id} />}
+          <div className="task-diane-settings" ref={setDianeControls}/>
+        </div>
+        {!isSubtask && steps.length > 0 && <div className="task-steps-summary">
+          <button type="button" className="task-steps-toggle" aria-expanded={stepsOpen} aria-controls={stepsId}
+            aria-label={`${stepsOpen ? 'Hide' : 'Show'} steps for ${text}. ${doneSteps} of ${steps.length} done`}
+            onClick={() => setStepsOpen(value => !value)}>
+            <span aria-hidden="true">{stepsOpen ? '▾' : '▸'}</span>
+            {`${doneSteps}/${steps.length} steps done`}
+          </button>
+        </div>}
         {!isOtherDate && <TaskStepProposal taskId={id} />}
         {breakingDown && <span className="task-inline-status" role="status">Preparing suggested steps…</span>}
       </div>
@@ -359,7 +378,7 @@ export function TaskItem({
         isSubtask isOtherDate sourceDate={sub.sourceDate} moveTargetLabel={moveTargetLabel}
         onToggle={() => {}} onDelete={() => {}} onPush={() => {}} onTextChange={() => {}} parentText={text} />)}
     </details>}
-    {!isSubtask && !isOtherDate && !closed && onAddSubtask && (selected || addingStep || subInput) && <div className="task-step-composer">
+    {!isSubtask && !isOtherDate && !closed && onAddSubtask && (addingStep || subInput) && <div className="task-step-composer">
       <ParagraphInput ref={stepInputRef} className="task-text-input task-step-add-input" placeholder="Add a step…" aria-label={`New step for ${text}`}
         value={subInput} onChange={event => setSubInput(event.target.value)}
         onFocus={() => { setSelected(true); setAddingStep(true) }}
