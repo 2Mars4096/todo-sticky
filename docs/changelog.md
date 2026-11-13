@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-13 — Document control cohesion
+- [fix] Use shared geometry and wrapping for document controls; shorten actions to Review changes and Save changes. UI0.1.15;62 tests/types pass.
+
 ## 2026-11-13 — Conditional draft cleanup
 - [fix] Clear only the saved matching draft before reopening normalized file bytes; preserve another window’s newer recovery draft. Add save/normalization regression; UI0.1.14.
 
