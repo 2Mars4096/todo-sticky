@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-13 — Full KB Todo document candidate
+- [feat] Add product-owned lossless Markdown parsing, ID preview, canonical record reconciliation and a full-document notebook portal with task actions. Cross-date moves retain canonical IDs; deletion retains running sessions/history.
+- [safety] Require document/record revisions and explicit owner/root binding; retain file-first reconciliation journals and prior bytes. Conflicts need review, never title-based merging or implicit execution.
+- [test] 59 UI tests and 36 backend tests pass, including real host filesystem + canonical SQLite round trips. Two actual shared-engine composition checks, 24 host editor checks, product/host types/build and SDK/package gates pass. Local UI0.1.11/backend0.1.6 candidates only; aggregation/visual/install acceptance pending.
+
+## 2026-11-13 — KB Markdown document follow-up
+- [docs] Record approved product-owned whole-document scope and original-ID/canonical-ID mapping requirement; retain standalone format and execution identities.
+
 ## 2026-11-13 — Host notebook editor portal
 - [feat] Add optional taskEditor injection to existing Todo rows with account/record identity and guarded text callbacks. Preserve task controls, session links and canonical save authority.
 - [test]56 product tests, strict types, build, distribution/package and actual-host SDK checks pass. Diane source-composition test passes; no installed/live claim.

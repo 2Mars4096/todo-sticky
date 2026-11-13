@@ -53,3 +53,7 @@
 .diane-todo-port .task-entry > .task-item { padding-block:var(--wb-space-1,4px); }
 .diane-todo-port .task-entry + .task-entry { margin-top:var(--wb-space-2,8px); }
 .diane-todo-port .task-entry .task-steps-summary { margin-top:var(--wb-space-1,4px); }
+
+.diane-todo-port .todo-document header, .diane-todo-port .todo-document nav { display:flex; gap:8px; flex-wrap:wrap; }
+.diane-todo-port .todo-document { display:grid; gap:12px; min-width:0; }
+.diane-todo-port .todo-document pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:40vh; overflow:auto; }

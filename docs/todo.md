@@ -1,5 +1,9 @@
 # Todo
 
+- [ ] Aggregate UI0.1.11/backend0.1.6 and shared notebook/review injection; synthetic visual/bundle acceptance and explicit owner/KB configuration remain — [21](plans/21-kb-markdown-document-editor.md).
+
+- [x] Whole-document KB Todo editing and canonical reconciliation — [21](plans/21-kb-markdown-document-editor.md).
+
 - [x] Implement optional host notebook editor bridge — [20](plans/20-notebook-editor-bridge.md).
 - [ ] Aggregate new Todo package with Diane adapter; rendered/installed acceptance remains pending.
 - [x] Package cohesive embedded UI0.1.10 and deliver through the verified Diane reinstall; standalone app unchanged.

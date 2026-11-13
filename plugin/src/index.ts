@@ -2,3 +2,5 @@
 export {default} from './TodoPort';
 export {default as TodoPort} from './TodoPort';
 export type { TodoTaskEditorProps } from './TaskEditor';
+
+export type {TodoDocumentHost,TodoDocumentEditorProps,TodoDocumentReviewProps} from './TodoDocument';

@@ -1,5 +1,11 @@
 # Bugs And Failed Approaches
 
+## 2026-11-13 — Whole-document implementation findings
+- A suffix metadata regex initially consumed adjacent comments; constrain it to one comment and strip marker whitespace. Multiline preview/metadata disagreement now blocks instead of silently restoring stale text.
+- Host catch-all proxy routes must follow the specific document routes; an ordering regression test prevents shadowing.
+- Whole-date native `write_back_section` replacement is not suitable for preserving prose in the document workflow. The new document path patches task spans and writes full reviewed source; existing standalone writers remain unchanged.
+- Standard Vitest/npm cache writes fail through isolated dependency symlinks. Runner/no-cache and a temporary npm cache pass. Initial session fixture used status instead of the workflow state field; corrected to the real contract.
+
 ## 2026-11-13 — Isolated editor bridge verification
 - Symlinked dependencies caused Vitest config cache writes into the original checkout; use `--configLoader runner --cache=false`. npm package checks require an isolated `npm_config_cache` under /private/tmp. Do not alter original dependencies.
 - Initial new history fixture used an undefined callback shorthand; corrected the fixture and reran all56 product tests.

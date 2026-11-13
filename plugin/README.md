@@ -58,3 +58,5 @@ After checks pass, build the UI archive from `plugin/` with `npm pack --ignore-s
 The published repository did not contain the `plugin/` directory referenced by Diane's releases. The initial UI source was recovered from the verified `@diane-app/todo-plugin@0.1.6` archive and the backend modules from `diane-todo-plugin@0.1.4`. Their recorded producer commits were unavailable on GitHub. `RECOVERY.json` retains the exact artifact checksums and member hashes; it is a historical baseline, not a claim that edited files still have those hashes. `src/SOURCE.json` retains the earlier port's source attribution, with the original machine-local path removed.
 
 The original MIT notice remains in `src/LICENSE.todo-sticky`. See `backend/README.md` for the unchanged compatibility modules and their independent wheel build. Source recovery does not recreate the unavailable producer Git history or deploy either application.
+
+UI0.1.11 adds the optional full-document KB workflow. Host capability and recovery contracts are documented in [HOST-CONTRACT.md](HOST-CONTRACT.md). Its companion backend is0.1.6; ordinary Todo remains available when the capability is absent.
