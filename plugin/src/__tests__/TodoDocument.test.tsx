@@ -27,3 +27,12 @@ it('retains a recovered draft when the file revision changed without saving auto
  host.read=vi.fn(async()=>({...snapshot,revision:'new',content:'external edits'}));await mount();
  expect(received.content).toBe('my edits');expect(container.textContent).toContain('file changed since this draft');expect(host.save).not.toHaveBeenCalled();
 });
+
+it('reopens normalized saved bytes without resurrecting the pre-save draft',async()=>{
+ await mount();act(()=>received.onChange('new task without ID'));
+ const normalized='new task <!-- sticky-todo:id=new -->';
+ host.preview=vi.fn(async()=>({content:normalized,projection:snapshot.projection,tasks:[]}));
+ host.save=vi.fn(async()=>{host.read=vi.fn(async()=>({...snapshot,content:normalized,revision:'saved'}));});
+ await click('Preview reconciliation');await click('Save document and reconcile');
+ expect(received.content).toBe(normalized);expect(localStorage.length).toBe(0);
+});

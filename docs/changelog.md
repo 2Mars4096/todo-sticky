@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-13 — Conditional draft cleanup
+- [fix] Clear only the saved matching draft before reopening normalized file bytes; preserve another window’s newer recovery draft. Add save/normalization regression; UI0.1.14.
+
 ## 2026-11-13 — Document draft recovery
 - [fix] Persist emitted Todo document drafts by owner and binding; restore changed-file drafts for review and guard unload.61 UI tests pass; UI0.1.13.
 
