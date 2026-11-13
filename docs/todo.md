@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Installed Todo UI0.1.17 in Diane0.1.9; exact ASAR/signature and backend health verified. Task/chat records unchanged; one preparation cache record updated at startup. Rollback: `/Applications/.Diane-previous-84cc4c40-39bf-4599-a183-97c570084876.app`. Product66 and host5 tests pass.
+
 - [x] Rename Weekly notes, group settings, preserve drafts, remove doubled gutter and clarify carried dates; UI0.1.17. Delivery tracked in plan21.
 
 - [x] Rebuilt/reinstalled Diane0.1.9 with Todo UI0.1.16, preserving newer shared-document features. All65 product tests, actual-host SDK, production build/budgets and release-pin checks pass; signature/installed ASAR match, backend health passes and all13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-f9657284-95b5-41ac-ba93-4fd54289f104.app`.
