@@ -1,6 +1,6 @@
 # 22: Plugin continuous editing and task details
 
-**Status:** in-progress
+**Status:** completed
 **Goal:** Keep writing continuous and reveal management only through one task disclosure.
 
 ## Tasks
@@ -10,7 +10,7 @@
 - [x] Keep Diane connection/status/Run/Open/Review on the row; portal workspace and secondary controls into the same task panel.
 - [x] Preserve guarded persistence, dispatch identity, result-version checks and explicit run authority.
 - [x] Verify interaction regressions, actual compact dispatch and narrow/wide synthetic browser states.
-- [ ] Publish and install the matching plugin package in Diane.
+- [x] Publish and install the matching plugin package in Diane.
 
 ## Decisions
 - Plugin only; no standalone/phone or right-click changes.
@@ -24,3 +24,7 @@
 - Product gate and actual-host contract checked before packaging; installed/live-provider results recorded separately below.
 
 - [x] Reproduce/fix shared-editor blur moving the ellipsis target; browser verifies first-click opening from an active paragraph. Final candidate0.1.19 supersedes staged0.1.18.
+
+## Installed delivery
+- Installed Todo UI0.1.19 in Diane0.1.9; signature, exact ASAR and backend health pass. All13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-e266f838-9fa0-4092-bb7c-86287186a9e4.app`.70 product tests, host SDK and360/800px browser checks pass.
+- Host delivery branch: `fix/todo-continuous-delivery`, isolated from the concurrent source-control merge. Product branch: `feat/unified-todo-editor`. Standalone apps unchanged.

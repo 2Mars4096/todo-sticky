@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-13 — Continuous plugin editor installed
+- [infra] Installed Todo UI0.1.19 in Diane0.1.9; signature, exact ASAR and backend health pass. All13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-e266f838-9fa0-4092-bb7c-86287186a9e4.app`.70 product tests, host SDK and360/800px browser checks pass.
+
 ## 2026-11-13 — Continuous plugin editing
 - [ux] Keep text editing flat; one ellipsis owns metadata/actions, with compact Diane status/run access and shared workspace controls. Plugin0.1.18; plan22 tracks delivery.
 
