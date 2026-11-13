@@ -211,6 +211,7 @@ export function TaskItem({
   const toggleDetails = () => {
     if (!detailsOpen) window.dispatchEvent(new CustomEvent('todo:task-details', {detail: detailsId}))
     setDetailsOpen(value => !value)
+    moreRef.current?.focus()
   }
   const returnToTitle = () => requestAnimationFrame(() => titleRef.current?.focus())
   const commitEdit = (restoreFocus = false) => {
@@ -330,7 +331,7 @@ export function TaskItem({
         </div>}
         {!isOtherDate && <div className="task-context-bar">
           {selected ? <TaskDianeAction id={recordId ?? id} compact controlsTarget={dianeControls} onConfigure={()=>{window.dispatchEvent(new CustomEvent('todo:task-details', {detail:detailsId}));setDetailsOpen(true)}} /> : <><button type="button" className="task-diane-connect" onClick={()=>setSelected(true)}>Diane</button><TaskWorkflowStatus taskId={recordId ?? id}/></>}
-          <button ref={moreRef} type="button" className="task-more-button" aria-label={`Task details: ${text}`} title="Task details" aria-expanded={detailsOpen} aria-controls={detailsId} onClick={toggleDetails}>…</button>
+          <button ref={moreRef} type="button" className="task-more-button" aria-label={`Task details: ${text}`} title="Task details" onPointerDown={event=>{if(event.button===0)event.preventDefault()}} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={toggleDetails}>…</button>
         </div>}
         <div id={detailsId} className="task-details-panel" hidden={!detailsOpen || isOtherDate} onKeyDown={event=>{
           if(event.key==='Escape' && !event.defaultPrevented){event.preventDefault();event.stopPropagation();setDetailsOpen(false);moreRef.current?.focus()}

@@ -22,3 +22,5 @@
 ## Validation
 - Browser fixture uses actual shared Markdown editor plus explicit offline service mocks.360/800px: no overflow, no second menu, metadata stays closed while typing, workspace selection preserved.
 - Product gate and actual-host contract checked before packaging; installed/live-provider results recorded separately below.
+
+- [x] Reproduce/fix shared-editor blur moving the ellipsis target; browser verifies first-click opening from an active paragraph. Final candidate0.1.19 supersedes staged0.1.18.

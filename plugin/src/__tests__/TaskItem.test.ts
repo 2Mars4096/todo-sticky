@@ -70,3 +70,9 @@ it('opens only one task details panel at a time',async()=>{
  const a=props(),b={...props(),id:'second',text:'Second task'};await act(async()=>root.render(h('div',null,h(TaskItem,a),h(TaskItem,b))));const buttons=host.querySelectorAll<HTMLButtonElement>('.task-more-button'),panels=host.querySelectorAll<HTMLElement>('.task-details-panel');
  await act(async()=>buttons[0].click());expect(panels[0].hidden).toBe(false);await act(async()=>buttons[1].click());expect(panels[0].hidden).toBe(true);expect(panels[1].hidden).toBe(false);
 });
+
+it('defers pointer focus until the details click lands so editor blur cannot move its target',async()=>{
+ await act(async()=>root.render(h(TaskItem,props())));await act(async()=>host.querySelector<HTMLElement>('.task-text')!.click());const input=host.querySelector('textarea')!,more=host.querySelector<HTMLButtonElement>('.task-more-button')!;
+ const down=new PointerEvent('pointerdown',{button:0,bubbles:true,cancelable:true});await act(async()=>more.dispatchEvent(down));expect(down.defaultPrevented).toBe(true);expect(document.activeElement).toBe(input);
+ await act(async()=>more.click());expect(host.querySelector<HTMLElement>('.task-details-panel')!.hidden).toBe(false);expect(document.activeElement).toBe(more);
+});

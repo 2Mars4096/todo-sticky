@@ -354,3 +354,5 @@ A temporary phone-only copy cannot run sync_merge_test.dart without the reposito
 - 2026-11-10: Android sign-in reported MissingPluginException. Browser launch now uses the app-owned sticky_todo/links channel and native HTTPS ACTION_VIEW handler instead of the external launcher plugin.
 
 - November10 local .app packaging completed; automatic updater archive signing then refused because no private release key was supplied. The staged .app is separately ad-hoc-signed and verified; it is not an updater release.
+
+- 2026-11-13: Shared paragraph blur can shrink a task before the ellipsis click lands. Prevent primary pointer-down focus on that trigger, then focus it after its click. Actual shared-editor browser regression passes. Package with cwd=`plugin`; npm --prefix pack selected the root package in this environment. Discarded that generated archive before use.
