@@ -60,3 +60,7 @@ The published repository did not contain the `plugin/` directory referenced by D
 The original MIT notice remains in `src/LICENSE.todo-sticky`. See `backend/README.md` for the unchanged compatibility modules and their independent wheel build. Source recovery does not recreate the unavailable producer Git history or deploy either application.
 
 UI0.1.11 adds the optional full-document KB workflow. Host capability and recovery contracts are documented in [HOST-CONTRACT.md](HOST-CONTRACT.md). Its companion backend is0.1.6; ordinary Todo remains available when the capability is absent.
+
+## Settings and weekly notes
+
+**Weekly notes** opens the weekly task files in the configured knowledge base for document editing and reviewed saves. **Settings** groups Machines and Backups, with a direct link to Diane AI settings. Switching sections retains drafts; Save machines commits changes. Carried tasks show their source date.

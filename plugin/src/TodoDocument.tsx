@@ -44,7 +44,7 @@ export function TodoDocument({scope,host,editor:Editor,review:Review,onClose,onS
     window.addEventListener('beforeunload',warn);
     return()=>window.removeEventListener('beforeunload',warn);
   },[scope,snapshot,draft]);
-  if(!host||!Editor)return <section><button onClick={onClose}>Back</button><p role="status">This host does not support KB document editing.</p></section>;
+  if(!host||!Editor)return <section><button onClick={onClose}>Back</button><p role="status">This host does not support weekly task notes.</p></section>;
   const dirty=!!snapshot&&draft!==snapshot.content;
   const write=():DocumentWrite=>({path:snapshot!.path,document:snapshot!.document,revision:snapshot!.revision,expected:snapshot!.projection.token,content:draft});
   const open=async(path:string)=>{const value=await host.read(path);if(current()){let content=value.content;
@@ -52,10 +52,10 @@ export function TodoDocument({scope,host,editor:Editor,review:Review,onClose,onS
       catch {setError('Could not read the saved draft. Recovery data has been retained.');}
       setSnapshot(value);setDraft(content);setPreview(undefined);setSelected(undefined);setAccepted(false);}};
   const changed=(value:string)=>{if(!current()||lock.current||latest.current.snapshot!==snapshot||latest.current.draft!==draft)return;setDraft(value);setPreview(undefined);setAccepted(false);};
-  return <section className="todo-document" aria-label="KB Todo document">
+  return <section className="todo-document" aria-label="Weekly task notes">
     <header><button disabled={busy||dirty||snapshot?.pending} onClick={onClose}>Back</button>
       <select aria-label="Weekly document" disabled={busy||dirty||snapshot?.pending} value={snapshot?.path??''} onChange={e=>void perform(()=>open(e.target.value))}>
-        <option value="" disabled>Choose document</option>{files.map(path=><option key={path}>{path}</option>)}
+        <option value="" disabled>Choose weekly notes</option>{files.map(path=><option key={path}>{path}</option>)}
       </select></header>
     {error&&<p role="alert">{error}</p>}
     {snapshot&&<>

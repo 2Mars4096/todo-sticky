@@ -4,7 +4,7 @@ import { TaskDianeAction } from '../TaskDianeAction'
 import { TaskStepProposal } from '../TaskStepProposal'
 import { TaskWorkflowStatus } from '../TaskWorkflowStatus'
 import { ParagraphInput } from './ParagraphInput'
-import { useState, useRef, useEffect, useId, type PointerEvent, type KeyboardEvent } from 'react'
+import { useState, useRef, useEffect, useId, type PointerEvent, type MouseEvent, type KeyboardEvent } from 'react'
 import { format, subDays } from 'date-fns'
 import { TaskFinish } from './TaskFinish'
 import { effectiveProject } from '../projectPlanning'
@@ -125,6 +125,7 @@ export function TaskItem({
   const titleRef = useRef<HTMLSpanElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const stepInputRef = useRef<HTMLTextAreaElement>(null)
+  const editCaret = useRef<number | null>(null)
   const titleEditActive = useRef(false)
   const pointerActive = useRef(false)
   const afterPointer = useRef<Array<() => void>>([])
@@ -165,7 +166,7 @@ export function TaskItem({
       if (event.button === 0) pointerActive.current = true
     }
     const releasePointer = () => { releaseTimer = setTimeout(finishPointer, 0) }
-    const dismiss = (event: MouseEvent) => {
+    const dismiss = (event: globalThis.MouseEvent) => {
       finishPointer()
       const target = event.target as HTMLElement | null
       const path = event.composedPath()
@@ -190,7 +191,12 @@ export function TaskItem({
       document.removeEventListener('click', dismiss)
     }
   }, [])
-  useEffect(() => { if (editing) inputRef.current?.focus() }, [editing])
+  useEffect(() => {
+    if (!editing || !inputRef.current) return
+    inputRef.current.focus()
+    const position = editCaret.current ?? inputRef.current.value.length
+    inputRef.current.setSelectionRange(position, position)
+  }, [editing])
   useEffect(() => { if (addingStep) stepInputRef.current?.focus() }, [addingStep])
 
   const returnToTitle = () => requestAnimationFrame(() => titleRef.current?.focus())
@@ -207,7 +213,25 @@ export function TaskItem({
     titleEditActive.current = false
     setEditing(false); setEditText(text); returnToTitle()
   }
-  const beginEditing = () => {
+  const beginEditing = (event?: MouseEvent<HTMLSpanElement>) => {
+    // Preserve text selection for copying; a click edits at the pointed character.
+    if (event && !window.getSelection()?.isCollapsed) return
+    editCaret.current = null
+    if (event && event.detail > 0) {
+      const doc = document as Document & {
+        caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null
+        caretRangeFromPoint?: (x: number, y: number) => Range | null
+      }
+      const position = doc.caretPositionFromPoint?.(event.clientX, event.clientY)
+      const range = position ? document.createRange() : doc.caretRangeFromPoint?.(event.clientX, event.clientY)
+      if (range && position) range.setStart(position.offsetNode, position.offset)
+      if (range && event.currentTarget.contains(range.startContainer)) {
+        const prefix = document.createRange()
+        prefix.selectNodeContents(event.currentTarget)
+        prefix.setEnd(range.startContainer, range.startOffset)
+        editCaret.current = prefix.toString().length
+      }
+    }
     if (isOtherDate) return
     setDateOpen(false)
     titleEditActive.current = true
@@ -233,7 +257,7 @@ export function TaskItem({
   }
   const dateLabel = sourceDate
     ? (isOtherDate ? format(new Date(sourceDate + 'T00:00:00'), 'MMMd')
-      : `From ${sourceDate === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'yesterday' : sourceDate}`)
+      : `Carried from ${sourceDate === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'yesterday' : format(new Date(sourceDate + 'T00:00:00'), 'MMM d, yyyy')}`)
     : undefined
   const statusLabel = status === 'done' ? 'Complete' : status === 'stopped' ? 'Stopped'
     : finish?.reviewReady ? '' : status === 'partial' ? 'In progress' : status === 'question' ? 'Needs a decision' : ''
@@ -268,19 +292,24 @@ export function TaskItem({
         title={isOtherDate ? 'Historical step · read only' : closed ? 'Reopen task' : finish?.doneWhen ? 'Review outcome' : 'Complete task'}
         aria-label={`${text}. Status ${status}. Change status`} />
       <div className={`task-content-flow${isOtherDate ? '' : ' editable'}${editing ? ' editing' : ''}`}>
-        <div className="task-title-line">
+        <div className="task-title-line" onBlur={event => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) commitEdit()
+        }}>
           {taskEditor && port ? <TaskEditorBridge key={JSON.stringify([port.scope, recordId ?? id])} editor={taskEditor}
             scope={port.scope} taskId={recordId ?? id} content={text} readOnly={Boolean(isOtherDate || !port.enabled)} onChange={onTextChange} /> : editing ? <ParagraphInput ref={inputRef} aria-label={`Edit title: ${text}`} className="task-text-input task-inline-edit"
-            value={editText} onChange={event => setEditText(event.target.value)} onBlur={() => commitEdit()}
+            value={editText} onChange={event => setEditText(event.target.value)}
             onKeyDown={event => {
               if (event.nativeEvent.isComposing) return
               if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); commitEdit(true) }
               if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancelEdit() }
             }} /> : <span ref={titleRef} className={`task-text ${status === 'done' ? 'done' : ''}`}
               role={isOtherDate ? undefined : 'button'} tabIndex={isOtherDate ? undefined : 0}
-              onClick={() => setSelected(true)} onDoubleClick={beginEditing} onKeyDown={isOtherDate ? undefined : handleTaskTextKeyDown}
-              title={isOtherDate ? undefined : 'Select task. Double-click or press Enter to edit title.'}>{text || 'Untitled task'}</span>}
-          {editing && <button type="button" className="task-text-action" onClick={() => commitEdit(true)}>Save</button>}
+              onClick={beginEditing} onKeyDown={isOtherDate ? undefined : handleTaskTextKeyDown}
+              title={isOtherDate ? undefined : 'Edit task'}>{text || 'Untitled task'}</span>}
+          {editing && <div className="task-edit-actions">
+            <button type="button" className="task-text-action primary" disabled={!editText.trim()} onClick={() => commitEdit(true)}>Save</button>
+            <button type="button" className="task-text-action" onClick={cancelEdit}>Cancel</button>
+          </div>}
         </div>
         {(statusLabel || dateLabel) && <div className="task-state-line">
           {statusLabel && <span className={`task-state-label state-${status}`}>{statusLabel}</span>}
@@ -288,9 +317,9 @@ export function TaskItem({
         </div>}
         {!isOtherDate && <TaskWorkflowStatus taskId={recordId ?? id} />}
         {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
-          selected={selected && !editing} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
+          selected={selected} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
         {!isOtherDate && projects.length>0 && selected && <div className="task-project">
-          {selected && !editing && onAssignProject ? <select aria-label={`Task project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
+          {selected && onAssignProject ? <select aria-label={`Task project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
             <option value="" disabled={Boolean(goalId)}>No project</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
           </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title="Open project">{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??'Project'}</button>}
         </div>}
@@ -303,7 +332,7 @@ export function TaskItem({
           </button>
           {selected && !stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
         </div>}
-        {(selected && !isOtherDate) && !editing && <div className="task-primary-actions">
+        {(selected && !isOtherDate) && <div className="task-primary-actions">
           {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title="Add step" aria-label="Add step" onClick={openStepEntry}><AddStepIcon /></button>}
           {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? 'Preparing suggested steps…' : 'Suggest steps with AI'} disabled={breakingDown}
             onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /></button>}
@@ -312,7 +341,7 @@ export function TaskItem({
           {!isOtherDate && <button type="button" className="task-text-action task-icon-action task-delete-action" title="Delete"
             onClick={onDelete} aria-label={`Delete ${text}`}><DeleteIcon /></button>}
         </div>}
-        {selected && !isOtherDate && !editing && <TaskDianeAction id={recordId ?? id} />}
+        {selected && !isOtherDate && <TaskDianeAction id={recordId ?? id} />}
         {!isOtherDate && <TaskStepProposal taskId={id} />}
         {breakingDown && <span className="task-inline-status" role="status">Preparing suggested steps…</span>}
       </div>

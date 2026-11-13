@@ -8,7 +8,7 @@ import type {ProjectOperation} from './projectPlanning';
 import type {PlanningPreferences} from './PlanningSettings';
 interface Recovery {original:unknown;operation:ProjectOperation}
 interface Prepared {archive:{format:string;version:number;plugin_id:string;records:unknown[]};recoveries:Recovery[];preferences:Omit<PlanningPreferences,'revision'>|null;warnings:string[]}
-export function BackupTools({scope,flush,onChanged,onOpenProject,onPreferences}:{scope:string;flush:()=>Promise<void>;onChanged:()=>Promise<void>;onOpenProject:(id:string)=>void;onPreferences:(value:PlanningPreferences)=>void}){
+export function BackupTools({scope,flush,onChanged,onOpenProject,onPreferences,embedded=false}:{scope:string;embedded?:boolean;flush:()=>Promise<void>;onChanged:()=>Promise<void>;onOpenProject:(id:string)=>void;onPreferences:(value:PlanningPreferences)=>void}){
  const api=useMemo(()=>createTodoApi(scope),[scope]);const [prepared,setPrepared]=useState<Prepared>(),[recoveries,setRecoveries]=useState<Recovery[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const alive=useRef(true),requests=useRef<string[]>([]),finished=useRef(new Set<number>());
  const refresh=async()=>{const value=await api.command<{items:Recovery[]}>('recoveries');if(alive.current)setRecoveries(value.items);};
@@ -22,12 +22,13 @@ export function BackupTools({scope,flush,onChanged,onOpenProject,onPreferences}:
  }catch(e){if(alive.current)setError(e instanceof Error?e.message:String(e));}finally{if(alive.current)setBusy(false);}}
  async function exportBackup(){setBusy(true);setError('');try{await flush();if(storageForAccount(scope).getItem('pending-goal-write'))throw Error('Save or discard the pending goal change before exporting a backup.');const [archive,preferences,pending]=await Promise.all([pluginApi.export('todo',scope),api.preferences(),api.command<{items:Recovery[]}>('recoveries')]);const current=pendingProject(scope);const recovery=current?[...pending.items,{original:current,operation:current}]:pending.items;const {revision:_,...savedPreferences}=preferences;downloadFile('diane-todo-backup.json',JSON.stringify({format:'diane-todo-port-backup',version:1,archive,preferences:savedPreferences,recoveries:recovery},null,2));}catch(e){if(alive.current)setError(String(e));}finally{if(alive.current)setBusy(false);}}
  function review(item:Recovery){try{if(pendingProject(scope))throw Error('Finish or discard the current pending project save first.');beginProjectOperation({...item.operation,folder:scope});onOpenProject(item.operation.before.id);}catch(e){setError(String(e));}}
- return <details className="todo-port-backup"><summary>Import & backup</summary>
- <label>Original Todo export<input type="file" accept=".json,.md,application/json,text/markdown" disabled={busy} onChange={event=>void inspect(event.target.files?.[0])}/></label>
+ const Container=embedded?'section':'details';
+ return <Container className="todo-port-backup">{!embedded&&<summary>Backups</summary>}
+ <label>Import backup<input type="file" accept=".json,.md,application/json,text/markdown" disabled={busy} onChange={event=>void inspect(event.target.files?.[0])}/></label>
  <small>Weekly Markdown contains tasks only. A full backup can also include goals, routines and unfinished project saves.</small>
  {prepared&&<div><p>{prepared.archive.records.length} records · {prepared.recoveries.length} unfinished saves</p>{prepared.warnings.map((warning,i)=><p key={i}>{warning}</p>)}<button disabled={busy} onClick={()=>void apply()}>Import backup</button><button disabled={busy} onClick={()=>setPrepared(undefined)}>Cancel</button></div>}
  <button disabled={busy} onClick={()=>void exportBackup()}>Export complete backup</button><button disabled={busy} onClick={()=>void onChanged().catch(e=>setError(String(e)))}>Refresh</button>
  {recoveries.map((item,index)=><div key={index}><span>Unfinished project save: {item.operation.after.text}</span><button disabled={busy} onClick={()=>review(item)}>Review unfinished save</button></div>)}
  {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
- </details>;
+ </Container>;
 }

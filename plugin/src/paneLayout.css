@@ -70,3 +70,30 @@
 .todo-document > section > button { justify-self:start; }
 .todo-document > nav { border-top:1px solid var(--wb-line); padding-top:8px; }
 .todo-document > nav button { text-align:left; overflow-wrap:anywhere; }
+
+/* One task gutter; hierarchy is expressed only by step indentation. */
+.diane-todo-port .task-list { padding-inline: 0; }
+.diane-todo-port .task-entry > .task-item { padding-inline: 8px; }
+.diane-todo-port .task-entry > .task-item.subtask { padding-left: 28px; }
+.diane-todo-port .todo-port-data { padding: 0 8px; flex: none; }
+.diane-todo-port .todo-settings-panel { border-top: 1px solid var(--wb-line); }
+.diane-todo-port .todo-settings-panel > summary { gap: 8px; color: var(--wb-ink); }
+.diane-todo-port .todo-settings-panel > summary::before { display: none; }
+.diane-todo-port .todo-settings-panel[open] > summary { font-weight: 600; }
+.diane-todo-port .todo-settings-content { padding: 4px 0 12px; max-height: 50vh; overflow-y: auto; }
+.diane-todo-port .todo-settings-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--wb-line); padding-bottom: 8px; margin-bottom: 8px; }
+.diane-todo-port .todo-settings-content button { min-height: var(--plugin-control); padding: 6px 10px; border: 1px solid var(--wb-line); background: transparent; color: var(--wb-ink); font: inherit; cursor: pointer; }
+.diane-todo-port .todo-settings-content button:disabled { opacity: .5; cursor: default; }
+.diane-todo-port .todo-settings-nav button { border-color: transparent; }
+.diane-todo-port .todo-settings-nav button[aria-pressed="true"] { background: var(--wb-soft); font-weight: 600; }
+.diane-todo-port .todo-settings-nav .todo-settings-ai { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+.diane-todo-port .todo-settings-content :is(button,input,select):focus-visible { outline: 2px solid var(--wb-accent); outline-offset: 2px; }
+.diane-todo-port .todo-settings-content .machine-card { padding: 12px 0; }
+.diane-todo-port .todo-settings-content :is(.settings-empty,small) { color: var(--wb-muted); }
+.diane-todo-port .todo-settings-content .todo-port-backup { display: grid; gap: 12px; }
+.diane-todo-port .todo-port-backup label { display: grid; gap: 8px; }
+.diane-todo-port .todo-port-backup input[type="file"] { width: 100%; font: inherit; }
+.diane-todo-port .todo-port-backup input::file-selector-button { padding: 6px 10px; border: 1px solid var(--wb-line); border-radius: var(--wb-radius-control,6px); background: var(--wb-paper); color: var(--wb-ink); }
+
+.diane-todo-port .todo-settings-content :is(input,select) { border: 1px solid var(--wb-line); background: var(--wb-paper); color: var(--wb-ink); font: inherit; }
+.diane-todo-port .settings-machine-actions { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; background: var(--wb-paper); }

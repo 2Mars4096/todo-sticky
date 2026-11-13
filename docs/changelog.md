@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-13 — Settings and task spacing
+- [ux] Rename Weekly notes, group settings, preserve drafts, remove doubled gutter and clarify carried dates; UI0.1.17. Delivery tracked in plan21.
+
+## 2026-11-13 — Todo direct-edit plugin delivery
+- [infra] Rebuilt/reinstalled Diane0.1.9 with Todo UI0.1.16, preserving newer shared-document features. All65 product tests, actual-host SDK, production build/budgets and release-pin checks pass; signature/installed ASAR match, backend health passes and all13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-f9657284-95b5-41ac-ba93-4fd54289f104.app`.
+
 ## 2026-11-13 — Document control cohesion
 - [fix] Use shared geometry and wrapping for document controls; shorten actions to Review changes and Save changes. UI0.1.15;62 tests/types pass.
 

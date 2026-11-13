@@ -1,5 +1,9 @@
 # Todo
 
+- [x] Rename Weekly notes, group settings, preserve drafts, remove doubled gutter and clarify carried dates; UI0.1.17. Delivery tracked in plan21.
+
+- [x] Rebuilt/reinstalled Diane0.1.9 with Todo UI0.1.16, preserving newer shared-document features. All65 product tests, actual-host SDK, production build/budgets and release-pin checks pass; signature/installed ASAR match, backend health passes and all13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-f9657284-95b5-41ac-ba93-4fd54289f104.app`.
+
 - [x] Retain account/document drafts across plugin remount and warn before unload; UI0.1.13.
 
 - [x] Preserve selective document-review content for re-preview; package candidate0.1.12.
