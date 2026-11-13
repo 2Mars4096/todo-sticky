@@ -327,3 +327,5 @@ Repository maintenance: run npm commands from the root; canonical sources are we
 Signed-in account settings provide one **Sync** action; the first manual sync enables syncing for the current folder after account ownership checks.
 
 Linked Diane tasks show Queued, Running, Needs input or Finished · Review beside the status icon. Disconnected retains the session link. Earlier-task rows recover the same saved run after reopening; moving a task also preserves access when its saved run is unique within the notebook. Todo completion stays manual.
+
+The embedded Diane plugin can accept the host notebook editor for task text while retaining Todo controls and revision-checked saves. This optional source integration requires a matching host/package release; standalone Markdown storage is unchanged.

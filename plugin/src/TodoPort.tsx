@@ -5,6 +5,8 @@ import {usePluginScope,subscribeToPluginChanges} from '@diane/plugin-sdk/records
 import {pluginApi,pluginScope} from '@diane/plugin-sdk/client';
 import {useManagedPluginHost} from '@diane/plugin-sdk/host-context';
 import type {SidePanelProps} from '@diane/plugin-sdk/panel-context';
+import {TaskEditorContext, type TodoTaskEditorProps} from './TaskEditor';
+import type {ComponentType} from 'react';
 import {TodoPortContext} from './TodoPortContext';
 import {createTodoApi,suggestionSource} from './api';
 import {StepProposalContext} from './TaskStepProposal';
@@ -35,8 +37,8 @@ import './port.css';
 import './paneLayout.css';
 import './styles/task-execution.css';
 
-type Props=Pick<SidePanelProps,'active'>&Partial<Pick<SidePanelProps,'context'>>;
-export default function TodoPort(props:Props){const scope=usePluginScope();return scope?<TodoBody key={scope} {...props} scope={scope}/>:<p role="status">Connecting Todo…</p>;}
+export type Props=Pick<SidePanelProps,'active'>&Partial<Pick<SidePanelProps,'context'>>&{taskEditor?:ComponentType<TodoTaskEditorProps>};
+export default function TodoPort(props:Props){const scope=usePluginScope();return scope?<TaskEditorContext.Provider value={props.taskEditor}><TodoBody key={scope} {...props} scope={scope}/></TaskEditorContext.Provider>:<p role="status">Connecting Todo…</p>;}
 function TodoBody({active,scope}:Props&{scope:string}){
  const api=useMemo(()=>createTodoApi(scope),[scope]);
  const [preferences,setPreferences]=useState<PlanningPreferences>({revision:0,machines:[],planningPreferences:{}});

@@ -1,3 +1,4 @@
+import { TaskEditorBridge, useTaskEditor } from '../TaskEditor'
 import { useTodoPort } from '../TodoPortContext'
 import { TaskDianeAction } from '../TaskDianeAction'
 import { TaskStepProposal } from '../TaskStepProposal'
@@ -110,6 +111,7 @@ export function TaskItem({
   sortable, getSubtaskSortable, finish, onUpdateFinish, onReview,
 }: Props) {
   const port = useTodoPort()
+  const taskEditor = useTaskEditor()
   const [selected, setSelected] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
   const [stepsOpen, setStepsOpen] = useState(false)
@@ -267,7 +269,8 @@ export function TaskItem({
         aria-label={`${text}. Status ${status}. Change status`} />
       <div className={`task-content-flow${isOtherDate ? '' : ' editable'}${editing ? ' editing' : ''}`}>
         <div className="task-title-line">
-          {editing ? <ParagraphInput ref={inputRef} aria-label={`Edit title: ${text}`} className="task-text-input task-inline-edit"
+          {taskEditor && port ? <TaskEditorBridge key={JSON.stringify([port.scope, recordId ?? id])} editor={taskEditor}
+            scope={port.scope} taskId={recordId ?? id} content={text} readOnly={Boolean(isOtherDate || !port.enabled)} onChange={onTextChange} /> : editing ? <ParagraphInput ref={inputRef} aria-label={`Edit title: ${text}`} className="task-text-input task-inline-edit"
             value={editText} onChange={event => setEditText(event.target.value)} onBlur={() => commitEdit()}
             onKeyDown={event => {
               if (event.nativeEvent.isComposing) return

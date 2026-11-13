@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-13 — Host notebook editor portal
+- [feat] Add optional taskEditor injection to existing Todo rows with account/record identity and guarded text callbacks. Preserve task controls, session links and canonical save authority.
+- [test]56 product tests, strict types, build, distribution/package and actual-host SDK checks pass. Diane source-composition test passes; no installed/live claim.
 ## 2026-11-11 — Cohesive plugin packaged for Diane
 - [release] Build local UI0.1.10 from reviewed source and pin its exact archive/hash in Diane. The signed Diane app is reinstalled and verified; standalone apps and hosted services are unchanged.
 

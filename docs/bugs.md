@@ -1,5 +1,8 @@
 # Bugs And Failed Approaches
 
+## 2026-11-13 — Isolated editor bridge verification
+- Symlinked dependencies caused Vitest config cache writes into the original checkout; use `--configLoader runner --cache=false`. npm package checks require an isolated `npm_config_cache` under /private/tmp. Do not alter original dependencies.
+- Initial new history fixture used an undefined callback shorthand; corrected the fixture and reran all56 product tests.
 ## 2026-11-10 — Integrated standalone verification prerequisites
 
 - The isolated release environment has the plugin's test dependencies but lacks standalone `firebase/app` and a Rust toolchain. The full Node runner reaches review-reliability after 18 passing suites and stops at dependency resolution; targeted preparation, account, workspace and sync-frequency checks pass. Do not treat earlier main's Mac installation/MCP receipts as a new installation or native test of this candidate.

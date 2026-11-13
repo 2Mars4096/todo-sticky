@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Implement optional host notebook editor bridge — [20](plans/20-notebook-editor-bridge.md).
+- [ ] Aggregate new Todo package with Diane adapter; rendered/installed acceptance remains pending.
 - [x] Package cohesive embedded UI0.1.10 and deliver through the verified Diane reinstall; standalone app unchanged.
 
 - [x] Apply embedded UI cohesion with shared Diane spacing/control tokens;53 plugin checks and source-host rendered review pass. Package in the next coordinated release.
