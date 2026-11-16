@@ -1,3 +1,4 @@
+import { DeleteAction } from './DeleteAction'
 import { DianeAction } from './DianeAction'
 import { ParagraphInput } from './ParagraphInput'
 import { useState, useRef, useEffect, useId, type PointerEvent, type KeyboardEvent } from 'react'
@@ -32,13 +33,6 @@ function FocusIcon() {
   )
 }
 
-function DeleteIcon() {
-  return (
-    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M3 4.5h10M6 2h4l.75 2.5M4.5 4.5l.6 9h5.8l.6-9M6.5 7v4M9.5 7v4" />
-    </svg>
-  )
-}
 
 function PushIcon() {
   return (
@@ -309,8 +303,7 @@ export function TaskItem({
             onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /></button>}
           {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={`Move to ${moveTargetLabel} · due date stays unchanged`}
             onClick={() => { onPush() }} aria-label={`Move ${text} to ${moveTargetLabel}`}><PushIcon /></button>}
-          {!isOtherDate && <button type="button" className="task-text-action task-icon-action task-delete-action" title="Delete"
-            onClick={onDelete} aria-label={`Delete ${text}`}><DeleteIcon /></button>}
+          {!isOtherDate && <DeleteAction label={`Delete ${text}`} onClick={onDelete} />}
         </div>}
         {breakingDown && <span className="task-inline-status" role="status">Preparing suggested steps…</span>}
       </div>
