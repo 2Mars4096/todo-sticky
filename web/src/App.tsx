@@ -1,3 +1,5 @@
+import { MeetingMonitor, type ReviewRequest } from './components/MeetingMonitor'
+import { requestJson } from './cloudAccount'
 import { listen } from '@tauri-apps/api/event'
 import { DIANE_SHARED_ORIGIN, parseTodoTaskLink, readSharedTodoTask } from './cloudAccount'
 import { invoke, isTauri } from '@tauri-apps/api/core'
@@ -219,6 +221,18 @@ export default function App() {
     return()=>{disposed=true;unlisten?.();window.removeEventListener('popstate',fromUrl);window.removeEventListener('focus',take);document.removeEventListener('focusout',settled);document.removeEventListener('keyup',settled)}
   },[])
   const linkAccount=useRef(account);linkAccount.current=account
+  const meetingRequest = useMemo<ReviewRequest>(() => {
+    const user = account.user
+    return async (path, body) => {
+      const current = () => user && linkAccount.current.user === user && linkAccount.current.server === DIANE_SHARED_ORIGIN
+      if (!user || !current()) throw Error('Account changed. Reopen the meeting review.')
+      const token = await user.getIdToken()
+      if (!current()) throw Error('Account changed. Reopen the meeting review.')
+      const value = await requestJson(DIANE_SHARED_ORIGIN, path, body ? {method:'POST', body:JSON.stringify(body)} : {}, token)
+      if (!current()) throw Error('Account changed. Reopen the meeting review.')
+      return value
+    }
+  }, [account.user])
   useEffect(()=>{
     if(!taskLink||linkBusy.current||tasks.loading)return
     if(!account.user||account.server!==DIANE_SHARED_ORIGIN||!account.enabled){
@@ -677,6 +691,8 @@ export default function App() {
           disabled={tasks.loading || Boolean(tasks.loadError)}
         />
 
+        {calendar.isCurrentDay && account.user && account.server === DIANE_SHARED_ORIGIN &&
+          <MeetingMonitor key={account.user.uid} request={meetingRequest} onAdded={() => { if (account.enabled) void account.sync() }}/>}
         {firstRun && !showSettings && (
           <div className="first-use-note">
             <p>Capture a task to begin. AI assistance is optional.</p>

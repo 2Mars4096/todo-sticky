@@ -5,6 +5,10 @@ import {usePluginScope,subscribeToPluginChanges} from '@diane/plugin-sdk/records
 import {pluginApi,pluginScope} from '@diane/plugin-sdk/client';
 import {useManagedPluginHost} from '@diane/plugin-sdk/host-context';
 import type {SidePanelProps} from '@diane/plugin-sdk/panel-context';
+import {MeetingMonitor, type ReviewRequest} from './MeetingMonitor';
+import {requestJson} from '@diane/plugin-sdk/http';
+import {connectionScope} from '@diane/plugin-sdk/client';
+import {recordsChanged} from '@diane/plugin-sdk/records';
 import {TodoPortContext} from './TodoPortContext';
 import {createTodoApi,suggestionSource} from './api';
 import {StepProposalContext} from './TaskStepProposal';
@@ -38,6 +42,12 @@ import './styles/task-execution.css';
 type Props=Pick<SidePanelProps,'active'>&Partial<Pick<SidePanelProps,'context'>>;
 export default function TodoPort(props:Props){const scope=usePluginScope();return scope?<TodoBody key={scope} {...props} scope={scope}/>:<p role="status">Connecting Todo…</p>;}
 function TodoBody({active,scope}:Props&{scope:string}){
+ const meetingRequest = useMemo<ReviewRequest>(() => async (path, body) => {
+   if (await connectionScope() !== scope || pluginScope() !== scope) throw Error('Account changed. Reopen Todo.');
+   const value = await requestJson<any>(path, {headers:{'X-Diane-Plugin-Scope':scope}, ...(body ? {method:'POST',body:JSON.stringify(body)} : {})});
+   if (pluginScope() !== scope) throw Error('Account changed. Reopen Todo.');
+   return value;
+ }, [scope]);
  const api=useMemo(()=>createTodoApi(scope),[scope]);
  const [preferences,setPreferences]=useState<PlanningPreferences>({revision:0,machines:[],planningPreferences:{}});
  useEffect(()=>{let disposed=false;void api.preferences().then(value=>{if(!disposed){setPreferences(value);if(Object.keys(value.planningPreferences).length)storageForAccount(scope).setItem('todo-sticky-planning-preferences-v1',JSON.stringify(value.planningPreferences));}}).catch(()=>{});return()=>{disposed=true;};},[api,scope]);
@@ -81,6 +91,7 @@ function TodoBody({active,scope}:Props&{scope:string}){
    {project?<ProjectPage key={project} goalId={project} goals={goals.targets} folder={scope} flush={tasks.flushPendingSave} getGoal={goals.currentProject} saveGoal={goals.saveProject} reloadTasks={tasks.load} onBack={()=>setProject(null)} onOpen={openArchive} onWriting={value=>{writing.current=value;}} registerLeaveGuard={guard=>{leaveGuard.current=guard??(()=>true);}}/>:page!=='tasks'?<ArchivePage goals={goals.targets} folder={scope} mode={page} date={calendar.dateStr} flush={tasks.flushPendingSave} onBack={()=>setPage('tasks')} onOpen={openArchive}/>:<>
     <DateHeader displayDate={calendar.displayDate} selectedDate={calendar.selectedDate} calendarOpen={calendar.calendarOpen} isCurrentDay={calendar.isCurrentDay} onPrev={()=>void perform(()=>navigate(calendar.goPrev))} onNext={()=>void perform(()=>navigate(calendar.goNext))} onToggleCalendar={calendar.toggleCalendar} onSelectDate={date=>void perform(()=>navigate(()=>calendar.goToDate(date)))} onToday={()=>void perform(()=>navigate(calendar.goToday))} onCloseCalendar={()=>calendar.setCalendarOpen(false)}/>
     <AddTask onAdd={text=>{if(enabled)tasks.addTask(text);}} disabled={!enabled||tasks.loading}/>
+    {active && enabled && calendar.isCurrentDay && <MeetingMonitor request={meetingRequest} onAdded={() => {recordsChanged('todo', scope); void tasks.load();}}/>}
     <fieldset className="todo-task-guard" disabled={!enabled}><TaskList projects={goals.targets} onOpenProject={openProject} onAssignProject={tasks.assignProject} tasks={tasks.tasks} loading={tasks.loading} loadError={tasks.loadError} rolloverError={tasks.rolloverError} rolloverLoading={tasks.rolloverLoading} isCurrentDay={calendar.isCurrentDay} moveTargetLabel={tasks.carryForwardTarget.actionLabel} onToggle={tasks.toggleStatus} onDelete={tasks.deleteTask} onPush={(id,step)=>void perform(()=>tasks.carryForward(id,step))} onCopyTask={(text:string,steps:Task[],finish?:FinishPromise)=>void navigator.clipboard.writeText(formatAgentPrompt({text,subtasks:steps.map(step=>step.text),finish})).catch(e=>setError(String(e)))} onTextChange={tasks.updateTaskText} onUpdateFinish={tasks.updateFinish} onReview={tasks.reviewTask} onAddSubtask={tasks.addSubtask} onAddTask={tasks.addTask} onMoveToToday={tasks.moveToToday} onReorderTask={tasks.reorderTasks} onReorderSubtask={tasks.reorderSubtasks} onAIBreakdown={breakdown} onGoToday={()=>void perform(()=>navigate(calendar.goToday))} onRetryLoad={tasks.load}/></fieldset>
    </>}
    {tasks.undo&&<div className="task-undo-notice" role="status"><span>{tasks.undo.label}</span><button disabled={tasks.loading} onClick={tasks.undoLastAction}>Undo</button><button onClick={tasks.dismissUndo} aria-label="Dismiss undo">×</button></div>}
