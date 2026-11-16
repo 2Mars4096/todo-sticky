@@ -21,6 +21,7 @@ class StickyApp extends StatefulWidget {
   final StickyStore store;
   final GlobalKey<NavigatorState>? navigatorKey;
   final ValueListenable<int>? externalFocusRequests;
+  final WidgetBuilder? meetingBuilder;
   final SharedAgentRequest? sharedAgent;
   final Widget Function(StickyStore store)? accountBuilder;
   final Widget Function(BuildContext context)? syncIndicatorBuilder;
@@ -29,6 +30,7 @@ class StickyApp extends StatefulWidget {
     required this.store,
     this.navigatorKey,
     this.externalFocusRequests,
+    this.meetingBuilder,
     this.sharedAgent,
     this.accountBuilder,
     this.syncIndicatorBuilder,
@@ -313,6 +315,7 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                               },
                             ),
                             _ => HomeScreen(
+                              meetingBuilder: widget.meetingBuilder,
                               store: store,
                               ai: ai,
                               openFocus: () => setState(() => tab = 2),

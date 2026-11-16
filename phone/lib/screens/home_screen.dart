@@ -15,11 +15,13 @@ import 'plan_screen.dart';
 import 'albums_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  final WidgetBuilder? meetingBuilder;
   final StickyStore store;
   final AiService ai;
   final VoidCallback openFocus;
   const HomeScreen({
     super.key,
+    this.meetingBuilder,
     required this.store,
     required this.ai,
     required this.openFocus,
@@ -345,6 +347,9 @@ class _HomeScreenState extends State<HomeScreen> {
               key: PageStorageKey(store.selectedDate),
               controller: _scroll,
               slivers: [
+                if (store.selectedDate == store.today &&
+                    widget.meetingBuilder != null)
+                  SliverToBoxAdapter(child: widget.meetingBuilder!(context)),
                 if (tasks.isEmpty)
                   SliverToBoxAdapter(
                     child: _EarlierTaskDropTarget(

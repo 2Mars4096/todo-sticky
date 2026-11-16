@@ -1249,6 +1249,37 @@ class CloudSyncController extends ChangeNotifier {
     return (date: date, taskId: taskId);
   }
 
+  Future<Map<String, dynamic>> meetingRequest(
+    String owner,
+    String path, [
+    Map<String, dynamic>? body,
+  ]) async {
+    final epoch = _epoch;
+    void check() {
+      final bound = store.syncMetadata['owner'];
+      if (_disposed ||
+          epoch != _epoch ||
+          session?.owner != owner ||
+          session?.origin != dianeSharedOrigin ||
+          (bound != null && bound != owner)) {
+        throw StateError('Account changed. Reopen meeting follow-ups.');
+      }
+    }
+
+    check();
+    final token = await _token();
+    check();
+    final result = await transport.request(
+      Uri.parse('$dianeSharedOrigin/api/plugins/todo/meeting-monitor/$path'),
+      method: body == null ? 'GET' : 'POST',
+      body: body,
+      token: token,
+      timeout: const Duration(seconds: 120),
+    );
+    check();
+    return result;
+  }
+
   Future<Map<String, dynamic>> requestAgent(
     String action,
     Map<String, dynamic> input,

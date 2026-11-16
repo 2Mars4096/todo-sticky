@@ -9,6 +9,7 @@ import 'archive_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../app.dart';
+import '../widgets/meeting_followups.dart';
 import '../widgets/sync_progress.dart';
 import '../widgets/conflict_items.dart';
 import '../widgets/cloud_sync_button.dart';
@@ -210,6 +211,23 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
     navigatorKey: navigator,
     externalFocusRequests: focusRequests,
     sharedAgent: account.requestAgent,
+    meetingBuilder: (_) => ListenableBuilder(
+      listenable: account,
+      builder: (_, child) {
+        final session = account.session;
+        if (session == null || session.origin != dianeSharedOrigin)
+          return const SizedBox.shrink();
+        return MeetingFollowups(
+          key: ValueKey(session.owner),
+          request: (path, [body]) =>
+              account.meetingRequest(session.owner, path, body),
+          onAdded: () {
+            if (account.enabled)
+              unawaited(account.synchronize(background: true));
+          },
+        );
+      },
+    ),
     accountBuilder: (_) => AccountScreen(account: account),
     syncIndicatorBuilder: (_) => CloudSyncButton(account: account),
   );
