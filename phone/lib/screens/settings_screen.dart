@@ -52,8 +52,9 @@ class SettingsScreen extends StatelessWidget {
       if (yes == true) {
         await store.importJson(content);
         if (context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Notebook restored')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Notebook restored')));
         }
       }
     } catch (e) {
@@ -83,8 +84,10 @@ class SettingsScreen extends StatelessWidget {
             leading: const Icon(Icons.auto_awesome_outlined),
             title: const Text('AI assistance'),
             subtitle: Text(
-              providerPresets[store.preferences.provider]?['name'] ??
-                  store.preferences.provider,
+              ai.usesShared(store.preferences)
+                  ? 'Diane account'
+                  : providerPresets[store.preferences.provider]?['name'] ??
+                        store.preferences.provider,
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.push(
@@ -246,7 +249,17 @@ class _ProviderEditorState extends State<ProviderEditor> {
     loadKey();
   }
 
+  bool get usesAccountKey => draft.usesDianeModelAccount;
+
   Future<void> loadKey() async {
+    if (usesAccountKey) {
+      setState(() {
+        key.clear();
+        loadingKey = false;
+        keyLoadFailed = false;
+      });
+      return;
+    }
     final provider = draft.provider;
     try {
       final value =
@@ -263,13 +276,15 @@ class _ProviderEditorState extends State<ProviderEditor> {
         setState(() {
           loadingKey = false;
           keyLoadFailed = true;
-          message = 'Could not open secure key storage. Retry before saving a replacement.';
+          message =
+              'Could not open secure key storage. Retry before saving a replacement.';
         });
       }
     }
   }
 
   void capture() {
+    if (usesAccountKey) return;
     draft.profiles[draft.provider] = ProviderProfile(
       apiBase: base.text.trim(),
       model: model.text.trim(),
@@ -324,7 +339,8 @@ class _ProviderEditorState extends State<ProviderEditor> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => message = 'Settings could not be saved. Your edits remain here. Please retry.',
+          () => message =
+              'Settings could not be saved. Your edits remain here. Please retry.',
         );
       }
     } finally {
@@ -372,10 +388,8 @@ class _ProviderEditorState extends State<ProviderEditor> {
                 },
         ),
         const SizedBox(height: 16),
-        if (draft.provider == 'diane')
-          const Text(
-            'Uses your shared Diane sign-in and account limits. Direct providers keep their own billing.',
-          )
+        if (usesAccountKey)
+          const Text('Uses the OpenRouter key saved in your Diane account.')
         else ...[
           TextField(
             controller: key,

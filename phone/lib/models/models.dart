@@ -431,6 +431,12 @@ class Preferences {
     this.planningMachines = const [],
   }) : profiles = profiles ?? {},
        machines = machines ?? [];
+  bool get usesDianeModelAccount =>
+      provider == 'diane' ||
+      provider == 'openrouter' ||
+      Uri.tryParse(profile().apiBase.trim())?.host.toLowerCase() ==
+          'openrouter.ai';
+
   ProviderProfile profile([String? name]) {
     final id = name ?? provider;
     final p = providerPresets[id] ?? providerPresets['custom']!;
@@ -445,8 +451,9 @@ class Preferences {
     providerChosen: j['providerChosen'] is bool
         ? j['providerChosen'] as bool
         : j.containsKey('provider'),
-    profiles: object(j['profiles'] ?? {})
-        .map((k, v) => MapEntry(k, ProviderProfile.fromJson(object(v)))),
+    profiles: object(
+      j['profiles'] ?? {},
+    ).map((k, v) => MapEntry(k, ProviderProfile.fromJson(object(v)))),
     machines: (j['machines'] as List? ?? []).map(object).toList(),
     material: ['paper', 'frosted', 'liquid'].contains(j['material'])
         ? j['material'] as String

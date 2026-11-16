@@ -1,5 +1,7 @@
 # 17-1: Original app sync over Diane canonical records
 
+- [x] OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request.
+
 **Parent:** [17](17-diane-shared-apps.md)
 **Status:** in-progress
 **Goal:** Preserve standalone Todo UI and offline sync semantics while sharing Diane identity, canonical data and quota authority.
@@ -74,3 +76,12 @@ The already-started test attempt passed122 with one skip but could not load sync
 - [x] Reproduce and fix the shared API cold-instance token-mint error in Diane: completion and exchange may hit different processes. All27 backend sign-in regressions pass; narrow two-file image deployed as diane-api-00021-gup with100% traffic. Prior00019-vil remains available for rollback.
 - [x] Separate Todo commits for guarded Sync, editable local setup/session handoff, and delivery documentation. Backend auth fix lives in Diane commit a9508536.
 - [ ] User verifies a fresh Google sign-in after deployment; an earlier failed consumed proof cannot be retried.
+
+## November 13 — Requested standalone reinstall
+- [x] Rebuild current Mac source with existing shared-service flags; all31 Node suites and TypeScript pass.
+- [x] Back up, replace and reopen Applications bundle; deep signature, bundle hashes and runtime backend verified. All56 task files and settings preserved.
+- Receipt: `output/reinstall-20261113/macos-verification.json`; rollback: `/Users/lizhi/.codex-accounts/app/.tmp/sticky-todo-before-reinstall-20261113-154138`.
+
+## 2026-11-16 — Shared OpenRouter credentials
+
+Android 2.1.16+25/code 2025 delivered to the root APK. SHA-256 ad16628c315a9576c5e45ee003871818526c82ca82873bd98ba2567acfacb01e. Verified signer continuity, package/version, compiled setting and ZIP integrity. Isolated Flutter 3.41 build used compatible Kotlin and reorder callback settings. Full phone suite passed 139 tests with one optional skip. All 31 Node suites passed. The Mac app bundle passed strict codesign verification; updater archive signing lacks the release key. Physical installation unverified.

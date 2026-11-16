@@ -7,7 +7,6 @@ struct Locations { schema_version: u32, saved_keys_file: PathBuf, env_file: Opti
 
 fn standard_endpoint(provider: &str) -> Option<&'static str> {
     match provider {
-        "openrouter" => Some("https://openrouter.ai/api/v1"),
         "openai" => Some("https://api.openai.com/v1"),
         "moonshot" => Some("https://api.moonshot.ai/v1"),
         "deepseek" => Some("https://api.deepseek.com"),
@@ -17,7 +16,7 @@ fn standard_endpoint(provider: &str) -> Option<&'static str> {
 
 fn env_key(provider: &str) -> Option<&'static str> {
     match provider {
-        "openrouter" => Some("OPENROUTER_API_KEY"), "openai" => Some("OPENAI_API_KEY"),
+        "openai" => Some("OPENAI_API_KEY"),
         "moonshot" => Some("MOONSHOT_API_KEY"), "deepseek" => Some("DEEPSEEK_API_KEY"), _ => None,
     }
 }
@@ -98,9 +97,9 @@ mod tests {
         let env = graphs.parent().unwrap().join(".env");
         let content = "DAN_LLM_BASE_URL=https://openrouter.ai/api/v1\nDAN_LLM_API_KEY='synthetic-env'\n";
         fs::write(&env, content).unwrap();
-        assert_eq!(resolve_at(root.path(), "openrouter", "https://openrouter.ai/api/v1").as_deref(), Some("synthetic-env"));
+        assert_eq!(resolve_at(root.path(), "openrouter", "https://openrouter.ai/api/v1").as_deref(), None);
         fs::write(graphs.join("model_credentials/keys.json"), r#"{"openrouter":"synthetic-saved"}"#).unwrap();
-        assert_eq!(resolve_at(root.path(), "openrouter", "https://openrouter.ai/api/v1/").as_deref(), Some("synthetic-saved"));
+        assert_eq!(resolve_at(root.path(), "openrouter", "https://openrouter.ai/api/v1/").as_deref(), None);
         assert!(resolve_at(root.path(), "openrouter", "https://example.test/v1").is_none());
         assert!(resolve_at(root.path(), "moonshot", "https://api.moonshot.ai/v1").is_none());
         assert_eq!(fs::read_to_string(&env).unwrap(), content);

@@ -3,6 +3,7 @@ import { AccountPanel, type CloudAccount } from './AccountPanel'
 import { useState, useEffect, useId, useRef } from 'react'
 import type { AppSettings, Provider } from '../types'
 import { api } from '../api'
+import { usesDianeOpenRouter } from '../cloudAccount'
 import { dianeRequest, type DianeProjects } from '../diane'
 import { AppUpdates } from './AppUpdates'
 import { updateIsBusy } from '../appUpdates'
@@ -181,7 +182,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
   }
 
   const preset = PROVIDER_PRESETS[settings.provider] || PROVIDER_PRESETS.custom
-  const isDiane = settings.provider === 'diane'
+  const isDiane = usesDianeOpenRouter(settings.provider, settings.apiBase)
   const isCodex = settings.provider === 'codex'
   const isOpenRouter = settings.provider === 'openrouter' || settings.apiBase.toLowerCase().includes('openrouter.ai')
   const fieldsDisabled = loading || loadFailed || saving || testing || updating
@@ -245,7 +246,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
               <select id={id + '-provider'} value={settings.provider} onChange={event => handleProviderChange(event.target.value as Provider)}>
                 {PROVIDER_ORDER.map(provider => <option key={provider} value={provider}>{PROVIDER_PRESETS[provider].label}</option>)}
               </select>
-              {isDiane ? <p className="hint">Uses your shared Diane sign-in and account limits. Direct providers keep their own billing.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
+              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your Diane account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
                 <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? 'Todo API key (fallback)' : 'Todo API key'}</label>
                 <div className="input-row">
                   <input id={id + '-key'} type={showKey ? 'text' : 'password'} value={settings.apiKey} onChange={event => update({ apiKey: event.target.value })} placeholder={isOpenRouter ? 'sk-or-v1-…' : 'sk-…'} autoComplete="off" spellCheck={false} />
@@ -263,7 +264,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
                 <input id={id + '-endpoint'} value={settings.apiBase} onChange={event => update({ apiBase: event.target.value })} placeholder={isCodex ? 'codex or full executable path' : preset.apiBase || 'https://api.example.com/v1'} spellCheck={false} />
               </details>}
               <div className="test-row">
-                <button type="button" onClick={handleTest} disabled={testing || !settings.apiBase || (!isCodex && !settings.apiKey && !(settings.preferDianeCredentials !== false && dianeAvailable))}>{testing ? 'Testing…' : 'Test connection'}</button>
+                <button type="button" onClick={handleTest} disabled={testing || (!isDiane && (!settings.apiBase || (!isCodex && !settings.apiKey && !(settings.preferDianeCredentials !== false && dianeAvailable))))}>{testing ? 'Testing…' : 'Test connection'}</button>
                 {testResult && <span className={'test-result ' + (testResult.ok ? 'ok' : 'fail')} role="status">{testResult.ok ? dirty ? 'Connected. Save to use these settings.' : 'Connected' : testResult.message || 'Could not connect. Check the provider settings.'}</span>}
               </div>
               <p className="hint">Test connection checks this form. Planning uses your saved provider and model.</p>

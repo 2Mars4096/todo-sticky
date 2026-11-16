@@ -1,5 +1,7 @@
 # Architecture
 
+OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request.
+
 ## Project steps from meetings
 
 The dashboard push transaction maintains an owner-scoped group receipt for the project and list date. The receipt stores the active parent and next step position. Completed, deleted or moved parents retain their prior work. The next accepted step starts a new group.

@@ -344,7 +344,9 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if(!account.user||account.server!==DIANE_SHARED_ORIGIN||!aiSettings||aiSettings.providerChosen!==false||showSettings||providerSwitching||aiSettings.apiKey.trim()||isProviderConfigured(aiSettings,aiSettings.provider))return
+    if(!account.user || account.server!==DIANE_SHARED_ORIGIN || !aiSettings || showSettings || providerSwitching) return
+    const unconfigured = aiSettings.providerChosen===false && !aiSettings.apiKey.trim() && !isProviderConfigured(aiSettings,aiSettings.provider)
+    if(aiSettings.provider!=='openrouter' && !unconfigured) return
     let disposed=false
     const next=settingsForProvider(aiSettings,'diane')
     void api.saveSettings(next).then(()=>{if(!disposed)setAiSettings(next)}).catch(()=>{})

@@ -131,6 +131,12 @@ export async function googleSignIn(origin: string, auth: Auth, signal: AbortSign
   throw new Error(signal.aborted ? 'Sign-in cancelled.' : 'Sign-in expired. Try again.')
 }
 
+export function usesDianeOpenRouter(provider: string, endpoint?: string): boolean {
+  if (provider === 'diane' || provider === 'openrouter') return true
+  try { return new URL(endpoint || '').hostname.toLowerCase() === 'openrouter.ai' }
+  catch { return false }
+}
+
 /** Explicit shared-account inference; existing direct provider choices never fall through here. */
 export async function runSharedTodoAgent<T>(action: string, input: unknown, kbPath?: string): Promise<T> {
   const origin=localStorage.getItem('todo-sticky-cloud-server-v1')||DIANE_SHARED_ORIGIN

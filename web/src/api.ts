@@ -1,4 +1,4 @@
-import { runSharedTodoAgent } from './cloudAccount'
+import { runSharedTodoAgent, usesDianeOpenRouter } from './cloudAccount'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import type {
@@ -28,7 +28,7 @@ export async function waitForPendingWrites(): Promise<void> {
 
 async function agentCall<T>(action: string, input: unknown, nativeCommand: string, nativeArgs: unknown): Promise<T> {
   const settings=await invoke<AppSettings>('get_settings')
-  if(settings.provider!=='diane')return invoke<T>(nativeCommand,nativeArgs as Record<string,unknown>)
+  if(!usesDianeOpenRouter(settings.provider, settings.apiBase))return invoke<T>(nativeCommand,nativeArgs as Record<string,unknown>)
   const folder=settings.kbPath||await invoke<string>('cloud_task_folder')
   return runSharedTodoAgent<T>(action,input,folder)
 }
@@ -110,7 +110,7 @@ export const api = {
     persist(invoke<{ ok: boolean }>('save_star_focus_state', { state })),
 
   testConnection: (settings: { provider: string; apiBase: string; apiKey: string; model: string; preferDianeCredentials?: boolean }) =>
-    settings.provider==='diane' ? runSharedTodoAgent('breakdown',{taskText:'Connection test: return one step named Connected. Do not use tools.',existingSubtasks:[]}).then(()=>({ok:true,message:'Shared Diane connected. Requests use your shared account limits.'})) : invoke<{ ok: boolean; message: string }>('test_connection', { settings }),
+    usesDianeOpenRouter(settings.provider, settings.apiBase) ? runSharedTodoAgent('breakdown',{taskText:'Connection test: return one step named Connected. Do not use tools.',existingSubtasks:[]}).then(()=>({ok:true,message:'Shared Diane connected. Requests use your shared account limits.'})) : invoke<{ ok: boolean; message: string }>('test_connection', { settings }),
 
   dianeCredentialStatus: (provider: string, endpoint: string) =>
     invoke<boolean>('diane_credential_status', { provider, endpoint }),

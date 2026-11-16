@@ -15,15 +15,17 @@ class AiException implements Exception {
   String toString() => message;
 }
 
-typedef SharedAgentRequest = Future<Map<String, dynamic>> Function(
-  String action,
-  Map<String, dynamic> input,
-);
+typedef SharedAgentRequest =
+    Future<Map<String, dynamic>> Function(
+      String action,
+      Map<String, dynamic> input,
+    );
 
 class AiService {
   final CredentialStore credentials;
   final http.Client client;
   final SharedAgentRequest? sharedRequest;
+  bool usesShared(Preferences prefs) => prefs.usesDianeModelAccount;
   AiService(this.credentials, {http.Client? client, this.sharedRequest})
     : client = client ?? http.Client();
   void dispose() => client.close();
@@ -115,8 +117,9 @@ class AiService {
       final streamed = await client
           .send(request)
           .timeout(const Duration(seconds: 90));
-      response = await http.Response.fromStream(streamed)
-          .timeout(const Duration(seconds: 90));
+      response = await http.Response.fromStream(
+        streamed,
+      ).timeout(const Duration(seconds: 90));
     } on TimeoutException {
       throw const AiException(
         'The provider took too long to reply. Your tasks are unchanged. Try again.',
@@ -200,7 +203,7 @@ class AiService {
     String? sharedAction,
     Map<String, dynamic>? sharedInput,
   }) async {
-    if (prefs.provider == 'diane') {
+    if (usesShared(prefs)) {
       if (sharedRequest == null || sharedAction == null) {
         throw const AiException(
           'Sign in to the shared Diane account before requesting this action.',
@@ -231,14 +234,15 @@ class AiService {
   }
 
   Future<void> testConnection(Preferences prefs) async {
-    if (prefs.provider == 'diane') {
+    if (usesShared(prefs)) {
       if (sharedRequest == null) {
         throw const AiException(
           'Sign in to the shared Diane account in Settings → Account.',
         );
       }
       await sharedRequest!('breakdown', {
-        'taskText': 'Connection test: return one step named Connected. Do not use tools.',
+        'taskText':
+            'Connection test: return one step named Connected. Do not use tools.',
         'existingSubtasks': [],
       });
       return;
@@ -315,7 +319,7 @@ class AiService {
       },
       sharedAction: 'project',
     );
-    final raw = prefs.provider == 'diane' ? value['actions'] : value['steps'];
+    final raw = usesShared(prefs) ? value['actions'] : value['steps'];
     if (raw is! List || raw.isEmpty || raw.length > 30) {
       throw const AiException(
         'The provider did not return a usable multi-day plan.',
