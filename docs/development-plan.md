@@ -1,5 +1,9 @@
 # Development Plan
 
+## Todo as a meeting dashboard
+
+[Meeting follow-ups](plans/21-meeting-monitor.md) introduces automatic review and account-scoped catch-up. Shared API and worker are deployed and the standalone Mac client is installed.
+
 ## Shared Mac delivery
 The user chose the original standalone Todo as the primary workspace. The November10 local installation now uses Diane shared sync and an editable Universal Cell setup → review → explicit local session handoff. Live account/cross-device and agent acceptance remain in plans17-1 and6.
 

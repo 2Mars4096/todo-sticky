@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## 2026-11-15 — Native packaging environment
+
+Resolved November 16 by installing stable Rust 1.100.0 and setting the default toolchain. The native bundle built and installed. Previously the system rustup shim had no default toolchain. The standalone Vite build and TypeScript checks pass. A native package requires a compatible configured Rust toolchain.
+
 ## 2026-11-10 — Integrated standalone verification prerequisites
 
 - The isolated release environment has the plugin's test dependencies but lacks standalone `firebase/app` and a Rust toolchain. The full Node runner reaches review-reliability after 18 passing suites and stops at dependency resolution; targeted preparation, account, workspace and sync-frequency checks pass. Do not treat earlier main's Mac installation/MCP receipts as a new installation or native test of this candidate.

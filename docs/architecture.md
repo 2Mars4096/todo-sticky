@@ -1,5 +1,13 @@
 # Architecture
 
+## Project steps from meetings
+
+The dashboard push transaction maintains an owner-scoped group receipt for the project and list date. The receipt stores the active parent and next step position. Completed, deleted or moved parents retain their prior work. The next accepted step starts a new group.
+
+## Meeting follow-ups
+
+The shared Meeting analysis save records the analysis ID, transcript revision, review time, eligible action indices and count in the same owner transaction. An account-scoped cursor reconciles earlier or separately saved analyses. Todo polls in the foreground and fetches quotes on expansion. Generation checks cited claims against source segments and scans for uncovered explicit commitments. Review metadata contains no transcript text. The existing Meeting push writes the canonical Todo task and its receipt.
+
 ## Actions artifact storage
 
 Routine CI builds and tests do not upload retained build artifacts. A default-branch cleanup workflow deletes artifacts from the listed completed workflows, including runs on older branches. It reads only GitHub metadata, never checks out triggering code, and deletes only artifacts for the completed run. Source code, workflow run logs, dependency caches and GitHub Releases are unaffected. Release jobs still exchange temporary installers until the complete release workflow finishes; cleanup then deletes them. New release artifacts also have a one-day expiry fallback. Re-running a publish-only job after cleanup requires rebuilding its artifacts.
@@ -440,3 +448,5 @@ Diane setup placement measures the rendered panel in a layout effect and observe
 Diane setup and linked-session details share one compact flex header for heading/close, with28px controls and the existing4px radius/field spacing. Heading/close remain in normal flow rather than absolute offsets.
 
 - Product-owned paneLayout CSS consumes optional host geometry tokens with standalone fallbacks; the host does not patch the published bundle. Source review can alias this plugin into Diane without releasing it.
+
+Review dismissal stores monotonic per-account and per-meeting sequence cutoffs in the review index. Source meetings and canonical tasks keep their independent lifecycle.

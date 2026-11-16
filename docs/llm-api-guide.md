@@ -1,5 +1,13 @@
 # Sticky Todo Agent API
 
+## Dashboard push behavior
+
+In Today, accepting meeting follow-ups for the same project and list date creates one parent task with ordered steps. Matching ignores case and repeated spaces in the saved meeting project label. Meetings without a project use their own title and meeting ID. Each step keeps its own source evidence, assignee and deadline.
+
+## Shared meeting follow-ups
+
+`/api/plugins/todo/meeting-monitor` uses the authenticated Todo account. `POST /todo-reviews/refresh` scans up to five meetings from the saved account cursor and returns the newest review page. `GET /todo-reviews?before=N` pages backward using the returned `before` value. `GET /meetings/{id}/todo-push` returns the current analysis ID, fingerprint, draft indices, suggested wording and source evidence. `POST` to that meeting path uses the existing revision-guarded structured push body and receipt. A review with zero drafts is complete.
+
 Use the local `sticky-todo-api` command to read and mutate the same Markdown archive as the desktop app. The API does not call an LLM and does not require the app window to be open.
 
 ## Entry Point
@@ -303,3 +311,5 @@ Mac project operations persist a local recovery journal before sequential writes
 
 ### Standalone setup preparation
 `diane_request` also supports `connection`, `preparation-records` (body `{scope,cursor?}`), `prepare` (body `{scope,payload}` with `action: "prepare"`) and `preparation-status` (requestId plus `{scope}`). These use only local Diane `/api/plugins/connection` and scoped `/api/plugins/todo/records` or `/intelligence` routes. Prepare requires a canonical source revision, execution-contract digest and known workspace candidates. Persist the request ID before sending; uncertain retries inspect the same receipt. Approved context is included after the original task in dispatch `text`; no schema change or execution happens during preparation/editing; explicit Start sends the edited setup.
+
+The Todo dashboard accepts `POST /todo-reviews/clear` under its meeting-monitor prefix. Send `through` from the review sequence with `meeting_id` for one meeting, or the returned page head for all reviewed meetings. The list reports cleared rows with zero available suggestions.

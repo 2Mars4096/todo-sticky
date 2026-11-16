@@ -1,5 +1,15 @@
 # Todo
 
+- [x] Reduce repeated meeting actions and verify batch selection — [Plan 21](plans/21-meeting-monitor.md).
+
+- [x] Support account-wide and per-meeting dismissal in [the meeting monitor](plans/21-meeting-monitor.md).
+
+- [x] Restyle and verify the meeting follow-up list — [Plan 21](plans/21-meeting-monitor.md).
+
+- [x] Group accepted meeting follow-ups into project steps. See [meeting monitor](plans/21-meeting-monitor.md).
+
+- [x] [Meeting follow-ups in Todo](plans/21-meeting-monitor.md) — shared backend live and standalone Mac app reinstalled. Embedded Diane client delivery remains separate.
+
 - [x] Clean Actions build artifacts and prevent retained CI outputs; see [5-build-artifact-cleanup.md](plans/5-build-artifact-cleanup.md).
 
 - [x] Package cohesive embedded UI0.1.10 and deliver through the verified Diane reinstall; standalone app unchanged.

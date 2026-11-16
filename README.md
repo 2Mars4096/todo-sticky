@@ -1,5 +1,9 @@
 # Sticky Todo
 
+The installed standalone Mac app’s Today view shows **Meeting follow-ups** for the signed-in shared account. Open a reviewed meeting to inspect suggestions and their transcript evidence. **Add to today** adds a step under the project task (or the meeting title when no project is set) and normal sync brings it into the standalone notebook.
+
+Expand multiple meetings to compare suggestions. Select the suggestions you want and add them together as project steps. The task-list trash button on an expanded meeting and **Clear all suggestions** keep the source meetings and tasks already added.
+
 Product release sources live in `desktop/`, `web/`, `phone/` and `plugin/`. Existing build commands remain available through compatibility paths. Shared Diane backend/sign-in cutover is tracked separately and is not enabled by this reorganization.
 
 The hosted Todo 0.1.9 candidate adds editable AI step proposals, guarded Add steps/Undo, and execution status directly in the task list. Its 0.1.5 backend supplies saved task/project/Meeting context to Diane's shared Universal Cell profiles. Matching host integration and installed-app acceptance are tracked in [contextual refinement](docs/plans/19-contextual-task-refinement.md).

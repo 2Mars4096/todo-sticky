@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-11-16 — Select meeting steps together
+
+Select one or more suggestions in a meeting, then use the single Add to today action. Its label shows the selection count. A lone remaining suggestion supports one-click addition. Collapsing and reopening a meeting retains its selection while the list stays mounted.
+
+## 2026-11-16 — Clear meeting follow-ups
+
+Meeting reviews expand independently. Clear this meeting and Clear all suggestions dismiss the reviewed suggestions after confirmation. The account retains meeting history and existing tasks. Reviews generated after the selected cutoff remain available.
+
+## 2026-11-16 — Meeting list layout
+
+Meeting follow-ups use full-width disclosure rows, aligned suggestion counts and one date label per run of same-day reviews. The expanded list scrolls within the note. Checked long Chinese and English titles at 340, 460 and 800 pixels, keyboard expansion and transcript disclosure.
+
+## 2026-11-16 — Project steps from meetings
+
+In Today, accepting meeting follow-ups for the same project and list date creates one parent task with ordered steps. Matching ignores case and repeated spaces in the saved meeting project label. Meetings without a project use their own title and meeting ID. Each step keeps its own source evidence, assignee and deadline.
+
+## 2026-11-16 — Meeting follow-ups live in standalone Todo
+
+Shared API `diane-api-00031-pet` and worker `diane-worker-00020-zat` each serve 100% of production traffic. Cloud Build `b7881a5c-9c93-46b7-ae6f-4a46ff905dbf` layered the review changes onto each serving image and tested them with synthetic records. The worker keeps its deployed analyzer and records the review when analysis completes. Existing-account catch-up, counts and source citations were verified on the live service.
+
+Installed and reopened standalone Sticky Todo 2.1.16 with the shared backend flags and stable Rust 1.100.0. Signature, exact bundle contents and 56 task files verified. Previous app: `/Applications/.sticky-todo-install-08lo4igi/previous/Sticky Todo.app`. The embedded Diane client remains a separate release.
+
+## 2026-11-15 — Meeting follow-ups in Today
+
+Todo’s Today view shows **Meeting follow-ups** for the signed-in shared account. Open a reviewed meeting to inspect suggestions and their transcript evidence. **Add to today** creates a shared task and normal sync brings it into the standalone notebook.
+
+Verified 57 plugin tests, plugin package checks, 31 desktop regression suites, standalone Vite build and 30 shared-backend tests.
+
 ## 2026-11-11 — Actions artifact storage cleanup
 
 Remove 11 stored Actions artifacts. Routine CI builds and tests do not upload retained build artifacts. A default-branch cleanup workflow deletes artifacts from the listed completed workflows, including runs on older branches. It reads only GitHub metadata, never checks out triggering code, and deletes only artifacts for the completed run. Source code, workflow run logs, dependency caches and GitHub Releases are unaffected. Release jobs still exchange temporary installers until the complete release workflow finishes; cleanup then deletes them. New release artifacts also have a one-day expiry fallback. Re-running a publish-only job after cleanup requires rebuilding its artifacts.
