@@ -37,3 +37,12 @@
 - [x] Verify submitted indices, preserved choices, keyboard use and the final single-action shortcut at three widths.
 
 - [x] Append older reviews in place and preserve expanded panels and selections. Use 10px top and bottom suggestion padding and a 2px gap before the transcript control.
+
+## Android delivery
+
+- [x] Android 2.1.16+26 (version code 2026) adds signed-in shared-account meeting follow-ups to Today. Open multiple meetings, inspect transcript citations, select project steps, append older reviews and clear suggestions per meeting or across reviews.
+- [x] The ARM64 release replaced the root `todo-sticky-latest.apk` after ZIP, package, version, embedded feature and signer-continuity checks. SHA-256 `fdf7331223cb1d140bacec4d615708877687b03324bf41910a02c3013bd3f08d`. Isolated Flutter 3.41.9 build used the same Kotlin and reorder compatibility adjustments as +25. 140 Flutter tests passed with one skip. No physical device was connected.
+
+## One-tap dismissal
+
+- [x] The trash icon on each meeting row directly dismisses its follow-ups. Successful dismissals disappear from the dashboard, including previously cleared reviews. Bulk clearing retains its confirmation. Source meetings and accepted tasks remain available.

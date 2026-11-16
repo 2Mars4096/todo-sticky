@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-16 — Direct dismissal of meeting follow-ups
+
+The trash icon on each meeting row directly dismisses its follow-ups. Successful dismissals disappear from the dashboard, including previously cleared reviews. Bulk clearing retains its confirmation. Source meetings and accepted tasks remain available.
+
+## 2026-11-16 — Android meeting follow-ups
+
+Android 2.1.16+26 (version code 2026) adds signed-in shared-account meeting follow-ups to Today. Open multiple meetings, inspect transcript citations, select project steps, append older reviews and clear suggestions per meeting or across reviews.
+
+The ARM64 release replaced the root `todo-sticky-latest.apk` after ZIP, package, version, embedded feature and signer-continuity checks. SHA-256 `fdf7331223cb1d140bacec4d615708877687b03324bf41910a02c3013bd3f08d`. Isolated Flutter 3.41.9 build used the same Kotlin and reorder compatibility adjustments as +25. 140 Flutter tests passed with one skip. No physical device was connected.
+
 ## 2026-11-16 — Select meeting steps together
 
 Select one or more suggestions in a meeting, then use the single Add to today action. Its label shows the selection count. A lone remaining suggestion supports one-click addition. Collapsing and reopening a meeting retains its selection while the list stays mounted.

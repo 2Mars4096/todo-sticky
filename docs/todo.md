@@ -1,5 +1,9 @@
 # Todo
 
+- [x] One-tap removal of meeting follow-ups on Mac and Android — [Plan 21](plans/21-meeting-monitor.md).
+
+- [x] Deliver Android meeting follow-ups in the original-signer latest APK — [Plan 21](plans/21-meeting-monitor.md).
+
 - [x] Reduce repeated meeting actions and verify batch selection — [Plan 21](plans/21-meeting-monitor.md).
 
 - [x] Support account-wide and per-meeting dismissal in [the meeting monitor](plans/21-meeting-monitor.md).

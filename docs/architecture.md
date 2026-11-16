@@ -450,3 +450,5 @@ Diane setup and linked-session details share one compact flex header for heading
 - Product-owned paneLayout CSS consumes optional host geometry tokens with standalone fallbacks; the host does not patch the published bundle. Source review can alias this plugin into Diane without releasing it.
 
 Review dismissal stores monotonic per-account and per-meeting sequence cutoffs in the review index. Source meetings and canonical tasks keep their independent lifecycle.
+
+Android Today mounts the optional meeting widget for the active shared owner. Requests reuse CloudSyncController token refresh and account guards. Review state is independent of local task loading.

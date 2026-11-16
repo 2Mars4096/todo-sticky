@@ -2,6 +2,8 @@
 
 A native Flutter client for the same daily workflow as the desktop app: fast capture, nested steps, outcomes, deadlines, daily planning, goals, routines and Star Focus. The paper surface, phone navigation and explicit AI previews keep the task list central.
 
+The current signed ARM64 [latest APK](../todo-sticky-latest.apk) is 2.1.16+29. Open **Today → Meeting follow-ups** with your shared Diane account.
+
 ## Run and build
 
 Use Flutter **3.47.8 stable**, Dart 3.13, a **JDK 17** (not only a JRE), and the Android SDK. Android 7 / API 24 or newer is supported. The application ID is `io.github.twomars4096.sticky_todo`.
@@ -23,7 +25,7 @@ For a small sideloadable ARM64 APK, use the optimized release build rather than 
 
 ```sh
 flutter build apk --release --target-platform android-arm64 --split-per-abi \
-  --dart-define=SYNC_SERVER_URL=https://sticky-todo-sync-507920948662.asia-southeast1.run.app
+  --dart-define=SYNC_SERVER_URL=https://dear-diane-202610-api.web.app --dart-define=DIANE_SHARED_CUTOVER=true
 ```
 
 The output is `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`; the local delivery copy is `../release/todo-sticky.apk`. The verified 2.1.15+2 build is **19.36 MB** (18.46 MiB), compared with 86.82 MB for the earlier debug APK. Release mode uses AOT compilation, R8/resource shrinking and icon tree shaking. Keep the same signing key for subsequent updates. The earlier CI debug APK used a different certificate: export any existing notebook before uninstalling that debug app, then install the release and restore the export. Do not clear or uninstall a notebook to work around a signature mismatch without preserving its data first.
@@ -38,7 +40,7 @@ When the original production key is unavailable, build an optimized preview that
 ORG_GRADLE_PROJECT_stickyReviewBuild=true flutter build apk \
   --release --target-platform android-arm64 --split-per-abi \
   --dart-define=STICKY_PREVIEW=true \
-  --dart-define=SYNC_SERVER_URL=https://sticky-todo-sync-507920948662.asia-southeast1.run.app
+  --dart-define=SYNC_SERVER_URL=https://dear-diane-202610-api.web.app --dart-define=DIANE_SHARED_CUTOVER=true
 ```
 
 Both preview flags are required. The package is `io.github.twomars4096.sticky_todo.preview`, labelled **Sticky Todo Preview**, and uses the Android debug signing key with release optimization. Its notebook is separate. Browser sign-in requires returning manually to the preview. This APK cannot update the production installation; a production update still requires the original key. Use a distinct delivery filename such as `todo-sticky-preview-2.1.15-9.apk`.

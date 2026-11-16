@@ -2,7 +2,7 @@
 
 The installed standalone Mac app’s Today view shows **Meeting follow-ups** for the signed-in shared account. Open a reviewed meeting to inspect suggestions and their transcript evidence. **Add to today** adds a step under the project task (or the meeting title when no project is set) and normal sync brings it into the standalone notebook.
 
-Expand multiple meetings to compare suggestions. Select the suggestions you want and add them together as project steps. The task-list trash button on an expanded meeting and **Clear all suggestions** keep the source meetings and tasks already added.
+Expand multiple meetings to compare suggestions. Select the suggestions you want and add them together as project steps. Tap a meeting’s trash icon to remove it from follow-ups immediately. **Clear all suggestions** asks for confirmation. Your source meetings and tasks already added are preserved.
 
 Product release sources live in `desktop/`, `web/`, `phone/` and `plugin/`. Existing build commands remain available through compatibility paths. Shared Diane backend/sign-in cutover is tracked separately and is not enabled by this reorganization.
 
@@ -16,7 +16,7 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, rebuilt and reinstalled with the **Diane shared backend** and editable local setup/session handoff (2026-11-10). Your original Todo interface and local notes remain. Open **Settings → Account → Continue with Google** with the same account as Diane, then **Sync**. Local Diane connection is enabled on this installation; Push stays grey when Diane is unavailable.
 
-Local Android release build: `release/todo-sticky.apk` (2.1.16+19, ARM64, 19.88 MB, original release signature, sync URL prefilled). Install over the existing production app. The local `release/` folder is excluded from Git.
+Latest Android release: [todo-sticky-latest.apk](todo-sticky-latest.apk), ARM64 2.1.16+29. Install over the existing signed app and open **Today → Meeting follow-ups** while signed in to Diane.
 
 Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](phone/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
