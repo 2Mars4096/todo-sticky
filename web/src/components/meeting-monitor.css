@@ -35,16 +35,13 @@
 .meeting-actions { display: flex; align-items: start; justify-content: space-between; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 .meeting-actions details { flex: 1 1 100px; min-width: 0; color: var(--meeting-quiet); font-size: 12px; }
 .meeting-actions blockquote { margin: 6px 0; }
-.meeting-monitor .meeting-actions button, .meeting-monitor .meeting-scroll > button, .meeting-monitor p button {
+.meeting-monitor .meeting-scroll > button, .meeting-monitor p button {
   padding: 4px 8px; border: 1px solid var(--meeting-rule); border-radius: var(--radius,6px); font-size: 12px;
 }
-.meeting-actions button:enabled { font-weight: 600; }
-.meeting-actions button:disabled { color: var(--meeting-quiet); }
 .meeting-monitor p { padding: 6px 10px; }
 
 .meeting-drafts li + li { border-top: 1px solid var(--meeting-rule); }
 .meeting-actions summary { min-height: 24px; line-height: 24px; }
-.meeting-clear-bar { padding: 4px 12px; display: flex; justify-content: flex-end; }
 .meeting-monitor .meeting-clear, .meeting-clear-confirm button { font-size: 12px; min-height: 28px; padding: 4px 8px; border-radius: var(--radius, 6px); }
 .meeting-monitor .meeting-clear { color: var(--meeting-quiet); }
 .meeting-clear:hover, .meeting-clear-confirm button:hover { background: var(--meeting-hover); }

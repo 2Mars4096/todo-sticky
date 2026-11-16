@@ -1,6 +1,10 @@
 # Todo
 
+- [x] Verify and clean Sticky Todo scaffolding and preserve pending product work — [Plan 9](plans/9-folder-cleanup.md).
+
 - [x] One-tap removal of meeting follow-ups on Mac and Android — [Plan 21](plans/21-meeting-monitor.md).
+
+- [x] OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request.
 
 - [x] Deliver Android meeting follow-ups in the original-signer latest APK — [Plan 21](plans/21-meeting-monitor.md).
 
@@ -12,7 +16,18 @@
 
 - [x] Group accepted meeting follow-ups into project steps. See [meeting monitor](plans/21-meeting-monitor.md).
 
+- [x] Route signed-in OpenRouter profiles through the Diane account provider on phone and standalone desktop. See Plan 17-1.
+
 - [x] [Meeting follow-ups in Todo](plans/21-meeting-monitor.md) — shared backend live and standalone Mac app reinstalled. Embedded Diane client delivery remains separate.
+
+- [x] Installed Todo UI0.1.19 in Diane0.1.9; signature, exact ASAR and backend health pass. All13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-e266f838-9fa0-4092-bb7c-86287186a9e4.app`.70 product tests, host SDK and360/800px browser checks pass.
+
+- [x] Installed Todo UI0.1.17 in Diane0.1.9; exact ASAR/signature and backend health verified. Task/chat records unchanged; one preparation cache record updated at startup. Rollback: `/Applications/.Diane-previous-84cc4c40-39bf-4599-a183-97c570084876.app`. Product66 and host5 tests pass.
+
+- [x] [20-document-like-plugin-editing](plans/20-document-like-plugin-editing.md) — single-click task/step editing, cursor placement, Save/Cancel and stable controls; 56 tests and narrow/wide browser checks pass.
+- [x] Package/integrate plan20 into Todo UI0.1.16 and reinstall Diane; signature, exact app bytes, health and retained records verified.
+
+- [x] November 13: rebuild/reinstall and reopen standalone Mac app; 56 task files/settings preserved, signature and runtime backend verified — [17-1](plans/17-1-canonical-sync.md).
 
 - [x] Clean Actions build artifacts and prevent retained CI outputs; see [5-build-artifact-cleanup.md](plans/5-build-artifact-cleanup.md).
 

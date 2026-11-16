@@ -60,3 +60,8 @@
 - [x] Check tracked files and generated trees: no empty tracked source files.
 - [x] Remove obsolete backend diane/plugins directory chain, stale build/egg-info output (including blank dependency_links.txt), and 17 empty phone build logs.
 - [x] Preserve Cargo lock files, build markers, dependency packages and actual backend source under src/diane/plugins; source hashes unchanged.
+
+## November 16 repository pass
+
+- [x] Removed unused meeting-action styles and 14 disposable local browser logs and snapshots. Corrected current APK delivery paths and CI guidance. Kept independent plugin packaging, linked worktrees, notebook data, release evidence and signing configuration.
+- [x] Removed unused Android account-status callback plumbing while retaining the provider-routing logic.

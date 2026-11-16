@@ -1,8 +1,16 @@
 # Changelog
 
+## 2026-11-16 — Repository cleanup
+
+Removed unused meeting-action styles and 14 disposable local browser logs and snapshots. Corrected current APK delivery paths and CI guidance. Kept independent plugin packaging, linked worktrees, notebook data, release evidence and signing configuration.
+
 ## 2026-11-16 — Direct dismissal of meeting follow-ups
 
 The trash icon on each meeting row directly dismisses its follow-ups. Successful dismissals disappear from the dashboard, including previously cleared reviews. Bulk clearing retains its confirmation. Source meetings and accepted tasks remain available.
+
+## 2026-11-16 — Account-only OpenRouter
+
+OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request.
 
 ## 2026-11-16 — Android meeting follow-ups
 
@@ -32,11 +40,33 @@ Shared API `diane-api-00031-pet` and worker `diane-worker-00020-zat` each serve 
 
 Installed and reopened standalone Sticky Todo 2.1.16 with the shared backend flags and stable Rust 1.100.0. Signature, exact bundle contents and 56 task files verified. Previous app: `/Applications/.sticky-todo-install-08lo4igi/previous/Sticky Todo.app`. The embedded Diane client remains a separate release.
 
+## 2026-11-16 — Account OpenRouter routing
+
+Todo routes a signed-in OpenRouter selection through the shared account even if a local provider key was previously configured. The settings and connection test use the same selection. Android build 2025 signed and verified. Standalone Mac app staged and signature-checked.
+
 ## 2026-11-15 — Meeting follow-ups in Today
 
 Todo’s Today view shows **Meeting follow-ups** for the signed-in shared account. Open a reviewed meeting to inspect suggestions and their transcript evidence. **Add to today** creates a shared task and normal sync brings it into the standalone notebook.
 
 Verified 57 plugin tests, plugin package checks, 31 desktop regression suites, standalone Vite build and 30 shared-backend tests.
+
+## 2026-11-13 — Continuous plugin editor installed
+- [infra] Installed Todo UI0.1.19 in Diane0.1.9; signature, exact ASAR and backend health pass. All13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-e266f838-9fa0-4092-bb7c-86287186a9e4.app`.70 product tests, host SDK and360/800px browser checks pass.
+
+## 2026-11-13 — Todo UI0.1.17 installation verified
+- [infra] Installed Todo UI0.1.17 in Diane0.1.9; exact ASAR/signature and backend health verified. Task/chat records unchanged; one preparation cache record updated at startup. Rollback: `/Applications/.Diane-previous-84cc4c40-39bf-4599-a183-97c570084876.app`. Product66 and host5 tests pass.
+
+## 2026-11-13 — Editor plugin installed in Diane
+- [delivery] Rebuilt/reinstalled Diane0.1.9 with Todo UI0.1.16, preserving newer shared-document features. All65 product tests, actual-host SDK, production build/budgets and release-pin checks pass; signature/installed ASAR match, backend health passes and all13,461 stored JSON records unchanged. Rollback: `/Applications/.Diane-previous-f9657284-95b5-41ac-ba93-4fd54289f104.app`.
+
+## 2026-11-13 — Direct plugin text editing
+- [ux] Click task/step text once to edit at the pointed character; retain text selection for copying and keyboard entry. Keep task controls stable while editing and add aligned Save/Cancel actions.
+- [fix] Moving focus inside the editor no longer commits before Cancel. Preserve Escape, paragraph/IME input, empty-edit protection and existing guarded persistence.
+- [test] All56 plugin tests, strict types/build/dist/package checks pass; synthetic browser Save/Cancel and360/800px long-text screenshots pass and were visually reviewed. Installed Diane package remains unchanged.
+
+## 2026-11-13 — Requested Mac reinstall
+- [delivery] Rebuild current standalone 2.1.16 with existing shared-service flags, reinstall and reopen Applications bundle. Verify ad-hoc signature, exact bundle hashes and runtime backend; all 56 task files and native settings preserved. Prior bundle/profile/tasks/WebKit retained in `sticky-todo-before-reinstall-20261113-154138` under the Codex app temporary directory.
+- [test] All 31 Node suites, TypeScript and production app build pass. Receipt: `output/reinstall-20261113/macos-verification.json`.
 
 ## 2026-11-11 — Actions artifact storage cleanup
 

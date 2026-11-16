@@ -17,7 +17,7 @@ flutter run
 flutter build apk --debug --target-platform android-arm64
 ```
 
-The installable **review APK** is `build/app/outputs/flutter-apk/app-debug.apk`. It is debug signed; use `adb install -r` or open the APK on your Android phone. It is not a Play Store production release. The GitHub **Flutter Android** workflow runs formatting, analysis, tests and an ARM64 debug build, and uploads the APK as a review artifact.
+The installable **review APK** is `build/app/outputs/flutter-apk/app-debug.apk`. It is debug signed; use `adb install -r` or open the APK on your Android phone. It is not a Play Store production release. The GitHub **Flutter Android** workflow runs formatting, analysis, tests and an ARM64 debug build.
 
 For distribution, create your release keystore, copy `android/key.properties.example` to the ignored `android/key.properties`, and fill its values locally. Then run `flutter build appbundle --release`. Release builds deliberately fail when a release key has not been supplied. Never commit a keystore or passwords.
 
@@ -28,7 +28,7 @@ flutter build apk --release --target-platform android-arm64 --split-per-abi \
   --dart-define=SYNC_SERVER_URL=https://dear-diane-202610-api.web.app --dart-define=DIANE_SHARED_CUTOVER=true
 ```
 
-The output is `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`; the local delivery copy is `../release/todo-sticky.apk`. The verified 2.1.15+2 build is **19.36 MB** (18.46 MiB), compared with 86.82 MB for the earlier debug APK. Release mode uses AOT compilation, R8/resource shrinking and icon tree shaking. Keep the same signing key for subsequent updates. The earlier CI debug APK used a different certificate: export any existing notebook before uninstalling that debug app, then install the release and restore the export. Do not clear or uninstall a notebook to work around a signature mismatch without preserving its data first.
+The output is `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`; the local delivery copy is `../todo-sticky-latest.apk`. The verified 2.1.15+2 build is **19.36 MB** (18.46 MiB), compared with 86.82 MB for the earlier debug APK. Release mode uses AOT compilation, R8/resource shrinking and icon tree shaking. Keep the same signing key for subsequent updates. The earlier CI debug APK used a different certificate: export any existing notebook before uninstalling that debug app, then install the release and restore the export. Do not clear or uninstall a notebook to work around a signature mismatch without preserving its data first.
 
 The local release key is kept outside the repository under `~/.config/todo-sticky/android-release/`; ignored `android/key.properties` references it. Preserve that private directory for future updates; never add its contents to source control.
 
@@ -154,7 +154,7 @@ The current local production release is 2.1.15+11 (versionCode 2011), 19.62 MB, 
 
 ### Production goal-plan delivery — 2026-11-01
 
-The compatible schema-2 backend is live and the original signing key was available for the production build. `../release/todo-sticky.apk` is now the normal **Sticky Todo** package, 2.1.15+9 / 2009, 19.62 MB; it updates an existing original-key release in place. The separate Preview APK remains a different app and notebook. Analysis and 86 tests pass; signature/alignment and a dedicated emulator update preserve the previous notebook. [Delivery evidence](../docs/plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment).
+The compatible schema-2 backend is live and the original signing key was available for the production build. The historical `../release/todo-sticky.apk` was the normal **Sticky Todo** package, 2.1.15+9 / 2009, 19.62 MB; it updates an existing original-key release in place. The separate Preview APK remains a different app and notebook. Analysis and 86 tests pass; signature/alignment and a dedicated emulator update preserve the previous notebook. [Delivery evidence](../docs/plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment).
 
 
 Android +10 aligns the six-dot grip, checkbox and task text with consistent visible gaps while retaining 44px touch targets. Daily and Earlier handles share the same visual; nested steps and expanded controls follow the parent title column. First-line alignment adapts to enlarged text.

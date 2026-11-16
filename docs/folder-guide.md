@@ -15,7 +15,8 @@ One canonical home per product surface. Run npm commands from the repository roo
 | `scripts/`, `tests/` | Build, release, demo and verification tools. Keep. See script map below. |
 | `docs/`, `demo/` | Project records and published demonstration assets. Keep. |
 | `content/` | Local task files, including a history-recovery source. Never treat as build output. |
-| `release/` | Delivered Android APK. Keep until deliberately replaced. Ignored by Git. |
+| `todo-sticky-latest.apk` | Current signed Android delivery. Replace only after verifying package, version and signer. Ignored by Git. |
+| `release/` | Retained local release bundles and plugin packages. Ignored by Git. |
 | `output/account-sync/` | Downloaded artifacts and deployment/verification evidence. Keep while delivery work is active. |
 | `output/playwright/` | Disposable local browser intermediates; old screenshots, recordings and logs have been removed. Retained fixture source is not a build artifact. |
 | `node_modules/`, `backend/.venv/` | Installed dependencies. Retained so local development still works. Recreate with the documented install steps if removed. |

@@ -170,7 +170,7 @@ The small account indicator opens Account details on desktop. On phone, the clou
 
 Under **Goals → Routines**, Manual remains unchanged. Daily, Weekdays and Weekly generate one ordinary task on eligible dates when Today is loaded. Weekly uses the weekday you configure it; the device's local calendar controls dates. Schedules are stored on this device for the current task folder, while generated tasks can sync normally. Missed days are not backfilled. **Pause** leaves existing tasks intact; **Skip next** skips the next ungenerated occurrence. Changing a schedule affects future generation, not existing task text. A failed task save leaves the occurrence pending for Retry without duplicating it.
 
-The reviewed desktop build is installed locally. Android 2.1.15+7 adds matching Search, Progress, routine scheduling, planning constraints and focus review. Download the local signed APK from `release/todo-sticky.apk`; it updates the prior release without uninstalling. Schedule definitions remain device-local on both platforms.
+The reviewed desktop build is installed locally. Android 2.1.15+7 adds matching Search, Progress, routine scheduling, planning constraints and focus review. Download the local signed APK from `todo-sticky-latest.apk`; it updates the prior release without uninstalling. Schedule definitions remain device-local on both platforms.
 
 ### Recovering moves and saved goals
 
