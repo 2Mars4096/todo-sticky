@@ -346,3 +346,5 @@ A temporary phone-only copy cannot run sync_merge_test.dart without the reposito
 - 2026-11-10: Android sign-in reported MissingPluginException. Browser launch now uses the app-owned sticky_todo/links channel and native HTTPS ACTION_VIEW handler instead of the external launcher plugin.
 
 - November10 local .app packaging completed; automatic updater archive signing then refused because no private release key was supplied. The staged .app is separately ad-hoc-signed and verified; it is not an updater release.
+
+- 2026-11-13: Plugin browser fixtures outside `plugin/` resolve root React18 by default and cause duplicate-React hook failures. Explicitly alias React and React DOM to `plugin/node_modules` (React19), include the full production styles and use host-equivalent border-box sizing. Corrected synthetic fixture passes; no production runtime defect inferred. Npm package checks need a writable cache in this sandbox (`npm_config_cache=/private/tmp/todo-npm-cache`).

@@ -133,3 +133,9 @@
 
 .diane-todo-port .task-add-row .task-text-action { flex: none; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; padding: 5px 8px; cursor: pointer; }
 .diane-todo-port .task-add-row .task-text-action:hover { background: var(--wb-soft); }
+
+/* Editing stays on the same reading line; actions wrap below long paragraphs. */
+.diane-todo-port .task-entry .task-edit-actions { display: flex; flex-basis: 100%; gap: var(--wb-space-1, 4px); }
+.diane-todo-port .task-entry .task-edit-actions button { min-height: var(--plugin-control, 32px); }
+.diane-todo-port .task-entry .task-edit-actions .primary { font-weight: 600; }
+.diane-todo-port .task-entry .task-text[role="button"] { cursor: text; }

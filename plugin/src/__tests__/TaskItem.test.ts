@@ -9,7 +9,7 @@ let host:HTMLDivElement,root:ReturnType<typeof createRoot>;
 beforeEach(()=>{Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});globalThis.ResizeObserver=class {observe(){}unobserve(){}disconnect(){}} as any;host=document.createElement('div');document.body.append(host);root=createRoot(host);});
 afterEach(()=>{act(()=>root.unmount());host.remove();vi.restoreAllMocks();});
 const props=()=>({id:'task',text:'Imported task',status:'todo' as const,moveTargetLabel:'tomorrow',onToggle:vi.fn(),onDelete:vi.fn(),onPush:vi.fn(),onTextChange:vi.fn(),onAddSubtask:vi.fn()});
-it('retains keyboard title editing and exposes explicit Diane action without Focus controls',async()=>{const p=props();await act(async()=>root.render(h(TaskItem,p)));const title=host.querySelector<HTMLElement>('.task-text')!;await act(async()=>{title.click();});expect(host.textContent).toContain('Run in Diane');expect(host.querySelector('[title="Focus"]')).toBeNull();await act(async()=>title.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})));const input=host.querySelector<HTMLTextAreaElement>('[aria-label="Edit title: Imported task"]')!;expect(input).toBeTruthy();await act(async()=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')!.set!.call(input,'Revised\nwith detail');input.dispatchEvent(new Event('input',{bubbles:true}));});await act(async()=>input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',ctrlKey:true,bubbles:true})));expect(p.onTextChange).toHaveBeenCalledWith('Revised\nwith detail');});
+it('retains keyboard title editing and exposes explicit Diane action without Focus controls',async()=>{const p=props();await act(async()=>root.render(h(TaskItem,p)));const title=host.querySelector<HTMLElement>('.task-text')!;await act(async()=>{title.focus();});expect(host.textContent).toContain('Run in Diane');expect(host.querySelector('[title="Focus"]')).toBeNull();await act(async()=>title.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})));const input=host.querySelector<HTMLTextAreaElement>('[aria-label="Edit title: Imported task"]')!;expect(input).toBeTruthy();await act(async()=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')!.set!.call(input,'Revised\nwith detail');input.dispatchEvent(new Event('input',{bubbles:true}));});await act(async()=>input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',ctrlKey:true,bubbles:true})));expect(p.onTextChange).toHaveBeenCalledWith('Revised\nwith detail');});
 it('keeps historical steps read-only with their source date',async()=>{const p=props();await act(async()=>root.render(h(TaskItem,{...p,isOtherDate:true,isSubtask:true,sourceDate:'2026-11-08'})));expect(host.querySelector<HTMLButtonElement>('.task-checkbox')?.disabled).toBe(true);expect(host.querySelector('.task-text')?.getAttribute('role')).toBeNull();expect(host.textContent).not.toContain('Run in Diane');});
 
 it('does not reselect a dismissed handoff when unchanged step arrays refresh',async()=>{
@@ -20,4 +20,39 @@ it('does not reselect a dismissed handoff when unchanged step arrays refresh',as
  await act(async()=>title.focus());await act(async()=>outside.focus());
  expect(host.querySelector('.task-selected')).toBeNull();
  await act(async()=>render());expect(host.querySelector('.task-selected')).toBeNull();outside.remove();
+});
+
+async function changeText(value:string) {
+ const input=host.querySelector<HTMLTextAreaElement>('textarea')!;
+ await act(async()=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')!.set!.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));});
+ return input;
+}
+it('edits with one click and cancels by keyboard or button without saving on internal blur',async()=>{
+ const p=props();await act(async()=>root.render(h(TaskItem,p)));
+ await act(async()=>host.querySelector<HTMLElement>('.task-text')!.click());
+ let input=await changeText('Unsaved paragraph');
+ const cancel=Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Cancel')!;
+ await act(async()=>cancel.focus());expect(p.onTextChange).not.toHaveBeenCalled();
+ await act(async()=>cancel.click());expect(p.onTextChange).not.toHaveBeenCalled();
+ expect(host.querySelector('.task-text')?.textContent).toBe('Imported task');
+ await act(async()=>host.querySelector<HTMLElement>('.task-text')!.click());input=await changeText('Another draft');
+ await act(async()=>input.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})));
+ expect(p.onTextChange).not.toHaveBeenCalled();
+});
+it('saves once when leaving the editor and never turns an empty edit into deletion',async()=>{
+ const p=props();await act(async()=>root.render(h(TaskItem,p)));
+ await act(async()=>host.querySelector<HTMLElement>('.task-text')!.click());await changeText('Paragraph one\nParagraph two');
+ const outside=document.createElement('button');document.body.append(outside);
+ await act(async()=>outside.focus());expect(p.onTextChange).toHaveBeenCalledExactlyOnceWith('Paragraph one\nParagraph two');
+ await act(async()=>host.querySelector<HTMLElement>('.task-text')!.click());await changeText('   ');
+ const save=Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Save')!;expect(save.disabled).toBe(true);
+ await act(async()=>outside.focus());expect(p.onTextChange).toHaveBeenCalledTimes(1);expect(p.onDelete).not.toHaveBeenCalled();outside.remove();
+});
+it('leaves Enter and IME confirmation to paragraph editing',async()=>{
+ const p=props();await act(async()=>root.render(h(TaskItem,p)));await act(async()=>host.querySelector<HTMLElement>('.task-text')!.click());
+ const input=await changeText('Draft');
+ for(const options of [{key:'Enter'},{key:'Enter',ctrlKey:true,isComposing:true}]) {
+ const event=new KeyboardEvent('keydown',{...options,bubbles:true,cancelable:true});await act(async()=>input.dispatchEvent(event));expect(event.defaultPrevented).toBe(false);
+ }
+ expect(p.onTextChange).not.toHaveBeenCalled();expect(host.querySelector('textarea')).toBe(input);
 });

@@ -20,6 +20,10 @@ Agent calls use the injected provider boundary, which the host must route throug
 
 Keep imported styles scoped under `.diane-todo-port`. Narrow layouts use `@container todo-port`; do not restore global source reset rules or viewport-sized app shells.
 
+## Editing tasks and steps
+
+Click task or step text to edit in place. Enter adds a paragraph break; Cmd/Ctrl+Enter or **Save** commits. **Cancel** or Escape restores the original. Clicking outside saves through the existing guarded persistence flow; moving between the field and its Save/Cancel controls keeps the draft open. Empty text never deletes a task. Select text by dragging to copy it. Historical steps remain read-only.
+
 ## Task execution
 
 UI 0.1.9 displays workflow status beside unselected tasks through the host's bounded batch-status API. One parent polling lifetime handles the active surface; unavailable contact is shown explicitly. Selecting a task still exposes its exact session and review controls.
