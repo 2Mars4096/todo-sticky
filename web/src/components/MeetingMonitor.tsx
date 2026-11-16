@@ -81,7 +81,7 @@ export function MeetingMonitor({request, onAdded}: {request: ReviewRequest; onAd
   const [loadingOlder, setLoadingOlder] = useState(false);
   const loaded = useRef<{depth:number; page:Page} | undefined>(undefined);
   const [expanded, setExpanded] = useState<Map<string, boolean>>(() => new Map());
-  const [confirm, setConfirm] = useState<{key: string; through: number; meeting_id?: string}>();
+  const [confirm, setConfirm] = useState<number>();
   const [clearing, setClearing] = useState(false);
   const version = useRef(0);
   const clearLock = useRef(false);
@@ -92,30 +92,26 @@ export function MeetingMonitor({request, onAdded}: {request: ReviewRequest; onAd
       return next;
     });
   }
-  async function clear() {
-    if (!confirm || clearLock.current) return;
+  async function clear(through: number, meeting_id?: string) {
+    if (clearLock.current) return;
     clearLock.current = true; setClearing(true);
     try {
-      const {through, meeting_id} = confirm;
       await request(root + '/todo-reviews/clear', {through, meeting_id});
       version.current++;
       loaded.current = undefined;
-      setPage(current => current && ({...current, reviews:current.reviews.map(r =>
-        (r.sequence ?? Infinity) <= through && (!meeting_id || r.meeting_id === meeting_id)
-          ? {...r, cleared:true, count:0, indices:[]} : r)}));
+      setPage(current => current && ({...current, reviews:current.reviews.filter(r =>
+        (r.sequence ?? Infinity) > through || (meeting_id && r.meeting_id !== meeting_id))}));
       setConfirm(undefined); setError('');
     } catch(e) { setError(e instanceof Error ? e.message : String(e)); }
     finally { clearLock.current = false; setClearing(false); }
   }
-  function clearControl(key: string, through: number, meeting_id?: string) {
-    if (confirm?.key === key) return <div className="meeting-clear-confirm" role="group" aria-label="Confirm clearing suggestions">
-      <span>{meeting_id ? 'Clear suggestions for this meeting?' : 'Clear suggestions from all reviewed meetings?'}</span>
+  function bulkClearControl(through: number) {
+    if (confirm !== undefined) return <div className="meeting-clear-confirm" role="group" aria-label="Confirm clearing suggestions">
+      <span>Clear suggestions from all reviewed meetings?</span>
       <button disabled={clearing} onClick={() => setConfirm(undefined)}>Cancel</button>
-      <button disabled={clearing} onClick={() => void clear()}>Clear suggestions</button>
+      <button disabled={clearing} onClick={() => void clear(confirm)}>Clear suggestions</button>
     </div>;
-    if (meeting_id) return <DeleteAction label="Clear suggestions for this meeting" disabled={clearing}
-      onClick={() => setConfirm({key, through, meeting_id})}/>;
-    return <button className="meeting-clear" disabled={clearing} onClick={() => setConfirm({key, through, meeting_id})}>
+    return <button className="meeting-clear" disabled={clearing} onClick={() => setConfirm(through)}>
       Clear all suggestions
     </button>;
   }
@@ -137,6 +133,7 @@ export function MeetingMonitor({request, onAdded}: {request: ReviewRequest; onAd
           next = {...next, before:older.before, reviews:[...next.reviews, ...older.reviews.filter(r => !ids.has(r.meeting_id))]};
         }
         if (alive && generation === version.current) {
+          next = {...next, reviews:next.reviews.filter(r => !r.cleared)};
           loaded.current = {depth, page:next};
           setPage(next); setError('');
         }
@@ -160,21 +157,21 @@ export function MeetingMonitor({request, onAdded}: {request: ReviewRequest; onAd
       {(!index || dayLabel(r.reviewed_at) !== dayLabel(page.reviews[index-1].reviewed_at)) && <div className="meeting-list-tools">
         {r.reviewed_at && <span className="meeting-day">Reviewed <time dateTime={r.reviewed_at}>{dayLabel(r.reviewed_at)}</time></span>}
         {!index && !!page.head && (page.reviews.some(row => row.count) || page.before) &&
-          clearControl('all', page.head)}
+          bulkClearControl(page.head)}
       </div>}
       <div className="meeting-row">
       <button className="meeting-trigger" disabled={!r.count} aria-label={r.title + (r.cleared ? ', cleared' : ', ' + r.count + ' suggested')}
         aria-expanded={!!r.count && expanded.get(r.analysis_id)} onClick={() => toggle(r.analysis_id)}>
         <span>{r.title}</span><span className="meeting-count">{r.cleared ? 'Cleared' : r.count || 'Reviewed · no follow-ups'}</span>
       </button>
-      {expanded.get(r.analysis_id) && !!r.count && !!r.sequence && confirm?.key !== r.analysis_id && clearControl(r.analysis_id, r.sequence, r.meeting_id)}
+      {!!r.sequence && <DeleteAction label={'Dismiss follow-ups: ' + r.title} disabled={clearing}
+        onClick={() => void clear(r.sequence!, r.meeting_id)}/>}
       </div>
       {expanded.has(r.analysis_id) && !!r.count && <div hidden={!expanded.get(r.analysis_id)}>
-        {confirm?.key === r.analysis_id && !!r.sequence && <div className="meeting-clear-bar">{clearControl(r.analysis_id, r.sequence, r.meeting_id)}</div>}
         <MeetingDrafts review={r} request={request} onAdded={onAdded}/>
       </div>}
     </div>)}
-    {!page?.reviews.length && !!page?.head && page.before && clearControl('all', page.head)}
+    {!page?.reviews.length && !!page?.head && page.before && bulkClearControl(page.head)}
     {page?.before && <button disabled={loadingOlder} onClick={() => setDepth(depth + 1)}>{loadingOlder ? 'Loading older reviews…' : 'Older reviews'}</button>}
   </div></details>;
 }

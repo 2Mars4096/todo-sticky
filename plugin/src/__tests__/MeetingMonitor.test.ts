@@ -82,3 +82,23 @@ it('appends older meetings without closing the current review or losing its sele
     expect(host.textContent).not.toContain('Latest reviews');
   } finally {act(()=>root.unmount());}
 });
+
+it('dismisses a collapsed meeting with one trash click and keeps other reviews', async () => {
+  Object.assign(globalThis, {IS_REACT_ACT_ENVIRONMENT:true});
+  const host=document.createElement('div'), root=createRoot(host);
+  const reviews=['Planning','Other meeting','Previously dismissed'].map((title,i)=>({
+    title, meeting_id:'m'+i, analysis_id:'a'+i, sequence:i+1, count:2, indices:[0,1], cleared:i===2,
+  }));
+  const request=vi.fn(async (path:string, body?:unknown) =>
+    path.endsWith('/clear') && body ? {} : {head:3,reviews,before:null});
+  try {
+    await act(async()=>root.render(h(MeetingMonitor,{request:request as ReviewRequest,onAdded:vi.fn()})));
+    expect(host.textContent).not.toContain('Previously dismissed');
+    const trash=host.querySelector<HTMLButtonElement>('[aria-label="Dismiss follow-ups: Planning"]')!;
+    await act(async()=>trash.click());
+    expect(request.mock.calls.at(-1)).toEqual(['/api/plugins/todo/meeting-monitor/todo-reviews/clear',{through:1,meeting_id:'m0'}]);
+    expect(host.querySelectorAll('.meeting-trigger')).toHaveLength(1);
+    expect(host.textContent).toContain('Other meeting');
+    expect(host.querySelector('.meeting-clear-confirm')).toBeNull();
+  } finally {act(()=>root.unmount());}
+});
