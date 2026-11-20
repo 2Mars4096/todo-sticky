@@ -19,7 +19,7 @@ const error = document.getElementById('error')
 const returnLink = document.getElementById('return')
 let auth, signedIn
 try {
-  if (![sessionId, challenge].every(value => /^[A-Za-z0-9_-]{43}$/.test(value || ''))) throw new Error('Open Account settings in Sticky Todo and start a new sign-in.')
+  if (![sessionId, challenge].every(value => /^[A-Za-z0-9_-]{43}$/.test(value || ''))) throw new Error('Open Account settings in Dockit and start a new sign-in.')
   const response = await fetch('/v1/config')
   const { firebase } = await response.json()
   auth = getAuth(initializeApp(firebase))
@@ -58,12 +58,12 @@ button.onclick = async () => {
     // Cleanup must neither block return nor report an accepted handoff as failed.
     void signOut(auth).catch(() => {})
     if (nativeReturn) {
-      status.textContent = 'Google sign-in complete. Finishing in Sticky Todo…'
+      status.textContent = 'Google sign-in complete. Finishing in Dockit…'
       returnLink.href = returnUrl
       returnLink.hidden = false
       try { window.location.assign(returnUrl) } catch (_) {}
     } else {
-      status.textContent = 'Google sign-in complete. Switch back to Sticky Todo.'
+      status.textContent = 'Google sign-in complete. Switch back to Dockit.'
     }
   } catch (cause) {
     status.textContent = ''

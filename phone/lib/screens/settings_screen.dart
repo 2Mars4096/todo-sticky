@@ -85,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('AI assistance'),
             subtitle: Text(
               ai.usesShared(store.preferences)
-                  ? 'Diane account'
+                  ? 'pipedreams account'
                   : providerPresets[store.preferences.provider]?['name'] ??
                         store.preferences.provider,
             ),
@@ -210,8 +210,8 @@ class SettingsScreen extends StatelessWidget {
           const Divider(height: 20),
           const ListTile(
             leading: Icon(Icons.info_outline),
-            title: Text('Sticky Todo for Android'),
-            subtitle: Text('2.1.15'),
+            title: Text('Dockit'),
+            subtitle: Text('2.1.16'),
           ),
         ],
       ),
@@ -389,7 +389,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
         ),
         const SizedBox(height: 16),
         if (usesAccountKey)
-          const Text('Uses the OpenRouter key saved in your Diane account.')
+          const Text('Uses the OpenRouter key saved in your pipedreams account.')
         else ...[
           TextField(
             controller: key,

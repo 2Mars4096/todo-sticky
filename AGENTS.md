@@ -1,6 +1,6 @@
-# Sticky Todo Repository Guide
+# Dockit Repository Guide
 
-## Pipe Dreams platform requirements
+## pipedreams platform requirements
 
 Build and maintain three clients for Dockit: a working web app, an installable iOS phone app for iPhone, and an installable Android phone app. Users must be able to organize proposals into to-dos and assign work on each platform. Record build and workflow verification separately for each client.
 

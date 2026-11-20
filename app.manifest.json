@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "todo",
-  "name": "Todo",
+  "name": "Dockit",
   "version": "0.1.2",
   "repository": "https://github.com/2Mars4096/todo-sticky",
   "paths": {
@@ -16,19 +16,19 @@
   "releases": {
     "web": {
       "path": "web/",
-      "status": "planned"
+      "status": "in-progress"
     },
     "desktop": {
       "path": "desktop/",
-      "status": "planned"
+      "status": "implemented"
     },
     "android": {
       "path": "phone/android/",
-      "status": "planned"
+      "status": "implemented"
     },
     "ios": {
       "path": "phone/ios/",
-      "status": "planned"
+      "status": "in-progress"
     },
     "plugin": {
       "path": "plugin/",

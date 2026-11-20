@@ -1,5 +1,9 @@
 # Development Plan
 
+## Dockit transfer
+
+The current review preserves separate web, phone and Mac workflows. The next acceptance milestone covers proposal editing and assignment on the web, iPhone and Android. [Platform verification](plans/23-dockit-transfer.md).
+
 ## Todo as a meeting dashboard
 
 [Meeting follow-ups](plans/21-meeting-monitor.md) introduces automatic review and account-scoped catch-up. Shared API and worker are deployed and the standalone Mac client is installed.

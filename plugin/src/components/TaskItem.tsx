@@ -165,7 +165,7 @@ export function TaskItem({
       // A clicked control can unmount after its action (for example Use suggestion).
       // Its original event path still identifies the row that received the click.
       const belongsTo = (element: HTMLElement | null) => Boolean(element && (path.includes(element) || element.contains(target)))
-      // Diane details render in a portal; their controls still belong to this task.
+      // Shiprite details render in a portal; their controls still belong to this task.
       if (target?.closest('.diane-details') || path.some(node => node instanceof Element && node.matches('.diane-details'))) return
       if (!belongsTo(groupRef.current)) {
         setSelected(false); setDateOpen(false); setAddingStep(false)

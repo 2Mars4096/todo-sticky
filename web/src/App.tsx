@@ -3,7 +3,8 @@ import { MeetingMonitor, type ReviewRequest } from './components/MeetingMonitor'
 import { requestJson } from './cloudAccount'
 import { listen } from '@tauri-apps/api/event'
 import { DIANE_SHARED_ORIGIN, parseTodoTaskLink, readSharedTodoTask } from './cloudAccount'
-import { invoke, isTauri } from '@tauri-apps/api/core'
+import { isTauri } from '@tauri-apps/api/core'
+import { invoke } from './notebookCommand'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { SyncProgressView } from './components/SyncProgressView'
 import { ProjectPage } from './components/ProjectPage'
@@ -102,6 +103,15 @@ export default function App() {
   currentDateRef.current = calendar.dateStr
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
+  useEffect(() => {
+    if (isTauri() || (!tasks.saving && !tasks.saveError)) return
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [tasks.saving, tasks.saveError])
   const [taskLink,setTaskLink]=useState<string|null>(()=>{try{return parseTodoTaskLink(window.location.href)||localStorage.getItem('todo-sticky-pending-task-link-v1')}catch{return null}})
   const linkBusy=useRef(false),linkAccountShown=useRef(false),linkMounted=useRef(true)
   const taskLinkRef=useRef(taskLink);taskLinkRef.current=taskLink
@@ -641,7 +651,7 @@ export default function App() {
       {isTauri() && /Mac/.test(navigator.platform) && <SentScreenshots date={calendar.dateStr}
         disabled={tasks.loading || Boolean(tasks.loadError) || tasks.dataDate !== calendar.dateStr}
         onAdd={(title, steps) => { tasks.addTaskBundle(title, steps); if (firstRun) dismissIntro() }} />}
-      <WindowResizeHandles />
+      {isTauri() && <WindowResizeHandles />}
       <GoalsSidebar
         onOpenProject={openProject}
         routines={routines}
@@ -889,7 +899,7 @@ export default function App() {
                   Set up {PROVIDER_PRESETS[aiSettings.provider].shortLabel}
                 </option>
               )}
-              {PROVIDER_ORDER.map(provider => (
+              {PROVIDER_ORDER.filter(provider => isTauri() || provider === 'diane').map(provider => (
                 <option key={provider} value={provider}>
                   {PROVIDER_PRESETS[provider].shortLabel}
                   {aiSettings && !isProviderConfigured(aiSettings, provider) ? ' · Set up' : ''}

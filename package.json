@@ -1,7 +1,7 @@
 {
   "name": "todo-sticky",
   "version": "2.1.16",
-  "description": "Cross-platform sticky note todo planner with AI task breakdown",
+  "description": "Dockit, the pipedreams proposal and task planner",
   "scripts": {
     "dev": "npx tauri dev",
     "dev:vite": "vite --port 5173 --strictPort",

@@ -91,7 +91,7 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
       final emphasisText = contentText.copyWith(fontWeight: FontWeight.w600);
       final bodyText = contentText.copyWith(fontSize: 14);
       return MaterialApp(
-        title: 'Sticky Todo',
+        title: 'Dockit',
         navigatorKey: widget.navigatorKey,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -147,7 +147,7 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
           builder: (context) => Scaffold(
             appBar: AppBar(
               title: Text(
-                ['Sticky Todo', 'Goals & routines', 'Focus'][tab],
+                ['Dockit', 'Goals & routines', 'Focus'][tab],
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

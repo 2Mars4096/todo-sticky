@@ -1,5 +1,9 @@
 # Sticky Todo Agent API
 
+## Dockit workspace assignment client
+
+The review clients read editor memberships from `GET /api/connected-apps/workspaces` and submit the selected task and its steps to `PUT /shiprite/workspaces/{workspace}/assignments/{id}`. The request carries `title`, `instructions` and nullable `assigneeUid`. The client checks the receipt ID and workspace ID. Both clients derive the same retry ID for the same source and recipient. This contract is pending live acceptance in [the transfer review](plans/23-dockit-transfer.md).
+
 The Mac UI sends capture and settings requests to the resident Flameshot editor. The app-owned screenshot handoff opens editable review and requires an explicit Add task. Agent clients should use the task API below for programmatic creation.
 
 ## Dashboard push behavior

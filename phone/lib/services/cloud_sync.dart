@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../models/models.dart';
 import '../state/sticky_store.dart';
 import 'sync_merge.dart';
+import 'workspace_assignment.dart';
 export 'sync_merge.dart';
 
 const dianeSharedOrigin = 'https://dear-diane-202610-api.web.app';
@@ -28,7 +29,10 @@ Uri accountConfigurationUri(String origin) => Uri.parse(
 
 String? parseTodoTaskLink(String value) {
   final uri = Uri.tryParse(value);
-  if (uri == null || uri.userInfo.isNotEmpty || uri.hasQuery || uri.hasFragment) {
+  if (uri == null ||
+      uri.userInfo.isNotEmpty ||
+      uri.hasQuery ||
+      uri.hasFragment) {
     return null;
   }
   final parts = uri.pathSegments;
@@ -37,6 +41,11 @@ String? parseTodoTaskLink(String value) {
       uri.host == 'task' &&
       parts.length == 1) {
     id = parts.single;
+  } else if (uri.scheme == 'https' &&
+      uri.origin == 'https://dockit.pipedreams.work' &&
+      parts.length == 2 &&
+      parts.first == 'tasks') {
+    id = parts.last;
   } else if (uri.scheme == 'https' &&
       uri.origin == dianeSharedOrigin &&
       parts.length == 4 &&
@@ -881,7 +890,10 @@ class CloudSyncController extends ChangeNotifier {
     try {
       server =
           store.syncMetadata['serviceOrigin'] as String? ??
-          const String.fromEnvironment('SYNC_SERVER_URL');
+          const String.fromEnvironment(
+            'SYNC_SERVER_URL',
+            defaultValue: dianeSharedOrigin,
+          );
       if (server.isNotEmpty) server = syncOrigin(server);
       if (const bool.fromEnvironment('DIANE_SHARED_CUTOVER') &&
           store.syncMetadata['sharedServiceCutoverApplied'] != true) {
@@ -1065,7 +1077,9 @@ class CloudSyncController extends ChangeNotifier {
       final firebase = object(config['firebase']);
       if (config['schemaVersion'] != 1 ||
           firebase['apiKey'] is! String ||
-          firebase['projectId'] is! String) {
+          firebase['projectId'] is! String ||
+          (origin == dianeSharedOrigin &&
+              firebase['projectId'] != 'dear-diane-202610')) {
         throw StateError('The service has an invalid Firebase configuration.');
       }
       final shared =
@@ -1201,9 +1215,7 @@ class CloudSyncController extends ChangeNotifier {
     }
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
-      throw StateError(
-        'Sign in to the shared Diane account to open this task.',
-      );
+      throw StateError('Sign in to the pipedreams account to open this task.');
     }
     if (!enabled) {
       throw StateError('Enable sync in Account to open this shared task.');
@@ -1280,6 +1292,97 @@ class CloudSyncController extends ChangeNotifier {
     return result;
   }
 
+  String get selectedWorkspace {
+    final value = store.syncMetadata['dockit-workspace:${session?.owner}'];
+    if (value == null) return '';
+    if (value is! String || !workspaceSlug.hasMatch(value))
+      throw StateError('Choose a valid pipedreams workspace in Account.');
+    return value;
+  }
+
+  Future<void> chooseWorkspace(String id) async {
+    if (session?.origin != dianeSharedOrigin)
+      throw StateError('Sign in to pipedreams.');
+    final key = 'dockit-workspace:${session!.owner}';
+    if (id.isEmpty) {
+      store.syncMetadata.remove(key);
+    } else {
+      if (!workspaceSlug.hasMatch(id)) throw StateError('Invalid workspace.');
+      store.syncMetadata[key] = id;
+    }
+    store.changed();
+    await store.flush();
+    _notify();
+  }
+
+  Future<Map<String, dynamic>> _workspaceRequest(
+    String path, {
+    Map<String, dynamic>? body,
+  }) async {
+    final current = session, epoch = _epoch;
+    void check() {
+      if (_disposed ||
+          epoch != _epoch ||
+          current == null ||
+          session?.owner != current.owner ||
+          current.origin != dianeSharedOrigin ||
+          current.projectId != 'dear-diane-202610' ||
+          (store.syncMetadata['owner'] != null &&
+              store.syncMetadata['owner'] != current.owner))
+        throw StateError('Sign in to pipedreams.');
+    }
+
+    check();
+    final token = await _token();
+    check();
+    final result = await transport.request(
+      Uri.parse('$dianeSharedOrigin$path'),
+      method: body == null ? 'GET' : 'PUT',
+      token: token,
+      body: body,
+    );
+    check();
+    return result;
+  }
+
+  Future<Map<String, String>> editorWorkspaces() async {
+    final rows = <String, String>{}, seen = <String>{};
+    var cursor = '';
+    do {
+      final page = await _workspaceRequest(
+        '/api/connected-apps/workspaces${cursor.isEmpty ? '' : '?cursor=$cursor'}',
+      );
+      for (final row in page['workspaces'] as List) {
+        if (row['role'] == 'editor' &&
+            workspaceSlug.hasMatch(row['id'] as String))
+          rows[row['id']] = row['name'] as String;
+      }
+      cursor = page['nextCursor'] as String? ?? '';
+      if (cursor.isNotEmpty &&
+          (!workspaceSlug.hasMatch(cursor) || !seen.add(cursor)))
+        throw StateError('Could not finish loading workspaces.');
+    } while (cursor.isNotEmpty);
+    return rows;
+  }
+
+  Future<void> assignTask(DatedTask row, String assignee) async {
+    final assignment = WorkspaceAssignment.fromTask(
+      session!.uid,
+      selectedWorkspace,
+      row,
+      assignee.trim(),
+    );
+    final receipt = await _workspaceRequest(
+      assignment.path,
+      body: assignment.body,
+    );
+    if (receipt['id'] != assignment.id ||
+        receipt['workspaceId'] != assignment.workspace)
+      throw StateError(
+        'Could not confirm the assignment. Retry with the same task.',
+      );
+  }
+
   Future<Map<String, dynamic>> requestAgent(
     String action,
     Map<String, dynamic> input,
@@ -1287,7 +1390,7 @@ class CloudSyncController extends ChangeNotifier {
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
       throw StateError(
-        'Sign in to the shared Diane account in Settings → Account.',
+        'Sign in to the pipedreams account in Settings → Account.',
       );
     }
     final bound = store.syncMetadata['owner'];
@@ -1305,7 +1408,11 @@ class CloudSyncController extends ChangeNotifier {
       Uri.parse('${current.origin}/api/plugins/todo/compat/ai'),
       method: 'POST',
       token: token,
-      headers: {'Idempotency-Key': requestId},
+      headers: {
+        'Idempotency-Key': requestId,
+        if (selectedWorkspace.isNotEmpty)
+          'X-Pipe-Dreams-Workspace': selectedWorkspace,
+      },
       timeout: const Duration(seconds: 390),
       body: {
         'request_id': requestId,
@@ -1314,7 +1421,7 @@ class CloudSyncController extends ChangeNotifier {
     );
     if (_disposed || epoch != _epoch || session?.owner != current.owner) {
       throw StateError(
-        'Account changed while Diane was working; the result belongs to the earlier account.',
+        'Account changed while Shiprite was working; the result belongs to the earlier account.',
       );
     }
     return value;

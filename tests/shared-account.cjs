@@ -34,3 +34,17 @@ const {parseTodoTaskLink}=load('src/cloudAccount.ts',{'firebase/app':{},'firebas
 assert.equal(parseTodoTaskLink('todo-sticky://task/abc-123'),'abc-123')
 assert.equal(parseTodoTaskLink(DIANE_SHARED_ORIGIN+'/apps/todo/tasks/abc-123'),'abc-123')
 for(const bad of ['todo-sticky://account-return','todo-sticky://task/a/b','todo-sticky://task/a?token=secret','https://evil.example/apps/todo/tasks/a','todo-sticky://user:password@task/a'])assert.equal(parseTodoTaskLink(bad),null)
+
+assert.equal(parseTodoTaskLink('https://dockit.pipedreams.work/tasks/abc-123'),'abc-123')
+const storage = new Store()
+const { assertSharedNotebookOwner } = load('src/cloudAccount.ts',
+  {'firebase/app':{}, 'firebase/auth':{}, '@tauri-apps/api/core':{}, './cloudSync':sync},
+  {localStorage:storage})
+const user = {uid:'member'}
+const auth = {currentUser:user, app:{options:{projectId:'dear-diane-202610'}}}
+assert.doesNotThrow(() => assertSharedNotebookOwner(auth,user))
+storage.setItem('todo-sticky-cloud-owner-v1','dear-diane-202610:other')
+assert.throws(() => assertSharedNotebookOwner(auth,user), /another account/)
+storage.setItem('todo-sticky-cloud-owner-v1','dear-diane-202610:member')
+assert.doesNotThrow(() => assertSharedNotebookOwner(auth,user))
+assert.throws(() => assertSharedNotebookOwner({...auth,currentUser:null},user), /Account changed/)

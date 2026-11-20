@@ -13,7 +13,7 @@ async function run(count,pulls=false,changeDuringPull=false){
  const key='todo-sticky-cloud-v1:p:u:https://sync.example.test:/fixture';storage.set('todo-sticky-cloud-server-v1','https://sync.example.test');storage.set('todo-sticky-cloud-owner-v1','p:u');storage.set(key,JSON.stringify({enabled:true,baseline,pending:{},conflicts:[]}));
  const user={uid:'u',getIdToken:async()=>'fixture'},auth={app:{options:{projectId:'p'}},currentUser:user};
  const react={useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v]},useRef(initial){const i=cursor++;return slots[i]??(slots[i]={current:initial})},useCallback:fn=>fn,useEffect(fn,deps){const i=cursor++,old=slots[i];if(!old||deps.some((v,j)=>v!==old[j])){slots[i]=deps;effects.push(fn)}}};
- const mocks={react,'firebase/auth':{onAuthStateChanged:(_,fn)=>{fn(user);return()=>{}}},'@tauri-apps/api/core':{invoke:async(command,args)=>{
+ const mocks={react,'firebase/auth':{onAuthStateChanged:(_,fn)=>{fn(user);return()=>{}}},'../notebookCommand':{invoke:async(command,args)=>{
   if(command==='cloud_task_folder')return'/fixture';
   if(command==='cloud_apply_day'){assert.equal(JSON.stringify(args.expectedTasks),JSON.stringify(local['day:'+args.date]?.tasks??[]));local['day:'+args.date]={date:args.date,tasks:args.tasks};applies++;}
  }},'../api':{waitForPendingWrites:async()=>{},api:{extractTaskApi:async request=>{

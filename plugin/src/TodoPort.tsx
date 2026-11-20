@@ -40,12 +40,12 @@ import './paneLayout.css';
 import './styles/task-execution.css';
 
 type Props=Pick<SidePanelProps,'active'>&Partial<Pick<SidePanelProps,'context'>>;
-export default function TodoPort(props:Props){const scope=usePluginScope();return scope?<TodoBody key={scope} {...props} scope={scope}/>:<p role="status">Connecting Todo…</p>;}
+export default function TodoPort(props:Props){const scope=usePluginScope();return scope?<TodoBody key={scope} {...props} scope={scope}/>:<p role="status">Connecting Dockit…</p>;}
 function TodoBody({active,scope}:Props&{scope:string}){
  const meetingRequest = useMemo<ReviewRequest>(() => async (path, body) => {
-   if (await connectionScope() !== scope || pluginScope() !== scope) throw Error('Account changed. Reopen Todo.');
+   if (await connectionScope() !== scope || pluginScope() !== scope) throw Error('Account changed. Reopen Dockit.');
    const value = await requestJson<any>(path, {headers:{'X-Diane-Plugin-Scope':scope}, ...(body ? {method:'POST',body:JSON.stringify(body)} : {})});
-   if (pluginScope() !== scope) throw Error('Account changed. Reopen Todo.');
+   if (pluginScope() !== scope) throw Error('Account changed. Reopen Dockit.');
    return value;
  }, [scope]);
  const api=useMemo(()=>createTodoApi(scope),[scope]);
@@ -80,14 +80,14 @@ function TodoBody({active,scope}:Props&{scope:string}){
  const recommend=async()=>{setShowAlbums(true);await perform(async()=>{setBusy('albums');try{const value=await api.llmRecommendAlbums({tasks:tasks.tasks.filter(t=>!['done','stopped'].includes(t.status)).map(t=>({text:t.text,finish:t.finish,steps:t.todaySubtasks.map(s=>s.text)}))});if(alive.current)setAlbums(value);}finally{if(alive.current)setBusy('');}});};
  useTaskPreparation({active,enabled,loading:tasks.loading,scope,taskKey:planningTaskKey(tasks.tasks),flush:tasks.flushPendingSave});
  const handoff=useMemo(()=>({scope,active,enabled,flush:tasks.flushPendingSave,selection,taskKey:planningTaskKey(tasks.tasks)}),[scope,active,enabled,tasks.flushPendingSave,selection,tasks.tasks]);
- return <TodoPortContext.Provider value={handoff}><StepProposalContext.Provider value={{proposal:stepProposal,stale:proposalStale,busy:applyingSteps,edit:(index,text)=>setStepProposal(value=>value?{...value,steps:value.steps.map((step,i)=>i===index?text:step)}:null),remove:index=>setStepProposal(value=>value?{...value,steps:value.steps.filter((_,i)=>i!==index)}:null),apply:applySteps,dismiss:()=>setStepProposal(null)}}><TaskWorkflowContext.Provider value={workflowStatuses}><div className="diane-todo-port" aria-label="Todo plugin"><div className="app-shell is-compact">
+ return <TodoPortContext.Provider value={handoff}><StepProposalContext.Provider value={{proposal:stepProposal,stale:proposalStale,busy:applyingSteps,edit:(index,text)=>setStepProposal(value=>value?{...value,steps:value.steps.map((step,i)=>i===index?text:step)}:null),remove:index=>setStepProposal(value=>value?{...value,steps:value.steps.filter((_,i)=>i!==index)}:null),apply:applySteps,dismiss:()=>setStepProposal(null)}}><TaskWorkflowContext.Provider value={workflowStatuses}><div className="diane-todo-port" aria-label="Dockit plugin"><div className="app-shell is-compact">
   <GoalsSidebar saving={goals.busy||goals.pending||!enabled} onDiscardDraft={()=>void goals.discardPending().catch(e=>setError(String(e)))} collapsed={goals.sidebarCollapsed} targets={goals.targets} recurring={goals.recurring} routines={goals.routines} storageError={goals.storageError} onRetrySave={goals.retrySave} onToggleCollapse={goals.toggleSidebar} onAddGoal={goals.addGoal} onUpdateGoal={goals.updateGoal} onDeleteGoal={goals.deleteGoal} onToggleGoal={goals.toggleGoal} onOpenProject={openProject}/>
   {!goals.sidebarCollapsed&&<button className="sidebar-backdrop" aria-label="Close goals" onClick={()=>goals.setSidebarCollapsed(true)}/>}
   <div className="sticky-container">
-   {!enabled&&<p role="status">Todo is disabled. Saved work remains available.</p>}
+   {!enabled&&<p role="status">Dockit is disabled. Saved work remains available.</p>}
    {error&&<p className="todo-port-error" role="alert">{error}<button onClick={()=>setError('')} aria-label="Dismiss error">×</button></p>}
    {tasks.saveError&&<p className="todo-port-error" role="alert">Changes not saved. Your edits stay here.<button onClick={()=>void tasks.retrySave()}>Retry save</button></p>}
-   {workflowStatuses.unavailable&&<p className="todo-port-status" role="status">Diane status unavailable. Reconnecting…</p>}
+   {workflowStatuses.unavailable&&<p className="todo-port-status" role="status">Shiprite status unavailable. Reconnecting…</p>}
    {project?<ProjectPage key={project} goalId={project} goals={goals.targets} folder={scope} flush={tasks.flushPendingSave} getGoal={goals.currentProject} saveGoal={goals.saveProject} reloadTasks={tasks.load} onBack={()=>setProject(null)} onOpen={openArchive} onWriting={value=>{writing.current=value;}} registerLeaveGuard={guard=>{leaveGuard.current=guard??(()=>true);}}/>:page!=='tasks'?<ArchivePage goals={goals.targets} folder={scope} mode={page} date={calendar.dateStr} flush={tasks.flushPendingSave} onBack={()=>setPage('tasks')} onOpen={openArchive}/>:<>
     <DateHeader displayDate={calendar.displayDate} selectedDate={calendar.selectedDate} calendarOpen={calendar.calendarOpen} isCurrentDay={calendar.isCurrentDay} onPrev={()=>void perform(()=>navigate(calendar.goPrev))} onNext={()=>void perform(()=>navigate(calendar.goNext))} onToggleCalendar={calendar.toggleCalendar} onSelectDate={date=>void perform(()=>navigate(()=>calendar.goToDate(date)))} onToday={()=>void perform(()=>navigate(calendar.goToday))} onCloseCalendar={()=>calendar.setCalendarOpen(false)}/>
     <AddTask onAdd={text=>{if(enabled)tasks.addTask(text);}} disabled={!enabled||tasks.loading}/>
@@ -96,7 +96,7 @@ function TodoBody({active,scope}:Props&{scope:string}){
    </>}
    {tasks.undo&&<div className="task-undo-notice" role="status"><span>{tasks.undo.label}</span><button disabled={tasks.loading} onClick={tasks.undoLastAction}>Undo</button><button onClick={tasks.dismissUndo} aria-label="Dismiss undo">×</button></div>}
    <div className="action-bar"><button onClick={goals.toggleSidebar} aria-expanded={!goals.sidebarCollapsed} aria-label="Goals & routines" title="Goals & routines"><ListTodo size={16} aria-hidden="true" /></button><button disabled={!!busy||!enabled||tasks.loading||!tasks.tasks.length} onClick={()=>setPlanning(true)} aria-label="Plan day" title="Plan day"><CalendarRange size={16} aria-hidden="true" /></button><button disabled={!!busy||!tasks.tasks.length} onClick={()=>void recommend()} aria-label="Albums" title="Albums"><Music2 size={16} aria-hidden="true" /></button><button onClick={()=>void perform(()=>navigate(()=>{setProject(null);setPage('search');}))} aria-label="Search" title="Search"><Search size={16} aria-hidden="true" /></button><button onClick={()=>void perform(()=>navigate(()=>{setProject(null);setPage('progress');}))} aria-label="Progress" title="Progress"><ChartNoAxesCombined size={16} aria-hidden="true" /></button></div>
-   {showAlbums&&<AlbumRecommendations result={albums} loading={busy==='albums'} providerLabel="Diane" onClose={()=>setShowAlbums(false)} onRegenerate={()=>void recommend()}/>}
+   {showAlbums&&<AlbumRecommendations result={albums} loading={busy==='albums'} providerLabel="Shiprite" onClose={()=>setShowAlbums(false)} onRegenerate={()=>void recommend()}/>}
    {planning&&<ScheduleView date={calendar.dateStr} tasks={tasks.tasks} tasksLoading={tasks.loading} machines={preferences.machines} onApply={(blocks:PlannedBlock[],day,key)=>{tasks.applySchedule(blocks,day,key);setPlanning(false);}} onClose={()=>setPlanning(false)}/>}
    <div className="todo-port-data"><BackupTools scope={scope} flush={tasks.flushPendingSave} onChanged={async()=>{await tasks.load();await goals.reload();}} onOpenProject={openProject} onPreferences={value=>{setPreferences(value);storageForAccount(scope).setItem('todo-sticky-planning-preferences-v1',JSON.stringify(value.planningPreferences));}}/><PlanningSettings scope={scope} value={preferences} onSaved={setPreferences}/></div>
   </div>

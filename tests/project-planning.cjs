@@ -48,7 +48,7 @@ assert.throws(()=>p.reviseProjectTask('/fixture',goal,[day('2026-11-02',[{...ori
 assert.throws(()=>p.reviseProjectTask('/fixture',goal,[],originalRow,'Moved task'),/moved/)
 ;(async()=>{
  const storage=new Map(),written=[],data=new Map(days.map(day=>[day.date,plain(day.tasks)]));let current=plain(goal),fail=true
- const st=load('src/projectStorage.ts',{'@tauri-apps/api/core':{invoke:async(cmd,args)=>{
+ const st=load('src/projectStorage.ts',{'./notebookCommand':{invoke:async(cmd,args)=>{
   if(fail&&args.date==='2026-11-04')throw Error('disk unavailable')
   assert.deepEqual(data.get(args.date)??[],plain(args.expectedTasks));data.set(args.date,plain(args.tasks));written.push(args.date)
  }},'./api':{api:{extractTaskApi:async({date})=>({dates:[day(date,data.get(date)??[])]})}}},{localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}})

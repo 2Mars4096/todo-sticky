@@ -1,5 +1,9 @@
 # Architecture
 
+## Dockit clients
+
+The web frontend selects the Tauri command layer on desktop and IndexedDB for dated tasks in a browser. A browser task edit carries the revision loaded by the editor into the transaction that saves it. Browser preferences and focus state use local storage. Flutter keeps its app-private notebook, with iOS document picker and link channels matching the Android channel names. The optional account panel reads editor memberships and sends one selected task tree to Shiprite under a deterministic assignment ID. See [the transfer review](plans/23-dockit-transfer.md).
+
 On the configured Mac, scripts/tauri-build.js unlocks the dedicated signing keychain using its login-Keychain item, signs a staged capture helper and passes the certificate fingerprint to Tauri. CI and explicitly configured distribution identities use their own signing path.
 
 On Mac, only the helper inside Sticky Todo’s Contents/Helpers is launched. It owns the global capture shortcut, suppresses its tray icon and exits after the host quits. Camera and settings requests use LaunchServices. If permanent screen access is unavailable the helper uses the user-selected ScreenCaptureKit display filter to start a screen-only SCStream, copy its first complete frame and stop capture. An explicit toolbar action writes a private temporary PNG and opens Todo with its generated basename. The receiver validates the name, owner, file type, permissions and size, unlinks the file and queues the local Vision result for editable review. Add task uses the existing dated task bundle operation.

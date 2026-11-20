@@ -1,13 +1,40 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sticky_todo/models/models.dart';
 import 'package:sticky_todo/services/cloud_sync.dart';
+import 'package:sticky_todo/services/workspace_assignment.dart';
 
 void main() {
+  test('the same proposal on phone and web targets one assignment', () {
+    final row = DatedTask(
+      '2026-11-20',
+      Task(
+        id: 'proposal',
+        text: 'Review proposal',
+        subtasks: [Task(id: 'step', text: 'Check budget')],
+      ),
+    );
+    final assignment = WorkspaceAssignment.fromTask(
+      'member',
+      'workspace',
+      row,
+      'editor',
+    );
+    expect(
+      assignment.path,
+      '/shiprite/workspaces/workspace/assignments/5de11d38-9c01-8ee9-9f8f-da03e2761304',
+    );
+    expect(assignment.body['instructions'], 'Review proposal\n- Check budget');
+  });
   test('task links carry only canonical identity on approved origins', () {
     expect(parseTodoTaskLink('todo-sticky://task/abc-123'), 'abc-123');
     expect(
       parseTodoTaskLink('$dianeSharedOrigin/apps/todo/tasks/abc-123'),
+      'abc-123',
+    );
+    expect(
+      parseTodoTaskLink('https://dockit.pipedreams.work/tasks/abc-123'),
       'abc-123',
     );
     for (final bad in [
@@ -81,17 +108,20 @@ void main() {
     );
     expect(accountConfigurationUri('https://old.example').path, '/v1/config');
   });
-  test('verified migration preserves acknowledged baselines, pending mutations and old keys', () {
-    final before = metadata(), encoded = jsonEncode(metadata());
-    final updates = migrate(before);
-    expect(jsonEncode(before), encoded);
-    expect(updates['owner'], next);
-    expect(updates[target], before[source]);
-    before.addAll(updates);
-    expect(before[source], updates[target]);
-    expect(before['unrelated'], 'retain');
-    expect(migrate(before), isEmpty);
-  });
+  test(
+    'verified migration preserves acknowledged baselines, pending mutations and old keys',
+    () {
+      final before = metadata(), encoded = jsonEncode(metadata());
+      final updates = migrate(before);
+      expect(jsonEncode(before), encoded);
+      expect(updates['owner'], next);
+      expect(updates[target], before[source]);
+      before.addAll(updates);
+      expect(before[source], updates[target]);
+      expect(before['unrelated'], 'retain');
+      expect(migrate(before), isEmpty);
+    },
+  );
   test('requires issuer-bound app aliases, not email or an unbound UID', () {
     for (final proof in [
       {

@@ -22,7 +22,7 @@ Future<void> main() async {
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'Sticky Todo could not open its local storage. Please reopen the app. Your existing files have not been replaced.',
+                  'Dockit could not open its local storage. Please reopen the app. Your existing files have not been replaced.',
                 ),
               ),
             ),

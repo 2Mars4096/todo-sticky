@@ -22,7 +22,8 @@ class MainActivity : FlutterActivity() {
         val parts = uri.pathSegments
         val native = uri.scheme == (if (packageName.endsWith(".preview")) "todo-sticky-preview" else "todo-sticky") && uri.host == "task" && parts.size == 1
         val web = uri.scheme == "https" && uri.host == "dear-diane-202610-api.web.app" && parts.size == 4 && parts.take(3) == listOf("apps", "todo", "tasks")
-        val id = if (native || web) parts.lastOrNull() else null
+        val dockit = uri.scheme == "https" && uri.host == "dockit.pipedreams.work" && uri.port == -1 && parts.size == 2 && parts.first() == "tasks"
+        val id = if (native || web || dockit) parts.lastOrNull() else null
         return if (id != null && Regex("^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$").matches(id)) value else null
     }
     override fun onNewIntent(intent: Intent) {

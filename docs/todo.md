@@ -1,5 +1,8 @@
 # Todo
 
+- [x] Review Dockit browser storage, native client sources and workspace assignments for the public checkpoint — [transfer review](plans/23-dockit-transfer.md).
+- [ ] Verify signed-in web assignment and installed iPhone and Android proposal workflows — [platform checks](plans/23-dockit-transfer.md).
+
 - [x] Remove obsolete local installers and plugin packages with verified Trash recovery copies — [Plan 9](plans/9-folder-cleanup.md).
 
 - [x] Install Sticky Todo with a persistent local signing identity and configure subsequent native builds — [capture integration](plans/22-screenshot-task.md).

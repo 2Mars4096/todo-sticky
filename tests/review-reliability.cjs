@@ -52,7 +52,8 @@ function goalsFixture(raw, { failRecovery = false, failRead = false } = {}) {
   let listener, resolveRegistration, rejectRegistration, unlistened = 0, calls = 0
   const errors = []
   const { api } = loadTypeScript('src/api.ts', {
-    '@tauri-apps/api/core': { invoke() {} },
+    '@tauri-apps/api/core': {isTauri:()=>true},
+    './notebookCommand': { invoke() {} },
     '@tauri-apps/api/event': { listen(_event, callback) {
       listener = callback
       return new Promise((resolve, reject) => { resolveRegistration = resolve; rejectRegistration = reject })

@@ -1,8 +1,10 @@
-# Sticky Todo for Android
+# Dockit for Android and iPhone
+
+Both clients share the Flutter notebook and workspace assignment controls. The iPhone project is under `ios/`. With the declared Flutter SDK and CocoaPods installed, use `flutter build ios --no-codesign` for a compilation check. Device installation requires the appropriate signing configuration. See [review status](../docs/plans/23-dockit-transfer.md).
 
 A native Flutter client for the same daily workflow as the desktop app: fast capture, nested steps, outcomes, deadlines, daily planning, goals, routines and Star Focus. The paper surface, phone navigation and explicit AI previews keep the task list central.
 
-The current signed ARM64 [latest APK](../todo-sticky-latest.apk) is 2.1.16+29. Open **Today → Meeting follow-ups** with your shared Diane account.
+The current signed ARM64 [latest APK](../todo-sticky-latest.apk) is 2.1.16+29. Open **Today → Meeting follow-ups** with your pipedreams account.
 
 ## Run and build
 
@@ -43,7 +45,7 @@ ORG_GRADLE_PROJECT_stickyReviewBuild=true flutter build apk \
   --dart-define=SYNC_SERVER_URL=https://dear-diane-202610-api.web.app --dart-define=DIANE_SHARED_CUTOVER=true
 ```
 
-Both preview flags are required. The package is `io.github.twomars4096.sticky_todo.preview`, labelled **Sticky Todo Preview**, and uses the Android debug signing key with release optimization. Its notebook is separate. Browser sign-in requires returning manually to the preview. This APK cannot update the production installation; a production update still requires the original key. Use a distinct delivery filename such as `todo-sticky-preview-2.1.15-9.apk`.
+Both preview flags are required. The package is `io.github.twomars4096.sticky_todo.preview`, labelled **Dockit Preview**, and uses the Android debug signing key with release optimization. Its notebook is separate. Browser sign-in requires returning manually to the preview. This APK cannot update the production installation; a production update still requires the original key. Use a distinct delivery filename such as `todo-sticky-preview-2.1.15-9.apk`.
 
 
 ## Use
@@ -56,7 +58,7 @@ Both preview flags are required. The package is `io.github.twomars4096.sticky_to
 - **Goals → a long-term goal** opens its plan. Add steps manually or choose **Generate plan**, edit/select the suggestions and choose **Add steps**. Select unscheduled steps, then choose **Add to Today** or the calendar for another date. A scheduled step opens its actual daily task; moving or completing that task updates the same goal plan. Repeating the scheduling action does not create duplicates.
 - Daily tasks show their linked goal. **Progress** can filter by goal; the plan's completion covers all dates, while task totals follow the selected date/week. All dated fragments of a plan step must be completed before the step counts as done; stopped work remains separate.
 - **Goals** also holds routines. Manual is the default; Daily/Weekdays/Weekly schedules offer Pause and Skip next on this device. **Focus** starts, pauses, resumes, restores and finishes sessions; its travel log retains 6, 12 or 24 sessions. Finishing a session does not complete the task.
-- **Settings → AI assistance** supports saved Moonshot, OpenRouter, OpenAI, Anthropic, Gemini and custom HTTPS OpenAI-compatible profiles. OpenRouter uses your Diane account. Other provider keys live in Android secure storage and are excluded from exports and synchronization. Connection tests use the unsaved draft without changing saved settings. Provider errors retain the actual reason, including rate limits, unsupported models and malformed output.
+- **Settings → AI assistance** supports saved Moonshot, OpenRouter, OpenAI, Anthropic, Gemini and custom HTTPS OpenAI-compatible profiles. OpenRouter uses your pipedreams account. Other provider keys live in Android secure storage and are excluded from exports and synchronization. Connection tests use the unsaved draft without changing saved settings. Provider errors retain the actual reason, including rate limits, unsupported models and malformed output.
 - The headphone action suggests a task-aware album list. A task’s menu copies a structured agent prompt for Diane or another assistant.
 - Export or restore a complete JSON notebook through Android's file picker. JSON includes goal plans and links; Markdown day export preserves desktop task IDs, nested status markers, finish metadata and goal provenance. **Import Markdown checklist** accepts pasted Markdown as new tasks, preserving hierarchy and goal association with fresh IDs; pasted tasks do not become a second instance of a plan step.
 
@@ -64,7 +66,7 @@ Both preview flags are required. The package is `io.github.twomars4096.sticky_to
 
 The app checks remote edits every 15 seconds while foregrounded, uploads saved edits after about 900ms and checks immediately when returning to the app. Genuine concurrent local changes retry quietly without being attributed to user edits; drafts, save failures and conflicts retain their protections. Independent additions/edits merge automatically. Genuine conflicts have individual choices, and background refresh keeps selections and scroll stable. Written task/goal/project content uses the shared regular style and headings/actions use semibold, without length or first-line heuristics. There is no sync worker while closed/backgrounded. The verified local production `2.1.16+19` APK is at `../release/todo-sticky.apk` (19.88 MB, original release key); install over the existing production app. All 127 phone tests and static analysis pass.
 
-The phone works offline without an account or Diane. `sticky-todo.json` lives in app-private storage. Writes are serialized, written and flushed to a temporary file, then atomically renamed; a previous readable save is retained. A corrupted primary file is preserved before fallback recovery. An unreadable notebook is never silently treated as an empty notebook. Save failures keep edits on screen with a persistent Retry action.
+The phone works offline without an account or Shiprite. `sticky-todo.json` lives in app-private storage. Writes are serialized, written and flushed to a temporary file, then atomically renamed; a previous readable save is retained. A corrupted primary file is preserved before fallback recovery. An unreadable notebook is never silently treated as an empty notebook. Save failures keep edits on screen with a persistent Retry action.
 
 Android system auto-backup is disabled so encrypted key material cannot be accidentally restored without its Keystore keys. Use the explicit export for migration, or the separate account/sync feature. Clearing Android app storage or uninstalling removes local data; export first when using the standalone app.
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-20 — Dockit transfer review
+
+Reviewed the Dockit naming changes, Firebase Hosting configuration, web notebook, iPhone project and Shiprite workspace assignment clients for a public checkpoint. The browser now compares editor revisions inside the save transaction. Web and phone assignment requests check the bound notebook owner. Historical data paths, package identifiers and account contracts retain their existing names.
+
+The web production build, strict types and Mac debug executable passed, together with 32 Node suites, 60 plugin tests, 19 backend tests, 45 Rust tests and plugin packaging. Swift delegates type-checked. The web and phone produced the same assignment ID and instructions for a synthetic proposal. Build and workflow results for each client, including the outstanding browser and device checks, are in [the transfer review](plans/23-dockit-transfer.md).
+
 ## 2026-11-20 — Pipe Dreams platform requirements
 
 - [docs] Added the Pipe Dreams web, iOS phone, and Android phone delivery requirements for Dockit to the project instructions.

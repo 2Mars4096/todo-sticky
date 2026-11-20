@@ -191,7 +191,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           await write()
         } catch (error) {
           if (pendingSave.current === save) {
-            setSaveError({ date: snapshotDate, message: 'Changes are still in this window. Retry when Diane is connected.' })
+            setSaveError({ date: snapshotDate, message: 'Changes are still in this window. Retry when Shiprite is connected.' })
             setSaving(false)
           }
           throw error

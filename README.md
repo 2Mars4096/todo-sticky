@@ -1,10 +1,14 @@
-# Sticky Todo
+# Dockit
 
-On Mac, Sticky Todo’s bundled screenshot editor opens with **⌘⇧X** or the camera beside **Add**. If full-display access is unavailable, macOS lets you select a display for this capture. Crop or annotate, then use **Copy**, **Save** or **Todo** to review the recognized text as a task. The helper uses your existing Flameshot profile and has no separate menu-bar icon. Open **Settings → Integrations → Flameshot settings…** to edit that profile.
+Dockit is the proposal and to-do planner in **pipedreams** by **Liberate AI**. The suite includes Mynit, Dockit, Shiprite, Zilo and Zethea.
+
+For the browser client, run `npm run dev:vite`. Tasks are saved in IndexedDB for that browser and site. The Account panel can send a selected task and its steps to a Shiprite workspace with editor access. The phone uses its app-private notebook and the Mac app uses Markdown. The platform build and acceptance results for this review are in [the transfer plan](docs/plans/23-dockit-transfer.md).
+
+On Mac, Dockit’s bundled screenshot editor opens with **⌘⇧X** or the camera beside **Add**. If full-display access is unavailable, macOS lets you select a display for this capture. Crop or annotate, then use **Copy**, **Save** or **Todo** to review the recognized text as a task. The helper uses your existing Flameshot profile and has no separate menu-bar icon. Open **Settings → Integrations → Flameshot settings…** to edit that profile.
 
 On this Mac, use `npm run build` to reuse the **Sticky Todo Local Signing** identity for both the app and its capture helper. The dedicated signing keychain lives under `~/Library/Application Support/Sticky Todo Signing/`. Its generated unlock password is stored in the login Keychain. Keep both across rebuilds.
 
-Mac builds can reuse the helper from the installed Sticky Todo bundle. For a clean or cross-target build, set `FLAMESHOT_APP` to the matching fork bundle before running `npm run build`.
+Mac builds can reuse the helper from an installed Dockit or Sticky Todo bundle. For a clean or cross-target build, set `FLAMESHOT_APP` to the matching fork bundle before running `npm run build`.
 
 The installed standalone Mac app’s Today view shows **Meeting follow-ups** for the signed-in shared account. Open a reviewed meeting to inspect suggestions and their transcript evidence. **Add to today** adds a step under the project task (or the meeting title when no project is set) and normal sync brings it into the standalone notebook.
 
@@ -56,7 +60,7 @@ On macOS, the default task folder and local app-state folder stay anchored to th
 
 If macOS or Dropbox has offloaded the Markdown archive, Sticky Todo reports **Tasks are waiting in Dropbox** instead of treating the archive as empty or waiting forever. Reveal the configured `content/to-do/.../index.md` file in Finder, choose **Make available offline** or **Download now**, then use **Retry** after the file becomes local.
 
-OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request. Other explicitly selected providers retain their own settings.
+OpenRouter requests use the signed-in pipedreams account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request. Other explicitly selected providers retain their own settings.
 
 Each provider keeps its own API URL, key, and last-used model. Switch providers in **Settings → AI**; wider windows also show a quick selector beside Settings. Choosing an unconfigured provider opens its setup.
 

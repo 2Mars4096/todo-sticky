@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## 2026-11-20 — Stale browser edits and account-bound assignment
+
+The browser adapter previously advanced a shared revision after background writes. An older editor could then replace the new data. Each editor now retains its loaded revision and IndexedDB compares it inside the write transaction. Assignment requests also check the bound notebook owner around token acquisition, so a signed-in user cannot send another bound account’s notes.
+
 ## 2026-11-17 — Local signing identity discovery
 
 A self-signed code-signing identity needed user-domain code-signing trust. On this host codesign also needed the dedicated unlocked keychain in the user search list. The login keychain remains first.

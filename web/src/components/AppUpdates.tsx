@@ -23,7 +23,7 @@ export function AppUpdates({ currentVersion, state, blockedReason, onCheck, onIn
   return (
     <section className="settings-section app-updates" aria-labelledby="app-updates-title">
       <div className="section-title" id="app-updates-title">Updates</div>
-      <p className="hint">Sticky Todo {currentVersion || '…'}</p>
+      <p className="hint">Dockit {currentVersion || '…'}</p>
       <div className="test-row">
         {state.phase === 'available' ? (
           <button className="update-action" onClick={onInstall} disabled={Boolean(blockedReason)}><span className="update-dot" aria-hidden="true" />Download and install</button>

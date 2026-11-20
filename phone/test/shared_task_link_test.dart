@@ -78,5 +78,7 @@ void main() {
       taskId: 'canonical-task',
     ));
     expect(controller.syncs, 2);
+    store.syncMetadata['owner'] = 'dear-diane-202610:other';
+    await expectLater(controller.editorWorkspaces(), throwsStateError);
   });
 }

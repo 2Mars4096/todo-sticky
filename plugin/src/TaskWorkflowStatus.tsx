@@ -12,5 +12,5 @@ export function TaskWorkflowStatus({taskId}: {taskId: string}) {
   const state = workflow.state === 'running' ? 'Working' : workflowLabel(workflow.state);
   const label = unavailable ? 'Status unavailable' : state;
   return <span className={`todo-workflow-badge ${unavailable ? 'is-unavailable' : ''}`}
-    title={unavailable ? `Last known: ${state}${checkedAt ? '. Checked ' + new Date(checkedAt).toLocaleTimeString() : ''}` : 'Diane · ' + state}>{label}</span>;
+    title={unavailable ? `Last known: ${state}${checkedAt ? '. Checked ' + new Date(checkedAt).toLocaleTimeString() : ''}` : 'Shiprite · ' + state}>{label}</span>;
 }

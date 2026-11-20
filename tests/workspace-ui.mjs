@@ -5,8 +5,8 @@ try {
  const page=await browser.newPage({viewport:{width:380,height:700},reducedMotion:'reduce'});const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  await page.goto((process.env.TODO_TEST_URL||'http://127.0.0.1:15173')+'/tests/diane-ui.html');
  await page.getByRole('button',{name:'Inspect this project',exact:true}).click();
- const trigger=page.getByRole('button',{name:'Push to Diane · Choose workspace',exact:true});await trigger.click();
- const picker=page.getByRole('combobox',{name:'Diane workspace'});await picker.waitFor();
+ const trigger=page.getByRole('button',{name:'Push to Shiprite · Choose workspace',exact:true});await trigger.click();
+ const picker=page.getByRole('combobox',{name:'Shiprite workspace'});await picker.waitFor();
  await page.waitForFunction(()=>document.querySelector('textarea[aria-label="Session context"]')?.value==='Inspect the project and verify the change.');
  assert.equal(await picker.inputValue(),'project-a');
  assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='dispatch').length),0);
@@ -31,14 +31,14 @@ try {
  await page.getByRole('button',{name:'Running. Open details for Inspect this project'}).waitFor();
  assert.equal(await page.locator('.diane-status-label').textContent(),'Running');
  assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='dispatch').length),0);
- await page.getByRole('button',{name:'ready',exact:true}).click();await page.getByRole('button',{name:'Finished · Review. Open details for ready'}).click();await page.getByRole('button',{name:'Open in Diane',exact:true}).click();assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='open').length),1);
+ await page.getByRole('button',{name:'ready',exact:true}).click();await page.getByRole('button',{name:'Finished · Review. Open details for ready'}).click();await page.getByRole('button',{name:'Open in Shiprite',exact:true}).click();assert.equal(await page.evaluate(()=>calls.filter(x=>x.action==='open').length),1);
  for (const failure of ['offline','pending','malformed','corrupt','disabled']) {
   const isolated=await browser.newContext();const check=await isolated.newPage();
   await check.goto((process.env.TODO_TEST_URL||'http://127.0.0.1:15173')+'/tests/diane-ui.html?failure='+failure);
   await check.getByRole('button',{name:'Inspect this project',exact:true}).click();
   assert.equal(await check.locator('.diane-action').isDisabled(),true);
-  const capture=check.getByRole('textbox',{name:'New top-level task'});await capture.fill('Works without Diane');await check.getByRole('button',{name:'Add task',exact:true}).click();
-  await check.getByRole('button',{name:'Works without Diane',exact:true}).waitFor();
+  const capture=check.getByRole('textbox',{name:'New top-level task'});await capture.fill('Works without Shiprite');await check.getByRole('button',{name:'Add task',exact:true}).click();
+  await check.getByRole('button',{name:'Works without Shiprite',exact:true}).waitFor();
   assert.equal(await check.evaluate(()=>calls.filter(x=>['dispatch','prepare'].includes(x.action)).length),0);
   if(failure==='disabled')assert.equal(await check.evaluate(()=>calls.length),0);
   await isolated.close();
@@ -46,9 +46,9 @@ try {
  const slowContext=await browser.newContext();const slow=await slowContext.newPage();
  await slow.goto((process.env.TODO_TEST_URL||'http://127.0.0.1:15173')+'/tests/diane-ui.html?slow=1');
  await slow.getByRole('button',{name:'Inspect this project',exact:true}).click();
- await slow.getByRole('button',{name:'Push to Diane · Choose workspace',exact:true}).click();
+ await slow.getByRole('button',{name:'Push to Shiprite · Choose workspace',exact:true}).click();
  await slow.getByRole('textbox',{name:'Session context'}).fill('My manual instructions win');
- await slow.getByRole('combobox',{name:'Diane workspace'}).selectOption('project-a');
+ await slow.getByRole('combobox',{name:'Shiprite workspace'}).selectOption('project-a');
  await slow.getByRole('button',{name:'Suggest setup',exact:true}).waitFor();
  assert.equal(await slow.getByRole('textbox',{name:'Session context'}).inputValue(),'My manual instructions win');
  await slowContext.close();

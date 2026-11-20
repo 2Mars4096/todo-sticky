@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict')
 const load=require('./helpers/load-typescript.cjs')
 let provider='openai';const calls=[],shared=[]
-const api=load('src/api.ts',{'@tauri-apps/api/core':{invoke:async(name,args)=>{calls.push({name,args});if(name==='get_settings')return {provider,kbPath:'/fixture'};return {subtasks:[{text:'Direct result'}]}}},'@tauri-apps/api/event':{},'./cloudAccount':{usesDianeOpenRouter:p=>p==='diane'||p==='openrouter',runSharedTodoAgent:async(...args)=>{shared.push(args);return {subtasks:[{text:'Shared result'}]}}}}).api
+const api=load('src/api.ts',{'./notebookCommand':{invoke:async(name,args)=>{calls.push({name,args});if(name==='get_settings')return {provider,kbPath:'/fixture'};return {subtasks:[{text:'Direct result'}]}}},'@tauri-apps/api/event':{},'./cloudAccount':{usesDianeOpenRouter:p=>p==='diane'||p==='openrouter',runSharedTodoAgent:async(...args)=>{shared.push(args);return {subtasks:[{text:'Shared result'}]}}}}).api
 ;(async()=>{
  await api.llmBreakdown({taskText:'Work',existingSubtasks:[]});assert.equal(shared.length,0);assert.equal(calls.at(-1).name,'llm_breakdown')
  provider='openrouter';calls.length=0

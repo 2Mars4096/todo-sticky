@@ -15,6 +15,7 @@ const args = ['tauri', 'build', ...process.argv.slice(2)]
 // Bundle a native helper on local Mac builds. Cross-target builds supply a matching helper explicitly.
 if (process.platform === 'darwin') {
   const candidates = env.FLAMESHOT_APP ? [path.resolve(env.FLAMESHOT_APP)] : [
+    '/Applications/Dockit.app/Contents/Helpers/Flameshot.app',
     '/Applications/Sticky Todo.app/Contents/Helpers/Flameshot.app',
   ]
   const targetSpecified = args.some(arg => arg === '-t' || arg.startsWith('--target'))

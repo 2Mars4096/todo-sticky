@@ -1,3 +1,4 @@
+import { selectedWorkspace } from './suiteWorkspace'
 import { initializeApp, getApps, type FirebaseOptions } from 'firebase/app'
 import { getAuth, setPersistence, indexedDBLocalPersistence, signInWithCustomToken, signOut, type Auth, type User } from 'firebase/auth'
 import { invoke, isTauri } from '@tauri-apps/api/core'
@@ -89,6 +90,7 @@ export async function connectAccount(origin: string, kbPath?: string): Promise<A
   const config = await requestJson(origin, accountConfigPath(origin))
   const firebase = config.firebase as FirebaseOptions
   if (config.schemaVersion !== 1 || !firebase?.apiKey || !firebase.authDomain || !firebase.projectId || !firebase.appId) throw new Error('The account service needs its Firebase web configuration before sign-in is available.')
+  if (origin === DIANE_SHARED_ORIGIN && firebase.projectId !== 'dear-diane-202610') throw new Error('The shared sign-in service returned an unexpected identity project.')
   const shared=config.login?.exchangePath==='/api/connected-apps/auth/exchange'
   if(shared)brokerOrigins.add(origin);else brokerOrigins.delete(origin)
   const name = (shared?'diane-todo-':'sticky-') + firebase.projectId
@@ -109,7 +111,7 @@ export async function googleSignIn(origin: string, auth: Auth, signal: AbortSign
   const sessionId = randomCode()
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const challenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-  const url = `${origin}/signin#${new URLSearchParams({ sessionId, challenge, ...(brokerOrigins.has(origin)?{appId:'todo'}:{}) })}`
+  const url = `${origin}/signin#${new URLSearchParams({ sessionId, challenge, ...(brokerOrigins.has(origin)?{appId:'todo', ...(!isTauri() ? {returnTo:'web'} : {})}:{}) })}`
   if (isTauri()) await invoke('open_account_sign_in', { url })
   else window.open(url, '_blank', 'noopener,noreferrer')
   const expires = Date.now() + 5 * 60_000
@@ -137,20 +139,28 @@ export function usesDianeOpenRouter(provider: string, endpoint?: string): boolea
   catch { return false }
 }
 
+export function assertSharedNotebookOwner(auth: Auth, user: User) {
+  const project = auth.app.options.projectId
+  if (project !== 'dear-diane-202610' || auth.currentUser?.uid !== user.uid) throw new Error('Account changed. Reopen Account.')
+  const bound = localStorage.getItem('todo-sticky-cloud-owner-v1')
+  if (bound && bound !== project + ':' + user.uid) throw new Error('These notes belong to another account. Verify their shared account link before sending them.')
+}
+
 /** Explicit shared-account inference; existing direct provider choices never fall through here. */
 export async function runSharedTodoAgent<T>(action: string, input: unknown, kbPath?: string): Promise<T> {
   const origin=localStorage.getItem('todo-sticky-cloud-server-v1')||DIANE_SHARED_ORIGIN
-  if(origin!==DIANE_SHARED_ORIGIN)throw new Error('Connect the shared Diane service in Settings → Account before using this provider.')
+  if(origin!==DIANE_SHARED_ORIGIN)throw new Error('Connect the pipedreams service in Settings → Account before using this provider.')
   const auth=await connectAccount(origin,kbPath),user=auth.currentUser
-  if(!user)throw new Error('Sign in to your shared Diane account in Settings → Account.')
-  const owner=`${auth.app.options.projectId}:${user.uid}`,bound=localStorage.getItem('todo-sticky-cloud-owner-v1')
-  if(bound&&bound!==owner)throw new Error('These notes belong to another account. Verify their shared account link before sending them.')
+  if(!user)throw new Error('Sign in to your pipedreams account in Settings → Account.')
+  assertSharedNotebookOwner(auth, user)
   const token=await user.getIdToken(),requestId=crypto.randomUUID()
+  assertSharedNotebookOwner(auth, user)
+  const workspace = selectedWorkspace(user.uid)
   const result=await requestJson(origin,'/api/plugins/todo/compat/ai',{
-    method:'POST',headers:{'Idempotency-Key':requestId},
+    method:'POST',headers:{'Idempotency-Key':requestId, ...(workspace ? {'X-Pipe-Dreams-Workspace':workspace} : {})},
     body:JSON.stringify({request_id:requestId,payload:{action,input,intent_id:requestId}}),
   },token,390_000)
-  if(auth.currentUser?.uid!==user.uid)throw new Error('Account changed while Diane was working; the result belongs to the earlier account.')
+  if(auth.currentUser?.uid!==user.uid)throw new Error('Account changed while Shiprite was working; the result belongs to the earlier account.')
   return result as T
 }
 
@@ -158,7 +168,7 @@ export function parseTodoTaskLink(value:string):string|null {
   try {
     const url=new URL(value)
     if(url.username||url.password||url.search||url.hash)return null
-    const raw=url.protocol==='todo-sticky:'&&url.hostname==='task'?url.pathname.slice(1):url.origin===DIANE_SHARED_ORIGIN&&url.pathname.startsWith('/apps/todo/tasks/')?url.pathname.slice('/apps/todo/tasks/'.length):''
+    const raw=url.protocol==='todo-sticky:'&&url.hostname==='task'?url.pathname.slice(1):url.origin==='https://dockit.pipedreams.work'&&url.pathname.startsWith('/tasks/')?url.pathname.slice('/tasks/'.length):url.origin===DIANE_SHARED_ORIGIN&&url.pathname.startsWith('/apps/todo/tasks/')?url.pathname.slice('/apps/todo/tasks/'.length):''
     return /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(raw)?raw:null
   }catch{return null}
 }
@@ -166,7 +176,7 @@ export function parseTodoTaskLink(value:string):string|null {
 export async function readSharedTodoTask(recordId:string,kbPath?:string):Promise<{date:string;taskId:string;recordId:string}> {
   if(!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(recordId))throw new Error('Invalid shared task link.')
   const auth=await connectAccount(DIANE_SHARED_ORIGIN,kbPath),user=auth.currentUser
-  if(!user)throw new Error('Sign in to the shared Diane account to open this task.')
+  if(!user)throw new Error('Sign in to the pipedreams account to open this task.')
   const token=await user.getIdToken()
   const record=await requestJson(DIANE_SHARED_ORIGIN,'/api/plugins/todo/records/task/'+encodeURIComponent(recordId),{},token)
   if(auth.currentUser?.uid!==user.uid)throw new Error('Account changed before the task opened.')

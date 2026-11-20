@@ -160,7 +160,7 @@ impl Session {
                 }
                 self.initialized = true;
                 json!({"protocolVersion":VERSION,"capabilities":{"tools":{}},"serverInfo":{"name":"sticky-todo","version":"1.0.0"},
-                    "instructions":"Local Markdown tasks only. Read before writes; mutations return the next weekly revision. Pause desktop editing during mutations. No goals, focus, cloud sync or Diane dependency."})
+                    "instructions":"Local Markdown tasks only. Read before writes; mutations return the next weekly revision. Pause desktop editing during mutations. No goals, focus, cloud sync or Shiprite dependency."})
             }
             "ping" => json!({}),
             _ if !self.ready => return Some(error(id, -32600, "Initialize the session first")),
