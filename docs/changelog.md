@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-20 — Dockit transfer naming review
+
+Corrected pipedreams account labels, Dockit sign-in and backend messages, Shiprite handoff instructions and the Mac capture-helper lookup. Current platform checks and build limits are recorded in the [transfer review](plans/23-dockit-transfer-review.md).
+
 ## 2026-11-20 — Pipe Dreams platform requirements
 
 - [docs] Added the Pipe Dreams web, iOS phone, and Android phone delivery requirements for Dockit to the project instructions.

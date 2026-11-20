@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## 2026-11-20 — Transfer verification environment
+
+The available Flutter 3.41.9 bundles Dart 3.11.5 and cannot resolve the locked Android client. The project requires Flutter 3.47 or newer with Dart 3.13 or newer. This checkout has no iOS runner. The review sandbox also denied loopback server binding and Chromium startup. Production-module tests and an offline DOM fixture covered the web build. [Transfer verification](plans/23-dockit-transfer-review.md)
+
 ## 2026-11-17 — Local signing identity discovery
 
 A self-signed code-signing identity needed user-domain code-signing trust. On this host codesign also needed the dedicated unlocked keychain in the user search list. The login keychain remains first.

@@ -85,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('AI assistance'),
             subtitle: Text(
               ai.usesShared(store.preferences)
-                  ? 'Pipe Dreams account'
+                  ? 'pipedreams account'
                   : providerPresets[store.preferences.provider]?['name'] ??
                         store.preferences.provider,
             ),
@@ -389,7 +389,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
         ),
         const SizedBox(height: 16),
         if (usesAccountKey)
-          const Text('Uses the OpenRouter key saved in your Pipe Dreams account.')
+          const Text('Uses the OpenRouter key saved in your pipedreams account.')
         else ...[
           TextField(
             controller: key,

@@ -8,7 +8,7 @@ One canonical home per product surface. Run npm commands from the repository roo
 | `desktop/src-tauri/` | Tauri native shell, native services and desktop packaging. |
 | `phone/` | Flutter app with Android source; iOS is planned, not implemented. |
 | `plugin/` | Product-owned embedded frontend and canonical backend release. `plugin/backend/` is the package source, not a second live service. |
-| `backend/` | Original sync deployment retained for migration/rollback; new shared data authority is Diane canonical records. |
+| `backend/` | Original sync deployment retained for migration/rollback; new shared data authority is Shiprite canonical records. |
 | `app.manifest.json` | Cross-surface product contract and identity/version metadata; no empty shared directory. |
 | `src`, `src-tauri` | Compatibility symlinks used by test fixtures and Tauri CLI/release discovery. Keep until those callers migrate. |
 | `desktop/package.json`, `desktop/dist` | Symlinks used by native version/frontend asset resolution. Root package.json and dist remain authoritative. |

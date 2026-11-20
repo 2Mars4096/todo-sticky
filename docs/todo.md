@@ -1,5 +1,8 @@
 # Todo
 
+- [x] Review Dockit transfer labels and destinations. Web and Mac builds verified — [transfer review](plans/23-dockit-transfer-review.md).
+- [ ] Verify the Android build and workflows with the pinned Flutter SDK, and verify iPhone when its runner is available — [phone verification](plans/23-dockit-transfer-review.md#verification).
+
 - [x] Remove obsolete local installers and plugin packages with verified Trash recovery copies — [Plan 9](plans/9-folder-cleanup.md).
 
 - [x] Install Sticky Todo with a persistent local signing identity and configure subsequent native builds — [capture integration](plans/22-screenshot-task.md).

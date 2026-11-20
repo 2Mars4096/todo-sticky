@@ -38,7 +38,7 @@ def day_of(record):
         if date.fromisoformat(value).isoformat() != value:
             raise ValueError()
     except (TypeError, ValueError):
-        raise HTTPException(422, 'A canonical Todo task has an invalid date; its data was not changed')
+        raise HTTPException(422, 'A canonical Dockit task has an invalid date; its data was not changed')
     return value
 
 
@@ -65,7 +65,7 @@ class CanonicalTodoSync:
     def _index(state):
         rows = list(state['records'].values())
         if len(rows) > 30000:
-            raise HTTPException(413, 'This sync release supports at most 30,000 Todo records')
+            raise HTTPException(413, 'This sync release supports at most 30,000 Dockit records')
         days, focus = {}, {}
         goals = {'targets': [], 'recurring': []}
         by_id = {}
@@ -401,7 +401,7 @@ class CanonicalTodoSync:
                 if existing_meta:
                     raise HTTPException(409,'Sync metadata already exists for '+key+'; migration must be reconciled before reseeding')
                 namespace=state['settings'].get(NAMESPACE)
-                if namespace and namespace.get('source_id')!=source_id:raise HTTPException(409,'This owner is already bound to a different original Todo source')
+                if namespace and namespace.get('source_id')!=source_id:raise HTTPException(409,'This owner is already bound to a different original Dockit source')
                 plans,affected,metadata=self._changes(state,key,record['payload'],record['deleted'],source_id)
                 index=self._index(state)
                 projected,deleted,exists=self._project(key,index,{**metadata,'present':True,'deleted':record['deleted']})

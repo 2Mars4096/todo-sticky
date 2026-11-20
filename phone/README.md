@@ -2,7 +2,7 @@
 
 A native Flutter client for the same daily workflow as the desktop app: fast capture, nested steps, outcomes, deadlines, daily planning, goals, routines and Star Focus. The paper surface, phone navigation and explicit AI previews keep the task list central.
 
-The current signed ARM64 [latest APK](../todo-sticky-latest.apk) is 2.1.16+29. Open **Today → Meeting follow-ups** with your shared Diane account.
+The current signed ARM64 [latest APK](../todo-sticky-latest.apk) is 2.1.16+29. Open **Today → Meeting follow-ups** with your pipedreams account.
 
 ## Run and build
 
@@ -56,15 +56,15 @@ Both preview flags are required. The package is `io.github.twomars4096.sticky_to
 - **Goals → a long-term goal** opens its plan. Add steps manually or choose **Generate plan**, edit/select the suggestions and choose **Add steps**. Select unscheduled steps, then choose **Add to Today** or the calendar for another date. A scheduled step opens its actual daily task; moving or completing that task updates the same goal plan. Repeating the scheduling action does not create duplicates.
 - Daily tasks show their linked goal. **Progress** can filter by goal; the plan's completion covers all dates, while task totals follow the selected date/week. All dated fragments of a plan step must be completed before the step counts as done; stopped work remains separate.
 - **Goals** also holds routines. Manual is the default; Daily/Weekdays/Weekly schedules offer Pause and Skip next on this device. **Focus** starts, pauses, resumes, restores and finishes sessions; its travel log retains 6, 12 or 24 sessions. Finishing a session does not complete the task.
-- **Settings → AI assistance** supports saved Moonshot, OpenRouter, OpenAI, Anthropic, Gemini and custom HTTPS OpenAI-compatible profiles. OpenRouter uses your Diane account. Other provider keys live in Android secure storage and are excluded from exports and synchronization. Connection tests use the unsaved draft without changing saved settings. Provider errors retain the actual reason, including rate limits, unsupported models and malformed output.
-- The headphone action suggests a task-aware album list. A task’s menu copies a structured agent prompt for Diane or another assistant.
+- **Settings → AI assistance** supports saved Moonshot, OpenRouter, OpenAI, Anthropic, Gemini and custom HTTPS OpenAI-compatible profiles. OpenRouter uses your pipedreams account. Other provider keys live in Android secure storage and are excluded from exports and synchronization. Connection tests use the unsaved draft without changing saved settings. Provider errors retain the actual reason, including rate limits, unsupported models and malformed output.
+- The headphone action suggests a task-aware album list. A task’s menu copies a structured agent prompt for Shiprite or another assistant.
 - Export or restore a complete JSON notebook through Android's file picker. JSON includes goal plans and links; Markdown day export preserves desktop task IDs, nested status markers, finish metadata and goal provenance. **Import Markdown checklist** accepts pasted Markdown as new tasks, preserving hierarchy and goal association with fresh IDs; pasted tasks do not become a second instance of a plan step.
 
 ## Data and recovery
 
 The app checks remote edits every 15 seconds while foregrounded, uploads saved edits after about 900ms and checks immediately when returning to the app. Genuine concurrent local changes retry quietly without being attributed to user edits; drafts, save failures and conflicts retain their protections. Independent additions/edits merge automatically. Genuine conflicts have individual choices, and background refresh keeps selections and scroll stable. Written task/goal/project content uses the shared regular style and headings/actions use semibold, without length or first-line heuristics. There is no sync worker while closed/backgrounded. The verified local production `2.1.16+19` APK is at `../release/todo-sticky.apk` (19.88 MB, original release key); install over the existing production app. All 127 phone tests and static analysis pass.
 
-The phone works offline without an account or Diane. `sticky-todo.json` lives in app-private storage. Writes are serialized, written and flushed to a temporary file, then atomically renamed; a previous readable save is retained. A corrupted primary file is preserved before fallback recovery. An unreadable notebook is never silently treated as an empty notebook. Save failures keep edits on screen with a persistent Retry action.
+The phone works offline without an account or Shiprite. `sticky-todo.json` lives in app-private storage. Writes are serialized, written and flushed to a temporary file, then atomically renamed; a previous readable save is retained. A corrupted primary file is preserved before fallback recovery. An unreadable notebook is never silently treated as an empty notebook. Save failures keep edits on screen with a persistent Retry action.
 
 Android system auto-backup is disabled so encrypted key material cannot be accidentally restored without its Keystore keys. Use the explicit export for migration, or the separate account/sync feature. Clearing Android app storage or uninstalling removes local data; export first when using the standalone app.
 
@@ -74,7 +74,7 @@ The separate `feature/google-account-sync` branch builds on this app. `StickySto
 
 ## Account and sync in this branch
 
-The main branch includes the optional account client. Open **Settings → Account & sync**, connect the deployed HTTPS service, sign in with Google in the system browser, then enable **Sync this notebook**. The app remains usable offline; signing in alone does not upload notes. Tasks, goals and completed focus sessions use the same protocol as desktop, with explicit conflict choices and recovery export. AI keys, Diane credentials, device preferences and active timers remain local.
+The main branch includes the optional account client. Open **Settings → Account & sync**, connect the deployed HTTPS service, sign in with Google in the system browser, then enable **Sync this notebook**. The app remains usable offline; signing in alone does not upload notes. Tasks, goals and completed focus sessions use the same protocol as desktop, with explicit conflict choices and recovery export. AI keys, Shiprite credentials, device preferences and active timers remain local.
 
 Goal plans and linked tasks require the backend's `goalPlanning:true` / payload-schema-2 capability. If an older service is configured and the notebook contains this metadata, sync pauses with a visible message and preserves local data. The 2026-10-31 client/source delivery does not deploy the backend; deploy `backend/` from the authenticated Google Cloud environment before expecting new goal data to sync.
 
@@ -99,20 +99,20 @@ Current verification and delivery evidence is tracked in [goal planning and mobi
 | AI profiles, connection test, album suggestions | Implemented for all HTTP API providers |
 | Clipboard and Markdown task interchange | Native clipboard, agent prompt, checklist import and Markdown day export |
 | Paper / Frosted / Liquid materials | Phone-adapted static palettes; no perpetual decorative animation |
-| Local Codex executable and Diane credential-file fallback | Desktop-only; Android cannot run or read the computer’s local processes/files |
-| Diane companion dispatch/status/session link | Not available remotely: the companion backend explicitly rejects non-local hosts, even when remote bearer authentication succeeds. The current simplified desktop task row also omits dispatch controls. Android retains Copy agent prompt; see the protocol review below |
+| Local Codex executable and Shiprite credential-file fallback | Desktop-only; Android cannot run or read the computer’s local processes/files |
+| Shiprite companion dispatch/status/session link | Not available remotely: the companion backend explicitly rejects non-local hosts, even when remote bearer authentication succeeds. Android retains Copy agent prompt; see the protocol review below |
 | Desktop file watchers and arbitrary knowledge-base directory | App-private atomic storage plus explicit file import/export. Account sync supplies automatic cross-platform transport on its separate branch |
 | Tray, always-on-top window, desktop hotkeys, Tauri updater | Desktop-only. Android uses normal application lifecycle, touch/keyboard controls and signed APK/Play distribution |
 
-### Dear Diane companion protocol review
+### Shiprite companion protocol review
 
-Dear Diane supports authenticated remote HTTP access, but its **Todo companion API is deliberately local-only**. At inspected Dear Diane commit [`2581669`](https://github.com/2Mars4096/dear-diane/tree/2581669e8c8e07670db8fede7eb770a245fc6eef), [`src/diane/server/routers/sticky_todo.py`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/src/diane/server/routers/sticky_todo.py) attaches `Depends(local_only)` to `/api/sticky-todo`. That guard requires both the request client and URL hostname to be local and rejects a foreign Origin. It applies to project discovery, dispatch, status and stop. A phone request to a real HTTPS server origin fails that guard; the bearer-key check in [`src/diane/remote/access.py`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/src/diane/remote/access.py) does not override it.
+Shiprite supports authenticated remote HTTP access, but its **Dockit companion API is deliberately local-only**. At inspected Dear Diane commit [`2581669`](https://github.com/2Mars4096/dear-diane/tree/2581669e8c8e07670db8fede7eb770a245fc6eef), [`src/diane/server/routers/sticky_todo.py`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/src/diane/server/routers/sticky_todo.py) attaches `Depends(local_only)` to `/api/sticky-todo`. That guard requires both the request client and URL hostname to be local and rejects a foreign Origin. It applies to project discovery, dispatch, status and stop. A phone request to a real HTTPS server origin fails that guard; the bearer-key check in [`src/diane/remote/access.py`](https://github.com/2Mars4096/dear-diane/blob/2581669e8c8e07670db8fede7eb770a245fc6eef/src/diane/remote/access.py) does not override it.
 
-Todo's [`src-tauri/src/diane.rs`](../src-tauri/src/diane.rs) likewise targets the fixed computer loopback address `127.0.0.1:45173`. Its companion protocol preserves the selected Diane project and execution profile, and retries an immutable request UUID without starting a second run. The current desktop [Run in Diane documentation](../README.md#run-in-diane-companion-update-required) also records that the simplified task row omits dispatch controls while retaining settings and stored session links.
+Dockit's [`src-tauri/src/diane.rs`](../src-tauri/src/diane.rs) likewise targets the fixed computer loopback address `127.0.0.1:45173`. Its companion protocol preserves the selected Shiprite project and execution profile, and retries an immutable request UUID without starting a second run. On Mac, select a task to open [the Shiprite workspace picker](../README.md#standalone-run-in-shiprite-companion-update-required).
 
-Diane's generic `/api/v2/agent-runs` endpoints are remotely usable, including by its own mobile client, but substituting them would require a separate project/profile selection and durable retry contract. They do not expose the Todo companion's saved defaults and request receipts. Matching the companion workflow on Android therefore requires an explicitly supported authenticated remote companion API in Dear Diane, including project/default discovery, idempotent dispatch, status/stop and browser session navigation. Adding a URL and bearer field to Todo alone would not enable that workflow.
+Shiprite's generic `/api/v2/agent-runs` endpoints are remotely usable, including by its own mobile client, but substituting them would require a separate project/profile selection and durable retry contract. They do not expose the Dockit companion's saved defaults and request receipts. Matching the companion workflow on Android therefore requires an explicitly supported authenticated remote companion API in Shiprite, including project/default discovery, idempotent dispatch, status/stop and browser session navigation. Adding a URL and bearer field to Dockit alone would not enable that workflow.
 
-This branch preserves **Copy agent prompt** and independent task/AI use. It does not change Dear Diane, weaken its local-only guard, deploy a relay, configure credentials or start an agent run. [Protocol findings and remaining work](../docs/plans/7-1-diane-remote-feasibility.md) record this functional gap explicitly.
+This branch preserves **Copy agent prompt** and independent task/AI use. It does not change Shiprite, weaken its local-only guard, deploy a relay, configure credentials or start an agent run. [Protocol findings and remaining work](../docs/plans/7-1-diane-remote-feasibility.md) record this functional gap explicitly.
 
 ## Verification
 
@@ -136,7 +136,7 @@ The 2.1.15+3 Android build removes repeated introductions, promotional subtitles
 
 ### Browser return
 
-Android 2.1.15+4 returns to the existing Account screen after Google sign-in. The hosted page completes the handoff directly after account selection; there is no second Connect this account step. If the browser blocks automatic opening, tap **Return to Sticky Todo**. Start a fresh sign-in after updating; older browser tabs do not contain the return flag. The return link carries no tokens and does not enable sync; turn on **Sync this notebook** after sign-in.
+Android 2.1.15+4 returns to the existing Account screen after Google sign-in. The hosted page completes the handoff directly after account selection; there is no second Connect this account step. If the browser blocks automatic opening, tap **Return to Dockit**. Start a fresh sign-in after updating; older browser tabs do not contain the return flag. The return link carries no tokens and does not enable sync; turn on **Sync this notebook** after sign-in.
 
 ### Sync progress and conflict safety
 

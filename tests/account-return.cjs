@@ -37,6 +37,7 @@ async function setup({ target = 'app', failed = false, failureStatus = 500, clea
     assert.deepEqual(JSON.parse(rig.requests[0].options.body), { sessionId: 's'.repeat(43), challenge: 'c'.repeat(43) })
     assert.deepEqual(rig.state.provider, { prompt: 'select_account' })
     assert.deepEqual(rig.jumps, ['todo-sticky://account-return'])
+    assert.equal(rig.nodes.status.textContent, 'Google sign-in complete. Finishing in Dockit…')
     assert.equal(rig.nodes.return.hidden, false)
     assert.equal(rig.nodes.return.href, 'todo-sticky://account-return')
     assert.equal(rig.nodes.signin.hidden, true)

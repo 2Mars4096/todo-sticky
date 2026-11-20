@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "diane-todo-plugin"
 version = "0.1.5"
-description = "Product-owned Diane compatibility release"
+description = "Dockit compatibility backend for Shiprite"
 requires-python = ">=3.11"
 
 [tool.setuptools.packages.find]

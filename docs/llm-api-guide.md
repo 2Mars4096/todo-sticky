@@ -1,4 +1,4 @@
-# Sticky Todo Agent API
+# Dockit Agent API
 
 The Mac UI sends capture and settings requests to the resident Flameshot editor. The app-owned screenshot handoff opens editable review and requires an explicit Add task. Agent clients should use the task API below for programmatic creation.
 
@@ -8,7 +8,7 @@ In Today, accepting meeting follow-ups for the same project and list date create
 
 ## Shared meeting follow-ups
 
-`/api/plugins/todo/meeting-monitor` uses the authenticated Todo account. `POST /todo-reviews/refresh` scans up to five meetings from the saved account cursor and returns the newest review page. `GET /todo-reviews?before=N` pages backward using the returned `before` value. `GET /meetings/{id}/todo-push` returns the current analysis ID, fingerprint, draft indices, suggested wording and source evidence. `POST` to that meeting path uses the existing revision-guarded structured push body and receipt. A review with zero drafts is complete.
+`/api/plugins/todo/meeting-monitor` uses the authenticated pipedreams account. `POST /todo-reviews/refresh` scans up to five meetings from the saved account cursor and returns the newest review page. `GET /todo-reviews?before=N` pages backward using the returned `before` value. `GET /meetings/{id}/todo-push` returns the current analysis ID, fingerprint, draft indices, suggested wording and source evidence. `POST` to that meeting path uses the existing revision-guarded structured push body and receipt. A review with zero drafts is complete.
 
 Use the local `sticky-todo-api` command to read and mutate the same Markdown archive as the desktop app. The API does not call an LLM and does not require the app window to be open.
 
@@ -31,7 +31,7 @@ The knowledge-base root resolves in this order:
 
 1. `--kb-path PATH`
 2. `STICKY_TODO_KB_PATH`
-3. Sticky Todo's saved `kbPath`
+3. Dockit's saved `kbPath`
 4. `~/Documents/Sticky Todo`
 
 All successes are JSON on stdout. Errors are JSON on stderr with a nonzero exit code.
@@ -51,9 +51,9 @@ Build the native binary as above, then configure a **local stdio** MCP client (r
 }
 ```
 
-On macOS, the installed app bundles the CLI at `/Applications/Sticky Todo.app/Contents/MacOS/sticky-todo-api`; use that entire path as the MCP `command` (the spaces are part of the path). With `args: ["mcp"]`, it discovers the saved notebook settings.
+For Dockit installed in Applications, use `/Applications/Dockit.app/Contents/MacOS/sticky-todo-api` as the MCP `command`. Earlier installations use `/Applications/Sticky Todo.app/Contents/MacOS/sticky-todo-api`. With `args: ["mcp"]`, it discovers the saved notebook settings.
 
-The knowledge-base path is the root containing `content/to-do`, not that subfolder. Omit `--kb-path` to use the CLI's existing discovery order. Add `--read-only` after `mcp` to expose only reading. Launch the binary directly: `npm run` banners can corrupt MCP stdout. This server supports the initialize-based MCP **2025-11-25** protocol over newline-delimited JSON-RPC. It has no HTTP endpoint, credentials, network listener, or dependency on Diane. A remote meeting-summary service needs a local companion capable of spawning this process; it cannot connect directly over the internet.
+The knowledge-base path is the root containing `content/to-do`, not that subfolder. Omit `--kb-path` to use the CLI's existing discovery order. Add `--read-only` after `mcp` to expose only reading. Launch the binary directly: `npm run` banners can corrupt MCP stdout. This server supports the initialize-based MCP **2025-11-25** protocol over newline-delimited JSON-RPC. It has no HTTP endpoint, credentials, network listener, or dependency on Shiprite. A remote meeting-summary service needs a local companion capable of spawning this process; it cannot connect directly over the internet.
 
 | Tool | Arguments |
 | --- | --- |
@@ -256,19 +256,19 @@ A reusable skill only needs a concise `SKILL.md` plus a deterministic script or 
 
 Settings uses the official Tauri updater `check`, `download`, and `install` operations plus process `relaunch`. These are desktop-only operations, separate from the task CLI. `useTasks.flushPendingSave()` and `waitForPendingWrites()` must complete before install/relaunch. Updater metadata and signatures come from the public release endpoint; no GitHub token is sent by the app.
 
-## Diane credential fallback
+## Shiprite credential fallback
 
-- `AppSettings.preferDianeCredentials` is optional for callers and defaults to `true` when absent. Set `false` to use Todo's own configured key exclusively.
-- `get_settings` adds `dianeProviders`, a transient array of provider IDs with a discoverable matching Diane key. It never returns Diane key values; this array is not persisted.
-- Native `diane_credential_status({ provider, endpoint })` returns a boolean for the exact provider/standard-endpoint pair. It performs no writes and does not need Diane running.
-- `test_connection` accepts optional `preferDianeCredentials` (default true), matching normal native LLM calls. When enabled, a matching file-backed Diane key takes precedence over Todo's submitted/saved key; missing/unreadable sources fall back to Todo. API authentication failures do not trigger a second-account retry.
+- `AppSettings.preferDianeCredentials` is optional for callers and defaults to `true` when absent. Set `false` to use Dockit's own configured key exclusively.
+- `get_settings` adds `dianeProviders`, a transient array of provider IDs with a discoverable matching Shiprite key. It never returns Shiprite key values; this array is not persisted.
+- Native `diane_credential_status({ provider, endpoint })` returns a boolean for the exact provider/standard-endpoint pair. It performs no writes and does not need Shiprite running.
+- `test_connection` accepts optional `preferDianeCredentials` (default true), matching normal native LLM calls. When enabled, a matching file-backed Shiprite key takes precedence over Dockit's submitted/saved key; missing/unreadable sources fall back to Dockit. API authentication failures do not trigger a second-account retry.
 - This preference does not change task API schemas, model choices, environment files or Keychain.
 
-## Diane dispatch contract
+## Shiprite dispatch contract
 
-Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `choose-project`, `dispatch`, `status`, `stop`, `open`; all target local Diane's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
+Native command: `diane_request({action, requestId?, body?})`. Actions are `projects`, `choose-project`, `dispatch`, `status`, `stop`, `open`; all target local Shiprite's `/api/sticky-todo` on port 45173. Dispatch body: `{request_id: UUID, task_key, text, parent, steps: string[], project_id}`. Persist the UUID and exact body before sending; retries must reuse both. Responses carry `session_id`, `workflow_id`, `run_id`, `project_name`, `status`, `summary`, `artifacts`, `updated_at`, and `stopping`.
 
-Never treat network failure as run failure, Stop submission as stop completion, or a completed agent run as a completed todo. Open uses the linked desktop session. Approvals, clarification, and further work belong in Diane.
+Never treat network failure as run failure, Stop submission as stop completion, or a completed agent run as a completed todo. Open uses the linked desktop session. Approvals, clarification, and further work belong in Shiprite.
 
 ## Finish metadata and stopped tasks
 
@@ -312,6 +312,6 @@ Android `AiService.planProject(preferences, goal, window, scheduledProjectWork, 
 Mac project operations persist a local recovery journal before sequential writes to existing stores. This is not a new agent-facing task database or CLI transaction command. Existing native per-date compare/backups protect edits; pending operations remain retryable with stable IDs.
 
 ### Standalone setup preparation
-`diane_request` also supports `connection`, `preparation-records` (body `{scope,cursor?}`), `prepare` (body `{scope,payload}` with `action: "prepare"`) and `preparation-status` (requestId plus `{scope}`). These use only local Diane `/api/plugins/connection` and scoped `/api/plugins/todo/records` or `/intelligence` routes. Prepare requires a canonical source revision, execution-contract digest and known workspace candidates. Persist the request ID before sending; uncertain retries inspect the same receipt. Approved context is included after the original task in dispatch `text`; no schema change or execution happens during preparation/editing; explicit Start sends the edited setup.
+`diane_request` also supports `connection`, `preparation-records` (body `{scope,cursor?}`), `prepare` (body `{scope,payload}` with `action: "prepare"`) and `preparation-status` (requestId plus `{scope}`). These use only local Shiprite `/api/plugins/connection` and scoped `/api/plugins/todo/records` or `/intelligence` routes. Prepare requires a canonical source revision, execution-contract digest and known workspace candidates. Persist the request ID before sending; uncertain retries inspect the same receipt. Approved context is included after the original task in dispatch `text`; no schema change or execution happens during preparation/editing; explicit Start sends the edited setup.
 
-The Todo dashboard accepts `POST /todo-reviews/clear` under its meeting-monitor prefix. Send `through` from the review sequence with `meeting_id` for one meeting, or the returned page head for all reviewed meetings. The list reports cleared rows with zero available suggestions.
+The Dockit dashboard accepts `POST /todo-reviews/clear` under its meeting-monitor prefix. Send `through` from the review sequence with `meeting_id` for one meeting, or the returned page head for all reviewed meetings. The list reports cleared rows with zero available suggestions.

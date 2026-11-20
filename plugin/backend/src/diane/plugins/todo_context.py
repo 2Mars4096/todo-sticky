@@ -32,7 +32,7 @@ class TodoSuggestionContext:
                 raise PluginError(422, 'A suggestion source needs its saved identity and revision')
             kind, record_id, revision = ref['record_type'], ref['record_id'], ref['revision']
             if kind not in ('task', 'goal') or not isinstance(revision, int) or isinstance(revision, bool) or revision < 1:
-                raise PluginError(422, 'Choose a saved Todo task or project')
+                raise PluginError(422, 'Choose a saved Dockit task or project')
             identifier(record_id)
             key = kind + ':' + record_id
             if key in seen:

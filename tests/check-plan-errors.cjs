@@ -5,7 +5,9 @@ const { seedBridge, launch, testUrl } = require('./helpers/browser-fixture.cjs')
   const browser = await launch()
   try {
     const context = await browser.newContext({ viewport: { width: 460, height: 720 } })
-    await context.addInitScript(seedBridge)
+    // Exercise the native provider and its editable key in this fixture.
+    await context.addInitScript({ content: `(${seedBridge.toString()})();
+      Object.assign(window.__review.settings, { provider: 'openai', apiBase: 'https://api.openai.com/v1' });` })
     const page = await context.newPage()
     const errors = []
     page.on('pageerror', error => errors.push(String(error)))

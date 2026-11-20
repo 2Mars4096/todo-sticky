@@ -248,7 +248,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
               <select id={id + '-provider'} value={settings.provider} onChange={event => handleProviderChange(event.target.value as Provider)}>
                 {PROVIDER_ORDER.map(provider => <option key={provider} value={provider}>{PROVIDER_PRESETS[provider].label}</option>)}
               </select>
-              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your Pipe Dreams account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
+              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your pipedreams account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
                 <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? 'Dockit API key (fallback)' : 'Dockit API key'}</label>
                 <div className="input-row">
                   <input id={id + '-key'} type={showKey ? 'text' : 'password'} value={settings.apiKey} onChange={event => update({ apiKey: event.target.value })} placeholder={isOpenRouter ? 'sk-or-v1-…' : 'sk-…'} autoComplete="off" spellCheck={false} />

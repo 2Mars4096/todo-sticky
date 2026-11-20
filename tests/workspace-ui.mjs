@@ -37,8 +37,8 @@ try {
   await check.goto((process.env.TODO_TEST_URL||'http://127.0.0.1:15173')+'/tests/diane-ui.html?failure='+failure);
   await check.getByRole('button',{name:'Inspect this project',exact:true}).click();
   assert.equal(await check.locator('.diane-action').isDisabled(),true);
-  const capture=check.getByRole('textbox',{name:'New top-level task'});await capture.fill('Works without Diane');await check.getByRole('button',{name:'Add task',exact:true}).click();
-  await check.getByRole('button',{name:'Works without Diane',exact:true}).waitFor();
+  const capture=check.getByRole('textbox',{name:'New top-level task'});await capture.fill('Works without Shiprite');await check.getByRole('button',{name:'Add task',exact:true}).click();
+  await check.getByRole('button',{name:'Works without Shiprite',exact:true}).waitFor();
   assert.equal(await check.evaluate(()=>calls.filter(x=>['dispatch','prepare'].includes(x.action)).length),0);
   if(failure==='disabled')assert.equal(await check.evaluate(()=>calls.length),0);
   await isolated.close();

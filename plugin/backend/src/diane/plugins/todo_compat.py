@@ -320,17 +320,17 @@ class TodoCompatService:
             return {'items':items}
         if command=='ai':
             return self.suggest(owner,payload,request_id)
-        raise PluginError(404,'Unknown Todo command')
+        raise PluginError(404,'Unknown Dockit command')
 
     def suggest(self,owner,payload,request_id):
         action=payload.get('action')
         if action not in ('breakdown','schedule','project','albums'):
             raise PluginError(422,'Unknown suggestion action')
         if self.provider is None:
-            raise PluginError(503,'Configure Diane’s analysis provider before requesting AI suggestions')
+            raise PluginError(503,'Configure Shiprite’s analysis provider before requesting AI suggestions')
         self.plugins.registry.require_capability('todo','records.read')
         required={'breakdown':'intelligence.steps','schedule':'intelligence.day_plan','project':'intelligence.project','albums':'intelligence.albums'}[action]
-        if required not in self.plugins.registry.manifests['todo'].get('actions',[]):raise PluginError(403,'Todo has not declared this AI action')
+        if required not in self.plugins.registry.manifests['todo'].get('actions',[]):raise PluginError(403,'Dockit has not declared this AI action')
         source=payload.get('input',{})
         if not isinstance(source,dict):raise PluginError(422,'Suggestion input must be an object')
         digest=fingerprint(payload,max_bytes=200000)
@@ -372,7 +372,7 @@ class TodoCompatService:
                 state['receipts'][key]={**receipt,'status':'completed','result':result,'usage':usage,'agent_execution':agent_execution,'completed_at':now()}
                 return result
             accepted=self.repository.transact(owner,'todo',settle)
-            if accepted is None:raise PluginError(409,'Todo permissions changed during the request. The suggestion was not applied.')
+            if accepted is None:raise PluginError(409,'Dockit permissions changed during the request. The suggestion was not applied.')
             return accepted
         except Exception as error:
             if agent_execution is None:
@@ -409,9 +409,9 @@ def validate_preferences(value):
 def prepare_backup(value):
     """Read source exports and optional localStorage data, never supplied file paths."""
     from .imports import convert_import, _mapped, mapped_todo_task
-    if not isinstance(value,dict):raise PluginError(422,'Expected a Todo archive object')
+    if not isinstance(value,dict):raise PluginError(422,'Expected a Dockit archive object')
     if value.get('format')=='diane-todo-port-backup':
-        if value.get('version')!=1:raise PluginError(422,'Unsupported Todo backup version')
+        if value.get('version')!=1:raise PluginError(422,'Unsupported Dockit backup version')
         archive=convert_import('todo',value.get('archive',{}))
         recoveries=copy.deepcopy(value.get('recoveries',[]))
         if not isinstance(recoveries,list) or len(recoveries)>40:raise PluginError(422,'Invalid recovery metadata')
@@ -424,7 +424,7 @@ def prepare_backup(value):
     def decode(item):
         if isinstance(item,str):
             try:return json.loads(item)
-            except ValueError as error:raise PluginError(422,'A stored Todo field contains invalid JSON') from error
+            except ValueError as error:raise PluginError(422,'A stored Dockit field contains invalid JSON') from error
         return copy.deepcopy(item)
     namespace=value.get('source_id','default')
     archive={'format':'todo-sticky','version':1,'source_id':namespace,'dates':[], 'goals':{},'routine_schedules':{}}
