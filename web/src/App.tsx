@@ -1,3 +1,4 @@
+import { SentScreenshots } from './components/SentScreenshots'
 import { MeetingMonitor, type ReviewRequest } from './components/MeetingMonitor'
 import { requestJson } from './cloudAccount'
 import { listen } from '@tauri-apps/api/event'
@@ -637,6 +638,9 @@ export default function App() {
 
   return (
     <><div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
+      {isTauri() && /Mac/.test(navigator.platform) && <SentScreenshots date={calendar.dateStr}
+        disabled={tasks.loading || Boolean(tasks.loadError) || tasks.dataDate !== calendar.dateStr}
+        onAdd={(title, steps) => { tasks.addTaskBundle(title, steps); if (firstRun) dismissIntro() }} />}
       <WindowResizeHandles />
       <GoalsSidebar
         onOpenProject={openProject}
@@ -688,6 +692,10 @@ export default function App() {
 
         <AddTask
           onAdd={text => { tasks.addTask(text); if (firstRun) dismissIntro() }}
+          screenshot={isTauri() && /Mac/.test(navigator.platform) ? {
+            context: JSON.stringify([calendar.dateStr, aiSettings?.kbPath]),
+            ready: tasks.dataDate === calendar.dateStr,
+          } : undefined}
           prominent={!tasks.loading && !tasks.tasks.length}
           autoFocus={!showSettings && !showPlanner && !showTrackingStation}
           disabled={tasks.loading || Boolean(tasks.loadError)}

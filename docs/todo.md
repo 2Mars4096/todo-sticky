@@ -1,6 +1,18 @@
 # Todo
 
-- [x] Verify and clean Sticky Todo scaffolding and preserve pending product work — [Plan 9](plans/9-folder-cleanup.md).
+- [x] Remove obsolete local installers and plugin packages with verified Trash recovery copies — [Plan 9](plans/9-folder-cleanup.md).
+
+- [x] Install Sticky Todo with a persistent local signing identity and configure subsequent native builds — [capture integration](plans/22-screenshot-task.md).
+
+- [x] Replace the denied post-Share screenshot call with a one-frame screen stream. [Capture integration](plans/22-screenshot-task.md).
+
+- [x] Restore the ordinary global Flameshot shortcut and add an explicit Send to Todo action — [capture integration](plans/22-screenshot-task.md).
+- [x] Use one installed app and a private screenshot helper. See [capture integration](plans/22-screenshot-task.md).
+
+- [x] Bundle Flameshot with its existing settings and verify a live OCR draft from the installed camera — [screenshot plan](plans/22-screenshot-task.md).
+- [ ] Verify automated region-only drag on a two-display Mac — [screenshot plan](plans/22-screenshot-task.md).
+
+- [x] Audit repository scaffolding, remove Finder metadata, consolidate cleanup history and repair the roadmap link — [Plan 9](plans/9-folder-cleanup.md).
 
 - [x] One-tap removal of meeting follow-ups on Mac and Android — [Plan 21](plans/21-meeting-monitor.md).
 

@@ -1,3 +1,4 @@
+import { invoke, isTauri } from '@tauri-apps/api/core'
 import { NOTE_MATERIALS, type NoteMaterial } from '../noteMaterial'
 import { AccountPanel, type CloudAccount } from './AccountPanel'
 import { useState, useEffect, useId, useRef } from 'react'
@@ -58,6 +59,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
   const [section, setSection] = useState<SettingsSection>(initialAccount ? 'account' : initialProvider ? 'ai' : 'tasks')
   const [dianeDestination, setDianeDestination] = useState('')
   const [dianeAvailable, setDianeAvailable] = useState(false)
+  const [captureSettingsOpen, setCaptureSettingsOpen] = useState(false)
   const [showKey, setShowKey] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -290,6 +292,14 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
           {section === 'integrations' && <fieldset className="settings-fields" disabled={fieldsDisabled}>
             <section className="settings-section" aria-labelledby={id + '-integrations-title'}>
               <h3 className="section-title" id={id + '-integrations-title'}>Integrations</h3>
+              {isTauri() && /Mac/.test(navigator.platform) && (
+                <button type="button" disabled={captureSettingsOpen} onClick={async () => {
+                  setCaptureSettingsOpen(true)
+                  try { await invoke('open_capture_settings') }
+                  catch (error) { setSettingsError(String(error)) }
+                  finally { setCaptureSettingsOpen(false) }
+                }}>Flameshot settings…</button>
+              )}
               <p className="settings-description">Connect optional tools on this computer.</p>
               <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} onChange={event => update({ connectDiane: event.target.checked })} /> Connect to Dear Diane on this computer</label>
               <p className="hint">{settings.connectDiane ? dianeDestination : 'Enable task handoff to Dear Diane. Your task list works independently.'}</p>

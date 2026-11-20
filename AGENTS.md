@@ -1,5 +1,9 @@
 # Sticky Todo Repository Guide
 
+## Pipe Dreams platform requirements
+
+Build and maintain three clients for Dockit: a working web app, an installable iOS phone app for iPhone, and an installable Android phone app. Users must be able to organize proposals into to-dos and assign work on each platform. Record build and workflow verification separately for each client.
+
 This file is the central Codex instruction file for this repository.
 
 If `CLAUDE.md` also exists, keep the tracking sections aligned and treat `AGENTS.md` as the Codex-first source of truth.

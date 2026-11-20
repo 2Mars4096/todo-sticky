@@ -1,5 +1,25 @@
 # Bugs And Failed Approaches
 
+## 2026-11-17 — Local signing identity discovery
+
+A self-signed code-signing identity needed user-domain code-signing trust. On this host codesign also needed the dedicated unlocked keychain in the user search list. The login keychain remains first.
+
+## 2026-11-17 — Share accepted, still capture denied
+
+ReplayKit delivered the picker filter, then denied captureScreenshot with TCC Disallow on this Mac. The helper now starts SCStream with the selected filter and takes its first complete BGRA frame.
+
+## 2026-11-17 — Stale Mac capture grants
+
+An enabled Screen Recording row can reference the hash of an older ad-hoc binary. tccd explicitly rejected both older code requirements. Todo previously spawned a screen-grabbing child and the OS attributed that request to Todo. LaunchServices now directs the camera to the resident Flameshot process. Keep ad-hoc signing per user preference and refresh the Flameshot grant after a changed build.
+
+## 2026-11-17 — Screenshot capture verification
+
+A fixed-region Flameshot test on a two-display Mac returned a PNG and recognized text that did not match the sample window. An automated drag aborted or timed out. Per-stage OCR, composer and native build checks passed. A manual drag on the intended display remains open.
+
+## 2026-11-17 — Linking screenshot OCR
+
+Clang’s macOS availability check introduced a compiler-runtime symbol that the Rust final link did not resolve. The Objective-C bridge checks for the language-detection selector at runtime.
+
 ## 2026-11-15 — Native packaging environment
 
 Resolved November 16 by installing stable Rust 1.100.0 and setting the default toolchain. The native bundle built and installed. Previously the system rustup shim had no default toolchain. The standalone Vite build and TypeScript checks pass. A native package requires a compatible configured Rust toolchain.

@@ -132,3 +132,20 @@
 
 .task-add-row .task-text-action { flex: none; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; padding: 5px 8px; cursor: pointer; }
 .task-add-row .task-text-action:hover { background: rgba(166, 132, 43, .12); }
+
+.screenshot-task { padding: 8px 0 0; max-height: 45vh; overflow: auto; flex-shrink: 0; }
+.add-task .screenshot-task label { text-transform: none; letter-spacing: normal; display: grid; gap: 4px; margin-bottom: 8px; color: var(--text-primary); font-size: 12px; font-weight: 600; }
+.add-task .screenshot-task :is(input, textarea) { text-transform: none; letter-spacing: normal; width: 100%; box-sizing: border-box; font: inherit; font-weight: 400; color: var(--text-primary); font-size: 13px; line-height: 1.5; padding: 6px 8px; border: 1px solid var(--sticky-border); border-radius: 6px; background: rgba(255,255,255,.46); }
+.screenshot-task button[type="submit"] { background: var(--accent); font-weight: 600; border-radius: 6px; padding: 4px 8px; margin-right: 4px; }
+
+.app-shell .add-task-row .screenshot-trigger {
+  display: grid; place-items: center; flex: none; align-self: flex-start;
+  min-width: 38px; padding: 0 5px; color: var(--text-secondary);
+  background: transparent; border: 1px solid var(--sticky-border); border-radius: var(--radius);
+}
+.app-shell .add-task-row .screenshot-trigger:hover:enabled { color: var(--text-primary); background: var(--sticky-bg-dark); }
+.app-shell .add-task-row .screenshot-trigger:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 1px; }
+
+.screenshot-task button[type="button"] { background: transparent; border-color: transparent; }
+
+.screenshot-task :is(input, textarea):focus-visible { outline-offset: -2px; }

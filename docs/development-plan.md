@@ -9,7 +9,7 @@ The user chose the original standalone Todo as the primary workspace. The Novemb
 
 ## Product-owned hosted task workflow
 
-- [17-hosted-task-execution](plans/17-hosted-task-execution.md) recovers the shipped plugin source into this repository and adds compact Run/Open/Review controls on `feat/plugin-workflow-review`. The usable slice preserves existing task editing, retrieves sessions through current host APIs, and keeps ordinary completion separate from acceptance. Shared binding, complete execution history and whole-run Git isolation/review/merge need an explicit host contract; they are not represented by inactive or simulated controls. Standalone Mac/phone releases are unchanged.
+- [18-hosted-task-execution](plans/18-hosted-task-execution.md) recovers the shipped plugin source into this repository and adds compact Run/Open/Review controls on `feat/plugin-workflow-review`. The usable slice preserves existing task editing, retrieves sessions through current host APIs, and keeps ordinary completion separate from acceptance. Shared binding, complete execution history and whole-run Git isolation/review/merge need an explicit host contract; they are not represented by inactive or simulated controls. Standalone Mac/phone releases are unchanged.
 
 ## Automatic sync and 2.1.16 delivered
 

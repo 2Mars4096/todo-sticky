@@ -3,6 +3,7 @@ mod cloud_sync;
 pub mod cli;
 pub mod mcp;
 mod commands;
+mod screenshot;
 mod diane;
 mod config;
 mod file_sync;
@@ -340,6 +341,7 @@ pub fn run() {
         )
         .manage(LaunchVisibility::default())
         .manage(PendingTaskLink::default())
+        .manage(screenshot::ScreenshotInbox::default())
         .manage(Mutex::new(WatcherState::default()))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -442,6 +444,9 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             frontend_ready,
+            screenshot::capture_task_outline,
+            screenshot::open_capture_settings,
+            screenshot::take_sent_screenshots,
             take_task_link,
             cloud_sync::open_account_sign_in,
             cloud_sync::cloud_apply_day,
@@ -477,6 +482,14 @@ pub fn run() {
         #[cfg(target_os = "macos")]
         if let RunEvent::Opened { urls } = &event {
             for url in urls {
+                if url.as_str().trim_end_matches('/') == "todo-sticky://capture-ended" {
+                    if let Some(window) = app.get_webview_window("main") { show_window(&window, true); }
+                    continue;
+                }
+                if url.scheme() == "todo-sticky" && url.host_str() == Some("flameshot") {
+                    screenshot::receive_image(app, url.path().trim_start_matches('/'));
+                    continue;
+                }
                 if let Some(id) = cloud_sync::task_link_id(url.as_str()) {
                     if let Ok(mut pending) = app.state::<PendingTaskLink>().0.lock() { *pending = Some(id); }
                     app.emit("todo-task-link", ()).ok();
@@ -492,6 +505,8 @@ pub fn run() {
         }
 
         if let RunEvent::Ready = event {
+            #[cfg(target_os = "macos")]
+            std::thread::spawn(screenshot::start_shortcut_listener);
             // Never wait indefinitely on JavaScript, archive reads or integrations.
             let handle = app.clone();
             std::thread::spawn(move || {

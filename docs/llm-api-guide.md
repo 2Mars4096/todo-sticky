@@ -1,5 +1,7 @@
 # Sticky Todo Agent API
 
+The Mac UI sends capture and settings requests to the resident Flameshot editor. The app-owned screenshot handoff opens editable review and requires an explicit Add task. Agent clients should use the task API below for programmatic creation.
+
 ## Dashboard push behavior
 
 In Today, accepting meeting follow-ups for the same project and list date creates one parent task with ordered steps. Matching ignores case and repeated spaces in the saved meeting project label. Meetings without a project use their own title and meeting ID. Each step keeps its own source evidence, assignee and deadline.

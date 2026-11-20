@@ -1,5 +1,9 @@
 # Architecture
 
+On the configured Mac, scripts/tauri-build.js unlocks the dedicated signing keychain using its login-Keychain item, signs a staged capture helper and passes the certificate fingerprint to Tauri. CI and explicitly configured distribution identities use their own signing path.
+
+On Mac, only the helper inside Sticky Todo’s Contents/Helpers is launched. It owns the global capture shortcut, suppresses its tray icon and exits after the host quits. Camera and settings requests use LaunchServices. If permanent screen access is unavailable the helper uses the user-selected ScreenCaptureKit display filter to start a screen-only SCStream, copy its first complete frame and stop capture. An explicit toolbar action writes a private temporary PNG and opens Todo with its generated basename. The receiver validates the name, owner, file type, permissions and size, unlinks the file and queues the local Vision result for editable review. Add task uses the existing dated task bundle operation.
+
 OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request.
 
 ## Project steps from meetings

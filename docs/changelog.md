@@ -1,5 +1,45 @@
 # Changelog
 
+## 2026-11-20 — Pipe Dreams platform requirements
+
+- [docs] Added the Pipe Dreams web, iOS phone, and Android phone delivery requirements for Dockit to the project instructions.
+
+## 2026-11-20 — Obsolete installers and packages
+
+Moved 29 superseded APKs, plugin packages, review archives and Mac bundles (483 MB) out of the project into a dated Trash recovery folder. Each copy passed checksum verification. Current Android build 2029 and current native build outputs remain available.
+
+## 2026-11-17 — Hosted execution plan link
+
+Corrected the roadmap link to the hosted task execution plan.
+
+## 2026-11-17 — Repository cleanup
+
+Removed 17 ignored Finder metadata files and linked the folder guide to the existing cleanup history in Plan 9.
+
+## 2026-11-17 — Persistent local Mac signing
+
+Installed Sticky Todo and its screenshot helper with the dedicated Sticky Todo Local Signing certificate. The local build wrapper reuses the keychain profile for subsequent native builds.
+
+## 2026-11-17 — Picker-approved screenshot
+
+Use one complete frame from the selected ScreenCaptureKit stream, then stop capture. The editor receives an image in memory.
+
+## 2026-11-17 — One Mac app for screenshot capture
+
+Moved capture entirely into Sticky Todo’s private helper. It has no separate menu-bar icon, shares the saved profile and can request one display through the system picker.
+
+## 2026-11-17 — Flameshot shortcut and Send to Todo
+
+The resident editor owns the global shortcut and ordinary copy/save actions. Its Todo button sends only the selected image into editable task review. Camera and configuration requests now go through LaunchServices to Flameshot.
+
+## 2026-11-17 — Embedded Flameshot editor
+
+The standalone Mac app now contains the Flameshot editor and exposes its shared settings in Integrations. Capture supports annotation and explicit acceptance. Verified the installed camera opened the embedded editor and returned live screen text to review.
+
+## 2026-11-17 — Task from screenshot
+
+The standalone Mac composer uses Flameshot region capture and local text recognition to create an editable title and checklist. The camera sits beside Add in the quick composer. Installed the aligned Mac build and matching Flameshot fork at 63a1e50.
+
 ## 2026-11-16 — Repository cleanup
 
 Removed unused meeting-action styles and 14 disposable local browser logs and snapshots. Corrected current APK delivery paths and CI guidance. Kept independent plugin packaging, linked worktrees, notebook data, release evidence and signing configuration.

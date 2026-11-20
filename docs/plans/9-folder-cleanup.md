@@ -65,3 +65,18 @@
 
 - [x] Removed unused meeting-action styles and 14 disposable local browser logs and snapshots. Corrected current APK delivery paths and CI guidance. Kept independent plugin packaging, linked worktrees, notebook data, release evidence and signing configuration.
 - [x] Removed unused Android account-status callback plumbing while retaining the provider-routing logic.
+
+## November 17 repository pass
+
+- [x] Inventory 499 tracked paths and five untracked screenshot implementation and plan files. Check identical files against package, manifest and asset consumers.
+- [x] Remove 17 ignored Finder metadata files. Consolidate historical cleanup notes here and link the folder guide to this record.
+- [x] Recheck local Markdown file targets and correct the roadmap link to hosted task execution (Plan 18).
+- The October 29 Rust cache cleanup covered the build, deps, incremental and .fingerprint directories in the debug and release profiles.
+
+## November 20 obsolete installers and packages
+
+- [x] Inspect APK package/version metadata, plugin installation receipts and Mac bundle metadata.
+- [x] Move 17 superseded APKs, eight plugin packages, one Android review ZIP and three old Mac candidate/rollback bundles to a dated Trash recovery folder (29 items, 483,024,015 bytes).
+- [x] Verify every recovery copy by SHA-256 and preserve symlinks before removing project copies. Verify current Android build 2029 retains SHA-256 a6d4a541a604df85751ca324303f5498a328267e5179b2959f19eb54e7c561fc.
+- Recovery folder: ~/.Trash/todo-sticky-obsolete-packages-2026-11-20. Its manifest records original relative paths and hashes. Historical delivery receipts reference the original locations.
+- Retain the current root APK, native build bundle and public cross-platform downloads. Installed dependencies and application installations are outside this cleanup.

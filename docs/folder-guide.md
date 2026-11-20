@@ -16,12 +16,12 @@ One canonical home per product surface. Run npm commands from the repository roo
 | `docs/`, `demo/` | Project records and published demonstration assets. Keep. |
 | `content/` | Local task files, including a history-recovery source. Never treat as build output. |
 | `todo-sticky-latest.apk` | Current signed Android delivery. Replace only after verifying package, version and signer. Ignored by Git. |
-| `release/` | Retained local release bundles and plugin packages. Ignored by Git. |
+| `release/` | Local packaging staging area. Superseded packages were moved to Trash on November 20; see Plan 9 for recovery. Ignored by Git. |
 | `output/account-sync/` | Downloaded artifacts and deployment/verification evidence. Keep while delivery work is active. |
 | `output/playwright/` | Disposable local browser intermediates; old screenshots, recordings and logs have been removed. Retained fixture source is not a build artifact. |
 | `node_modules/`, `backend/.venv/` | Installed dependencies. Retained so local development still works. Recreate with the documented install steps if removed. |
 | `dist/` | Generated frontend build; retained for preview. Recreate with `npm run build:frontend`. |
-| `src-tauri/target/` | Rust build output. Compiler caches are reproducible, but this folder also contains release bundles and historical `rollback/` copies: do not delete it wholesale. |
+| `src-tauri/target/` | Rust build output including the current native bundle. August rollback bundles were moved to Trash on November 20. Review build outputs individually before cleanup. |
 | `src-tauri/gen/` | Generated Tauri schemas. Leave tool-managed. |
 | `.git/` | Repository history and branch metadata. Never manually clean. |
 | `.github/` | Automated build/release workflows. Keep. |
@@ -46,16 +46,12 @@ One canonical home per product surface. Run npm commands from the repository roo
 
 `.cjs` means CommonJS JavaScript; `.js`, `.py`, and `.sh` identify JavaScript, Python, and shell scripts. Numbered files in `docs/plans/` are linked project history, not temporary scripts.
 
-On 2026-10-29, cleanup removed only Rust compiler-cache subdirectories (`build`, `deps`, `incremental`, `.fingerprint` under debug/release), backend Python bytecode, selected Finder metadata and the empty `.cursor/`. Native executables, release bundles, rollback copies, dependencies, private configuration, task data and all linked checkout contents were preserved. The next native build must regenerate its compiler caches and will take longer.
-
-The independent-app layout is documented here rather than in a parallel layout guide. Shared identity/data/quota cutover is tracked in [17](plans/17-diane-shared-apps.md) and [17-1](plans/17-1-canonical-sync.md). Standalone UI remains unchanged.
+Shared identity, data and quota cutover is tracked in [the shared-app plan](plans/17-diane-shared-apps.md) and [the canonical sync plan](plans/17-1-canonical-sync.md).
 
 ## Consolidation policy
 
 Completed follow-ups share their existing parent/implementation plan with stable anchors; active plans stay separate. The Star Focus design lock remains small and separate from implementation history. Update an existing document before adding one. Historical release evidence and changelog entries remain available.
 
-The November 10 audit covered all 558 tracked paths (source, tests, scripts, configuration, docs and assets), including exact duplicate checks. Removed 79 merged plan files, unused Tauri Android/iOS icon exports (Flutter retains its own icons), four obsolete symlinks, a plugin build forwarding script and the redundant plugin source README. Removed the empty shared scaffold and temporary browser logs/snapshots. No dependency tree, task archive, private configuration, output delivery evidence, release artifact or linked worktree was deleted. Native platform/package directory nesting remains intentional.
+Keep Cargo lock files and build completion markers even when empty. The [folder cleanup plan](plans/9-folder-cleanup.md) records previous removals and their verification.
 
-The second November 10 pass removes obsolete screenshots, UI XML dumps, intermediate WebM recordings, logs, one checksum-verified duplicate APK, empty review directories and an orphan APK checksum. Verification JSON, notebook snapshots, unique APK backups and the current root APK remain. The old seed-demo script/command was removed; scripts/record-demos.cjs is the sole showcase generator and uses isolated synthetic data.
-
-Empty files are not automatically disposable: Cargo lock files and build completion markers are tool-managed. Stale plugin/backend/build and egg-info output, the obsolete backend/diane namespace directories and empty phone build logs were removed; actual backend source lives under plugin/backend/src/diane/plugins.
+The November 20 package cleanup moved obsolete installers to a checksum-verified Trash recovery folder recorded in [Plan 9](plans/9-folder-cleanup.md). Historical receipts and account-sync setup notes retain their original paths and describe past deliveries. Use the root APK for the current Android installer.
