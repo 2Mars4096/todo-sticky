@@ -2,6 +2,8 @@
 
 ## Pipe Dreams platform requirements
 
+Phone, web, and Mac clients may offer different features. Preserve each client’s existing workflows during the transfer.
+
 Build and maintain three clients for Dockit: a working web app, an installable iOS phone app for iPhone, and an installable Android phone app. Users must be able to organize proposals into to-dos and assign work on each platform. Record build and workflow verification separately for each client.
 
 This file is the central Codex instruction file for this repository.
