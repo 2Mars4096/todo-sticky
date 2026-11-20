@@ -109,10 +109,10 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
   useEffect(() => {
     if (!settings.connectDiane || loading || loadFailed) return
     let disposed = false
-    setDianeDestination('Checking Dear Diane on this computer…')
+    setDianeDestination('Checking Shiprite on this computer…')
     void dianeRequest<DianeProjects>('projects').then(data => {
       if (!disposed) setDianeDestination(data.projects.length ? 'Connected · choose a workspace when sending a task.' : 'Connected · choose a folder when sending a task.')
-    }).catch(() => { if (!disposed) setDianeDestination('Not connected. Open Dear Diane on this computer.') })
+    }).catch(() => { if (!disposed) setDianeDestination('Not connected. Open Shiprite on this computer.') })
     return () => { disposed = true }
   }, [settings.connectDiane, loading, loadFailed])
 
@@ -196,7 +196,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
     <div className="settings-overlay" onClick={requestClose}>
       <div ref={dialogRef} className="settings-panel settings-wide settings-refined" role="dialog" aria-modal="true" aria-labelledby={id + '-title'} tabIndex={-1} onClick={event => event.stopPropagation()}>
         <header className="settings-dialog-header">
-          <h2 id={id + '-title'}>{firstRun ? 'Make Sticky Todo yours' : 'Settings'}</h2>
+          <h2 id={id + '-title'}>{firstRun ? 'Make Dockit yours' : 'Settings'}</h2>
           <button ref={closeButtonRef} type="button" className="settings-close" onClick={requestClose} disabled={updating || saving} aria-label="Close settings">×</button>
         </header>
         {firstRun && <p className="settings-subtitle">You can capture tasks now and set up optional tools whenever you need them.</p>}
@@ -248,13 +248,13 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
               <select id={id + '-provider'} value={settings.provider} onChange={event => handleProviderChange(event.target.value as Provider)}>
                 {PROVIDER_ORDER.map(provider => <option key={provider} value={provider}>{PROVIDER_PRESETS[provider].label}</option>)}
               </select>
-              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your Diane account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
-                <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? 'Todo API key (fallback)' : 'Todo API key'}</label>
+              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your Pipe Dreams account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
+                <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? 'Dockit API key (fallback)' : 'Dockit API key'}</label>
                 <div className="input-row">
                   <input id={id + '-key'} type={showKey ? 'text' : 'password'} value={settings.apiKey} onChange={event => update({ apiKey: event.target.value })} placeholder={isOpenRouter ? 'sk-or-v1-…' : 'sk-…'} autoComplete="off" spellCheck={false} />
                   <button type="button" className="input-row-btn" onClick={() => setShowKey(value => !value)} aria-label={showKey ? 'Hide API key' : 'Show API key'}>{showKey ? 'Hide' : 'Show'}</button>
                 </div>
-                {settings.preferDianeCredentials !== false && dianeAvailable && <p className="hint">A matching Diane key is available. You can change key reuse in Integrations.</p>}
+                {settings.preferDianeCredentials !== false && dianeAvailable && <p className="hint">A matching Shiprite key is available. You can change key reuse in Integrations.</p>}
               </>}
               {!isDiane && <details className="settings-details" key={settings.provider} open={settings.provider === 'custom' || undefined}>
                 <summary>Model and connection options</summary>
@@ -301,10 +301,10 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
                 }}>Flameshot settings…</button>
               )}
               <p className="settings-description">Connect optional tools on this computer.</p>
-              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} onChange={event => update({ connectDiane: event.target.checked })} /> Connect to Dear Diane on this computer</label>
-              <p className="hint">{settings.connectDiane ? dianeDestination : 'Enable task handoff to Dear Diane. Your task list works independently.'}</p>
-              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.preferDianeCredentials !== false} onChange={event => update({ preferDianeCredentials: event.target.checked })} /> Use Diane credentials when available</label>
-              <p className="hint">{settings.preferDianeCredentials === false ? 'Using Todo’s own key.' : dianeAvailable ? 'A matching key is available. Diane does not need to be open.' : 'No matching key found. Todo will use its own key.'}</p>
+              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} onChange={event => update({ connectDiane: event.target.checked })} /> Connect to Shiprite on this computer</label>
+              <p className="hint">{settings.connectDiane ? dianeDestination : 'Enable task handoff to Shiprite. Your task list works independently.'}</p>
+              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.preferDianeCredentials !== false} onChange={event => update({ preferDianeCredentials: event.target.checked })} /> Use Shiprite credentials when available</label>
+              <p className="hint">{settings.preferDianeCredentials === false ? 'Using Dockit’s own key.' : dianeAvailable ? 'A matching key is available. Shiprite does not need to be open.' : 'No matching key found. Dockit will use its own key.'}</p>
             </section>
           </fieldset>}
 

@@ -62,7 +62,7 @@ function MeetingDrafts({review, request, onAdded}: {review: Review; request: Rev
         </label>}
         {(action.owner || action.due_date) && <span className="meeting-meta">{[action.owner, action.due_date].filter(Boolean).join(' · ')}</span>}
         <div className="meeting-actions"><details><summary>Transcript</summary>{action.evidence.map((e,i) => <blockquote key={i}>{e.quote}</blockquote>)}</details>
-          {action.pushed && <span className="meeting-meta">Added to Todo</span>}
+          {action.pushed && <span className="meeting-meta">Added to Dockit</span>}
         </div>
       </li>;
     })}</ul>}

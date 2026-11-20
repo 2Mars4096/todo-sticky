@@ -1,6 +1,6 @@
-# Todo plugin for Diane
+# Dockit plugin for Shiprite
 
-This directory owns the embedded Todo interface and its compatibility backend. Diane consumes a versioned package and supplies account, record, project and execution services through `@diane/plugin-sdk/*`. The standalone React 18/Tauri app and phone client keep their existing build and data paths; the plugin has its own React 19 development environment.
+This directory owns the embedded Dockit interface and its compatibility backend. Shiprite consumes a versioned package and supplies account, record, project and execution services through `@diane/plugin-sdk/*`. The standalone React 18/Tauri app and phone client keep their existing build and data paths; the plugin has its own React 19 development environment.
 
 0.1.4: Footer controls are direct peers (Import & backup, Scheduling machines, AI settings). Machine saves require changed drafts. Active Todo quietly requests scoped preparation after saved task changes and every60s; the host owns preparation/results and explicit Send execution.
 

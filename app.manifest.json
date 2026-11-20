@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "todo",
-  "name": "Todo",
+  "name": "Dockit",
   "version": "0.1.2",
   "repository": "https://github.com/2Mars4096/todo-sticky",
   "paths": {

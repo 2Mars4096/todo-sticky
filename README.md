@@ -1,6 +1,6 @@
-# Sticky Todo
+# Dockit
 
-On Mac, Sticky Todo’s bundled screenshot editor opens with **⌘⇧X** or the camera beside **Add**. If full-display access is unavailable, macOS lets you select a display for this capture. Crop or annotate, then use **Copy**, **Save** or **Todo** to review the recognized text as a task. The helper uses your existing Flameshot profile and has no separate menu-bar icon. Open **Settings → Integrations → Flameshot settings…** to edit that profile.
+On Mac, Dockit’s bundled screenshot editor opens with **⌘⇧X** or the camera beside **Add**. If full-display access is unavailable, macOS lets you select a display for this capture. Crop or annotate, then use **Copy**, **Save** or **Todo** to review the recognized text as a task. The helper uses your existing Flameshot profile and has no separate menu-bar icon. Open **Settings → Integrations → Flameshot settings…** to edit that profile.
 
 On this Mac, use `npm run build` to reuse the **Sticky Todo Local Signing** identity for both the app and its capture helper. The dedicated signing keychain lives under `~/Library/Application Support/Sticky Todo Signing/`. Its generated unlock password is stored in the login Keychain. Keep both across rebuilds.
 
@@ -52,9 +52,9 @@ For AI assistance, choose Moonshot, OpenRouter, OpenAI, Anthropic, Gemini, a cus
 
 The window appears after the app shell is ready; a short fallback keeps startup errors visible if frontend loading fails.
 
-On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Sticky Todo from an installer or automation tool cannot silently open a separate empty data store.
+On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Dockit from an installer or automation tool cannot silently open a separate empty data store.
 
-If macOS or Dropbox has offloaded the Markdown archive, Sticky Todo reports **Tasks are waiting in Dropbox** instead of treating the archive as empty or waiting forever. Reveal the configured `content/to-do/.../index.md` file in Finder, choose **Make available offline** or **Download now**, then use **Retry** after the file becomes local.
+If macOS or Dropbox has offloaded the Markdown archive, Dockit reports **Tasks are waiting in Dropbox** instead of treating the archive as empty or waiting forever. Reveal the configured `content/to-do/.../index.md` file in Finder, choose **Make available offline** or **Download now**, then use **Retry** after the file becomes local.
 
 OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request. Other explicitly selected providers retain their own settings.
 
@@ -293,7 +293,7 @@ Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stab
 
 ## Optional Google account and cross-platform sync
 
-The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Account shows sync progress and a dedicated Conflicts & recovery view. Same-day conflicts are compared as readable versions, with both copies retained locally and stale choices blocked; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching optimized Android release APK is available; The personal Cloud Run service is deployed; see [connection steps](docs/account-sync.md#personal-deployment). Updated macOS/Android builds return from browser confirmation to the app, with a **Return to Sticky Todo** fallback button.
+The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Account shows sync progress and a dedicated Conflicts & recovery view. Same-day conflicts are compared as readable versions, with both copies retained locally and stale choices blocked; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching optimized Android release APK is available; The personal Cloud Run service is deployed; see [connection steps](docs/account-sync.md#personal-deployment). Updated macOS/Android builds return from browser confirmation to the app, with a **Return to Dockit** fallback button.
 
 ## Android app (Flutter)
 

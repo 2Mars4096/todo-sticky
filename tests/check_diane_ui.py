@@ -8,15 +8,15 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.goto(os.environ.get('TODO_TEST_URL', 'http://127.0.0.1:15173') + '/tests/diane-ui.html')
-    page.get_by_role('button', name='Run in Diane · Test project').wait_for()
+    page.get_by_role('button', name='Run in Shiprite · Test project').wait_for()
     page.screenshot(path='/private/tmp/diane-status-controls.png')
     assert page.locator('.diane-running').evaluate('(el)=>getComputedStyle(el).animationName') == 'none'
     page.get_by_role('button', name='Result ready. Open details for ready').click()
-    page.get_by_role('button', name='Open in Diane', exact=True).click()
+    page.get_by_role('button', name='Open in Shiprite', exact=True).click()
     assert page.evaluate('calls.filter(c=>c.action==="open").length') == 1
     page.keyboard.press('Escape')
     assert page.locator('.diane-details').count() == 0
-    button = page.get_by_role('button', name='Run in Diane · Test project')
+    button = page.get_by_role('button', name='Run in Shiprite · Test project')
     button.dblclick()
     page.wait_for_timeout(200)
     assert page.evaluate('calls.filter(c=>c.action==="dispatch").length') == 1

@@ -367,7 +367,7 @@ pub fn run() {
                     true,
                     None::<&str>,
                 )?;
-                let app_submenu = SubmenuBuilder::new(app, "Sticky Todo")
+                let app_submenu = SubmenuBuilder::new(app, "Dockit")
                     .about(None)
                     .separator()
                     .item(&show_hide_menu)
@@ -427,7 +427,7 @@ pub fn run() {
                 .ok_or_else(|| "Failed to find default tray icon".to_string())?;
             tray.set_menu(Some(tray_menu))?;
             tray.set_tooltip(Some(format!(
-                "Sticky Todo  ({} to toggle)",
+                "Dockit  ({} to toggle)",
                 shortcut_label()
             )))?;
 
@@ -476,7 +476,7 @@ pub fn run() {
             commands::select_folder,
         ])
         .build(tauri::generate_context!())
-        .expect("error while building Sticky Todo");
+        .expect("error while building Dockit");
 
     app.run(|app, event| {
         #[cfg(target_os = "macos")]

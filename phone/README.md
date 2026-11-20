@@ -1,4 +1,4 @@
-# Sticky Todo for Android
+# Dockit for Android
 
 A native Flutter client for the same daily workflow as the desktop app: fast capture, nested steps, outcomes, deadlines, daily planning, goals, routines and Star Focus. The paper surface, phone navigation and explicit AI previews keep the task list central.
 
@@ -43,7 +43,7 @@ ORG_GRADLE_PROJECT_stickyReviewBuild=true flutter build apk \
   --dart-define=SYNC_SERVER_URL=https://dear-diane-202610-api.web.app --dart-define=DIANE_SHARED_CUTOVER=true
 ```
 
-Both preview flags are required. The package is `io.github.twomars4096.sticky_todo.preview`, labelled **Sticky Todo Preview**, and uses the Android debug signing key with release optimization. Its notebook is separate. Browser sign-in requires returning manually to the preview. This APK cannot update the production installation; a production update still requires the original key. Use a distinct delivery filename such as `todo-sticky-preview-2.1.15-9.apk`.
+Both preview flags are required. The package is `io.github.twomars4096.sticky_todo.preview`, labelled **Dockit Preview**, and uses the Android debug signing key with release optimization. Its notebook is separate. Browser sign-in requires returning manually to the preview. This APK cannot update the production installation; a production update still requires the original key. Use a distinct delivery filename such as `todo-sticky-preview-2.1.15-9.apk`.
 
 
 ## Use

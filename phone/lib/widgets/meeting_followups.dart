@@ -350,7 +350,7 @@ class _ReviewState extends State<_Review> {
                         actions[i]['todo_text'] ?? actions[i]['text'],
                       ),
                       subtitle: actions[i]['pushed'] == true
-                          ? const Text('Added to Todo')
+                          ? const Text('Added to Dockit')
                           : null,
                     )
                   else

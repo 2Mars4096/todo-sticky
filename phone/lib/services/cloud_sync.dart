@@ -1202,7 +1202,7 @@ class CloudSyncController extends ChangeNotifier {
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
       throw StateError(
-        'Sign in to the shared Diane account to open this task.',
+        'Sign in to the Pipe Dreams account to open this task.',
       );
     }
     if (!enabled) {
@@ -1287,7 +1287,7 @@ class CloudSyncController extends ChangeNotifier {
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
       throw StateError(
-        'Sign in to the shared Diane account in Settings → Account.',
+        'Sign in to the Pipe Dreams account in Settings → Account.',
       );
     }
     final bound = store.syncMetadata['owner'];
@@ -1314,7 +1314,7 @@ class CloudSyncController extends ChangeNotifier {
     );
     if (_disposed || epoch != _epoch || session?.owner != current.owner) {
       throw StateError(
-        'Account changed while Diane was working; the result belongs to the earlier account.',
+        'Account changed while Pipe Dreams was working; the result belongs to the earlier account.',
       );
     }
     return value;

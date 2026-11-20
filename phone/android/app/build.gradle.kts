@@ -34,7 +34,7 @@ android {
         } else {
             "io.github.twomars4096.sticky_todo"
         }
-        manifestPlaceholders["appLabel"] = if (isReviewBuild) "Sticky Todo Preview" else "Sticky Todo"
+        manifestPlaceholders["appLabel"] = if (isReviewBuild) "Dockit Preview" else "Dockit"
         manifestPlaceholders["accountReturnScheme"] = if (isReviewBuild) "todo-sticky-preview" else "todo-sticky"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.

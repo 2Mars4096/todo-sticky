@@ -23,7 +23,7 @@ fn recognize(png: Vec<u8>) -> Result<String, String> {
 fn resident_bundle() -> Result<std::path::PathBuf, String> {
     let executable = std::env::current_exe().map_err(|e| e.to_string())?;
     let contents = executable.parent().and_then(std::path::Path::parent)
-        .ok_or("Could not locate the Sticky Todo bundle.")?;
+        .ok_or("Could not locate the Dockit bundle.")?;
     let helper = contents.join("Helpers/Flameshot.app");
     if helper.join("Contents/MacOS/flameshot").is_file() { Ok(helper) }
     else { Err("This build does not include the screenshot editor.".into()) }

@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sticky Todo</title>
+    <title>Dockit</title>
   </head>
   <body>
     <div id="root">
       <main id="boot-surface" style="height:100%;display:grid;place-content:center;gap:12px;padding:32px;background:linear-gradient(180deg,#fffce8 0%,#fdf4ca 100%);color:#3d3520;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;text-align:center">
         <span style="font-size:22px;color:#a8882e" aria-hidden="true">✓</span>
-        <span>Starting Sticky Todo…</span>
+        <span>Starting Dockit…</span>
       </main>
     </div>
     <script>
@@ -31,7 +31,7 @@
         var showFailure = function (value) {
           var root = document.getElementById('root')
           if (!root) return
-          root.innerHTML = '<main style="height:100%;display:grid;place-content:center;gap:12px;padding:32px;background:linear-gradient(180deg,#fffce8 0%,#fdf4ca 100%);color:#3d3520;font:14px/1.45 -apple-system,BlinkMacSystemFont,sans-serif;text-align:center"><strong style="font-size:17px">Sticky Todo could not start</strong><span>Your task file was not changed.</span><button style="justify-self:center;padding:8px 14px;border:1px solid #c4a44a;border-radius:8px;background:#fff8dc;color:#3d3520;font:600 13px -apple-system,BlinkMacSystemFont,sans-serif" onclick="window.location.reload()">Reload app</button></main>'
+          root.innerHTML = '<main style="height:100%;display:grid;place-content:center;gap:12px;padding:32px;background:linear-gradient(180deg,#fffce8 0%,#fdf4ca 100%);color:#3d3520;font:14px/1.45 -apple-system,BlinkMacSystemFont,sans-serif;text-align:center"><strong style="font-size:17px">Dockit could not start</strong><span>Your task file was not changed.</span><button style="justify-self:center;padding:8px 14px;border:1px solid #c4a44a;border-radius:8px;background:#fff8dc;color:#3d3520;font:600 13px -apple-system,BlinkMacSystemFont,sans-serif" onclick="window.location.reload()">Reload app</button></main>'
         }
 
         window.__stickyTodoBoot = { record: record, showFailure: showFailure }

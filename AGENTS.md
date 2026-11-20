@@ -1,4 +1,4 @@
-# Sticky Todo Repository Guide
+# Dockit Repository Guide
 
 ## Pipe Dreams platform requirements
 

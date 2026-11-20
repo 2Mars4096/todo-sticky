@@ -105,7 +105,7 @@ class AiService {
             profile.model.toLowerCase().contains('kimi')) {
           body['temperature'] = 1.0;
         }
-        if (prefs.provider == 'openrouter') headers['X-Title'] = 'Sticky Todo';
+        if (prefs.provider == 'openrouter') headers['X-Title'] = 'Dockit';
     }
     late http.Response response;
     try {
@@ -206,7 +206,7 @@ class AiService {
     if (usesShared(prefs)) {
       if (sharedRequest == null || sharedAction == null) {
         throw const AiException(
-          'Sign in to the shared Diane account before requesting this action.',
+          'Sign in to the Pipe Dreams account before requesting this action.',
         );
       }
       return sharedRequest!(sharedAction, sharedInput ?? object(data));
@@ -237,7 +237,7 @@ class AiService {
     if (usesShared(prefs)) {
       if (sharedRequest == null) {
         throw const AiException(
-          'Sign in to the shared Diane account in Settings → Account.',
+          'Sign in to the Pipe Dreams account in Settings → Account.',
         );
       }
       await sharedRequest!('breakdown', {
