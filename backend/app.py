@@ -404,6 +404,10 @@ def create_app(store=None, verifier: Callable | None = None, mint: Callable | No
     def signin():
         return FileResponse(Path(__file__).with_name("signin.html"))
 
+    @app.get("/dockit-32.png")
+    def signin_icon():
+        return FileResponse(Path(__file__).parent / "brand" / "dockit-32.png", media_type="image/png")
+
     @app.get("/signin.js")
     def signin_script():
         return FileResponse(Path(__file__).with_name("signin.js"), media_type="text/javascript")

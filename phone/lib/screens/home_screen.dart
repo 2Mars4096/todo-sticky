@@ -363,10 +363,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Column(
                           children: [
-                            Icon(
-                              Icons.edit_note_rounded,
-                              size: 52,
-                              color: mutedInk,
+                            Image(
+                              image: AssetImage('assets/brand/dockit.png'),
+                              width: 52,
+                              height: 52,
+                              excludeFromSemantics: true,
                             ),
                             SizedBox(height: 12),
                             Text(

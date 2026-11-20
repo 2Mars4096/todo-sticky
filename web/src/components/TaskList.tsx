@@ -220,7 +220,7 @@ export function TaskList({
     return (
       <div className="task-list empty">
         <div className="task-empty-state">
-          <span className="task-empty-mark" aria-hidden="true">✓</span>
+          <img src={`${import.meta.env.BASE_URL}brand/pipedreams-ink/icon-48.png`} width={28} height={28} style={{borderRadius: 6}} alt="" />
           <strong>{isCurrentDay ? 'Start with one clear task' : 'No tasks on this day'}</strong>
           <span>
             {isCurrentDay

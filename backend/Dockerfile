@@ -3,6 +3,7 @@ WORKDIR /app
 COPY requirements.lock .
 RUN pip install --no-cache-dir -r requirements.lock
 COPY app.py signin.html signin.js ./
+COPY brand/dockit-32.png ./brand/dockit-32.png
 RUN useradd --create-home app
 USER app
 ENV PORT=8080

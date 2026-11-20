@@ -32,7 +32,7 @@
     "trayIcon": {
       "iconPath": "icons/icon.png",
       "tooltip": "Dockit",
-      "iconAsTemplate": true
+      "iconAsTemplate": false
     },
     "security": {
       "csp": null

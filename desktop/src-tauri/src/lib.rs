@@ -17,8 +17,6 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::{Mutex, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
-#[cfg(target_os = "macos")]
-use tauri::image::Image;
 use tauri::menu::MenuItemBuilder;
 use tauri::{
     menu::{MenuBuilder, MenuItem, SubmenuBuilder},
@@ -143,83 +141,6 @@ fn shortcut_label() -> &'static str {
 #[cfg(target_os = "linux")]
 fn shortcut_label() -> &'static str {
     "Ctrl+Shift+Alt+T"
-}
-
-#[cfg(target_os = "macos")]
-fn tray_icon_image() -> Image<'static> {
-    let width = 32usize;
-    let height = 32usize;
-    let mut rgba = vec![0u8; width * height * 4];
-
-    fn set_pixel(rgba: &mut [u8], width: usize, height: usize, x: usize, y: usize) {
-        if x >= width || y >= height {
-            return;
-        }
-        let idx = (y * width + x) * 4;
-        rgba[idx] = 0;
-        rgba[idx + 1] = 0;
-        rgba[idx + 2] = 0;
-        rgba[idx + 3] = 255;
-    }
-
-    for x in 6..=21 {
-        set_pixel(&mut rgba, width, height, x, 5);
-        set_pixel(&mut rgba, width, height, x, 6);
-        set_pixel(&mut rgba, width, height, x, 26);
-    }
-
-    for y in 5..=26 {
-        set_pixel(&mut rgba, width, height, 5, y);
-        set_pixel(&mut rgba, width, height, 6, y);
-        set_pixel(&mut rgba, width, height, 26, y);
-    }
-
-    for offset in 0..5 {
-        set_pixel(&mut rgba, width, height, 21 + offset, 5 + offset);
-        set_pixel(&mut rgba, width, height, 22 + offset, 5 + offset);
-    }
-
-    for y in 10..=12 {
-        set_pixel(&mut rgba, width, height, 10, y);
-    }
-    for y in 17..=19 {
-        set_pixel(&mut rgba, width, height, 10, y);
-    }
-
-    for (x, y) in [
-        (9, 12),
-        (10, 13),
-        (11, 14),
-        (12, 13),
-        (13, 12),
-        (14, 11),
-        (15, 10),
-    ] {
-        set_pixel(&mut rgba, width, height, x, y);
-        set_pixel(&mut rgba, width, height, x, y + 1);
-    }
-
-    for (x, y) in [
-        (9, 19),
-        (10, 20),
-        (11, 21),
-        (12, 20),
-        (13, 19),
-        (14, 18),
-        (15, 17),
-    ] {
-        set_pixel(&mut rgba, width, height, x, y);
-        set_pixel(&mut rgba, width, height, x, y + 1);
-    }
-
-    for x in 17..=23 {
-        set_pixel(&mut rgba, width, height, x, 12);
-        set_pixel(&mut rgba, width, height, x, 13);
-        set_pixel(&mut rgba, width, height, x, 19);
-        set_pixel(&mut rgba, width, height, x, 20);
-    }
-
-    Image::new_owned(rgba, width as u32, height as u32)
 }
 
 struct WatcherState {
@@ -433,8 +354,6 @@ pub fn run() {
 
             #[cfg(target_os = "macos")]
             {
-                tray.set_icon(Some(tray_icon_image()))?;
-                tray.set_icon_as_template(true)?;
                 tray.set_show_menu_on_left_click(false)?;
             }
 

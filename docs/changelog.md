@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-20 — Dockit icon integration
+
+Wired the approved Ink mark into the web client, sign-in page, Shiprite plugin, desktop bundle, Flutter views and Android launcher. See the [icon integration plan](plans/23-icon-asset-handoff.md).
+
 ## 2026-11-20 — Dockit transfer naming review
 
 Corrected pipedreams account labels, Dockit sign-in and backend messages, Shiprite handoff instructions and the Mac capture-helper lookup. Current platform checks and build limits are recorded in the [transfer review](plans/23-dockit-transfer-review.md).

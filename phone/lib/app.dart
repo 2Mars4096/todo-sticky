@@ -146,11 +146,30 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
         home: Builder(
           builder: (context) => Scaffold(
             appBar: AppBar(
-              title: Text(
-                ['Dockit', 'Goals & routines', 'Focus'][tab],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              title: tab == 0
+                  ? const Row(
+                      children: [
+                        Image(
+                          image: AssetImage('assets/brand/dockit.png'),
+                          width: 24,
+                          height: 24,
+                          excludeFromSemantics: true,
+                        ),
+                        SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Dockit',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      tab == 1 ? 'Goals & routines' : 'Focus',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
               actions: [
                 if (store.ready && tab == 0) ...[
                   IconButton(

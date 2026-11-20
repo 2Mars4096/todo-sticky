@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Integrate the approved Dockit icon across existing clients and package its source artwork. See the [icon integration plan](plans/23-icon-asset-handoff.md).
+
 - [x] Review Dockit transfer labels and destinations. Web and Mac builds verified — [transfer review](plans/23-dockit-transfer-review.md).
 - [ ] Verify the Android build and workflows with the pinned Flutter SDK, and verify iPhone when its runner is available — [phone verification](plans/23-dockit-transfer-review.md#verification).
 

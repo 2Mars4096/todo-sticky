@@ -220,7 +220,7 @@ export function TaskList({
     return (
       <div className="task-list empty">
         <div className="task-empty-state">
-          <span className="task-empty-mark" aria-hidden="true">✓</span>
+          <span className="task-empty-brand" aria-hidden="true" />
           <strong>{isCurrentDay ? 'No tasks for today' : 'No tasks on this day'}</strong>
           {!isCurrentDay && (
             <button className="task-empty-today" onClick={onGoToday}>
