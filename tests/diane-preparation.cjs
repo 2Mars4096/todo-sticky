@@ -27,7 +27,7 @@ const input={id:'local',date:'2026-11-10',text:'Task',parent:'Parent',steps:['St
  await assert.rejects(suggestDianeSetup(input),/pending or uncertain/)
  assert.equal(calls.filter(c=>c.action==='prepare').length,before)
  assert.equal(calls.some(c=>c.action==='dispatch'),false)
- console.log('Diane preparation: Python contract parity, original-ID matching, stale sync rejection, durable receipt reuse and no execution passed')
+ console.log('Shiprite preparation: Python contract parity, original-ID matching, stale sync rejection, durable receipt reuse and no execution passed')
 })().catch(e=>{console.error(e);process.exit(1)})
 
 const {dianeReceiptKey}=load('web/src/diane.ts',{'@tauri-apps/api/core':{}})

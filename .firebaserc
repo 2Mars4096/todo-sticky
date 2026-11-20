@@ -1,0 +1,4 @@
+{
+  "projects": {"default": "dear-diane-202610"},
+  "targets": {"dear-diane-202610": {"hosting": {"dockit": ["pipedreams-dockit"]}}}
+}

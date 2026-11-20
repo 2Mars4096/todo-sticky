@@ -1,11 +1,14 @@
+import { waitForPendingWrites } from '../api'
+import { WorkspaceAssignments } from './WorkspaceAssignments'
 import { useEffect, useRef, useState } from 'react'
+import { DIANE_SHARED_ORIGIN } from '../cloudAccount'
 import type { useCloudSync } from '../hooks/useCloudSync'
 import '../styles/cloud-account.css'
 import { SyncProgressView } from './SyncProgressView'
 import { ConflictReview } from './ConflictReview'
 
 export type CloudAccount = ReturnType<typeof useCloudSync>
-export function AccountPanel({ account }: { account: CloudAccount }) {
+export function AccountPanel({ account, flush = waitForPendingWrites }: { account: CloudAccount; flush?: () => Promise<void> }) {
   const [url, setUrl] = useState(account.server)
   const [review, setReview] = useState<'pending' | 'history' | null>(null)
   const reviewButton = useRef<HTMLButtonElement>(null)
@@ -16,10 +19,11 @@ export function AccountPanel({ account }: { account: CloudAccount }) {
   if (review) return <ConflictReview account={account} initialHistory={review === 'history'} onBack={back} />
   return <section className="settings-section cloud-account" aria-labelledby="account-heading">
     <header className="cloud-account-heading">
-      <div><h3 id="account-heading">{account.user?.displayName || (account.user ? 'Google account' : 'Account')}</h3>{account.user?.email && <p className="cloud-email">{account.user.email}</p>}</div>
+      <div><h3 id="account-heading">{account.user?.displayName || (account.server === DIANE_SHARED_ORIGIN ? 'Pipe Dreams account' : 'Account')}</h3>{account.user?.email && <p className="cloud-email">{account.user.email}</p>}</div>
       {account.user && <button type="button" className="cloud-quiet" disabled={account.busy} onClick={() => { void account.logout() }}>Sign out</button>}
     </header>
     {account.user ? <>
+      {account.auth && account.server === DIANE_SHARED_ORIGIN && <WorkspaceAssignments key={account.user.uid} auth={account.auth} user={account.user} flush={flush}/>}
       <div className="cloud-sync-controls">
         <button type="button" className="cloud-primary" onClick={() => { void account.sync() }} disabled={account.busy}>{account.busy && !account.background ? 'Syncing…' : 'Sync'}</button>
       </div>

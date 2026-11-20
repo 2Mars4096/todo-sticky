@@ -1,3 +1,4 @@
+import { invoke, isTauri } from '@tauri-apps/api/core'
 import { NOTE_MATERIALS, type NoteMaterial } from '../noteMaterial'
 import { AccountPanel, type CloudAccount } from './AccountPanel'
 import { useState, useEffect, useId, useRef } from 'react'
@@ -58,6 +59,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
   const [section, setSection] = useState<SettingsSection>(initialAccount ? 'account' : initialProvider ? 'ai' : 'tasks')
   const [dianeDestination, setDianeDestination] = useState('')
   const [dianeAvailable, setDianeAvailable] = useState(false)
+  const [captureSettingsOpen, setCaptureSettingsOpen] = useState(false)
   const [showKey, setShowKey] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -107,10 +109,10 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
   useEffect(() => {
     if (!settings.connectDiane || loading || loadFailed) return
     let disposed = false
-    setDianeDestination('Checking Dear Diane on this computer…')
+    setDianeDestination('Checking Shiprite on this computer…')
     void dianeRequest<DianeProjects>('projects').then(data => {
       if (!disposed) setDianeDestination(data.projects.length ? 'Connected · choose a workspace when sending a task.' : 'Connected · choose a folder when sending a task.')
-    }).catch(() => { if (!disposed) setDianeDestination('Not connected. Open Dear Diane on this computer.') })
+    }).catch(() => { if (!disposed) setDianeDestination('Not connected. Open Shiprite on this computer.') })
     return () => { disposed = true }
   }, [settings.connectDiane, loading, loadFailed])
 
@@ -194,13 +196,13 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
     <div className="settings-overlay" onClick={requestClose}>
       <div ref={dialogRef} className="settings-panel settings-wide settings-refined" role="dialog" aria-modal="true" aria-labelledby={id + '-title'} tabIndex={-1} onClick={event => event.stopPropagation()}>
         <header className="settings-dialog-header">
-          <h2 id={id + '-title'}>{firstRun ? 'Make Sticky Todo yours' : 'Settings'}</h2>
+          <h2 id={id + '-title'}>{firstRun ? 'Make Dockit yours' : 'Settings'}</h2>
           <button ref={closeButtonRef} type="button" className="settings-close" onClick={requestClose} disabled={updating || saving} aria-label="Close settings">×</button>
         </header>
         {firstRun && <p className="settings-subtitle">You can capture tasks now and set up optional tools whenever you need them.</p>}
 
         <nav className="settings-section-nav" aria-label="Settings sections">
-          {SECTIONS.map(item => <button key={item.id} type="button" aria-pressed={section === item.id} aria-controls={id + '-section'} onClick={() => setSection(item.id)}>{item.label}</button>)}
+          {SECTIONS.filter(item => isTauri() || !['integrations', 'updates'].includes(item.id)).map(item => <button key={item.id} type="button" aria-pressed={section === item.id} aria-controls={id + '-section'} onClick={() => setSection(item.id)}>{item.label}</button>)}
         </nav>
 
         <div className="settings-scroll" id={id + '-section'}>
@@ -224,7 +226,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
           {section === 'tasks'  && <fieldset className="settings-fields" disabled={fieldsDisabled}>
             <section className="settings-section" aria-labelledby={id + '-storage-title'}>
               <h3 className="section-title" id={id + '-storage-title'}>Tasks & storage</h3>
-              <p className="settings-description">Your tasks are saved as Markdown in your task folder.</p>
+              {isTauri() ? <><p className="settings-description">Your tasks are saved as Markdown in your task folder.</p>
               <p className="settings-path" aria-label="Current task folder">{settings.kbPath || '~/Documents/Sticky Todo'}</p>
               <details className="settings-details">
                 <summary>Change task folder</summary>
@@ -234,7 +236,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
                   <button type="button" className="input-row-btn" onClick={handleSelectFolder} aria-label="Choose storage folder">Browse</button>
                 </div>
                 <p className="hint" id={id + '-folder-hint'}>Leave blank for the default folder. Task files live in content/to-do inside it. Existing task files stay in their current location.</p>
-              </details>
+              </details></> : <p>Your notebook is saved in this browser.</p>}
             </section>
           </fieldset>}
 
@@ -244,15 +246,15 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
               <p className="settings-description">Optional help with outcomes, steps, and planning. Tasks work without AI.</p>
               <label htmlFor={id + '-provider'}>Provider</label>
               <select id={id + '-provider'} value={settings.provider} onChange={event => handleProviderChange(event.target.value as Provider)}>
-                {PROVIDER_ORDER.map(provider => <option key={provider} value={provider}>{PROVIDER_PRESETS[provider].label}</option>)}
+                {PROVIDER_ORDER.filter(provider => isTauri() || provider === 'diane').map(provider => <option key={provider} value={provider}>{PROVIDER_PRESETS[provider].label}</option>)}
               </select>
-              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your Diane account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
-                <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? 'Todo API key (fallback)' : 'Todo API key'}</label>
+              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your Pipe Dreams account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
+                <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? 'Dockit API key (fallback)' : 'Dockit API key'}</label>
                 <div className="input-row">
                   <input id={id + '-key'} type={showKey ? 'text' : 'password'} value={settings.apiKey} onChange={event => update({ apiKey: event.target.value })} placeholder={isOpenRouter ? 'sk-or-v1-…' : 'sk-…'} autoComplete="off" spellCheck={false} />
                   <button type="button" className="input-row-btn" onClick={() => setShowKey(value => !value)} aria-label={showKey ? 'Hide API key' : 'Show API key'}>{showKey ? 'Hide' : 'Show'}</button>
                 </div>
-                {settings.preferDianeCredentials !== false && dianeAvailable && <p className="hint">A matching Diane key is available. You can change key reuse in Integrations.</p>}
+                {settings.preferDianeCredentials !== false && dianeAvailable && <p className="hint">A matching Shiprite key is available. You can change key reuse in Integrations.</p>}
               </>}
               {!isDiane && <details className="settings-details" key={settings.provider} open={settings.provider === 'custom' || undefined}>
                 <summary>Model and connection options</summary>
@@ -290,16 +292,24 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
           {section === 'integrations' && <fieldset className="settings-fields" disabled={fieldsDisabled}>
             <section className="settings-section" aria-labelledby={id + '-integrations-title'}>
               <h3 className="section-title" id={id + '-integrations-title'}>Integrations</h3>
+              {isTauri() && /Mac/.test(navigator.platform) && (
+                <button type="button" disabled={captureSettingsOpen} onClick={async () => {
+                  setCaptureSettingsOpen(true)
+                  try { await invoke('open_capture_settings') }
+                  catch (error) { setSettingsError(String(error)) }
+                  finally { setCaptureSettingsOpen(false) }
+                }}>Flameshot settings…</button>
+              )}
               <p className="settings-description">Connect optional tools on this computer.</p>
-              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} onChange={event => update({ connectDiane: event.target.checked })} /> Connect to Dear Diane on this computer</label>
-              <p className="hint">{settings.connectDiane ? dianeDestination : 'Enable task handoff to Dear Diane. Your task list works independently.'}</p>
-              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.preferDianeCredentials !== false} onChange={event => update({ preferDianeCredentials: event.target.checked })} /> Use Diane credentials when available</label>
-              <p className="hint">{settings.preferDianeCredentials === false ? 'Using Todo’s own key.' : dianeAvailable ? 'A matching key is available. Diane does not need to be open.' : 'No matching key found. Todo will use its own key.'}</p>
+              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} onChange={event => update({ connectDiane: event.target.checked })} /> Connect to Shiprite on this computer</label>
+              <p className="hint">{settings.connectDiane ? dianeDestination : 'Enable task handoff to Shiprite. Your task list works independently.'}</p>
+              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.preferDianeCredentials !== false} onChange={event => update({ preferDianeCredentials: event.target.checked })} /> Use Shiprite credentials when available</label>
+              <p className="hint">{settings.preferDianeCredentials === false ? 'Using Dockit’s own key.' : dianeAvailable ? 'A matching key is available. Shiprite does not need to be open.' : 'No matching key found. Dockit will use its own key.'}</p>
             </section>
           </fieldset>}
 
           {section === 'updates' && <AppUpdates currentVersion={appUpdates.currentVersion} state={appUpdates.state} blockedReason={updateReason} onCheck={appUpdates.check} onInstall={appUpdates.install} onRestart={appUpdates.restart} />}
-          {section === 'account' && account && <AccountPanel account={account} />}
+          {section === 'account' && account && <AccountPanel account={account} flush={onBeforeSave} />}
         </div>
 
         <div className="btn-row">

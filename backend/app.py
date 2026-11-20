@@ -1,4 +1,4 @@
-"""Sticky Todo's optional account service. Local tasks never depend on this service."""
+"""Dockit's optional account service. Local tasks never depend on this service."""
 from __future__ import annotations
 
 import base64
@@ -332,7 +332,7 @@ class FirestoreStore:
 
 
 def create_app(store=None, verifier: Callable | None = None, mint: Callable | None = None) -> FastAPI:
-    app = FastAPI(title="Sticky Todo sync", docs_url=None, redoc_url=None)
+    app = FastAPI(title="Dockit sync", docs_url=None, redoc_url=None)
     initialization_lock = threading.RLock()
     app.add_middleware(BodyLimitMiddleware)
     app.add_middleware(CORSMiddleware,
@@ -403,6 +403,10 @@ def create_app(store=None, verifier: Callable | None = None, mint: Callable | No
     @app.get("/signin")
     def signin():
         return FileResponse(Path(__file__).with_name("signin.html"))
+
+    @app.get("/dockit-32.png")
+    def signin_icon():
+        return FileResponse(Path(__file__).parent / "brand" / "dockit-32.png", media_type="image/png")
 
     @app.get("/signin.js")
     def signin_script():

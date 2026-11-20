@@ -38,7 +38,7 @@ const render = async (record = task(), props: Partial<Parameters<typeof TaskExec
 };
 const button = (text: string) => [...host.querySelectorAll<HTMLButtonElement>('button')].find(item => item.textContent === text)!;
 async function click(text: string) { expect(button(text), text).toBeTruthy(); await act(async () => button(text).click()); }
-async function choose(project: string) { await act(async () => { const select = host.querySelector<HTMLSelectElement>('select[aria-label="Diane project"]')!; select.value = project; select.dispatchEvent(new Event('change', { bubbles: true })); }); }
+async function choose(project: string) { await act(async () => { const select = host.querySelector<HTMLSelectElement>('select[aria-label="Shiprite project"]')!; select.value = project; select.dispatchEvent(new Event('change', { bubbles: true })); }); }
 function deferred<T>() { let resolve!: (value: T) => void; return { promise: new Promise<T>(done => { resolve = done; }), resolve }; }
 
 it('prepares quietly and dispatches once without navigating; Open uses the returned session', async () => {
@@ -60,7 +60,7 @@ it('reloads saved workflow sessions and offers earlier returned attempts without
   vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [run, old] });
   await render(); await click('Run details');
   expect(host.textContent).toContain('Previous runs');
-  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Open previous Diane session 1"]')!.click());
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Open previous Shiprite session 1"]')!.click());
   expect(client.pluginApi.openWorkflow).toHaveBeenCalledWith(old);
   await act(async () => root.render(null));
   localStorage.clear();
@@ -83,7 +83,7 @@ it('reopens validated inline attempt history from the server after remount witho
   await click('Run details');
   expect(host.querySelectorAll('.todo-execution-history li')).toHaveLength(1);
   expect(host.querySelector('.todo-execution-history')?.textContent).toContain('Run 1');
-  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Open previous Diane session 1"]')!.click());
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Open previous Shiprite session 1"]')!.click());
   expect(client.pluginApi.openWorkflow).toHaveBeenCalledWith(expect.objectContaining({
     task_id: 'task-a', project_id: 'research', _scope: 'owner-a', dispatch_id: previous.dispatch_id, session_id: 'prior-session',
   }));
@@ -94,7 +94,7 @@ it('uses the workflow project in browser session links even after changing the n
   vi.mocked(desktop.isElectron).mockReturnValue(false);
   vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [{ ...run, state: 'failed' }] });
   await render(); await choose('writing');
-  const link = host.querySelector<HTMLAnchorElement>('[aria-label="Open Diane session"]')!;
+  const link = host.querySelector<HTMLAnchorElement>('[aria-label="Open Shiprite session"]')!;
   expect(link.getAttribute('href')).toBe('/?session=session-1&workflow=research#workspace');
   expect(link.target).toBe('_blank');
   expect(client.pluginApi.openWorkflow).not.toHaveBeenCalled();
@@ -215,7 +215,7 @@ it('never labels the older host task-stop operation as result discard', async ()
   vi.mocked(client.pluginApi.workflows).mockResolvedValue({ items: [{ ...result, can_discard_result: undefined }] });
   await render(); await click('Review');
   expect(button('Discard result')).toBeUndefined();
-  expect(host.textContent).toContain('Update Diane to discard a result without closing its task.');
+  expect(host.textContent).toContain('Update Shiprite to discard a result without closing its task.');
   expect(client.pluginApi.review).not.toHaveBeenCalled();
   expect(client.pluginApi.stop).not.toHaveBeenCalled();
 });

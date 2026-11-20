@@ -151,7 +151,7 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
     void action(async valid => {
       const next = await pluginApi.run(task, project!.id, runRequestId(task, project!.id, fingerprint, workflow), fingerprint);
       if (!valid()) return;
-      if (next.project_id !== project!.id) throw new Error('Diane returned a different project. Refresh before continuing.');
+      if (next.project_id !== project!.id) throw new Error('Shiprite returned a different project. Refresh before continuing.');
       receive(next); setDetailsOpen(false);
       // Session creation and navigation are separate user actions.
     });
@@ -185,23 +185,23 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
   };
   const staleReview = Boolean(reviewSnapshot && (reviewSnapshot.workflow_id !== workflow?.workflow_id || reviewSnapshot.result_version !== workflow?.result_version));
   const displayed = reviewSnapshot && reviewableWorkflow(workflow) ? reviewSnapshot : workflow;
-  const open = (value: Workflow, label = 'Open', title = 'Open Diane session') => value.session_id && (isElectron()
+  const open = (value: Workflow, label = 'Open', title = 'Open Shiprite session') => value.session_id && (isElectron()
     ? <button type="button" disabled={busy || loading || saving} title={title} aria-label={title} onClick={() => void action(async () => { await pluginApi.openWorkflow(value); })}>{label}</button>
     : <a href={sessionHref(value)} title={title} aria-label={title} target="_blank" rel="noopener noreferrer" onClick={event => { if (!current() || value._scope && value._scope !== scope) event.preventDefault(); }}>{label}</a>);
   const bound = workflow ? projects.find(item => item.id === workflow.project_id) : project;
   const previous = previousSessions(runs);
   const origin = task.extensions.meeting_context as { meeting_id?: string; title?: string; transcript_revision?: number } | undefined;
 
-  return <div className="todo-execution" aria-label="Diane task execution" aria-busy={busy || loading || saving}>
+  return <div className="todo-execution" aria-label="Shiprite task execution" aria-busy={busy || loading || saving}>
     <div className="todo-execution-row">
-      {!workflow || canRunAgain ? <select aria-label="Diane project" title={project?.root || 'Choose a project for this task'} value={project?.id || ''} disabled={busy || saving} onChange={event => chooseProject(event.target.value)}>
+      {!workflow || canRunAgain ? <select aria-label="Shiprite project" title={project?.root || 'Choose a project for this task'} value={project?.id || ''} disabled={busy || saving} onChange={event => chooseProject(event.target.value)}>
         <option value="">Choose project</option>{(choice !== undefined || project) && <option value="__automatic__">Automatic</option>}{projects.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
       </select> : bound ? <span className="todo-execution-project" title={bound.root}>{bound.name}</span> : null}
       <span className="todo-execution-state" role="status">{saving ? 'Saving…' : loading ? 'Loading…' : reviewConflict ? 'Task changed' : workflow ? workflowLabel(workflow.state) : preparationLabel}</span>
       {(!workflow || canRunAgain) && unfinishedTask(task) && <button type="button" className="todo-execution-primary" disabled={!canRun} onClick={run}>{workflow ? 'Run again' : 'Run'}</button>}
       {reviewableWorkflow(workflow) ? <button ref={reviewTrigger} type="button" className="todo-execution-primary" disabled={loading || saving} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={showDetails}>Review</button> : workflow && open(workflow)}
       <details className="todo-execution-options" ref={options} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); options.current!.open = false; options.current?.querySelector('summary')?.focus(); } }}>
-        <summary aria-label="More Diane actions" title="More Diane actions">···</summary>
+        <summary aria-label="More Shiprite actions" title="More Shiprite actions">···</summary>
         <div>
           <button type="button" disabled={busy || loading} onClick={() => { refresh(); if (options.current) options.current.open = false; }}>Refresh</button>
           <button type="button" onClick={() => { showDetails(); if (options.current) options.current.open = false; }} aria-expanded={detailsOpen} aria-controls={detailsId}>Run details</button>
@@ -211,8 +211,8 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
         </div>
       </details>
     </div>
-    {detailsOpen && <section id={detailsId} className="todo-execution-details" aria-label={reviewableWorkflow(workflow) ? 'Review Diane result' : 'Diane run details'}>
-      <header><strong>{workflow ? workflowLabel(workflow.state) : 'Run details'}</strong><button type="button" onClick={closeDetails} aria-label="Close Diane run details">×</button></header>
+    {detailsOpen && <section id={detailsId} className="todo-execution-details" aria-label={reviewableWorkflow(workflow) ? 'Review Shiprite result' : 'Shiprite run details'}>
+      <header><strong>{workflow ? workflowLabel(workflow.state) : 'Run details'}</strong><button type="button" onClick={closeDetails} aria-label="Close Shiprite run details">×</button></header>
       {displayed?.result?.summary && <p className="todo-execution-result">{displayed.result.summary}</p>}
       {staleReview && reviewableWorkflow(workflow) && <p role="status">A newer result is available. <button type="button" onClick={() => setReviewSnapshot(workflow)}>Review latest</button></p>}
       {reviewConflict && <p className="todo-execution-conflict" role="status">{reviewConflict}</p>}
@@ -226,12 +226,12 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
         <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot || !enabled || Boolean(reviewConflict)} aria-expanded={revising} onClick={() => setRevising(value => !value)}>Request changes</button>
         {canDiscardResult && <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot} onClick={() => review('stop')} title="Discard this result and keep the task unchanged">Discard result</button>}
       </div>}
-      {reviewableWorkflow(workflow) && !canDiscardResult && <p>Update Diane to discard a result without closing its task.</p>}
+      {reviewableWorkflow(workflow) && !canDiscardResult && <p>Update Shiprite to discard a result without closing its task.</p>}
       {revising && reviewableWorkflow(workflow) && <form className="todo-execution-revision" onSubmit={event => { event.preventDefault(); review('revise'); }}>
         <label>Changes requested<textarea autoFocus value={feedback} onChange={event => setFeedback(event.target.value)} placeholder="What needs to change?" disabled={busy}/></label>
         <div><button type="submit" disabled={busy || saving || staleReview || !enabled || !feedback.trim() || Boolean(reviewConflict)}>Send changes</button><button type="button" disabled={busy} onClick={() => setRevising(false)}>Cancel</button></div>
       </form>}
-      {previous.length > 0 && <details className="todo-execution-history"><summary>Previous runs <span>{previous.length}</span></summary><ul>{previous.map((item, index) => <li key={item.key}><span>{item.label}</span>{open(item.workflow, 'Open', `Open previous Diane session ${index + 1}`)}</li>)}</ul></details>}
+      {previous.length > 0 && <details className="todo-execution-history"><summary>Previous runs <span>{previous.length}</span></summary><ul>{previous.map((item, index) => <li key={item.key}><span>{item.label}</span>{open(item.workflow, 'Open', `Open previous Shiprite session ${index + 1}`)}</li>)}</ul></details>}
     </section>}
     {error && <p className="todo-execution-error" role="alert">{error}</p>}
     {notice && <p className="todo-execution-notice" role="status">{notice}</p>}

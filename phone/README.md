@@ -1,8 +1,12 @@
-# Sticky Todo for Android
+# Dockit for Android and iPhone
+
+Both phone apps share the local notebook. Open **Settings → Account & sync → Workspace assignments** to send one task and its steps to an editor workspace.
+
+For an Android review build from this directory, run `ORG_GRADLE_PROJECT_stickyReviewBuild=true flutter build apk --debug --dart-define=STICKY_PREVIEW=true`. The separate preview application ID allows installation alongside the production app. For iPhone, use Flutter 3.47.8 with its iOS artifacts, Xcode and CocoaPods. Run `flutter pub get --enforce-lockfile`, then `flutter build ios --release --no-codesign` for an unsigned compilation check. To install on an iPhone, select the signing team for Runner in `ios/Runner.xcworkspace` and run `flutter run --release -d <device-id>`. See [verified packages and outstanding device checks](../docs/plans/23-dockit-transfer.md).
 
 A native Flutter client for the same daily workflow as the desktop app: fast capture, nested steps, outcomes, deadlines, daily planning, goals, routines and Star Focus. The paper surface, phone navigation and explicit AI previews keep the task list central.
 
-The current signed ARM64 [latest APK](../todo-sticky-latest.apk) is 2.1.16+29. Open **Today → Meeting follow-ups** with your shared Diane account.
+The earlier signed ARM64 [Sticky Todo APK](../todo-sticky-latest.apk) is 2.1.16+29. Open **Today → Meeting follow-ups** with your shared Diane account.
 
 ## Run and build
 

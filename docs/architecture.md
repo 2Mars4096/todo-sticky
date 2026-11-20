@@ -1,5 +1,13 @@
 # Architecture
 
+## Dockit notebooks and assignments
+
+Web and macOS share the React task and account UI. The browser adapter stores each dated tree in IndexedDB and compares the caller’s observed revision inside a write transaction. macOS uses the Tauri Markdown store. Android and iPhone use the same Flutter app-private notebook with platform document channels. Assignment sends one selected tree after checking shared-account ownership. The workspace selector lists editor memberships and also scopes shared AI usage. Confirmation requires the assignment ID and workspace ID in the service receipt. See [client verification](plans/23-dockit-transfer.md).
+
+On the configured Mac, scripts/tauri-build.js unlocks the dedicated signing keychain using its login-Keychain item, signs a staged capture helper and passes the certificate fingerprint to Tauri. CI and explicitly configured distribution identities use their own signing path.
+
+On Mac, only the helper inside Sticky Todo’s Contents/Helpers is launched. It owns the global capture shortcut, suppresses its tray icon and exits after the host quits. Camera and settings requests use LaunchServices. If permanent screen access is unavailable the helper uses the user-selected ScreenCaptureKit display filter to start a screen-only SCStream, copy its first complete frame and stop capture. An explicit toolbar action writes a private temporary PNG and opens Todo with its generated basename. The receiver validates the name, owner, file type, permissions and size, unlinks the file and queues the local Vision result for editable review. Add task uses the existing dated task bundle operation.
+
 OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request.
 
 ## Project steps from meetings
@@ -454,3 +462,7 @@ Diane setup and linked-session details share one compact flex header for heading
 Review dismissal stores monotonic per-account and per-meeting sequence cutoffs in the review index. Source meetings and canonical tasks keep their independent lifecycle.
 
 Android Today mounts the optional meeting widget for the active shared owner. Requests reuse CloudSyncController token refresh and account guards. Review state is independent of local task loading.
+
+## Selected icon assets
+
+The pipedreams icon source and prepared platform inputs live in [assets/brand/pipedreams-ink](../assets/brand/pipedreams-ink/HANDOFF.md). Staged web files live in web/public/brand/pipedreams-ink. The package is a handoff input; the existing runtime icon configuration determines what builds display.

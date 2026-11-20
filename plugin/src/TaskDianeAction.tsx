@@ -15,8 +15,8 @@ export function TaskDianeAction({id}:{id:string}){
  if(!port)return null;
  const saving=!saved||saved.taskKey!==port.taskKey||saved.flush!==port.flush;
  const current=record?.record_id===id&&record._scope===port.scope?record:undefined;
- return <section className="todo-diane-handoff" aria-label="Diane task handoff">
-  {current?<><TaskExecution key={`${current._scope}:${current.record_id}`} task={current} active={port.active} saving={saving} enabled={port.enabled && Boolean(current.text.trim())}/>{!saving&&<UseInDiane record={current} text={[current.text,current.extensions.outcome?`Outcome: ${current.extensions.outcome}`:''].filter(Boolean).join('\n\n')} label="Discuss in Diane" iconOnly/>}</>:!error&&<span role="status">Saving task…</span>}
+ return <section className="todo-diane-handoff" aria-label="Shiprite task handoff">
+  {current?<><TaskExecution key={`${current._scope}:${current.record_id}`} task={current} active={port.active} saving={saving} enabled={port.enabled && Boolean(current.text.trim())}/>{!saving&&<UseInDiane record={current} text={[current.text,current.extensions.outcome?`Outcome: ${current.extensions.outcome}`:''].filter(Boolean).join('\n\n')} label="Discuss in Shiprite" iconOnly/>}</>:!error&&<span role="status">Saving task…</span>}
   {error&&<p role="alert">{error}<button onClick={()=>setRetry(x=>x+1)}>Retry</button></p>}
  </section>;
 }

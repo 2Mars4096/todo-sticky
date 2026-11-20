@@ -78,3 +78,7 @@
 .settings-panel.settings-refined .cloud-item-versions input[type=radio]{margin:0;width:16px;height:16px;min-height:16px;accent-color:#80651f;flex:none}
 .cloud-item-value{display:block;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;margin-top:8px}
 @media(max-width:420px){.cloud-item-versions{grid-template-columns:1fr}}
+
+.assignment-fields{display:grid;gap:8px;min-width:0;padding:4px 0 12px}
+.assignment-fields label,.assignment-fields input,.assignment-fields select{min-width:0;box-sizing:border-box;width:100%}
+.assignment-fields button{justify-self:start}

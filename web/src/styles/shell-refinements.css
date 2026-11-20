@@ -8,7 +8,7 @@
 .app-shell .add-task-heading { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .app-shell .add-task-heading label { color: #65583a; font-size: 11px; }
 .app-shell .add-task-row input { min-height: 32px; font-size: 13px; padding: 6px 8px; }
-.app-shell .add-task-row button { min-width: 40px; min-height: 32px; padding: 5px 9px; }
+.app-shell .add-task-row button { min-width: 40px; min-height: 38px; padding: 5px 9px; }
 .app-shell .add-task-row input::placeholder { color: #796b4c; }
 .app-shell .compact-date-header .date-title-label { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.2; }
 .app-shell .action-bar { padding: 6px 8px; gap: 4px; flex-wrap: wrap; }

@@ -37,7 +37,7 @@ for (const [runner, suffix, targets] of [
 }
 fs.writeFileSync(path.join(output, 'latest.json'), JSON.stringify({
   version,
-  notes: `Sticky Todo ${version}. See the GitHub release for changes.`,
+  notes: `Dockit ${version}. See the GitHub release for changes.`,
   pub_date: new Date().toISOString(),
   platforms,
 }, null, 2) + '\n')

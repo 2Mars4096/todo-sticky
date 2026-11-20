@@ -113,6 +113,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   const [undo, setUndo] = useState<TaskUndo | null>(null)
   const archive = useRef<ExtractedTaskDate[]>([])
   const savedArchive = useRef(new Map<string, string>())
+  const revisions = useRef(new Map<string, string>())
   const carriedIds = useRef(new Set<string>())
   const loadGeneration = useRef(0)
   const loadingRef = useRef(false)
@@ -136,15 +137,18 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     const snapshotArchive = archive.current
     const snapshotSavedArchive = savedArchive.current
+    const snapshotRevisions = revisions.current
     const snapshotIds = carriedIds.current
     setSaving(true)
     let inFlight: Promise<void> | null = null
     const write = async () => {
       const flat = flattenTasks(updatedTasks.filter(task => !task.sourceDate))
       if (snapshotPath) {
-        await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat })
+        const result = await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat, expectedRevision: snapshotRevisions.get(snapshotDate) })
+        if (result?.revision) snapshotRevisions.set(snapshotDate, result.revision)
       } else {
         const result = await api.createDateSection({ dateStr: snapshotDate, tasks: flat })
+        if (result?.revision) snapshotRevisions.set(snapshotDate, result.revision)
         if (loadedDateRef.current === snapshotDate) {
           filePathRef.current = result.filePath
           setFilePath(result.filePath)
@@ -156,7 +160,8 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
         const merged = mergeCarriedSection(section, snapshotIds, updatedTasks)
         const serialized = JSON.stringify(merged)
         if (serialized === snapshotSavedArchive.get(section.date)) continue
-        await api.saveTasks({ filePath: section.filePath, dateStr: section.date, tasks: merged })
+        const result = await api.saveTasks({ filePath: section.filePath, dateStr: section.date, tasks: merged, expectedRevision: snapshotRevisions.get(section.date) ?? section.revision })
+        if (result?.revision) snapshotRevisions.set(section.date, result.revision)
         // Keep original archive positions for deletion Undo, including completed
         // rows that are not visible in Today. Track saved content separately.
         snapshotSavedArchive.set(section.date, serialized)
@@ -178,7 +183,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           await write()
         } catch (error) {
           if (pendingSave.current === save) {
-            setSaveError({ date: snapshotDate, message: 'Changes are still in this window. Retry when the task folder is available.' })
+            setSaveError({ date: snapshotDate, message: error instanceof Error && error.message.startsWith('This day changed') ? error.message : 'Changes are still in this window. Retry when the task folder is available.' })
             setSaving(false)
           }
           throw error
@@ -246,6 +251,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     try {
       const result = await readWithTimeout(api.getTasks(dateStr))
       if (generation !== loadGeneration.current) return
+      revisions.current = new Map(result.revision ? [[dateStr, result.revision]] : [])
       archive.current = []
       savedArchive.current = new Map()
       carriedIds.current = new Set()

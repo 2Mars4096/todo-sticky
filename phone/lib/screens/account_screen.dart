@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../app.dart';
 import '../widgets/meeting_followups.dart';
+import '../widgets/workspace_assignments.dart';
 import '../widgets/sync_progress.dart';
 import '../widgets/conflict_items.dart';
 import '../widgets/cloud_sync_button.dart';
@@ -42,7 +43,10 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
     account = CloudSyncController(
       store: widget.store,
       openBrowser: (uri) async =>
-          await links.invokeMethod<bool>('openExternal', {'url': uri.toString()}) ?? false,
+          await links.invokeMethod<bool>('openExternal', {
+            'url': uri.toString(),
+          }) ??
+          false,
       isEditing: () {
         final context = FocusManager.instance.primaryFocus?.context;
         final editor = context?.widget is EditableText
@@ -295,7 +299,13 @@ class _AccountScreenState extends State<AccountScreen> {
       final unavailable =
           configuring || account.busy || account.signingIn || !account.ready;
       return Scaffold(
-        appBar: AppBar(title: const Text('Account & sync')),
+        appBar: AppBar(
+          title: Text(
+            account.server == dianeSharedOrigin
+                ? 'pipedreams account'
+                : 'Account & sync',
+          ),
+        ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
           children: [
@@ -304,6 +314,11 @@ class _AccountScreenState extends State<AccountScreen> {
                 account.session!.email,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
+              if (account.session!.origin == dianeSharedOrigin)
+                WorkspaceAssignments(
+                  key: ValueKey(account.session!.owner),
+                  account: account,
+                ),
               const SizedBox(height: 16),
             ],
             if (account.session == null) ...[

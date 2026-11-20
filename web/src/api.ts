@@ -1,5 +1,6 @@
 import { runSharedTodoAgent, usesDianeOpenRouter } from './cloudAccount'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from './notebookCommand'
+import { isTauri } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import type {
   AggregatedTask,
@@ -61,13 +62,13 @@ export const api = {
   }) => invoke<TaskMutationResult>('task_api_delete', { request }),
 
   getTasks: (dateStr: string) =>
-    invoke<{ tasks: AggregatedTask[]; filePath?: string; weekStart?: string }>('get_tasks', { dateStr }),
+    invoke<{ tasks: AggregatedTask[]; filePath?: string; weekStart?: string; revision?: string }>('get_tasks', { dateStr }),
 
-  saveTasks: (data: { filePath: string; dateStr: string; tasks: Task[] }) =>
-    persist(invoke<{ ok: boolean }>('save_tasks', data)),
+  saveTasks: (data: { filePath: string; dateStr: string; tasks: Task[]; expectedRevision?: string }) =>
+    persist(invoke<{ ok: boolean; revision?: string }>('save_tasks', data)),
 
   createDateSection: (data: { dateStr: string; tasks: Task[] }) =>
-    persist(invoke<{ filePath: string; weekStart: string }>('create_date_section', data)),
+    persist(invoke<{ filePath: string; weekStart: string; revision?: string }>('create_date_section', data)),
 
   appendTasksToDate: (data: { dateStr: string; tasks: Task[] }) =>
     persist(invoke<{ filePath: string; weekStart: string }>('append_tasks_to_date', data)),
@@ -110,7 +111,7 @@ export const api = {
     persist(invoke<{ ok: boolean }>('save_star_focus_state', { state })),
 
   testConnection: (settings: { provider: string; apiBase: string; apiKey: string; model: string; preferDianeCredentials?: boolean }) =>
-    usesDianeOpenRouter(settings.provider, settings.apiBase) ? runSharedTodoAgent('breakdown',{taskText:'Connection test: return one step named Connected. Do not use tools.',existingSubtasks:[]}).then(()=>({ok:true,message:'Shared Diane connected. Requests use your shared account limits.'})) : invoke<{ ok: boolean; message: string }>('test_connection', { settings }),
+    usesDianeOpenRouter(settings.provider, settings.apiBase) ? runSharedTodoAgent('breakdown',{taskText:'Connection test: return one step named Connected. Do not use tools.',existingSubtasks:[]}).then(()=>({ok:true,message:'Pipe Dreams connected. Requests use your shared account limits.'})) : invoke<{ ok: boolean; message: string }>('test_connection', { settings }),
 
   dianeCredentialStatus: (provider: string, endpoint: string) =>
     invoke<boolean>('diane_credential_status', { provider, endpoint }),
@@ -123,6 +124,7 @@ export const api = {
 
   onFileChanged: (cb: () => void): (() => void) => {
     let disposed = false
+    if (!isTauri()) return () => {}
     let unlisten: UnlistenFn | null = null
     void listen('file-changed', () => { if (!disposed) cb() }).then(fn_ => {
       if (disposed) fn_()

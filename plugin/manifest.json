@@ -1,4 +1,5 @@
 {
+  "icon": "src/brand/dockit.png",
   "hostApi": "diane-plugin/1",
   "entry": "plugin/src/index.ts",
   "permissions": [

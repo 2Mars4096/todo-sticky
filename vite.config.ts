@@ -7,7 +7,7 @@ const host = process.env.TAURI_DEV_HOST
 export default defineConfig({
   root: path.resolve(__dirname, "web"),
   plugins: [react()],
-  base: process.env.STICKY_WEB_BASE || './',
+  base: process.env.STICKY_WEB_BASE || (process.env.TAURI_ENV_PLATFORM ? './' : '/'),
   define: { __STICKY_SHARED_CUTOVER__: JSON.stringify(process.env.STICKY_SHARED_CUTOVER === '1') },
   clearScreen: false,
   server: {

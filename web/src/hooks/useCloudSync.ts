@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from '../notebookCommand'
 import { api, waitForPendingWrites } from '../api'
-import { connectAccount, googleSignIn, requestJson, signOut, selectedSharedServiceOrigin, type Auth, type User } from '../cloudAccount'
+import { connectAccount, googleSignIn, requestJson, signOut, selectedSharedServiceOrigin, DIANE_SHARED_ORIGIN, type Auth, type User } from '../cloudAccount'
 import { canonical, reconcile, syncServerUrl, validateRecords, goalPlanningSupported, hasGoalPlanningMetadata, migrateGoalMetadata, mergeSyncPayload, type MergeChoices, type CloudRecord, type SyncAction, type SyncBaseline, type SyncPayload } from '../cloudSync'
 import { nextSyncProgress, syncRecordLabel, yieldSyncUi, type SyncProgress } from '../syncProgress'
 import { preserveConflict, reviewedConflictMatches, type SyncRecoveryEntry } from '../syncConflicts'
@@ -64,7 +64,7 @@ function baseline(record: CloudRecord, payloadSchemaVersion: number): SyncBaseli
 export function useCloudSync(hooks: Hooks) {
   const hooksRef = useRef(hooks); hooksRef.current = hooks
   const [server, setServer] = useState(() => {
-    const current=rememberedServer(hooks.kbPath)||import.meta.env.VITE_SYNC_SERVER_URL||''
+    const current=rememberedServer(hooks.kbPath)||import.meta.env.VITE_SYNC_SERVER_URL||(stored(OWNER_KEY) ? '' : DIANE_SHARED_ORIGIN)
     if(typeof __STICKY_SHARED_CUTOVER__==='undefined'||!__STICKY_SHARED_CUTOVER__||stored('todo-sticky-diane-service-cutover-v1'))return current
     const next=selectedSharedServiceOrigin(current,true)
     try{
@@ -472,6 +472,6 @@ export function useCloudSync(hooks: Hooks) {
     return () => { clearInterval(timer); clearTimeout(editTimer.current); document.removeEventListener('focusout', edited); document.removeEventListener('visibilitychange', refresh); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh) }
   }, [enabled])
 
-  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready, server, configure, user, connected: Boolean(auth), busy, background, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
+  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready, server, configure, user, auth, connected: Boolean(auth), busy, background, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
     cancelSignIn: () => signInController.current?.abort(), sync: () => synchronize(undefined, true), resolve: (key: string, choice: 'local' | 'cloud', fingerprint: string) => synchronize({ key, choice, fingerprint }), resolveItems: (key: string, choices: MergeChoices, fingerprint: string) => synchronize({ key, choices, fingerprint }) }
 }

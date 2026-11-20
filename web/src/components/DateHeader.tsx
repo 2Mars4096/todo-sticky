@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react'
+import { isTauri } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { format } from 'date-fns'
 import { MiniCalendar } from './MiniCalendar'
@@ -30,7 +31,7 @@ export function DateHeader({
   const shortDate = format(selectedDate, selectedDate.getFullYear() === new Date().getFullYear() ? 'EEE, MMM d' : 'EEE, MMM d, yyyy')
 
   const handleDragMouseDown = (event: React.MouseEvent<HTMLElement>) => {
-    if (event.button !== 0) return
+    if (!isTauri() || event.button !== 0) return
 
     const target = event.target as HTMLElement
     if (target.closest('button, input, textarea, select, label, .calendar-popup, [data-no-window-drag="true"]')) {

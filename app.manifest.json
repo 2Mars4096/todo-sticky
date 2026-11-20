@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "todo",
-  "name": "Todo",
+  "name": "Dockit",
+  "icon": "web/public/brand/pipedreams-ink/icon-192.png",
   "version": "0.1.2",
   "repository": "https://github.com/2Mars4096/todo-sticky",
   "paths": {
@@ -16,19 +17,19 @@
   "releases": {
     "web": {
       "path": "web/",
-      "status": "planned"
+      "status": "implemented"
     },
     "desktop": {
       "path": "desktop/",
-      "status": "planned"
+      "status": "implemented"
     },
     "android": {
       "path": "phone/android/",
-      "status": "planned"
+      "status": "implemented"
     },
     "ios": {
       "path": "phone/ios/",
-      "status": "planned"
+      "status": "implemented"
     },
     "plugin": {
       "path": "plugin/",
@@ -54,6 +55,7 @@
     "requestIdentity": "idempotency-key"
   },
   "plugin": {
+    "icon": "plugin/src/brand/dockit.png",
     "hostApi": "diane-plugin/1",
     "entry": "plugin/src/index.ts",
     "permissions": [

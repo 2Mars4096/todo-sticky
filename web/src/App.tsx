@@ -1,8 +1,10 @@
+import { SentScreenshots } from './components/SentScreenshots'
 import { MeetingMonitor, type ReviewRequest } from './components/MeetingMonitor'
 import { requestJson } from './cloudAccount'
 import { listen } from '@tauri-apps/api/event'
 import { DIANE_SHARED_ORIGIN, parseTodoTaskLink, readSharedTodoTask } from './cloudAccount'
-import { invoke, isTauri } from '@tauri-apps/api/core'
+import { isTauri } from '@tauri-apps/api/core'
+import { invoke } from './notebookCommand'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { SyncProgressView } from './components/SyncProgressView'
 import { ProjectPage } from './components/ProjectPage'
@@ -101,6 +103,15 @@ export default function App() {
   currentDateRef.current = calendar.dateStr
   const isCompactWindow = windowWidth <= COMPACT_LAYOUT_MAX_WIDTH
   const isDevMode = import.meta.env.DEV
+  useEffect(() => {
+    if (isTauri() || (!tasks.saving && !tasks.saveError)) return
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [tasks.saving, tasks.saveError])
   const [taskLink,setTaskLink]=useState<string|null>(()=>{try{return parseTodoTaskLink(window.location.href)||localStorage.getItem('todo-sticky-pending-task-link-v1')}catch{return null}})
   const linkBusy=useRef(false),linkAccountShown=useRef(false),linkMounted=useRef(true)
   const taskLinkRef=useRef(taskLink);taskLinkRef.current=taskLink
@@ -637,7 +648,10 @@ export default function App() {
 
   return (
     <><div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
-      <WindowResizeHandles />
+      {isTauri() && /Mac/.test(navigator.platform) && <SentScreenshots date={calendar.dateStr}
+        disabled={tasks.loading || Boolean(tasks.loadError) || tasks.dataDate !== calendar.dateStr}
+        onAdd={(title, steps) => { tasks.addTaskBundle(title, steps); if (firstRun) dismissIntro() }} />}
+      {isTauri() && <WindowResizeHandles />}
       <GoalsSidebar
         onOpenProject={openProject}
         routines={routines}
@@ -688,6 +702,10 @@ export default function App() {
 
         <AddTask
           onAdd={text => { tasks.addTask(text); if (firstRun) dismissIntro() }}
+          screenshot={isTauri() && /Mac/.test(navigator.platform) ? {
+            context: JSON.stringify([calendar.dateStr, aiSettings?.kbPath]),
+            ready: tasks.dataDate === calendar.dateStr,
+          } : undefined}
           prominent={!tasks.loading && !tasks.tasks.length}
           autoFocus={!showSettings && !showPlanner && !showTrackingStation}
           disabled={tasks.loading || Boolean(tasks.loadError)}
@@ -697,7 +715,7 @@ export default function App() {
           <MeetingMonitor key={account.user.uid} request={meetingRequest} onAdded={() => { if (account.enabled) void account.sync() }}/>}
         {firstRun && !showSettings && (
           <div className="first-use-note">
-            <p>Capture a task to begin. AI assistance is optional.</p>
+            <p>AI assistance is optional.</p>
             <button onClick={event => { event.currentTarget.focus(); openSettingsForProvider(aiSettings?.provider) }}>Set up AI</button>
             <button onClick={dismissIntro} aria-label="Dismiss introduction">✕</button>
           </div>
@@ -881,7 +899,7 @@ export default function App() {
                   Set up {PROVIDER_PRESETS[aiSettings.provider].shortLabel}
                 </option>
               )}
-              {PROVIDER_ORDER.map(provider => (
+              {PROVIDER_ORDER.filter(provider => isTauri() || provider === 'diane').map(provider => (
                 <option key={provider} value={provider}>
                   {PROVIDER_PRESETS[provider].shortLabel}
                   {aiSettings && !isProviderConfigured(aiSettings, provider) ? ' · Set up' : ''}

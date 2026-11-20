@@ -3,6 +3,7 @@ mod cloud_sync;
 pub mod cli;
 pub mod mcp;
 mod commands;
+mod screenshot;
 mod diane;
 mod config;
 mod file_sync;
@@ -16,8 +17,6 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::{Mutex, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
-#[cfg(target_os = "macos")]
-use tauri::image::Image;
 use tauri::menu::MenuItemBuilder;
 use tauri::{
     menu::{MenuBuilder, MenuItem, SubmenuBuilder},
@@ -144,83 +143,6 @@ fn shortcut_label() -> &'static str {
     "Ctrl+Shift+Alt+T"
 }
 
-#[cfg(target_os = "macos")]
-fn tray_icon_image() -> Image<'static> {
-    let width = 32usize;
-    let height = 32usize;
-    let mut rgba = vec![0u8; width * height * 4];
-
-    fn set_pixel(rgba: &mut [u8], width: usize, height: usize, x: usize, y: usize) {
-        if x >= width || y >= height {
-            return;
-        }
-        let idx = (y * width + x) * 4;
-        rgba[idx] = 0;
-        rgba[idx + 1] = 0;
-        rgba[idx + 2] = 0;
-        rgba[idx + 3] = 255;
-    }
-
-    for x in 6..=21 {
-        set_pixel(&mut rgba, width, height, x, 5);
-        set_pixel(&mut rgba, width, height, x, 6);
-        set_pixel(&mut rgba, width, height, x, 26);
-    }
-
-    for y in 5..=26 {
-        set_pixel(&mut rgba, width, height, 5, y);
-        set_pixel(&mut rgba, width, height, 6, y);
-        set_pixel(&mut rgba, width, height, 26, y);
-    }
-
-    for offset in 0..5 {
-        set_pixel(&mut rgba, width, height, 21 + offset, 5 + offset);
-        set_pixel(&mut rgba, width, height, 22 + offset, 5 + offset);
-    }
-
-    for y in 10..=12 {
-        set_pixel(&mut rgba, width, height, 10, y);
-    }
-    for y in 17..=19 {
-        set_pixel(&mut rgba, width, height, 10, y);
-    }
-
-    for (x, y) in [
-        (9, 12),
-        (10, 13),
-        (11, 14),
-        (12, 13),
-        (13, 12),
-        (14, 11),
-        (15, 10),
-    ] {
-        set_pixel(&mut rgba, width, height, x, y);
-        set_pixel(&mut rgba, width, height, x, y + 1);
-    }
-
-    for (x, y) in [
-        (9, 19),
-        (10, 20),
-        (11, 21),
-        (12, 20),
-        (13, 19),
-        (14, 18),
-        (15, 17),
-    ] {
-        set_pixel(&mut rgba, width, height, x, y);
-        set_pixel(&mut rgba, width, height, x, y + 1);
-    }
-
-    for x in 17..=23 {
-        set_pixel(&mut rgba, width, height, x, 12);
-        set_pixel(&mut rgba, width, height, x, 13);
-        set_pixel(&mut rgba, width, height, x, 19);
-        set_pixel(&mut rgba, width, height, x, 20);
-    }
-
-    Image::new_owned(rgba, width as u32, height as u32)
-}
-
 struct WatcherState {
     watcher: Option<RecommendedWatcher>,
     watched_root: Option<PathBuf>,
@@ -340,6 +262,7 @@ pub fn run() {
         )
         .manage(LaunchVisibility::default())
         .manage(PendingTaskLink::default())
+        .manage(screenshot::ScreenshotInbox::default())
         .manage(Mutex::new(WatcherState::default()))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -365,7 +288,7 @@ pub fn run() {
                     true,
                     None::<&str>,
                 )?;
-                let app_submenu = SubmenuBuilder::new(app, "Sticky Todo")
+                let app_submenu = SubmenuBuilder::new(app, "Dockit")
                     .about(None)
                     .separator()
                     .item(&show_hide_menu)
@@ -425,14 +348,12 @@ pub fn run() {
                 .ok_or_else(|| "Failed to find default tray icon".to_string())?;
             tray.set_menu(Some(tray_menu))?;
             tray.set_tooltip(Some(format!(
-                "Sticky Todo  ({} to toggle)",
+                "Dockit  ({} to toggle)",
                 shortcut_label()
             )))?;
 
             #[cfg(target_os = "macos")]
             {
-                tray.set_icon(Some(tray_icon_image()))?;
-                tray.set_icon_as_template(true)?;
                 tray.set_show_menu_on_left_click(false)?;
             }
 
@@ -442,6 +363,9 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             frontend_ready,
+            screenshot::capture_task_outline,
+            screenshot::open_capture_settings,
+            screenshot::take_sent_screenshots,
             take_task_link,
             cloud_sync::open_account_sign_in,
             cloud_sync::cloud_apply_day,
@@ -471,12 +395,20 @@ pub fn run() {
             commands::select_folder,
         ])
         .build(tauri::generate_context!())
-        .expect("error while building Sticky Todo");
+        .expect("error while building Dockit");
 
     app.run(|app, event| {
         #[cfg(target_os = "macos")]
         if let RunEvent::Opened { urls } = &event {
             for url in urls {
+                if url.as_str().trim_end_matches('/') == "todo-sticky://capture-ended" {
+                    if let Some(window) = app.get_webview_window("main") { show_window(&window, true); }
+                    continue;
+                }
+                if url.scheme() == "todo-sticky" && url.host_str() == Some("flameshot") {
+                    screenshot::receive_image(app, url.path().trim_start_matches('/'));
+                    continue;
+                }
                 if let Some(id) = cloud_sync::task_link_id(url.as_str()) {
                     if let Ok(mut pending) = app.state::<PendingTaskLink>().0.lock() { *pending = Some(id); }
                     app.emit("todo-task-link", ()).ok();
@@ -492,6 +424,8 @@ pub fn run() {
         }
 
         if let RunEvent::Ready = event {
+            #[cfg(target_os = "macos")]
+            std::thread::spawn(screenshot::start_shortcut_listener);
             // Never wait indefinitely on JavaScript, archive reads or integrations.
             let handle = app.clone();
             std::thread::spawn(move || {

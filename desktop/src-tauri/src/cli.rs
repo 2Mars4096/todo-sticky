@@ -6,7 +6,7 @@ use serde::Serialize;
 use serde_json::json;
 use std::path::PathBuf;
 
-const HELP: &str = r#"Sticky Todo task API
+const HELP: &str = r#"Dockit task API
 
 Usage:
   sticky-todo-api [--kb-path PATH] mcp [--read-only]

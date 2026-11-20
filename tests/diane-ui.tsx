@@ -24,7 +24,7 @@ if (failure === 'corrupt') localStorage.setItem('sticky-todo-diane-v1', '{broken
  if (args.action === 'preparation-status') return {status:'completed',result:{suggestion:{project_id:'project-a',context:'Inspect the project and verify the change.',reason:''}}}
  if (args.action === 'choose-project') return {version:1,projects:[{id:'project-a',name:'Test project',root:'/tmp'},{id:'chosen',name:'Chosen workspace',root:'/private/tmp/chosen-workspace'}],active_project_id:'project-a',selected_project_id:'chosen'}
  if ((window as any).offline) throw Error('Connection unavailable')
- if (failure === 'offline') throw Error('Diane is not installed or connected')
+ if (failure === 'offline') throw Error('Shiprite is not installed or connected')
  if (failure === 'pending') return new Promise(() => {})
  if (failure === 'malformed') return {}
  if (args.action === 'projects') return {version:1, projects:[{id:'project-a',name:'Test project',root:'/tmp'}],active_project_id:'project-a'}

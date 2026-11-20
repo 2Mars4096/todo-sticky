@@ -1,4 +1,14 @@
-# Sticky Todo
+# Dockit
+
+Dockit organizes proposals into dated tasks and nested steps on the web, Mac, Android and iPhone. Add a task, open its actions and choose **Add step**. In **Account → Workspace assignments**, choose an editor workspace, task and optional assignee UID, then select **Assign in Shiprite**. The web stores tasks in this browser, the Mac uses Markdown, and the phones use their app-private notebooks.
+
+Run the browser client with `npm run dev:vite`. For a production preview, run `npm run build:frontend` followed by `npm run preview`. See [phone build instructions](phone/README.md) and [per-client build, install and workflow evidence](docs/plans/23-dockit-transfer.md).
+
+On Mac, Sticky Todo’s bundled screenshot editor opens with **⌘⇧X** or the camera beside **Add**. If full-display access is unavailable, macOS lets you select a display for this capture. Crop or annotate, then use **Copy**, **Save** or **Todo** to review the recognized text as a task. The helper uses your existing Flameshot profile and has no separate menu-bar icon. Open **Settings → Integrations → Flameshot settings…** to edit that profile.
+
+On this Mac, use `npm run build` to reuse the **Sticky Todo Local Signing** identity for both the app and its capture helper. The dedicated signing keychain lives under `~/Library/Application Support/Sticky Todo Signing/`. Its generated unlock password is stored in the login Keychain. Keep both across rebuilds.
+
+Mac builds can reuse the helper from the installed Sticky Todo bundle. For a clean or cross-target build, set `FLAMESHOT_APP` to the matching fork bundle before running `npm run build`.
 
 The installed standalone Mac app’s Today view shows **Meeting follow-ups** for the signed-in shared account. Open a reviewed meeting to inspect suggestions and their transcript evidence. **Add to today** adds a step under the project task (or the meeting title when no project is set) and normal sync brings it into the standalone notebook.
 
@@ -331,3 +341,7 @@ Repository maintenance: run npm commands from the root; canonical sources are we
 Signed-in account settings provide one **Sync** action; the first manual sync enables syncing for the current folder after account ownership checks.
 
 Linked Diane tasks show Queued, Running, Needs input or Finished · Review beside the status icon. Disconnected retains the session link. Earlier-task rows recover the same saved run after reopening; moving a task also preserves access when its saved run is unique within the notebook. Todo completion stays manual.
+
+## Icon handoff
+
+The selected pipedreams artwork and platform-sized inputs are staged in [Dockit icon handoff](assets/brand/pipedreams-ink/HANDOFF.md). It records integration locations and the remaining notification, masking, build and device checks.

@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { ParagraphInput } from './ParagraphInput'
+import { ScreenshotTask } from './ScreenshotTask'
 
 interface Props {
+  screenshot?: { context: string; ready: boolean }
   onAdd: (text: string) => void
   prominent?: boolean
   autoFocus?: boolean
@@ -15,6 +17,7 @@ export function AddTask({
   autoFocus = false,
   disabled = false,
   inline = false,
+  screenshot,
 }: Props) {
   const [text, setText] = useState('')
 
@@ -52,33 +55,36 @@ export function AddTask({
     )
   }
 
-  return (
+  const composer = (captureButton?: ReactNode) => (
     <form
-      className={`add-task ${prominent ? 'prominent' : ''}`}
+      className="add-task-row"
       onSubmit={event => {
         event.preventDefault()
         handleSubmit()
       }}
     >
-      <div className="add-task-row">
-        <ParagraphInput
-          id="quick-add-task"
-          aria-label="New task"
-          placeholder="What needs doing?"
-          value={text}
-          onChange={e => setText(e.target.value)}
-          disabled={disabled}
-          autoFocus={autoFocus && !disabled}
-          onKeyDown={event => {
-            if (!event.nativeEvent.isComposing && event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-              event.preventDefault(); handleSubmit()
-            }
-          }}
-        />
-        <button type="submit" disabled={disabled || !text.trim()} aria-label="Add task">
-          Add
-        </button>
-      </div>
+      <ParagraphInput
+        id="quick-add-task"
+        aria-label="New task"
+        placeholder="What needs doing?"
+        value={text}
+        onChange={e => setText(e.target.value)}
+        disabled={disabled}
+        autoFocus={autoFocus && !disabled}
+        onKeyDown={event => {
+          if (!event.nativeEvent.isComposing && event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+            event.preventDefault(); handleSubmit()
+          }
+        }}
+      />
+      {captureButton}
+      <button type="submit" disabled={disabled || !text.trim()} aria-label="Add task">
+        Add
+      </button>
     </form>
   )
+  return <div className={`add-task ${prominent ? 'prominent' : ''}`}>
+    {screenshot ? <ScreenshotTask key={screenshot.context} disabled={disabled || !screenshot.ready}
+      composer={composer} /> : composer()}
+  </div>
 }

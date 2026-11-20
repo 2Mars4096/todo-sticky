@@ -1,5 +1,11 @@
 # Sticky Todo Agent API
 
+## Dockit workspace assignment
+
+Standalone clients list editor memberships through `GET /api/connected-apps/workspaces` and its paginated cursor. A selected dated task and its descendants are submitted to `PUT /shiprite/workspaces/{workspace}/assignments/{id}` with `title`, `instructions` and nullable `assigneeUid`. The ID derives from the same account, workspace, task date, task ID and recipient on web and phone. The client verifies the receipt’s `id` and `workspaceId`. See [verification and live-service scope](plans/23-dockit-transfer.md).
+
+The Mac UI sends capture and settings requests to the resident Flameshot editor. The app-owned screenshot handoff opens editable review and requires an explicit Add task. Agent clients should use the task API below for programmatic creation.
+
 ## Dashboard push behavior
 
 In Today, accepting meeting follow-ups for the same project and list date creates one parent task with ordered steps. Matching ignores case and repeated spaces in the saved meeting project label. Meetings without a project use their own title and meeting ID. Each step keeps its own source evidence, assignee and deadline.

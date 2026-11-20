@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from './notebookCommand'
 import { api } from './api'
 import { canonical, validateRecords } from './cloudSync'
 import type { GoalItem } from './types'

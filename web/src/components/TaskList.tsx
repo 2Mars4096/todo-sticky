@@ -192,7 +192,6 @@ export function TaskList({
         <div className="task-empty-state">
           <span className="task-loading-mark" aria-hidden="true" />
           <strong>Loading your tasks…</strong>
-          <span>Waiting for the task archive to become available.</span>
         </div>
       </div>
     )
@@ -208,7 +207,7 @@ export function TaskList({
           <span>
             {cloudOnly
               ? 'Make index.md available offline in Finder, then try again.'
-              : 'Check the task folder and try again.'}
+              : 'Check that your notebook is available, then retry.'}
           </span>
           <button className="task-empty-today" onClick={onRetryLoad}>Retry</button>
         </div>
@@ -220,13 +219,8 @@ export function TaskList({
     return (
       <div className="task-list empty">
         <div className="task-empty-state">
-          <span className="task-empty-mark" aria-hidden="true">✓</span>
-          <strong>{isCurrentDay ? 'Start with one clear task' : 'No tasks on this day'}</strong>
-          <span>
-            {isCurrentDay
-              ? 'Add it above, then break it down, plan it, or start a focus session.'
-              : 'Tasks stay on their saved dates. Use the calendar for another day or return to today.'}
-          </span>
+          <img src={`${import.meta.env.BASE_URL}brand/pipedreams-ink/icon-48.png`} width={28} height={28} style={{borderRadius: 6}} alt="" />
+          <strong>{isCurrentDay ? 'No tasks yet' : 'No tasks on this day'}</strong>
           {!isCurrentDay && (
             <button className="task-empty-today" onClick={onGoToday}>
               Go to today

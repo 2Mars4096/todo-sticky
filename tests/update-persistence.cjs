@@ -9,7 +9,8 @@ function fixture() {
   const writes=[], timers=new Map();let taskState=[],nextTimer=0
   const apiExports={}
   vm.runInNewContext(transpile('src/api.ts'), {exports:apiExports,require:name=>{
-    if(name==='@tauri-apps/api/core') return {invoke:(command,payload)=>new Promise((resolve,reject)=>writes.push({command,payload,resolve,reject}))}
+    if(name==='@tauri-apps/api/core') return {isTauri:()=>true}
+    if(name==='./notebookCommand') return {invoke:(command,payload)=>new Promise((resolve,reject)=>writes.push({command,payload,resolve,reject}))}
     if(name==='@tauri-apps/api/event') return {listen:()=>{}}
     if(name==='./cloudAccount') return {runSharedTodoAgent:()=>{throw Error('Unexpected agent call')}}
     throw Error(name)

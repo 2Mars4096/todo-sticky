@@ -33,7 +33,7 @@ export function useGoals(scope:string){
  const retrySave=useCallback(async()=>{
   if(lock.current)return lock.current;
   const saved=draft.current;if(!saved){await reload();return;}
-  if(pluginScope()!==scope)throw Error('The Diane account changed. Reopen Todo before retrying.');
+  if(pluginScope()!==scope)throw Error('The Pipe Dreams account changed. Reopen Dockit before retrying.');
   setBusy(true);setError(null);
   const operation=(async()=>{try{
    if(saved.operation==='remove')await pluginApi.remove(saved.record,saved.requestId);

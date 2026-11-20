@@ -48,7 +48,7 @@ const load = require('./helpers/load-typescript.cjs')
       return {...body, key: decodeURIComponent(path.split('/').pop()), revision: 1, updatedAt: ''}
     }
     const mocks = { react, 'firebase/auth': { onAuthStateChanged: (_, fn) => {fn(user); return () => {}} },
-      '@tauri-apps/api/core': { invoke: async (command, args) => { if(command==='cloud_apply_day')applied.push(args); return '/fixture' } },
+      '../notebookCommand': { invoke: async (command, args) => { if(command==='cloud_apply_day')applied.push(args); return '/fixture' } },
       '../api': { api: { extractTaskApi: async () => ({dates:[{date:'2026-10-30',tasks:[{id:'t',text:'',status:'todo',subtasks:[]}]}]}) }, waitForPendingWrites: async () => {} },
       '../cloudAccount': { connectAccount: async () => auth, requestJson }, '../cloudSync': sync,
       '../syncConflicts': load('src/syncConflicts.ts'),

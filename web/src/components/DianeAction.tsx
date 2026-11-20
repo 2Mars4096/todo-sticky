@@ -28,25 +28,25 @@ export function DianeProvider({ enabled = false, children, date, kbPath }: { ena
 function ConnectedDianeProvider({ children, date, kbPath }: { children: ReactNode; date: string; kbPath: string }) {
   const [entries, setEntries] = useState<Entries>({})
   const saved = useRef<Entries>({})
-  const [storageError, setStorageError] = useState('Loading Diane links')
+  const [storageError, setStorageError] = useState('Loading Shiprite links')
   const [projects, setProjects] = useState<DianeProjects>()
   const locks = useRef(new Set<string>())
   const [busy, setBusy] = useState(new Set<string>())
   const chooseFolder = async () => {
     if (!projects) return
-    const root = await chooseDirectory({directory:true,multiple:false,title:'Choose Diane workspace'})
+    const root = await chooseDirectory({directory:true,multiple:false,title:'Choose Shiprite workspace'})
     if(typeof root !== 'string')return
     const known=projects?.projects.find(p=>p.root.replace(/\/$/,'')===root.replace(/\/$/,''))
     if(known)return known
     const data=await dianeRequest<DianeProjects>('choose-project',undefined,{root})
     setProjects(data)
     const selected=data.projects.find(p=>p.id===data.selected_project_id)||data.projects.find(p=>p.root.replace(/\/$/,'')===root.replace(/\/$/,''))
-    if(!selected)throw Error('Open this folder in Diane, then choose it here.')
+    if(!selected)throw Error('Open this folder in Shiprite, then choose it here.')
     return selected
   }
   const persist = (next: Entries) => {
     try { localStorage.setItem(STORAGE, JSON.stringify(next)) }
-    catch { setStorageError('Cannot save Diane links. Free local storage before dispatching.'); throw Error('Cannot save Diane links') }
+    catch { setStorageError('Cannot save Shiprite links. Free local storage before dispatching.'); throw Error('Cannot save Shiprite links') }
     saved.current = next
     setEntries(next)
   }
@@ -57,7 +57,7 @@ function ConnectedDianeProvider({ children, date, kbPath }: { children: ReactNod
       const parsed = readDianeReceipts(localStorage.getItem(STORAGE))
       saved.current = parsed; setEntries(parsed); setStorageError('')
     } catch {
-      setStorageError('Saved Diane links could not be read. Todo remains available; open Diane for existing sessions.')
+      setStorageError('Saved Shiprite links could not be read. Dockit remains available; open Shiprite for existing sessions.')
       return // Preserve unreadable receipts; never replace them with an empty poll result.
     }
     const poll = async () => {
@@ -189,8 +189,8 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
     const timer=setTimeout(()=>panel.current?.querySelector<HTMLElement>('select,button')?.focus(),0)
     return () => {clearTimeout(timer);document.removeEventListener('pointerdown', dismiss)}
   }, [expanded])
-  if (!context) return <span className="diane-action-wrap" title="Enable the local Diane connection in Settings → Integrations">
-    <button type="button" className="task-action diane-action" disabled aria-label="Push to Diane · Connection disabled">
+  if (!context) return <span className="diane-action-wrap" title="Enable the local Shiprite connection in Settings → Integrations">
+    <button type="button" className="task-action diane-action" disabled aria-label="Push to Shiprite · Connection disabled">
       <svg className="diane-dot diane-new" viewBox="0 0 16 16" aria-hidden="true"><path d="m5 3 8 5-8 5z"/></svg>
     </button>
   </span>
@@ -198,11 +198,11 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
   const result = receipt?.result
   const unavailable = Boolean(receipt?.error)
   const state = unavailable ? 'unavailable' : result?.status || (receipt ? 'queued' : 'new')
-  const label = unavailable ? 'Disconnected' : result?.stopping ? 'Stopping' : result ? statusLabels[result.status] : receipt ? 'Sending to Diane' : 'Run in Diane'
+  const label = unavailable ? 'Disconnected' : result?.stopping ? 'Stopping' : result ? statusLabels[result.status] : receipt ? 'Sending to Shiprite' : 'Run in Shiprite'
   const suggested=suggestWorkspace(context.projects,[text,parent,...steps].join('\n'))
   const projectId=selectedProject??suggested?.id??''
   const project=context.projects.find(item=>item.id===projectId)
-  const title = !receipt && !context.connected ? 'Push to Diane · Local Diane is not connected' : receipt ? `${label}. Open details for ${text}` : `Push to Diane · ${project?.name||'Choose workspace'}`
+  const title = !receipt && !context.connected ? 'Push to Shiprite · Local Shiprite is not connected' : receipt ? `${label}. Open details for ${text}` : `Push to Shiprite · ${project?.name||'Choose workspace'}`
   return <span ref={root} className="diane-action-wrap" title={title} onKeyDown={event => { if (event.key === 'Escape') { setExpanded(false); root.current?.querySelector('button')?.focus() } }}>
     <button type="button" className={`task-action diane-action${receipt ? " diane-linked" : ""}`} title={title} aria-label={title}
       aria-expanded={expanded} aria-haspopup="dialog" disabled={busy || (!receipt && !context.connected) || (!receipt && Boolean(context.storageError))}
@@ -215,13 +215,13 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
       </svg>
       {receipt && <span className="diane-status-label">{label}</span>}
     </button>
-    {expanded && createPortal(<span ref={panel} style={position} className="diane-details" role="dialog" aria-label="Diane task details">
+    {expanded && createPortal(<span ref={panel} style={position} className="diane-details" role="dialog" aria-label="Shiprite task details">
       <span className="diane-detail-header">
         <strong>{receipt ? label : 'Set up session'}</strong>
-        <button type="button" className="diane-detail-close" aria-label="Close Diane details" onClick={()=>{setExpanded(false);root.current?.querySelector('button')?.focus()}}>×</button>
+        <button type="button" className="diane-detail-close" aria-label="Close Shiprite details" onClick={()=>{setExpanded(false);root.current?.querySelector('button')?.focus()}}>×</button>
       </span>
       {!receipt ? <>
-          <label>Workspace<select aria-label="Diane workspace" value={projectId} onChange={event=>{edited.current++;setSelectedProject(event.target.value)}}><option value="">Choose workspace</option>{context.projects.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label>Workspace<select aria-label="Shiprite workspace" value={projectId} onChange={event=>{edited.current++;setSelectedProject(event.target.value)}}><option value="">Choose workspace</option>{context.projects.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
           {project&&<small className="diane-workspace-path">{project.root}</small>}
           <label>Context<textarea aria-label="Session context" rows={4} maxLength={4000} value={setupContext} onChange={event=>{edited.current++;setSetupContext(event.target.value)}}/></label>
           <span className="diane-detail-actions">
@@ -233,11 +233,11 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
         {(context.storageError||folderError)&&<span role="alert">{context.storageError||folderError}</span>}
       </> : <>
       {result && <span>{result.project_name}</span>}
-      <span>{receipt.error || result?.summary || 'Waiting for Diane to acknowledge this request.'}</span>
+      <span>{receipt.error || result?.summary || 'Waiting for Shiprite to acknowledge this request.'}</span>
       {unavailable && receipt.checkedAt && <small>Last checked {new Date(receipt.checkedAt).toLocaleString()}</small>}
-      {result?.artifacts.map((artifact, index) => <span key={index}>{String(artifact.path || artifact.title || artifact.name || 'Artifact available in Diane')}</span>)}
+      {result?.artifacts.map((artifact, index) => <span key={index}>{String(artifact.path || artifact.title || artifact.name || 'Artifact available in Shiprite')}</span>)}
       <span className="diane-detail-actions">
-        <button type="button" disabled={busy || !context.connected || !result} onClick={() => void context.action(key, 'open')}>Open in Diane</button>
+        <button type="button" disabled={busy || !context.connected || !result} onClick={() => void context.action(key, 'open')}>Open in Shiprite</button>
         {(!result || unavailable) && <button type="button" disabled={busy || !context.connected} onClick={() => void context.action(key, 'retry')}>Reconnect</button>}
         {result && ['queued', 'running'].includes(result.status) && <button type="button" disabled={busy || !context.connected || result.stopping} onClick={() => void context.action(key, 'stop')}>{result.stopping ? 'Stopping…' : 'Stop'}</button>}
       </span>

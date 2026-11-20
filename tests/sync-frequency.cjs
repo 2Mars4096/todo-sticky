@@ -34,7 +34,7 @@ async function fixture(options = {}) {
     addEventListener: (name, fn) => docListeners.set(name, fn), removeEventListener: name => docListeners.delete(name) }
   const mocks = {
     react, 'firebase/auth': { onAuthStateChanged: (_, fn) => { fn(user); return () => {} } },
-    '@tauri-apps/api/core': { invoke: async (name, args) => {
+    '../notebookCommand': { invoke: async (name, args) => {
       if (name === 'cloud_task_folder') return '/fixture'
       if (name === 'cloud_apply_day') {
         if (applyRace) { applyRace(args); throw Error('Local tasks changed during sync. Sync again; your edits are safe.') }

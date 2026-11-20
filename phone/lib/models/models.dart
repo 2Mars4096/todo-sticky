@@ -364,7 +364,7 @@ class FocusState {
 
 const providerPresets = <String, Map<String, String>>{
   'diane': {
-    'name': 'Diane shared account',
+    'name': 'Pipe Dreams account',
     'base': 'https://dear-diane-202610-api.web.app',
     'model': '',
   },
