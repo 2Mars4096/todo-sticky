@@ -209,7 +209,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(height: 20),
           const ListTile(
-            leading: Icon(Icons.info_outline),
+            leading: Image(
+              image: AssetImage('assets/brand/dockit.png'),
+              width: 32,
+              height: 32,
+              excludeFromSemantics: true,
+            ),
             title: Text('Dockit'),
             subtitle: Text('2.1.16'),
           ),

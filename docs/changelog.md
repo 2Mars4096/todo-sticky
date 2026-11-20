@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-20 — Dockit icon integration
+
+Wired the approved Ink mark into the web client, sign-in page, Shiprite plugin, desktop bundle, Flutter views and Android launcher. The iOS runner uses the approved AppIcon catalog. See the [icon integration plan](plans/23-icon-asset-handoff.md).
+
 ## 2026-11-20 — Dockit transfer review
 
 Reviewed the Dockit naming changes, Firebase Hosting configuration, web notebook, iPhone project and Shiprite workspace assignment clients for a public checkpoint. The browser now compares editor revisions inside the save transaction. Web and phone assignment requests check the bound notebook owner. Historical data paths, package identifiers and account contracts retain their existing names.

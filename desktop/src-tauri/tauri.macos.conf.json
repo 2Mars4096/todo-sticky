@@ -1,0 +1,8 @@
+{
+  "app": {
+    "trayIcon": {
+      "iconPath": "icons/tray-template.png",
+      "iconAsTemplate": true
+    }
+  }
+}

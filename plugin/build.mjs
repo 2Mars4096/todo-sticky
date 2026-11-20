@@ -8,6 +8,7 @@ const result = await build({
   absWorkingDir: root,
   entryPoints: ['src/index.ts'],
   bundle: true,
+  loader: { '.png': 'dataurl' },
   format: 'esm',
   platform: 'browser',
   target: 'es2022',

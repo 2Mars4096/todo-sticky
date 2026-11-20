@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Integrate the approved Dockit icon across existing clients and package its source artwork. See the [icon integration plan](plans/23-icon-asset-handoff.md).
+
 - [x] Review Dockit browser storage, native client sources and workspace assignments for the public checkpoint — [transfer review](plans/23-dockit-transfer.md).
 - [ ] Verify signed-in web assignment and installed iPhone and Android proposal workflows — [platform checks](plans/23-dockit-transfer.md).
 
