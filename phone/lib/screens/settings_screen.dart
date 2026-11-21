@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -33,18 +35,21 @@ class SettingsScreen extends StatelessWidget {
       final yes = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Restore this notebook?'),
-          content: const Text(
-            'This replaces the tasks, goals and focus history on this device. Export your current notebook first if you need to keep both. API keys and account credentials are not imported.',
+          title: Text(tr(context, "Restore this notebook?")),
+          content: Text(
+            tr(
+              context,
+              "This replaces the tasks, goals and focus history on this device. Export your current notebook first if you need to keep both. API keys and account credentials are not imported.",
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(tr(context, "Cancel")),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Restore'),
+              child: Text(tr(context, "Restore")),
             ),
           ],
         ),
@@ -52,9 +57,9 @@ class SettingsScreen extends StatelessWidget {
       if (yes == true) {
         await store.importJson(content);
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Notebook restored')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(tr(context, "Notebook restored"))),
+          );
         }
       }
     } catch (e) {
@@ -66,14 +71,14 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: store,
     builder: (context, _) => Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(tr(context, "Settings"))),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 32),
         children: [
           if (accountBuilder != null)
             ListTile(
               leading: const Icon(Icons.account_circle_outlined),
-              title: const Text('Account & sync'),
+              title: Text(tr(context, "Account & sync")),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.push(
                 context,
@@ -82,10 +87,10 @@ class SettingsScreen extends StatelessWidget {
             ),
           ListTile(
             leading: const Icon(Icons.auto_awesome_outlined),
-            title: const Text('AI assistance'),
+            title: Text(tr(context, "AI assistance")),
             subtitle: Text(
               ai.usesShared(store.preferences)
-                  ? 'pipedreams account'
+                  ? tr(context, "pipedreams account")
                   : providerPresets[store.preferences.provider]?['name'] ??
                         store.preferences.provider,
             ),
@@ -102,7 +107,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.computer_outlined),
-            title: const Text('Planning machines'),
+            title: Text(tr(context, "Planning machines")),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.push(
               context,
@@ -112,10 +117,10 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const Divider(height: 32),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'NOTE MATERIAL',
+              tr(context, "NOTE MATERIAL"),
               style: TextStyle(
                 fontSize: 12,
                 letterSpacing: 1,
@@ -134,9 +139,9 @@ class SettingsScreen extends StatelessWidget {
                   ChoiceChip(
                     label: Text(
                       {
-                        'paper': 'Paper',
-                        'frosted': 'Frosted glass',
-                        'liquid': 'Liquid glass',
+                        'paper': tr(context, "Paper"),
+                        'frosted': tr(context, "Frosted glass"),
+                        'liquid': tr(context, "Liquid glass"),
                       }[value]!,
                     ),
                     selected: store.preferences.material == value,
@@ -149,10 +154,10 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const Divider(height: 20),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'YOUR NOTEBOOK',
+              tr(context, "YOUR NOTEBOOK"),
               style: TextStyle(
                 fontSize: 12,
                 letterSpacing: 1,
@@ -163,8 +168,8 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.save_alt_rounded),
-            title: const Text('Export a backup'),
-            subtitle: const Text('Excludes credentials'),
+            title: Text(tr(context, "Export a backup")),
+            subtitle: Text(tr(context, "Excludes credentials")),
             onTap: () async {
               try {
                 await NativeFiles.write(
@@ -179,12 +184,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.restore_rounded),
-            title: const Text('Restore a backup'),
+            title: Text(tr(context, "Restore a backup")),
             onTap: () => restore(context),
           ),
           ListTile(
             leading: const Icon(Icons.description_outlined),
-            title: const Text('Export this day as Markdown'),
+            title: Text(tr(context, "Export this day as Markdown")),
             subtitle: Text(store.selectedDate),
             onTap: () async {
               try {
@@ -203,7 +208,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.content_paste_rounded),
-            title: const Text('Import Markdown checklist'),
+            title: Text(tr(context, "Import Markdown checklist")),
             onTap: () =>
                 showNoteSheet<void>(context, ChecklistImporter(store: store)),
           ),
@@ -281,8 +286,9 @@ class _ProviderEditorState extends State<ProviderEditor> {
         setState(() {
           loadingKey = false;
           keyLoadFailed = true;
-          message =
-              'Could not open secure key storage. Retry before saving a replacement.';
+          message = ui(
+            "Could not open secure key storage. Retry before saving a replacement.",
+          );
         });
       }
     }
@@ -317,7 +323,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
     try {
       await ai.testConnection(draft);
       if (mounted) {
-        setState(() => message = 'Connected. Save to use this provider.');
+        setState(() => message = ui("Connected. Save to use this provider."));
       }
     } catch (e) {
       if (mounted) setState(() => message = e.toString());
@@ -344,8 +350,9 @@ class _ProviderEditorState extends State<ProviderEditor> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => message =
-              'Settings could not be saved. Your edits remain here. Please retry.',
+          () => message = ui(
+            "Settings could not be saved. Your edits remain here. Please retry.",
+          ),
         );
       }
     } finally {
@@ -355,19 +362,19 @@ class _ProviderEditorState extends State<ProviderEditor> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('AI assistance')),
+    appBar: AppBar(title: Text(tr(context, "AI assistance"))),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text(
-          'Suggestions send task text to this provider.',
+        Text(
+          tr(context, "Suggestions send task text to this provider."),
           style: TextStyle(color: mutedInk),
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           initialValue: draft.provider,
           isExpanded: true,
-          decoration: const InputDecoration(labelText: 'Provider'),
+          decoration: InputDecoration(labelText: tr(context, "Provider")),
           items: [
             for (final entry in providerPresets.entries)
               DropdownMenuItem(
@@ -394,7 +401,12 @@ class _ProviderEditorState extends State<ProviderEditor> {
         ),
         const SizedBox(height: 16),
         if (usesAccountKey)
-          const Text('Uses the OpenRouter key saved in your pipedreams account.')
+          Text(
+            tr(
+              context,
+              "Uses the OpenRouter key saved in your pipedreams account.",
+            ),
+          )
         else ...[
           TextField(
             controller: key,
@@ -402,27 +414,27 @@ class _ProviderEditorState extends State<ProviderEditor> {
             obscureText: true,
             autocorrect: false,
             enableSuggestions: false,
-            decoration: const InputDecoration(labelText: 'API key'),
+            decoration: InputDecoration(labelText: tr(context, "API key")),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: model,
             enabled: !busy,
             autocorrect: false,
-            decoration: const InputDecoration(labelText: 'Model'),
+            decoration: InputDecoration(labelText: tr(context, "Model")),
           ),
           const SizedBox(height: 16),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
-            title: const Text('Connection details'),
+            title: Text(tr(context, "Connection details")),
             children: [
               TextField(
                 controller: base,
                 enabled: !busy,
                 autocorrect: false,
                 keyboardType: TextInputType.url,
-                decoration: const InputDecoration(
-                  labelText: 'HTTPS API base URL',
+                decoration: InputDecoration(
+                  labelText: tr(context, "HTTPS API base URL"),
                 ),
               ),
               const SizedBox(height: 16),
@@ -440,7 +452,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
               setState(() => loadingKey = true);
               loadKey();
             },
-            child: const Text('Retry secure key storage'),
+            child: Text(tr(context, "Retry secure key storage")),
           ),
         const SizedBox(height: 20),
         Row(
@@ -448,7 +460,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
             Expanded(
               child: OutlinedButton(
                 onPressed: busy || loadingKey || keyLoadFailed ? null : test,
-                child: const Text('Test connection'),
+                child: Text(tr(context, "Test connection")),
               ),
             ),
             const SizedBox(width: 12),
@@ -461,7 +473,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Save'),
+                    : Text(tr(context, "Save")),
               ),
             ),
           ],
@@ -495,7 +507,7 @@ class _ChecklistImporterState extends State<ChecklistImporter> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Import to ${widget.store.selectedDate}',
+          tr(context, "Import to {0}", [widget.store.selectedDate]),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
@@ -503,8 +515,8 @@ class _ChecklistImporterState extends State<ChecklistImporter> {
           controller: text,
           minLines: 4,
           maxLines: 8,
-          decoration: const InputDecoration(
-            hintText: '- [ ] Task\n  - [ ] First step',
+          decoration: InputDecoration(
+            hintText: tr(context, "- [ ] Task\n  - [ ] First step"),
           ),
         ),
         if (error != null)
@@ -521,7 +533,7 @@ class _ChecklistImporterState extends State<ChecklistImporter> {
                 if (mounted && value?.text != null) text.text = value!.text!;
               },
               icon: const Icon(Icons.paste),
-              label: const Text('Paste'),
+              label: Text(tr(context, "Paste")),
             ),
             const Spacer(),
             FilledButton(
@@ -529,7 +541,7 @@ class _ChecklistImporterState extends State<ChecklistImporter> {
                 try {
                   final tasks = parseMarkdownTasks(text.text);
                   if (tasks.isEmpty) {
-                    throw const FormatException('No checklist tasks found');
+                    throw FormatException(ui("No checklist tasks found"));
                   }
                   (widget.store.days[widget.store.selectedDate] ??= []).addAll(
                     tasks,
@@ -540,7 +552,7 @@ class _ChecklistImporterState extends State<ChecklistImporter> {
                   setState(() => error = e.toString());
                 }
               },
-              child: const Text('Add tasks'),
+              child: Text(tr(context, "Add tasks")),
             ),
           ],
         ),
@@ -563,19 +575,19 @@ class _MachinesScreenState extends State<MachinesScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add a machine'),
+        title: Text(tr(context, "Add a machine")),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: name,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: tr(context, "Name")),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: type,
-              decoration: const InputDecoration(
-                labelText: 'Type or capabilities',
+              decoration: InputDecoration(
+                labelText: tr(context, "Type or capabilities"),
               ),
             ),
           ],
@@ -583,7 +595,7 @@ class _MachinesScreenState extends State<MachinesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(tr(context, "Cancel")),
           ),
           FilledButton(
             onPressed: () {
@@ -595,7 +607,7 @@ class _MachinesScreenState extends State<MachinesScreen> {
                 Navigator.pop(context, true);
               }
             },
-            child: const Text('Add'),
+            child: Text(tr(context, "Add")),
           ),
         ],
       ),
@@ -616,7 +628,7 @@ class _MachinesScreenState extends State<MachinesScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Planning machines')),
+    appBar: AppBar(title: Text(tr(context, "Planning machines"))),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -627,7 +639,7 @@ class _MachinesScreenState extends State<MachinesScreen> {
             title: Text(machine['name'] as String),
             subtitle: Text(machine['type'] as String? ?? ''),
             trailing: IconButton(
-              tooltip: 'Remove machine',
+              tooltip: tr(context, "Remove machine"),
               onPressed: () {
                 widget.store.preferences.machines.remove(machine);
                 widget.store.changed();
@@ -640,7 +652,7 @@ class _MachinesScreenState extends State<MachinesScreen> {
         FilledButton.icon(
           onPressed: add,
           icon: const Icon(Icons.add),
-          label: const Text('Add machine'),
+          label: Text(tr(context, "Add machine")),
         ),
       ],
     ),

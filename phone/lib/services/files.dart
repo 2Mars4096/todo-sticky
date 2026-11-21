@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
@@ -6,13 +8,37 @@ import '../models/models.dart';
 
 class NativeFiles {
   static const channel = MethodChannel('sticky_todo/files');
-  static Future<String?> read() => channel.invokeMethod<String>('read');
-  static Future<void> write(String filename, String mime, String content) =>
-      channel.invokeMethod<void>('write', {
-        'filename': filename,
-        'mime': mime,
-        'content': content,
-      });
+  static Future<T?> _invoke<T>(
+    String action, [
+    Map<String, Object?>? arguments,
+  ]) async {
+    try {
+      return await channel.invokeMethod<T>(action, arguments);
+    } on PlatformException catch (error) {
+      const known = {
+        'A file picker is already open.',
+        'A document picker is open.',
+        'Open Dockit before choosing a file.',
+        'No file picker is available.',
+        'The export exceeds 20 MB.',
+      };
+      if (known.contains(error.message)) throw StateError(ui(error.message!));
+      rethrow;
+    }
+  }
+
+  static Future<String?> read() => _invoke<String>('read');
+  static Future<void> write(
+    String filename,
+    String mime,
+    String content,
+  ) async {
+    await _invoke<void>('write', {
+      'filename': filename,
+      'mime': mime,
+      'content': content,
+    });
+  }
 }
 
 String markdownDay(String date, List<Task> tasks) {
@@ -54,7 +80,7 @@ String markdownDay(String date, List<Task> tasks) {
 
 List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
   if (markdown.length > 20 * 1024 * 1024) {
-    throw const FormatException('Import exceeds 20 MB');
+    throw FormatException(ui("Import exceeds 20 MB"));
   }
   final roots = <Task>[];
   final stack = <({int indent, Task task})>[];
@@ -83,7 +109,7 @@ List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
       final goal = object(jsonDecode(goalMetadata));
       goalId = goalLinkId(goal['goalId']);
       goalStepId = goalLinkId(goal['goalStepId']);
-      if (goalId == null) throw const FormatException('Invalid goal link');
+      if (goalId == null) throw FormatException(ui("Invalid goal link"));
       text = text.replaceFirst(goalPattern, '');
     }
     final paragraph = textPattern.firstMatch(text)?[1];
@@ -101,7 +127,7 @@ List<Task> parseMarkdownTasks(String markdown, {bool keepIds = false}) {
       stack.removeLast();
     }
     if (stack.length > 32) {
-      throw const FormatException('Task nesting is too deep');
+      throw FormatException(ui("Task nesting is too deep"));
     }
     final task = Task(
       id: keepIds ? id : null,

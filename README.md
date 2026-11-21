@@ -26,7 +26,9 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, rebuilt and reinstalled with the **Diane shared backend** and editable local setup/session handoff (2026-11-10). Your original Todo interface and local notes remain. Open **Settings → Account → Continue with Google** with the same account as Diane, then **Sync**. Local Diane connection is enabled on this installation; Push stays grey when Diane is unavailable.
 
-Latest Android release: [todo-sticky-latest.apk](todo-sticky-latest.apk), ARM64 2.1.16+29. Install over the existing signed app and open **Today → Meeting follow-ups** while signed in to Diane.
+Build 33 includes repeat step entry. [Signed Android ARM64 APK](output/clients/step-capture/Dockit-arm64-v8a-release.apk) · [iPhone Simulator app](output/clients/step-capture/iphonesimulator/Dockit.app) · [Unsigned device IPA](output/clients/step-capture/Dockit-unsigned.ipa) · [Local Mac app](output/clients/step-capture/macOS/Dockit.app) · [Verification](docs/plans/23-dockit-transfer.md#repeated-step-capture).
+
+The previous local [signed ARM64 Android release](output/clients/android-release/Dockit-arm64-v8a-release.apk) is 2.1.19+32. [iPhone Simulator app](output/clients/ios-simulator/Dockit.app) · [Unsigned device IPA](output/clients/ios-device/Dockit-unsigned.ipa) · [Build and signing details](docs/plans/25-interface-element-review.md#build-32-deadline-verification). Install over the existing signed app and open **Today → Meeting follow-ups** while signed in to Diane.
 
 Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](phone/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 
@@ -38,7 +40,13 @@ Download the latest installer from [Releases](https://github.com/2Mars4096/todo-
 | **Windows** | `.msi` or `.exe` |
 | **Linux** | `.deb` or `.AppImage` |
 
-First launch opens the task list with the **What needs doing?** field ready. Write a task, then choose **Add** or press **Cmd/Ctrl+Enter**. Enter inserts a new line; paragraphs and blank lines stay with the task. AI setup is optional and can wait until you need it.
+Use the globe in the notebook header to choose the display language. **System default** follows your device. Dockit remembers an explicit choice on the device or in the current browser profile. English, 简体中文, 繁體中文, 廣東話, 日本語, 한국어, Français, Deutsch, Español and Português are available offline. Changing language preserves an open draft and the original task text.
+
+First launch opens the task list with the **What needs doing?** field ready. Write a task, then choose **Add** or press **Cmd/Ctrl+Enter**. Enter inserts a new line. Paragraphs and blank lines stay with the task. After adding, keep typing in the same field to capture the next task. Phones also accept Cmd/Ctrl+Enter on a hardware keyboard. AI setup is optional and can wait until you need it.
+
+In **Search** or **Progress**, choose **Reset filters** when the current filters hide all results. Search returns the cursor to the query. Progress keeps the selected date. [Build 34 downloads and verification](docs/plans/25-interface-element-review.md#archive-filters-and-adjacent-controls)
+
+Choose the date in the notebook header to open its month. On web and Mac, use the arrow keys to move between days, Enter to select and Escape to return to the date button.
 
 Open **Settings** to configure tools by purpose:
 
@@ -135,6 +143,10 @@ Open **Settings → Style** to choose **Paper**, **Frosted glass**, or **Liquid 
 ## Features
 
 Click an unfinished task to select it. Icon buttons for **Focus**, **Add step**, **Suggest steps with AI**, **Move**, and **Delete** appear beside its details. Hover to see each action name. Double-click the title or press Enter while the title is focused to edit it. Choose Save or press Cmd/Ctrl+Enter to save; Enter inserts a new line and Escape cancels.
+
+Choose **Add step** and type a step. Click or tap **Add**, then keep typing to enter the next step under the same task. Cmd/Ctrl+Enter also adds the step, and Enter inserts a line break. Finish an active input-method composition before adding.
+
+The arrow beside a task’s step count points right when the steps are closed and down when they are open. The phone arrow also reveals task actions.
 
 - **Persistent capture** — The top **New task** field stays visible. Add step opens a growing multiline field for the selected task; Add or Cmd/Ctrl+Enter adds the step and Escape clears its draft.
 - **Readable task hierarchy** — Titles lead, saved Outcome and Due details sit beneath them, and step groups collapse to a count and next-step summary. Expand a group to work through it.
@@ -345,3 +357,11 @@ Linked Diane tasks show Queued, Running, Needs input or Finished · Review besid
 ## Icon handoff
 
 The selected pipedreams artwork and platform-sized inputs are staged in [Dockit icon handoff](assets/brand/pipedreams-ink/HANDOFF.md). It records integration locations and the remaining notification, masking, build and device checks.
+
+## Linked tasks
+
+Expand a synced task to inspect its Mynit quotation and open the timestamped passage. Use **Assign in Shiprite** to send the task and its steps to an authorized workspace. **Check status** reads the assignment state and revision. [Handoff verification](docs/plans/23-dockit-transfer.md#suite-ui-and-record-handoffs)
+
+### Local Flutter phone exports
+
+See the [per-platform verification record](docs/plans/25-interface-element-review.md) for the signed Android release APKs, separate Preview APK, iPhone Simulator app and unsigned iPhone device app/IPA. The production Android release preserves the original package/signing identity. The unsigned iPhone device export requires provisioning and signing before installation.

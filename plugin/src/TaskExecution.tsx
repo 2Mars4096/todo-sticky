@@ -1,3 +1,5 @@
+import { ui } from './interfaceLocale'
+import { createPortal } from 'react-dom';
 import { useEffect, useId, useRef, useState } from 'react';
 import { isElectron } from '@diane/plugin-sdk/desktop';
 import { useManagedPluginHost } from '@diane/plugin-sdk/host-context';
@@ -5,11 +7,11 @@ import { describeError, newId, pluginApi, pluginScope, type PluginRecord, type P
 import { recordsChanged } from '@diane/plugin-sdk/records';
 import { activeWorkflow, executionProject, previousSessions, readProjectChoice, reviewableWorkflow, runRequestId, saveProjectChoice, sessionHref, unfinishedTask, workflowLabel, type ProjectChoice } from './taskExecutionState';
 
-type Props = { task: PluginRecord; active: boolean; enabled: boolean; saving?: boolean };
+type Props = { task: PluginRecord; active: boolean; enabled: boolean; saving?: boolean; compact?: boolean; controlsTarget?: HTMLElement | null; onConfigure?: () => void };
 const projectSignature = (projects: Project[]) => JSON.stringify(projects.map(project => [project.id, project.name, project.root]).sort((a, b) => a[0].localeCompare(b[0])));
 
 /** Product-owned controls over the existing host workflow and result-version APIs. */
-export function TaskExecution({ task, active, enabled, saving = false }: Props) {
+export function TaskExecution({ task, active, enabled, saving = false, compact = false, controlsTarget, onConfigure }: Props) {
   const host = useManagedPluginHost();
   const scope = task._scope || pluginScope();
   const version = `${scope}:${task.record_id}:${task.revision}`;
@@ -34,7 +36,7 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
   }, [detailsOpen, workflow?.workflow_id, workflow?.result_version, reviewSnapshot]);
   const current = () => mounted.current && latest.current.active && latest.current.version === version && pluginScope() === scope;
   const scopedWorkflow = (value: Workflow) => {
-    if (value.task_id !== task.record_id || value._scope && value._scope !== scope) throw new Error('This run belongs to a different task or account. Refresh its status.');
+    if (value.task_id !== task.record_id || value._scope && value._scope !== scope) throw new Error(ui("This run belongs to a different task or account. Refresh its status."));
     return { ...value, _scope: scope };
   };
   const receive = (value: Workflow) => {
@@ -137,10 +139,10 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
   const canRun = enabled && unfinishedTask(task) && Boolean(project) && !loading && !busy && !saving;
   const terminal = Boolean(workflow && ['accepted', 'stopped', 'failed'].includes(workflow.state));
   const canRunAgain = terminal && unfinishedTask(task);
-  const preparationLabel = choice !== undefined ? project ? '' : choice.project_id ? 'Project unavailable' : 'Choose project'
+  const preparationLabel = choice !== undefined ? project ? '' : choice.project_id ? 'Project unavailable' : 'Choose workspace'
     : project ? '' : !preparation || preparation.state === 'pending' ? 'Preparing…'
       : preparation.state === 'stale' || preparation.state === 'ready' && preparation.task_revision !== task.revision ? 'Updating context…'
-        : preparation.state === 'unavailable' ? 'Preparation unavailable' : 'Choose project';
+        : preparation.state === 'unavailable' ? 'Preparation unavailable' : 'Choose workspace';
   const chooseProject = (value: string) => {
     const item = projects.find(candidate => candidate.id === value);
     const next = value === '__automatic__' ? undefined : { project_id: item?.id || '', root: item?.root || '' };
@@ -151,7 +153,7 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
     void action(async valid => {
       const next = await pluginApi.run(task, project!.id, runRequestId(task, project!.id, fingerprint, workflow), fingerprint);
       if (!valid()) return;
-      if (next.project_id !== project!.id) throw new Error('Shiprite returned a different project. Refresh before continuing.');
+      if (next.project_id !== project!.id) throw new Error(ui("Diane returned a different project. Refresh before continuing."));
       receive(next); setDetailsOpen(false);
       // Session creation and navigation are separate user actions.
     });
@@ -172,7 +174,7 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
       if (decision === 'accept') setDetailsOpen(false);
       if (decision === 'stop') {
         setDetailsOpen(false); setReviewSnapshot(undefined); setRevising(false); setFeedback('');
-        setNotice('Result discarded.');
+        setNotice(ui("Result discarded."));
       }
     });
   };
@@ -185,53 +187,55 @@ export function TaskExecution({ task, active, enabled, saving = false }: Props) 
   };
   const staleReview = Boolean(reviewSnapshot && (reviewSnapshot.workflow_id !== workflow?.workflow_id || reviewSnapshot.result_version !== workflow?.result_version));
   const displayed = reviewSnapshot && reviewableWorkflow(workflow) ? reviewSnapshot : workflow;
-  const open = (value: Workflow, label = 'Open', title = 'Open Shiprite session') => value.session_id && (isElectron()
+  const open = (value: Workflow, label = 'Open', title = 'Open Diane session') => value.session_id && (isElectron()
     ? <button type="button" disabled={busy || loading || saving} title={title} aria-label={title} onClick={() => void action(async () => { await pluginApi.openWorkflow(value); })}>{label}</button>
     : <a href={sessionHref(value)} title={title} aria-label={title} target="_blank" rel="noopener noreferrer" onClick={event => { if (!current() || value._scope && value._scope !== scope) event.preventDefault(); }}>{label}</a>);
   const bound = workflow ? projects.find(item => item.id === workflow.project_id) : project;
   const previous = previousSessions(runs);
   const origin = task.extensions.meeting_context as { meeting_id?: string; title?: string; transcript_revision?: number } | undefined;
 
-  return <div className="todo-execution" aria-label="Shiprite task execution" aria-busy={busy || loading || saving}>
+  const projectControl = (!workflow || canRunAgain ? <select aria-label={ui("Diane project")} title={project?.root || ui("Choose a project for this task")} value={project?.id || ''} disabled={busy || saving} onChange={event => chooseProject(event.target.value)}>
+        <option value="">{ui("Choose workspace")}</option>{(choice !== undefined || project) && <option value="__automatic__">{ui("Automatic")}</option>}{projects.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+      </select> : bound ? <span className="todo-execution-project" title={bound.root}>{bound.name}</span> : null);
+  const extraControls = (        <div>
+          <button type="button" disabled={busy || loading} onClick={() => { refresh(); if (options.current) options.current.open = false; }}>{ui("Refresh")}</button>
+          <button type="button" onClick={() => { showDetails(); if (options.current) options.current.open = false; }} aria-expanded={detailsOpen} aria-controls={detailsId}>{ui("Run details")}</button>
+          {workflow?.state === 'pending_dispatch' && <button type="button" disabled={busy || loading || saving || !enabled} onClick={() => void action(async valid => { const next = await pluginApi.run({ ...task, revision: workflow.task_revision }, workflow.project_id, workflow.request_id); if (valid()) receive(next); })}>{ui("Retry start")}</button>}
+          {activeWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => void action(async valid => { const next = await pluginApi.stop(workflow!); if (valid()) { receive(next); setNotice(next.state === 'stopped' ? ui("Run stopped.") : ui("Stop requested.")); } })}>{ui("Stop run")}</button>}
+          {reviewableWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => review('defer')}>{ui("Review later")}</button>}
+        </div>);
+  return <div className="todo-execution" aria-label={ui("Diane task execution")} aria-busy={busy || loading || saving}>
     <div className="todo-execution-row">
-      {!workflow || canRunAgain ? <select aria-label="Shiprite project" title={project?.root || 'Choose a project for this task'} value={project?.id || ''} disabled={busy || saving} onChange={event => chooseProject(event.target.value)}>
-        <option value="">Choose project</option>{(choice !== undefined || project) && <option value="__automatic__">Automatic</option>}{projects.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-      </select> : bound ? <span className="todo-execution-project" title={bound.root}>{bound.name}</span> : null}
-      <span className="todo-execution-state" role="status">{saving ? 'Saving…' : loading ? 'Loading…' : reviewConflict ? 'Task changed' : workflow ? workflowLabel(workflow.state) : preparationLabel}</span>
-      {(!workflow || canRunAgain) && unfinishedTask(task) && <button type="button" className="todo-execution-primary" disabled={!canRun} onClick={run}>{workflow ? 'Run again' : 'Run'}</button>}
-      {reviewableWorkflow(workflow) ? <button ref={reviewTrigger} type="button" className="todo-execution-primary" disabled={loading || saving} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={showDetails}>Review</button> : workflow && open(workflow)}
-      <details className="todo-execution-options" ref={options} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); options.current!.open = false; options.current?.querySelector('summary')?.focus(); } }}>
-        <summary aria-label="More Shiprite actions" title="More Shiprite actions">···</summary>
-        <div>
-          <button type="button" disabled={busy || loading} onClick={() => { refresh(); if (options.current) options.current.open = false; }}>Refresh</button>
-          <button type="button" onClick={() => { showDetails(); if (options.current) options.current.open = false; }} aria-expanded={detailsOpen} aria-controls={detailsId}>Run details</button>
-          {workflow?.state === 'pending_dispatch' && <button type="button" disabled={busy || loading || saving || !enabled} onClick={() => void action(async valid => { const next = await pluginApi.run({ ...task, revision: workflow.task_revision }, workflow.project_id, workflow.request_id); if (valid()) receive(next); })}>Retry start</button>}
-          {activeWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => void action(async valid => { const next = await pluginApi.stop(workflow!); if (valid()) { receive(next); setNotice(next.state === 'stopped' ? 'Run stopped.' : 'Stop requested.'); } })}>Stop run</button>}
-          {reviewableWorkflow(workflow) && <button type="button" disabled={busy || loading || saving} onClick={() => review('defer')}>Review later</button>}
-        </div>
-      </details>
+      {compact ? <button type="button" className="todo-diane-label" onClick={onConfigure} title={ui("Diane workspace and actions")}>{ui("Diane")}</button> : projectControl}
+      <span className="todo-execution-state" role="status">{saving ? ui("Saving…") : loading ? ui("Loading…") : reviewConflict ? ui("Task changed") : workflow ? workflowLabel(workflow.state) : compact && project ? ui("Ready") : preparationLabel}</span>
+      {(!workflow || canRunAgain) && unfinishedTask(task) && <button type="button" className="todo-execution-primary" disabled={!canRun} onClick={run}>{workflow ? ui("Run again") : ui("Run")}</button>}
+      {reviewableWorkflow(workflow) ? <button ref={reviewTrigger} type="button" className="todo-execution-primary" disabled={loading || saving} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={showDetails}>{ui("Review")}</button> : workflow && open(workflow)}
+      {compact ? controlsTarget && createPortal(<><label className="task-diane-workspace">{ui("Diane workspace")}{projectControl}</label>{extraControls}</>,controlsTarget) :       <details className="todo-execution-options" ref={options} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); options.current!.open = false; options.current?.querySelector('summary')?.focus(); } }}>
+        <summary aria-label={ui("More Diane actions")} title={ui("More Diane actions")}>···</summary>
+        {extraControls}
+      </details>}
     </div>
-    {detailsOpen && <section id={detailsId} className="todo-execution-details" aria-label={reviewableWorkflow(workflow) ? 'Review Shiprite result' : 'Shiprite run details'}>
-      <header><strong>{workflow ? workflowLabel(workflow.state) : 'Run details'}</strong><button type="button" onClick={closeDetails} aria-label="Close Shiprite run details">×</button></header>
+    {detailsOpen && <section id={detailsId} className="todo-execution-details" aria-label={reviewableWorkflow(workflow) ? ui("Review Diane result") : ui("Diane run details")}>
+      <header><strong>{workflow ? workflowLabel(workflow.state) : ui("Run details")}</strong><button type="button" onClick={closeDetails} aria-label={ui("Close Diane run details")}>×</button></header>
       {displayed?.result?.summary && <p className="todo-execution-result">{displayed.result.summary}</p>}
-      {staleReview && reviewableWorkflow(workflow) && <p role="status">A newer result is available. <button type="button" onClick={() => setReviewSnapshot(workflow)}>Review latest</button></p>}
+      {staleReview && reviewableWorkflow(workflow) && <p role="status">{ui("A newer result is available.") + " "}<button type="button" onClick={() => setReviewSnapshot(workflow)}>{ui("Review latest")}</button></p>}
       {reviewConflict && <p className="todo-execution-conflict" role="status">{reviewConflict}</p>}
       {bound && <p className="todo-execution-root">{bound.root}</p>}
       {!workflow && fingerprint && preparation?.context && <p>{preparation.context}</p>}
       {!workflow && !project && preparation?.reason && <p>{preparation.reason}</p>}
-      {origin?.meeting_id && host && <button type="button" onClick={() => host.open('meeting', origin.meeting_id, origin.transcript_revision)}>{origin.title || 'Source meeting'}</button>}
+      {origin?.meeting_id && host && <button type="button" onClick={() => host.open('meeting', origin.meeting_id, origin.transcript_revision)}>{origin.title || ui("Source meeting")}</button>}
       {workflow && open(workflow)}
       {reviewableWorkflow(workflow) && <div className="todo-execution-review-actions">
-        <button type="button" className="todo-execution-primary" disabled={busy || loading || saving || staleReview || !reviewSnapshot || Boolean(reviewConflict)} onClick={() => review('accept')}>Accept & complete</button>
-        <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot || !enabled || Boolean(reviewConflict)} aria-expanded={revising} onClick={() => setRevising(value => !value)}>Request changes</button>
-        {canDiscardResult && <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot} onClick={() => review('stop')} title="Discard this result and keep the task unchanged">Discard result</button>}
+        <button type="button" className="todo-execution-primary" disabled={busy || loading || saving || staleReview || !reviewSnapshot || Boolean(reviewConflict)} onClick={() => review('accept')}>{ui("Accept & complete")}</button>
+        <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot || !enabled || Boolean(reviewConflict)} aria-expanded={revising} onClick={() => setRevising(value => !value)}>{ui("Request changes")}</button>
+        {canDiscardResult && <button type="button" disabled={busy || loading || saving || staleReview || !reviewSnapshot} onClick={() => review('stop')} title={ui("Discard this result and keep the task unchanged")}>{ui("Discard result")}</button>}
       </div>}
-      {reviewableWorkflow(workflow) && !canDiscardResult && <p>Update Shiprite to discard a result without closing its task.</p>}
+      {reviewableWorkflow(workflow) && !canDiscardResult && <p>{ui("Update Diane to discard a result without closing its task.")}</p>}
       {revising && reviewableWorkflow(workflow) && <form className="todo-execution-revision" onSubmit={event => { event.preventDefault(); review('revise'); }}>
-        <label>Changes requested<textarea autoFocus value={feedback} onChange={event => setFeedback(event.target.value)} placeholder="What needs to change?" disabled={busy}/></label>
-        <div><button type="submit" disabled={busy || saving || staleReview || !enabled || !feedback.trim() || Boolean(reviewConflict)}>Send changes</button><button type="button" disabled={busy} onClick={() => setRevising(false)}>Cancel</button></div>
+        <label>{ui("Changes requested")}<textarea autoFocus value={feedback} onChange={event => setFeedback(event.target.value)} placeholder={ui("What needs to change?")} disabled={busy}/></label>
+        <div><button type="submit" disabled={busy || saving || staleReview || !enabled || !feedback.trim() || Boolean(reviewConflict)}>{ui("Send changes")}</button><button type="button" disabled={busy} onClick={() => setRevising(false)}>{ui("Cancel")}</button></div>
       </form>}
-      {previous.length > 0 && <details className="todo-execution-history"><summary>Previous runs <span>{previous.length}</span></summary><ul>{previous.map((item, index) => <li key={item.key}><span>{item.label}</span>{open(item.workflow, 'Open', `Open previous Shiprite session ${index + 1}`)}</li>)}</ul></details>}
+      {previous.length > 0 && <details className="todo-execution-history"><summary>{ui("Previous runs") + " "}<span>{previous.length}</span></summary><ul>{previous.map((item, index) => <li key={item.key}><span>{item.label}</span>{open(item.workflow, 'Open', `Open previous Diane session ${index + 1}`)}</li>)}</ul></details>}
     </section>}
     {error && <p className="todo-execution-error" role="alert">{error}</p>}
     {notice && <p className="todo-execution-notice" role="status">{notice}</p>}

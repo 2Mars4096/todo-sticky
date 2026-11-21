@@ -1,3 +1,6 @@
+import '../interface_locale.dart';
+import '../widgets/notebook_date_picker.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,6 +13,7 @@ import '../models/models.dart';
 import '../state/sticky_store.dart';
 import '../services/ai_service.dart';
 import '../widgets/task_tile.dart';
+import '../widgets/notebook_capture_field.dart';
 import '../widgets/task_grip.dart';
 import 'plan_screen.dart';
 import 'albums_screen.dart';
@@ -32,6 +36,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final capture = TextEditingController();
+  final captureFocus = FocusNode();
   final _scroll = ScrollController();
   final _viewport = GlobalKey();
   Timer? _dragScroll;
@@ -42,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _endEarlierDrag(rebuild: false);
     _scroll.dispose();
+    captureFocus.dispose();
     capture.dispose();
     super.dispose();
   }
@@ -165,13 +171,13 @@ class _HomeScreenState extends State<HomeScreen> {
         visible: false,
       ),
       child: Semantics(
-        label: 'Move ${row.task.text} to Today',
+        label: tr(context, "Move {0} to Today", [row.task.text]),
         customSemanticsActions: {
           const CustomSemanticsAction(label: 'Move to Today'): () =>
               _moveEarlier(data),
         },
         child: Tooltip(
-          message: 'Drag to Today',
+          message: tr(context, "Drag to Today"),
           child: TaskGrip(height: taskControlHeight(context)),
         ),
       ),
@@ -179,9 +185,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void add() {
-    if (capture.text.trim().isEmpty) return;
     widget.store.addTask(capture.text);
     capture.clear();
+    captureFocus.requestFocus();
   }
 
   @override
@@ -203,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               IconButton(
-                tooltip: 'Previous day',
+                tooltip: tr(context, "Previous day"),
                 onPressed: () => store.selectDate(
                   dateKey(DateTime(date.year, date.month, date.day - 1)),
                 ),
@@ -219,19 +225,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: TextButton(
                     onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: date,
-                        firstDate: DateTime(1970),
-                        lastDate: DateTime(2100),
+                      final picked = await showNotebookDatePicker(
+                        context,
+                        date,
                       );
-                      if (picked != null) store.selectDate(dateKey(picked));
+                      if (mounted &&
+                          picked != null &&
+                          dateKey(picked) != store.selectedDate) {
+                        store.selectDate(dateKey(picked));
+                      }
                     },
                     child: Column(
                       children: [
                         Text(
                           store.selectedDate == store.today
-                              ? 'Today'
+                              ? tr(context, "Today")
                               : DateFormat('EEEE').format(date),
                           style: const TextStyle(
                             fontSize: 22,
@@ -240,7 +248,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         Text(
-                          DateFormat('d MMMM y').format(date),
+                          (currentLanguage == 'en'
+                                  ? DateFormat('d MMMM y')
+                                  : DateFormat.yMMMMd())
+                              .format(date),
                           style: const TextStyle(color: mutedInk),
                         ),
                       ],
@@ -249,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               IconButton(
-                tooltip: 'Next day',
+                tooltip: tr(context, "Next day"),
                 onPressed: () => store.selectDate(
                   dateKey(DateTime(date.year, date.month, date.day + 1)),
                 ),
@@ -260,20 +271,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-          child: TextField(
+          child: NotebookCaptureField(
             controller: capture,
-            textInputAction: TextInputAction.newline,
-            keyboardType: TextInputType.multiline,
-            minLines: 1,
-            maxLines: View.of(context).viewInsets.bottom > 0 ? 3 : 6,
-            decoration: InputDecoration(
-              hintText: 'What needs doing?',
-              suffixIcon: IconButton(
-                tooltip: 'Add task',
-                onPressed: add,
-                icon: const Icon(Icons.add_rounded),
-              ),
-            ),
+            focusNode: captureFocus,
+            hint: tr(context, "What needs doing?"),
+            actionLabel: tr(context, "Add task"),
+            icon: Icons.add_rounded,
+            onAdd: add,
           ),
         ),
         Padding(
@@ -282,19 +286,24 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: Text(
-                  tasks.isEmpty ? '' : '$completed of ${tasks.length} complete',
+                  tasks.isEmpty
+                      ? ''
+                      : tr(context, "{0} of {1} complete", [
+                          completed,
+                          tasks.length,
+                        ]),
                   style: const TextStyle(color: mutedInk),
                 ),
               ),
               if (store.selectedDate != store.today)
                 TextButton(
                   onPressed: () => store.selectDate(store.today),
-                  child: const Text('Today'),
+                  child: Text(tr(context, "Today")),
                 ),
               IconButton(
                 tooltip: store.preferences.showCompleted
-                    ? 'Hide completed tasks'
-                    : 'Show completed tasks',
+                    ? tr(context, "Hide completed tasks")
+                    : tr(context, "Show completed tasks"),
                 onPressed: () {
                   store.preferences.showCompleted =
                       !store.preferences.showCompleted;
@@ -314,10 +323,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-                label: const Text('Plan'),
+                label: Text(tr(context, "Plan")),
               ),
               IconButton(
-                tooltip: 'Music for this work',
+                tooltip: tr(context, "Music for this work"),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute<void>(
@@ -336,7 +345,10 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               children: [
                 Expanded(child: Text(store.undoLabel!)),
-                TextButton(onPressed: store.undo, child: const Text('Undo')),
+                TextButton(
+                  onPressed: store.undo,
+                  child: Text(tr(context, "Undo")),
+                ),
               ],
             ),
           ),
@@ -356,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       key: const ValueKey('today-drop-empty'),
                       canAccept: _canMoveEarlier,
                       onAccept: (data, _) => _moveEarlier(data),
-                      child: const Padding(
+                      child: Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: 36,
                           vertical: 48,
@@ -371,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 12),
                             Text(
-                              'No tasks yet',
+                              tr(context, "No tasks yet"),
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -379,6 +391,27 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                  ),
+                if (tasks.isNotEmpty && visibleTasks.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
+                      child: Column(
+                        children: [
+                          Text(tr(context, "No open tasks on this day")),
+                          TextButton(
+                            onPressed: () {
+                              store.preferences.showCompleted = true;
+                              store.changed();
+                            },
+                            child: Text(tr(context, "Show finished tasks")),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -434,7 +467,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             isLabelVisible: !store.preferences.showEarlier,
                             child: const Icon(Icons.history_rounded),
                           ),
-                          title: Text('Earlier tasks (${earlier.length})'),
+                          title: Text(
+                            tr(context, "Earlier tasks ({0})", [
+                              earlier.length,
+                            ]),
+                          ),
                           trailing: Icon(
                             store.preferences.showEarlier
                                 ? Icons.expand_less
@@ -493,7 +530,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: const TextStyle(color: paper),
                     ),
                   ),
-                  const Text('Open focus', style: TextStyle(color: paper)),
+                  Text(
+                    tr(context, "Open focus"),
+                    style: TextStyle(color: paper),
+                  ),
                 ],
               ),
             ),

@@ -1,0 +1,11 @@
+{
+  "platform": "native macOS WKWebView, isolated test window",
+  "builds": {
+    "notebook": "f8fd720e441e570452a77c5b52507a62746caeee574199615c56f23a8035471c",
+    "components": "10d09ec24387ab54947be8c0aa6f3b324b4bb03ef8e32039f42f61a93dc226ca"
+  },
+  "stateVisits": 10,
+  "observations": 110,
+  "failures": 0,
+  "sample": []
+}

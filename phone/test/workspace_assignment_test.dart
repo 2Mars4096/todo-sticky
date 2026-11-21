@@ -46,11 +46,20 @@ void main() {
                     );
                   }
                   writes.add(request);
-                  if (writes.length == 1)
+                  if (writes.length == 1) {
                     return http.Response('{"detail":"Try again."}', 503);
+                  }
                   return http.Response(
                     jsonEncode({
-                      'id': request.url.pathSegments.last,
+                      'id': request.method == 'POST'
+                          ? jsonDecode(request.body)['id']
+                          : request.url.pathSegments[request
+                                    .url
+                                    .pathSegments
+                                    .length -
+                                2],
+                      'state': request.method == 'POST' ? 'ready' : 'review',
+                      'revision': request.method == 'POST' ? 1 : 3,
                       'workspaceId': 'studio',
                     }),
                     200,
@@ -88,6 +97,7 @@ void main() {
         find.byType(TextField).first,
         'Review the studio proposal',
       );
+      await tester.pump();
       await tap(find.byTooltip('Add task'));
       await tap(find.byTooltip('Show task actions and steps').first);
       await tap(find.byTooltip('Add a step'));
@@ -95,6 +105,7 @@ void main() {
         find.widgetWithText(TextField, 'Add a step'),
         'Estimate printing costs',
       );
+      await tester.pump();
       await tap(find.byTooltip('Add step'));
       await tap(find.byTooltip('Settings'));
       await tap(find.text('Account & sync'));
@@ -110,15 +121,30 @@ void main() {
       await tap(find.text('Assign in Shiprite'));
       expect(find.textContaining('Try again.'), findsOneWidget);
       await tap(find.text('Assign in Shiprite'));
-      expect(find.text('Assigned in Shiprite.'), findsOneWidget);
+      expect(find.text('Ready to start · Revision 1'), findsOneWidget);
       expect(writes.length, 2);
-      expect(writes.last.method, 'PUT');
+      expect(writes.last.method, 'POST');
+      expect(writes.last.body, writes.first.body);
+      expect(
+        writes.last.url.path,
+        '/api/connected-apps/workspaces/studio/shiprite/assignments',
+      );
       expect(writes.last.url, writes.first.url);
       expect(jsonDecode(writes.last.body), {
+        'id': jsonDecode(writes.first.body)['id'],
+        'source': {
+          'app': 'dockit',
+          'workspaceId': 'studio',
+          'date': store.today,
+          'taskId': store.days[store.today]!.first.id,
+        },
         'title': 'Review the studio proposal',
         'instructions': 'Review the studio proposal\n- Estimate printing costs',
         'assigneeUid': 'studio-member',
       });
+      await tap(find.text('Check status'));
+      expect(writes.last.method, 'GET');
+      expect(find.text('Awaiting review · Revision 3'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       account.dispose();

@@ -1,0 +1,48 @@
+{
+  "build": "c9a7245ddff651e2",
+  "functionalStateChecks": {
+    "goal created/observed": 50,
+    "reminder created/observed": 50,
+    "reminder cancelled/observed": 50,
+    "date editor/observed": 50,
+    "date cancel/observed": 50,
+    "finish review/observed": 50,
+    "save retry/observed": 50,
+    "focus running/observed": 50,
+    "focus paused/observed": 50,
+    "focus resumed/observed": 50,
+    "focus completed/observed": 50,
+    "focus-recent-archive/observed": 50,
+    "focus-full-archive/observed": 50
+  },
+  "visibleHistoryRows": {
+    "recent": {
+      "6": 50
+    },
+    "full": {
+      "10": 50
+    }
+  },
+  "newCandidateCells": 656,
+  "rawPhaseNameOccurrences": 675,
+  "openCountFindingOccurrences": 30,
+  "nonEnglishPhaseLocales": [
+    "de",
+    "es",
+    "fr",
+    "ja",
+    "ko",
+    "pt",
+    "yue",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "countFindingLocales": [
+    "es",
+    "fr",
+    "pt",
+    "yue",
+    "zh-Hans",
+    "zh-Hant"
+  ]
+}

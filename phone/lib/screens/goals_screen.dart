@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'package:flutter/material.dart';
 
 import '../app.dart';
@@ -45,7 +47,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final text = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(routines ? 'Edit routine' : 'Edit goal'),
+        title: Text(
+          routines ? tr(context, "Edit routine") : tr(context, "Edit goal"),
+        ),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -55,11 +59,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(tr(context, "Cancel")),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Save'),
+            child: Text(tr(context, "Save")),
           ),
         ],
       ),
@@ -78,16 +82,16 @@ class _GoalsScreenState extends State<GoalsScreen> {
       Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         child: SegmentedButton<bool>(
-          segments: const [
+          segments: [
             ButtonSegment(
               value: false,
               icon: Icon(Icons.flag_outlined),
-              label: Text('Long-term'),
+              label: Text(tr(context, "Long-term")),
             ),
             ButtonSegment(
               value: true,
               icon: Icon(Icons.repeat_rounded),
-              label: Text('Routines'),
+              label: Text(tr(context, "Routines")),
             ),
           ],
           selected: {routines},
@@ -101,9 +105,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => add(),
           decoration: InputDecoration(
-            hintText: routines ? 'Add a routine' : 'Add a goal',
+            hintText: routines
+                ? tr(context, "Add a routine")
+                : tr(context, "Add a goal"),
             suffixIcon: IconButton(
-              tooltip: routines ? 'Add routine' : 'Add goal',
+              tooltip: routines
+                  ? tr(context, "Add routine")
+                  : tr(context, "Add goal"),
               onPressed: add,
               icon: const Icon(Icons.add),
             ),
@@ -117,8 +125,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
             spacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Tooltip(
-                message: 'Schedules run on this device.',
+              Tooltip(
+                message: tr(context, "Schedules run on this device."),
                 child: Icon(Icons.info_outline, size: 18, color: mutedInk),
               ),
               if (items.any(
@@ -148,7 +156,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                           widget.store.changed();
                         }
                       : null,
-                  child: const Text('Reset routines'),
+                  child: Text(tr(context, "Reset routines")),
                 ),
             ],
           ),
@@ -167,7 +175,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Text(
-                    routines ? 'No routines yet' : 'No goals yet',
+                    routines
+                        ? tr(context, "No routines yet")
+                        : tr(context, "No goals yet"),
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 18, color: mutedInk),
                   ),
@@ -221,8 +231,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     subtitle: !routines
                         ? Text(
                             progress!.total == 0
-                                ? 'Plan'
-                                : '${progress.completed}/${progress.total} completed${progress.scheduled > progress.completed ? ' · ${progress.scheduled - progress.completed} scheduled' : ''}',
+                                ? tr(context, "Plan")
+                                : tr(context, "{0}/{1} completed{2}", [
+                                    progress.completed,
+                                    progress.total,
+                                    progress.scheduled > progress.completed
+                                        ? ' · ${progress.scheduled - progress.completed} scheduled'
+                                        : '',
+                                  ]),
                             style: const TextStyle(
                               color: mutedInk,
                               fontSize: 12,
@@ -234,22 +250,22 @@ class _GoalsScreenState extends State<GoalsScreen> {
                               DropdownButton<String>(
                                 isExpanded: true,
                                 value: schedule?.cadence ?? 'manual',
-                                items: const [
+                                items: [
                                   DropdownMenuItem(
                                     value: 'manual',
-                                    child: Text('Manual'),
+                                    child: Text(tr(context, "Manual")),
                                   ),
                                   DropdownMenuItem(
                                     value: 'daily',
-                                    child: Text('Daily'),
+                                    child: Text(tr(context, "Daily")),
                                   ),
                                   DropdownMenuItem(
                                     value: 'weekdays',
-                                    child: Text('Weekdays'),
+                                    child: Text(tr(context, "Weekdays")),
                                   ),
                                   DropdownMenuItem(
                                     value: 'weekly',
-                                    child: Text('Weekly'),
+                                    child: Text(tr(context, "Weekly")),
                                   ),
                                 ],
                                 onChanged: widget.store.routineError != null
@@ -262,8 +278,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
                               if (scheduled) ...[
                                 Text(
                                   schedule.paused
-                                      ? 'Paused'
-                                      : 'Next ${schedule.next(widget.store.today)}',
+                                      ? tr(context, "Paused")
+                                      : tr(context, "Next {0}", [
+                                          schedule.next(widget.store.today),
+                                        ]),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: mutedInk,
@@ -276,14 +294,16 @@ class _GoalsScreenState extends State<GoalsScreen> {
                                       onPressed: () =>
                                           widget.store.pauseRoutine(item.id),
                                       child: Text(
-                                        schedule.paused ? 'Resume' : 'Pause',
+                                        schedule.paused
+                                            ? tr(context, "Resume")
+                                            : tr(context, "Pause"),
                                       ),
                                     ),
                                     if (!schedule.paused)
                                       TextButton(
                                         onPressed: () =>
                                             widget.store.skipRoutine(item.id),
-                                        child: const Text('Skip next'),
+                                        child: Text(tr(context, "Skip next")),
                                       ),
                                   ],
                                 ),
@@ -306,7 +326,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                           ),
                     trailing: !routines
                         ? PopupMenuButton<String>(
-                            tooltip: 'Goal actions',
+                            tooltip: tr(context, "Goal actions"),
                             icon: const Icon(Icons.more_horiz),
                             onSelected: (value) async {
                               if (value == 'edit') {
@@ -321,20 +341,25 @@ class _GoalsScreenState extends State<GoalsScreen> {
                                 final remove = await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('Delete this goal?'),
-                                    content: const Text(
-                                      'Its plan will be removed. Daily tasks will remain.',
+                                    title: Text(
+                                      tr(context, "Delete this goal?"),
+                                    ),
+                                    content: Text(
+                                      tr(
+                                        context,
+                                        "Its plan will be removed. Daily tasks will remain.",
+                                      ),
                                     ),
                                     actions: [
                                       TextButton(
                                         onPressed: () =>
                                             Navigator.pop(context, false),
-                                        child: const Text('Keep'),
+                                        child: Text(tr(context, "Keep")),
                                       ),
                                       TextButton(
                                         onPressed: () =>
                                             Navigator.pop(context, true),
-                                        child: const Text('Delete'),
+                                        child: Text(tr(context, "Delete")),
                                       ),
                                     ],
                                   ),
@@ -348,42 +373,44 @@ class _GoalsScreenState extends State<GoalsScreen> {
                               }
                             },
                             itemBuilder: (_) => [
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'edit',
-                                child: Text('Edit goal'),
+                                child: Text(tr(context, "Edit goal")),
                               ),
                               PopupMenuItem(
                                 value: 'done',
                                 child: Text(
                                   item.done
-                                      ? 'Reopen goal'
-                                      : 'Mark goal complete',
+                                      ? tr(context, "Reopen goal")
+                                      : tr(context, "Mark goal complete"),
                                 ),
                               ),
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'delete',
-                                child: Text('Delete goal'),
+                                child: Text(tr(context, "Delete goal")),
                               ),
                             ],
                           )
                         : IconButton(
-                            tooltip: 'Delete ${routines ? 'routine' : 'goal'}',
+                            tooltip: tr(context, "Delete {0}", [
+                              routines ? 'routine' : 'goal',
+                            ]),
                             onPressed: () async {
                               final remove = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  title: const Text('Delete this item?'),
+                                  title: Text(tr(context, "Delete this item?")),
                                   content: Text(item.text),
                                   actions: [
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.pop(context, false),
-                                      child: const Text('Keep'),
+                                      child: Text(tr(context, "Keep")),
                                     ),
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.pop(context, true),
-                                      child: const Text('Delete'),
+                                      child: Text(tr(context, "Delete")),
                                     ),
                                   ],
                                 ),

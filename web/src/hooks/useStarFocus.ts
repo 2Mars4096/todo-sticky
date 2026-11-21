@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   StarFocusMissionRecord,
@@ -17,11 +18,11 @@ type StarFocusArchiveLimit = (typeof STAR_FOCUS_ARCHIVE_LIMIT_OPTIONS)[number]
 type StarFocusDebugTimeScale = (typeof STAR_FOCUS_DEBUG_TIME_SCALE_OPTIONS)[number]
 
 export const STAR_FOCUS_PHASES: { id: StarFocusPhase; label: string; cutoff: number }[] = [
-  { id: 'ignition', label: 'Ignition', cutoff: 0.12 },
-  { id: 'ascent', label: 'Ascent', cutoff: 0.44 },
-  { id: 'heating', label: 'Heating', cutoff: 0.66 },
-  { id: 'staging', label: 'Staging', cutoff: 0.82 },
-  { id: 'orbit', label: 'Orbit', cutoff: 1 },
+  { id: 'ignition', get label() { return ui("Ignition") }, cutoff: 0.12 },
+  { id: 'ascent', get label() { return ui("Ascent") }, cutoff: 0.44 },
+  { id: 'heating', get label() { return ui("Heating") }, cutoff: 0.66 },
+  { id: 'staging', get label() { return ui("Staging") }, cutoff: 0.82 },
+  { id: 'orbit', get label() { return ui("Orbit") }, cutoff: 1 },
 ]
 
 interface FocusTaskRef {
@@ -608,9 +609,9 @@ export function useStarFocus(tasks: FocusTaskRef[]) {
 
   const applyCloudMission = useCallback(async (value: StarFocusMissionRecord | null, id: string) => {
     const mission = value === null ? null : normalizeMission(value)
-    if (value !== null && !mission) throw new Error('Invalid focus session received from sync.')
+    if (value !== null && !mission) throw new Error(ui("Invalid focus session received from sync."))
     const previous = stateRef.current
-    if (previous.activeSession) throw new Error('Finish the active focus session before receiving focus history.')
+    if (previous.activeSession) throw new Error(ui("Finish the active focus session before receiving focus history."))
     const history = previous.missionHistory.filter(item => item.id !== id)
     if (mission) history.push(mission)
     const next = { ...previous, missionHistory: trimMissionHistory(history.sort((a, b) => b.completedAt - a.completedAt), normalizeArchiveRetentionLimit(previous.archiveRetentionLimit)) }

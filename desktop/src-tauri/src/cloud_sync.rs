@@ -37,7 +37,20 @@ fn sign_in_url(url: &str, return_to_app: bool) -> Result<reqwest::Url, String> {
 #[tauri::command]
 pub fn open_account_sign_in(url: String) -> Result<(), String> {
     let parsed = sign_in_url(&url, cfg!(target_os = "macos"))?;
-    // No credentials move into the return URI; it only focuses this app.
+    open_browser(&parsed)
+}
+
+#[tauri::command]
+pub fn open_suite_link(url: String) -> Result<(), String> {
+    let parsed = reqwest::Url::parse(&url).map_err(|_| "Invalid product link")?;
+    if parsed.scheme() != "https" || parsed.port().is_some() || !parsed.username().is_empty() || parsed.password().is_some()
+        || !matches!(parsed.host_str(),Some("mynit.pipedreams.work" | "shiprite.pipedreams.work" | "zilo.pipedreams.work" | "zethea.pipedreams.work" | "dockit.pipedreams.work")) {
+        return Err("Choose a pipedreams product link".into());
+    }
+    open_browser(&parsed)
+}
+
+fn open_browser(parsed: &reqwest::Url) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     let result = std::process::Command::new("open").arg(parsed.as_str()).spawn();
     #[cfg(target_os = "windows")]

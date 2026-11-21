@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { Fragment, useEffect, useRef, useState, type PointerEvent } from 'react'
 import { effectiveProject } from '../projectPlanning'
 import type { GoalItem, AggregatedTask, Task, FinishPromise } from '../types'
@@ -61,6 +62,9 @@ export function TaskList({
   }, [carriedOpen])
   const [carriedLimit, setCarriedLimit] = useState(40)
   const orderedTasks = [...tasks.filter(task => !task.sourceDate), ...tasks.filter(task => task.sourceDate).slice(0, carriedLimit)]
+  const dated = tasks.filter(task => !task.sourceDate)
+  const openTasks = dated.filter(task => task.status !== 'done' && task.status !== 'stopped')
+  const finishedCount = dated.length - openTasks.length
   const firstCarriedId = orderedTasks.find(task => task.sourceDate)?.id
   const carriedCount = tasks.filter(task => task.sourceDate).length
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null)
@@ -144,7 +148,7 @@ export function TaskList({
     if (current.active && target) {
       if (current.item.kind === 'task' && target.kind === 'today') {
         onMoveToToday?.(current.item.id, target.id, target.position)
-        setReorderNotice('Task moved to Today.')
+        setReorderNotice(ui("Task moved to Today."))
       } else if (current.item.kind === 'task' && target.kind !== 'today') {
         onReorderTask(current.item.id, target.id, target.position)
       } else if (current.item.kind === 'subtask' && target.kind === 'subtask') {
@@ -169,12 +173,12 @@ export function TaskList({
     const target = siblings[index + direction]
     if (index === 0 && direction < 0 && isCurrentDay && onMoveToToday && siblings[0]?.sourceDate) {
       onMoveToToday(taskId)
-      setReorderNotice('Task moved to Today.')
+      setReorderNotice(ui("Task moved to Today."))
       return
     }
     if (index < 0 || !target) return
     onReorderTask(taskId, target.id, direction < 0 ? 'before' : 'after')
-    setReorderNotice(`Task moved ${direction < 0 ? 'before' : 'after'} ${target.text}.`)
+    setReorderNotice(ui("Task moved {0} {1}.", [direction < 0 ? 'before' : 'after', target.text]))
   }
 
   const moveSubtaskByKeyboard = (taskId: string, subtaskId: string, direction: -1 | 1) => {
@@ -183,7 +187,7 @@ export function TaskList({
     const target = parent?.todaySubtasks[index + direction]
     if (index < 0 || !target) return
     onReorderSubtask(taskId, subtaskId, target.id, direction < 0 ? 'before' : 'after')
-    setReorderNotice(`Step moved ${direction < 0 ? 'before' : 'after'} ${target.text}.`)
+    setReorderNotice(ui("Step moved {0} {1}.", [direction < 0 ? 'before' : 'after', target.text]))
   }
 
   if (loading) {
@@ -191,7 +195,7 @@ export function TaskList({
       <div className="task-list empty" aria-live="polite">
         <div className="task-empty-state">
           <span className="task-loading-mark" aria-hidden="true" />
-          <strong>Loading your tasks…</strong>
+          <strong>{ui("Loading your tasks…")}</strong>
         </div>
       </div>
     )
@@ -203,13 +207,13 @@ export function TaskList({
       <div className="task-list empty" role="alert">
         <div className="task-empty-state task-load-error">
           <span className="task-empty-mark" aria-hidden="true">↓</span>
-          <strong>{cloudOnly ? 'Tasks are waiting in Dropbox' : 'Tasks could not be loaded'}</strong>
+          <strong>{cloudOnly ? ui("Tasks are waiting in Dropbox") : ui("Tasks could not be loaded")}</strong>
           <span>
             {cloudOnly
-              ? 'Make index.md available offline in Finder, then try again.'
-              : 'Check that your notebook is available, then retry.'}
+              ? ui("Make index.md available offline in Finder, then try again.")
+              : ui("Check that your notebook is available, then retry.")}
           </span>
-          <button className="task-empty-today" onClick={onRetryLoad}>Retry</button>
+          <button className="task-empty-today" onClick={onRetryLoad}>{ui("Retry")}</button>
         </div>
       </div>
     )
@@ -220,11 +224,9 @@ export function TaskList({
       <div className="task-list empty">
         <div className="task-empty-state">
           <img src={`${import.meta.env.BASE_URL}brand/pipedreams-ink/icon-48.png`} width={28} height={28} style={{borderRadius: 6}} alt="" />
-          <strong>{isCurrentDay ? 'No tasks yet' : 'No tasks on this day'}</strong>
+          <strong>{isCurrentDay ? ui("No tasks yet") : ui("No tasks on this day")}</strong>
           {!isCurrentDay && (
-            <button className="task-empty-today" onClick={onGoToday}>
-              Go to today
-            </button>
+            <button className="task-empty-today" onClick={onGoToday}>{ui("Go to today")}</button>
           )}
         </div>
       </div>
@@ -233,24 +235,30 @@ export function TaskList({
 
   return (
     <div className="task-list" ref={listRef}>
+      {finishedCount > 0 && <div className="day-remainder">
+        <span role="status">{ui("{0} on this day", [openTasks.length ? ui("{0} open", [openTasks.length]) : ui("No open tasks")])}</span>
+        {openTasks.length > 0 && <button type="button" className="task-text-action" onClick={() => {
+          const title = listRef.current?.querySelector<HTMLElement>(`[data-task-id="${CSS.escape(openTasks[0].id)}"] .task-text`)
+          title?.focus()
+        }}>{ui("Next open task")}</button>}
+      </div>}
       <span className="task-reorder-status" role="status" aria-live="polite">{reorderNotice}</span>
-      {rolloverLoading && <div className="rollover-error" role="status">Loading carried tasks…</div>}
-      {rolloverError && <div className="rollover-error" role="alert">
-        Some earlier tasks could not be loaded. <button onClick={onRetryLoad}>Retry</button>
+      {rolloverLoading && <div className="rollover-error" role="status">{ui("Loading carried tasks…")}</div>}
+      {rolloverError && <div className="rollover-error" role="alert">{ui("Some earlier tasks could not be loaded.") + " "}<button onClick={onRetryLoad}>{ui("Retry")}</button>
       </div>}
       {isCurrentDay && onMoveToToday && carriedCount > 0 && !tasks.some(task => !task.sourceDate) && (
         <div className={`today-drop-zone${dropTarget?.kind === 'today' ? ' is-target' : ''}`}>
-          {draggingEarlier ? 'Drop here for Today' : 'Today is clear'}
+          {draggingEarlier ? ui("Drop here for Today") : ui("Today is clear")}
         </div>
       )}
       {orderedTasks.map(task => (
         <Fragment key={task.id}>
           {task.id === firstCarriedId && <button
-            ref={earlierRef} type="button" className="carried-toggle" aria-expanded={carriedOpen} title={`${carriedCount} unfinished tasks from earlier dates`}
+            ref={earlierRef} type="button" className="carried-toggle" aria-expanded={carriedOpen} title={ui("{0} unfinished tasks from earlier dates", [carriedCount])}
             onClick={() => setCarriedOpen(open => !open)}
           >
             <span aria-hidden="true">{carriedOpen ? '▾' : '▸'}</span>
-            <span>Earlier tasks</span>{!carriedOpen && <span className="carried-attention" aria-hidden="true" />}<span className="carried-rule" /><span>{carriedCount}</span>
+            <span>{ui("Earlier tasks")}</span>{!carriedOpen && <span className="carried-attention" aria-hidden="true" />}<span className="carried-rule" /><span>{carriedCount}</span>
           </button>}
           {(!task.sourceDate || carriedOpen) && <TaskItem
             projects={projects} goalId={effectiveProject(task,projects)} onOpenProject={onOpenProject} onAssignProject={onAssignProject ? (value,step)=>onAssignProject(task.id,value,step):undefined}
@@ -263,7 +271,7 @@ export function TaskList({
             onReview={onReview ? decision => onReview(task.id, decision) : undefined}
             isFocusSelected={selectedTaskId === task.id}
             isFocusLocked={focusLocked}
-            moveTargetLabel={task.sourceDate && isCurrentDay && onMoveToToday ? 'today' : moveTargetLabel}
+            moveTargetLabel={task.sourceDate && isCurrentDay && onMoveToToday ? ui("today") : moveTargetLabel}
             subtaskMoveTargetLabel={moveTargetLabel}
 
             todaySubtasks={task.todaySubtasks}
@@ -275,7 +283,7 @@ export function TaskList({
             onTextChange={(t) => onTextChange(task.id, t)}
             sortable={{
               state: dragStateFor({ kind: 'task', id: task.id }),
-              label: `Reorder ${task.text}`,
+              label: ui("Reorder {0}", [task.text]),
               onPointerDown: event => startDrag(event, { kind: 'task', id: task.id }),
               onPointerMove: moveDrag,
               onPointerUp: drop,
@@ -284,7 +292,7 @@ export function TaskList({
             }}
             getSubtaskSortable={(subtaskId, subtaskText) => ({
               state: dragStateFor({ kind: 'subtask', id: subtaskId, parentId: task.id }),
-              label: `Reorder ${subtaskText} within ${task.text}`,
+              label: ui("Reorder {0} within {1}", [subtaskText, task.text]),
               onPointerDown: event => startDrag(event, { kind: 'subtask', id: subtaskId, parentId: task.id }),
               onPointerMove: moveDrag,
               onPointerUp: drop,
@@ -305,7 +313,7 @@ export function TaskList({
       ))}
       {carriedOpen && carriedCount > carriedLimit && <button
         className="carried-toggle" type="button" onClick={() => setCarriedLimit(limit => limit + 40)}
-      >Show more earlier tasks ({carriedCount - carriedLimit} remaining)</button>}
+      >{ui("Show more earlier tasks ({0} remaining)", [carriedCount - carriedLimit])}</button>}
       <AddTask inline onAdd={onAddTask} disabled={loading || Boolean(loadError)} />
     </div>
   )

@@ -1,3 +1,4 @@
+import '../interface_locale.dart';
 import 'models.dart';
 
 // Matches desktop UTF-16 FNV text fingerprints, including non-ASCII tasks.
@@ -41,7 +42,7 @@ class RoutineSchedule {
   factory RoutineSchedule.fromJson(Map<String, dynamic> j) {
     if (!['manual', 'daily', 'weekdays', 'weekly'].contains(j['cadence']) ||
         j['paused'] is! bool) {
-      throw const FormatException('Invalid routine schedule');
+      throw FormatException(ui("Invalid routine schedule"));
     }
     final anchor = j['anchor'] as String;
     parseDate(anchor);

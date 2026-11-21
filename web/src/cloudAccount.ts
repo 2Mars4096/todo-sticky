@@ -1,3 +1,5 @@
+import {displayLanguage} from './interfaceLocale'
+import { readMynitSource, type MynitSource } from './mynitSource'
 import { selectedWorkspace } from './suiteWorkspace'
 import { initializeApp, getApps, type FirebaseOptions } from 'firebase/app'
 import { getAuth, setPersistence, indexedDBLocalPersistence, signInWithCustomToken, signOut, type Auth, type User } from 'firebase/auth'
@@ -18,7 +20,7 @@ export async function requestJson(origin: string, path: string, options: Request
     const body = await response.json().catch(() => null)
     if (!response.ok) {
       const message = typeof body?.detail === 'string' ? body.detail : response.status === 409 ? 'This record changed on another device. Sync again to review the conflict.' : `Sync request failed (${response.status}).`
-      throw new Error(message)
+      throw Object.assign(new Error(message),{status:response.status})
     }
     return body
   } finally { clearTimeout(timeout); options.signal?.removeEventListener('abort', cancel) }
@@ -111,7 +113,7 @@ export async function googleSignIn(origin: string, auth: Auth, signal: AbortSign
   const sessionId = randomCode()
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const challenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-  const url = `${origin}/signin#${new URLSearchParams({ sessionId, challenge, ...(brokerOrigins.has(origin)?{appId:'todo', ...(!isTauri() ? {returnTo:'web'} : {})}:{}) })}`
+  const url = `${origin}/signin#${new URLSearchParams({ sessionId, challenge, language:displayLanguage(), ...(brokerOrigins.has(origin)?{appId:'todo', ...(!isTauri() ? {returnTo:'web'} : {})}:{}) })}`
   if (isTauri()) await invoke('open_account_sign_in', { url })
   else window.open(url, '_blank', 'noopener,noreferrer')
   const expires = Date.now() + 5 * 60_000
@@ -173,13 +175,14 @@ export function parseTodoTaskLink(value:string):string|null {
   }catch{return null}
 }
 
-export async function readSharedTodoTask(recordId:string,kbPath?:string):Promise<{date:string;taskId:string;recordId:string}> {
+export async function readSharedTodoTask(recordId:string,kbPath?:string):Promise<{date:string;taskId:string;recordId:string;source?:MynitSource}> {
   if(!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(recordId))throw new Error('Invalid shared task link.')
   const auth=await connectAccount(DIANE_SHARED_ORIGIN,kbPath),user=auth.currentUser
   if(!user)throw new Error('Sign in to the Pipe Dreams account to open this task.')
   const token=await user.getIdToken()
   const record=await requestJson(DIANE_SHARED_ORIGIN,'/api/plugins/todo/records/task/'+encodeURIComponent(recordId),{},token)
   if(auth.currentUser?.uid!==user.uid)throw new Error('Account changed before the task opened.')
+  if (record?.record_id !== recordId || record.record_type !== 'task' || record.plugin_id !== 'todo' || record.deleted) throw Error('The linked task is unavailable.')
   const date=record.extensions?.date||String(record.created_at||'').slice(0,10)
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('This task has no usable date.')
   const original=record.extensions?.source?.app==='todo-sticky'?record.extensions.source.id:record.record_id
@@ -188,7 +191,28 @@ export async function readSharedTodoTask(recordId:string,kbPath?:string):Promise
     const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('task:'+record.record_id))
     taskId='diane_'+Array.from(new Uint8Array(hash),byte=>byte.toString(16).padStart(2,'0')).join('').slice(0,40)
   }
-  return {date,taskId,recordId:record.record_id}
+  const source = readMynitSource(record.extensions?.meeting_context)
+  if (source && taskId !== recordId) {
+    localStorage.setItem('dockit-citation-id:' + user.uid + ':' + taskId,recordId)
+  }
+  return {date,taskId,recordId:record.record_id,source}
+}
+
+export async function notebookCitation(auth:Auth,user:User,taskId:string) {
+  assertSharedNotebookOwner(auth,user)
+  const recordId = localStorage.getItem('dockit-citation-id:' + user.uid + ':' + taskId) ?? taskId
+  if (!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(recordId)) return undefined
+  const token = await user.getIdToken()
+  assertSharedNotebookOwner(auth,user)
+  try {
+    const record = await requestJson(DIANE_SHARED_ORIGIN,'/api/plugins/todo/records/task/'+encodeURIComponent(recordId),{},token)
+    assertSharedNotebookOwner(auth,user)
+    if (record?.record_id !== recordId || record.record_type !== 'task' || record.plugin_id !== 'todo' || record.deleted) return undefined
+    return readMynitSource(record.extensions?.meeting_context)
+  } catch (error) {
+    if ((error as {status?:number}).status === 404) return undefined
+    throw error
+  }
 }
 
 export { signOut }

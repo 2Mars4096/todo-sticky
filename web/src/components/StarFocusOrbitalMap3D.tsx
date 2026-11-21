@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import * as THREE from 'three'
 import type { StarFocusMissionRecord, StarFocusPhase, StarFocusSession } from '../types'
@@ -2214,17 +2215,17 @@ export function StarFocusOrbitalMap3D({
   const latestMission = missionHistory[0] ?? null
   const hasLiveFlight = Boolean(activeSession && activeSnapshot)
   const topHud = destinationLabel
-    ? { label: hasLiveFlight ? 'Destination' : 'Next stop', value: destinationLabel }
+    ? { label: hasLiveFlight ? ui("Destination") : ui("Next stop"), value: destinationLabel }
     : hasLiveFlight
-      ? { label: 'Track', value: activeSnapshot?.isPaused ? 'Hold' : liveLabel }
+      ? { label: ui("Track"), value: activeSnapshot?.isPaused ? ui("Hold") : liveLabel }
       : latestMission
-        ? { label: 'Latest', value: latestMission.vehicleCode }
-        : { label: 'Grid', value: 'Standby' }
+        ? { label: ui("Latest"), value: latestMission.vehicleCode }
+        : { label: ui("Grid"), value: ui("Standby") }
   const bottomHud = hasLiveFlight && activeSnapshot
-    ? { label: 'T-Remain', value: formatClock(activeSnapshot.remainingMs) }
+    ? { label: ui("T-Remain"), value: formatClock(activeSnapshot.remainingMs) }
     : missionHistory.length
-      ? { label: 'Archive', value: `${missionHistory.length} retained` }
-      : { label: 'Archive', value: 'Empty' }
+      ? { label: ui("Archive"), value: `${missionHistory.length} retained` }
+      : { label: ui("Archive"), value: ui("Empty") }
   const tiltMode = camera.tilt > 0.2 ? 'above' : camera.tilt < -0.2 ? 'below' : 'level'
 
   useEffect(() => {
@@ -2290,10 +2291,10 @@ export function StarFocusOrbitalMap3D({
         if (!renderer.getContext().isContextLost()) renderer.forceContextLoss()
       })
       renderer.debug.checkShaderErrors = true
-      renderer.debug.onShaderError = () => failMap(new Error('A focus map shader could not be compiled.'))
+      renderer.debug.onShaderError = () => failMap(new Error(ui("A focus map shader could not be compiled.")))
       const handleContextLost = (event: Event) => {
         event.preventDefault()
-        failMap(new Error('The focus map graphics context was lost.'))
+        failMap(new Error(ui("The focus map graphics context was lost.")))
       }
       renderer.domElement.addEventListener('webglcontextlost', handleContextLost)
       disposers.push(() => renderer.domElement.removeEventListener('webglcontextlost', handleContextLost))
@@ -2946,7 +2947,7 @@ export function StarFocusOrbitalMap3D({
         onPointerCancel={finishDrag}
         onWheel={handleWheel}
         onDoubleClick={resetCamera}
-        title="Drag to orbit camera. Scroll to zoom."
+        title={ui("Drag to orbit camera. Scroll to zoom.")}
       >
         <div className="starmap-grid" />
         <div className="starmap-nebula" />
@@ -2959,36 +2960,30 @@ export function StarFocusOrbitalMap3D({
 
       <div className="starmap-controls">
         <div className="starmap-control-row">
-          <button className="starmap-control-btn" onClick={() => handleZoom(CAMERA_LIMITS.zoomStep)} title="Zoom out" aria-label="Zoom out">−</button>
+          <button className="starmap-control-btn" onClick={() => handleZoom(CAMERA_LIMITS.zoomStep)} title={ui("Zoom out")} aria-label={ui("Zoom out")}>−</button>
           <span className="starmap-control-readout">{(DEFAULT_CAMERA.distance / camera.distance).toFixed(1)}x</span>
-          <button className="starmap-control-btn" onClick={() => handleZoom(-CAMERA_LIMITS.zoomStep)} title="Zoom in" aria-label="Zoom in">+</button>
+          <button className="starmap-control-btn" onClick={() => handleZoom(-CAMERA_LIMITS.zoomStep)} title={ui("Zoom in")} aria-label={ui("Zoom in")}>+</button>
         </div>
         <div className="starmap-control-row">
           <button
             className={`starmap-control-btn ${tiltMode === 'above' ? 'active' : ''}`}
             onClick={() => handleTilt(0.64)}
-            title="View from above"
+            title={ui("View from above")}
             aria-pressed={tiltMode === 'above'}
-          >
-            Above
-          </button>
+          >{ui("Above")}</button>
           <button
             className={`starmap-control-btn ${tiltMode === 'level' ? 'active' : ''}`}
             onClick={() => handleTilt(0)}
-            title="Level view"
+            title={ui("Level view")}
             aria-pressed={tiltMode === 'level'}
-          >
-            Level
-          </button>
+          >{ui("Level")}</button>
           <button
             className={`starmap-control-btn ${tiltMode === 'below' ? 'active' : ''}`}
             onClick={() => handleTilt(-0.38)}
-            title="View from below"
+            title={ui("View from below")}
             aria-pressed={tiltMode === 'below'}
-          >
-            Below
-          </button>
-          <button className="starmap-control-btn" onClick={resetCamera} title="Reset camera">Reset</button>
+          >{ui("Below")}</button>
+          <button className="starmap-control-btn" onClick={resetCamera} title={ui("Reset camera")}>{ui("Reset")}</button>
         </div>
       </div>
 

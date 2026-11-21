@@ -1,0 +1,73 @@
+{
+  "keys": 1363,
+  "web": 1037,
+  "plugin": 611,
+  "phone": 552,
+  "signin": 14,
+  "files": 108,
+  "locales": {
+    "zh-Hans": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "zh-Hant": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "yue": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "ja": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "ko": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "fr": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "de": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "es": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    },
+    "pt": {
+      "suspectCopy": 0,
+      "entries": 1363,
+      "missing": 0,
+      "extra": 0,
+      "invalidPlaceholders": 0
+    }
+  }
+}

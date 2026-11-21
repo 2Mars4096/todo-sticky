@@ -1,0 +1,24 @@
+{
+  "occurrences": 2537,
+  "localeOccurrenceRows": 25370,
+  "fiveChecks": 126850,
+  "kinds": {
+    "localized-call": 2214,
+    "runtime-content": 287,
+    "multiplier-unit": 4,
+    "dynamic-locale-key": 1,
+    "closed-vocabulary": 20,
+    "native-fallback-literal": 11
+  },
+  "coveredKeys": 1363,
+  "inventoryKeys": 1363,
+  "variants": {
+    "standalone-react": "5e1cfb1c3af61565",
+    "embedded-plugin": "73902ddcdd505a80",
+    "flutter": "d020abbbf301478f",
+    "legacy-signin": "ffbd2dac3ec3414f",
+    "flutter/native-channel": "d020abbbf301478f",
+    "native-document-channel": "d020abbbf301478f",
+    "native-desktop-boot": "dbaafc7d22229f9e"
+  }
+}

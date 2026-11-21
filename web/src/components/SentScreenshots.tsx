@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -33,11 +34,11 @@ export function SentScreenshots({ disabled, date, onAdd }: {
 
   if (!receipt) return null
   return <div className="settings-overlay">
-    <div ref={dialog} className="settings-panel add-task" role="dialog" aria-modal="true" aria-label="Task from Flameshot">
-      <h2>Task from screenshot · {date}</h2>
+    <div ref={dialog} className="settings-panel add-task" role="dialog" aria-modal="true" aria-label={ui("Task from Flameshot")}>
+      <h2>{ui("Task from screenshot · {0}", [date])}</h2>
       {'Ok' in receipt
         ? <ScreenshotReview key={receipt.id} initial={outline(receipt.Ok)} disabled={disabled} onAdd={onAdd} onClose={close} />
-        : <><p role="alert">{receipt.Err}</p><button onClick={close}>Close</button></>}
+        : <><p role="alert">{receipt.Err}</p><button onClick={close}>{ui("Close")}</button></>}
     </div>
   </div>
 }

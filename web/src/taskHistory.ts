@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import type { AggregatedTask, Task } from './types'
 import type { PlannedBlock } from './taskPlanning'
 import { planStepPrefix, planTextHash, isReplaceablePlanStep } from './taskPlanning'
@@ -43,14 +44,14 @@ export function deleteWithUndo(tasks: AggregatedTask[], date: string, taskId: st
     if (stepIndex < 0) return null
     const step = task.todaySubtasks[stepIndex]
     const undo: TaskUndo = {
-      kind: 'delete', date, label: 'Step deleted', root,
+      kind: 'delete', date, label: ui("Step deleted"), root,
       step: { task: step, index: stepIndex, previousId: task.todaySubtasks[stepIndex - 1]?.id, nextId: task.todaySubtasks[stepIndex + 1]?.id },
     }
     return { undo, tasks: tasks.map(candidate => candidate.id === taskId
       ? { ...candidate, todaySubtasks: candidate.todaySubtasks.filter(child => child.id !== subtaskId) }
       : candidate) }
   }
-  const undo: TaskUndo = { kind: 'delete', date, label: 'Task deleted', root }
+  const undo: TaskUndo = { kind: 'delete', date, label: ui("Task deleted"), root }
   return { undo, tasks: tasks.filter(candidate => candidate.id !== taskId) }
 }
 
@@ -80,7 +81,7 @@ export function applyPlanWithUndo(tasks: AggregatedTask[], date: string, schedul
   const changedIds = new Set(tasks.filter((task, index) => task !== next[index]).map(task => task.id))
   if (!changedIds.size) return null
   const undo: TaskUndo = {
-    kind: 'plan', date, label: 'Plan applied',
+    kind: 'plan', date, label: ui("Plan applied"),
     before: tasks.filter(task => changedIds.has(task.id)),
     after: next.filter(task => changedIds.has(task.id)),
   }

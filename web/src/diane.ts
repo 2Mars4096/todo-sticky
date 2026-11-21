@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import { invoke } from '@tauri-apps/api/core'
 
 export type DianeStatus = 'queued' | 'running' | 'attention' | 'ready' | 'stopped' | 'failed'
@@ -56,7 +57,7 @@ export function readDianeReceipts(raw: string | null): Record<string, DianeRecei
       || (value.result !== undefined && !validResult(value.result))
       || (value.error !== undefined && typeof value.error !== 'string')
       || (value.checkedAt !== undefined && typeof value.checkedAt !== 'string')
-  })) throw Error('Invalid saved Shiprite links')
+  })) throw Error(ui("Invalid saved Shiprite links"))
   return parsed as unknown as Record<string, DianeReceipt>
 }
 
@@ -66,10 +67,10 @@ export async function dianeRequest<T>(action: string, requestId?: string, body?:
     if (!record(value) || value.version !== 1 || !Array.isArray(value.projects)
       || !value.projects.every(project => record(project) && ['id', 'name', 'root'].every(key => typeof project[key] === 'string'))
       || (value.active_project_id !== null && typeof value.active_project_id !== 'string')) {
-      throw Error('Shiprite returned incompatible project data. Dockit remains available.')
+      throw Error(ui("Shiprite returned incompatible project data. Dockit remains available."))
     }
   } else if (['dispatch', 'status', 'stop'].includes(action) && !validResult(value)) {
-    throw Error('Shiprite returned incompatible status data. Dockit remains available.')
+    throw Error(ui("Shiprite returned incompatible status data. Dockit remains available."))
   }
   return value as T
 }

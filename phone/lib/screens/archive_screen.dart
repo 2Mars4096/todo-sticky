@@ -1,3 +1,6 @@
+import '../interface_locale.dart';
+import '../widgets/notebook_date_picker.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -30,6 +33,8 @@ class ArchiveScreen extends StatefulWidget {
 
 class _ArchiveScreenState extends State<ArchiveScreen> {
   late final query = TextEditingController(text: widget.initialQuery);
+  final searchFocus = FocusNode();
+  final dateFocus = FocusNode();
   late String selected = widget.store.selectedDate;
   String status = 'all';
   late String? goalId = widget.initialGoalId;
@@ -38,6 +43,8 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   @override
   void dispose() {
     query.dispose();
+    searchFocus.dispose();
+    dateFocus.dispose();
     super.dispose();
   }
 
@@ -106,8 +113,16 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
         widget.progress ? '' : query.text,
         status,
       );
+      final hasFilters =
+          goalId != null ||
+          status != 'all' ||
+          (!widget.progress && query.text.trim().isNotEmpty);
       return Scaffold(
-        appBar: AppBar(title: Text(widget.progress ? 'Progress' : 'Search')),
+        appBar: AppBar(
+          title: Text(
+            widget.progress ? tr(context, "Progress") : tr(context, "Search"),
+          ),
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -118,9 +133,10 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     if (!widget.progress)
                       TextField(
                         controller: query,
+                        focusNode: searchFocus,
                         autofocus: true,
-                        decoration: const InputDecoration(
-                          hintText: 'Search tasks and steps',
+                        decoration: InputDecoration(
+                          hintText: tr(context, "Search tasks and steps"),
                           prefixIcon: Icon(Icons.search),
                         ),
                         onChanged: (_) => setState(() => limit = 40),
@@ -128,9 +144,11 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     else
                       Wrap(
                         spacing: 12,
+                        runSpacing: 8,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           OutlinedButton.icon(
+                            focusNode: dateFocus,
                             icon: const Icon(
                               Icons.calendar_today_outlined,
                               size: 18,
@@ -141,11 +159,9 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                                   : DateFormat('d MMM y').format(date),
                             ),
                             onPressed: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: date,
-                                firstDate: DateTime(1970),
-                                lastDate: DateTime(2100),
+                              final picked = await showNotebookDatePicker(
+                                context,
+                                date,
                               );
                               if (picked != null && mounted) {
                                 setState(() {
@@ -157,14 +173,14 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                           ),
                           DropdownButton<bool>(
                             value: week,
-                            items: const [
+                            items: [
                               DropdownMenuItem(
                                 value: false,
-                                child: Text('Day'),
+                                child: Text(tr(context, "Day")),
                               ),
                               DropdownMenuItem(
                                 value: true,
-                                child: Text('Week'),
+                                child: Text(tr(context, "Week")),
                               ),
                             ],
                             onChanged: (value) => setState(() {
@@ -172,91 +188,95 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                               limit = 40;
                             }),
                           ),
-                          const Tooltip(
-                            message: 'Tasks are grouped by their list date, not their completion date. Focus totals include retained sessions and planned duration.',
-                            child: Icon(
-                              Icons.info_outline,
-                              size: 18,
-                              color: mutedInk,
+                          _ProgressInfo(
+                            message: tr(
+                              context,
+                              "Tasks are grouped by their list date, not their completion date. Focus totals include retained sessions and planned duration.",
                             ),
                           ),
                         ],
                       ),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        Expanded(
-                          flex: 3,
-                          child: Semantics(
-                            label: 'Filter by goal',
-                            child: DropdownButton<String>(
-                              key: const ValueKey('goal-filter'),
-                              isExpanded: true,
-                              value: goalId ?? '',
-                              items: [
-                                const DropdownMenuItem(
-                                  value: '',
-                                  child: Text(
-                                    'All goals',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                for (final item in widget.store.goals.targets)
+                        if (widget.store.goals.targets.isNotEmpty ||
+                            goalId != null) ...[
+                          Expanded(
+                            flex: 3,
+                            child: Semantics(
+                              label: tr(context, "Filter by goal"),
+                              child: DropdownButton<String>(
+                                key: const ValueKey('goal-filter'),
+                                isExpanded: true,
+                                value: goalId ?? '',
+                                items: [
                                   DropdownMenuItem(
-                                    value: item.id,
+                                    value: '',
                                     child: Text(
-                                      item.text,
-                                      maxLines: 1,
+                                      tr(context, "All goals"),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                if (goalId != null && goal == null)
-                                  DropdownMenuItem(
-                                    value: goalId,
-                                    child: const Text(
-                                      'Removed goal',
-                                      overflow: TextOverflow.ellipsis,
+                                  for (final item in widget.store.goals.targets)
+                                    DropdownMenuItem(
+                                      value: item.id,
+                                      child: Text(
+                                        item.text,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ),
-                              ],
-                              onChanged: (value) => setState(() {
-                                goalId = value?.isEmpty == true ? null : value;
-                                limit = 40;
-                              }),
+                                  if (goalId != null && goal == null)
+                                    DropdownMenuItem(
+                                      value: goalId,
+                                      child: Text(
+                                        tr(context, "Removed goal"),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                ],
+                                onChanged: (value) => setState(() {
+                                  goalId = value?.isEmpty == true
+                                      ? null
+                                      : value;
+                                  limit = 40;
+                                }),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
+                          const SizedBox(width: 16),
+                        ],
                         Expanded(
                           flex: 2,
                           child: DropdownButton<String>(
                             isExpanded: true,
                             value: status,
-                            items: const [
+                            items: [
                               DropdownMenuItem(
                                 value: 'all',
                                 child: Text(
-                                  'All states',
+                                  tr(context, "All states"),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               DropdownMenuItem(
                                 value: 'open',
                                 child: Text(
-                                  'Unfinished',
+                                  tr(context, "Unfinished"),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               DropdownMenuItem(
                                 value: 'done',
                                 child: Text(
-                                  'Completed',
+                                  tr(context, "Completed"),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               DropdownMenuItem(
                                 value: 'stopped',
                                 child: Text(
-                                  'Stopped',
+                                  tr(context, "Stopped"),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -282,18 +302,19 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Goal plan · ${goalProgress.completed}/${goalProgress.total} completed',
+                                tr(context, "Goal plan · {0}/{1} completed", [
+                                  goalProgress.completed,
+                                  goalProgress.total,
+                                ]),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            const Tooltip(
-                              message: 'Plan progress includes linked tasks across all dates. A stopped task is not completed.',
-                              child: Icon(
-                                Icons.info_outline,
-                                size: 18,
-                                color: mutedInk,
+                            _ProgressInfo(
+                              message: tr(
+                                context,
+                                "Plan progress includes linked tasks across all dates. A stopped task is not completed.",
                               ),
                             ),
                           ],
@@ -304,7 +325,11 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       ],
                       if (roots.isNotEmpty) ...[
                         Text(
-                          '$done completed · ${roots.length - done - stopped} unfinished · $stopped stopped',
+                          tr(
+                            context,
+                            "{0} completed · {1} unfinished · {2} stopped",
+                            [done, roots.length - done - stopped, stopped],
+                          ),
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 12),
@@ -315,34 +340,86 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       ],
                       if (steps.isNotEmpty)
                         Text(
-                          '${steps.where((row) => row.task.status == TaskStatus.done).length}/${steps.length} steps completed',
+                          tr(context, "{0}/{1} steps completed", [
+                            steps
+                                .where(
+                                  (row) => row.task.status == TaskStatus.done,
+                                )
+                                .length,
+                            steps.length,
+                          ]),
                         ),
                       if (goalId == null && sessions.isNotEmpty)
                         Text(
-                          '${sessions.length} focus sessions · ${sessions.fold<int>(0, (sum, session) => sum + session.durationMinutes)} planned minutes',
+                          tr(
+                            context,
+                            "{0} focus sessions · {1} planned minutes",
+                            [
+                              sessions.length,
+                              sessions.fold<int>(
+                                0,
+                                (sum, session) => sum + session.durationMinutes,
+                              ),
+                            ],
+                          ),
                         ),
                       if (roots.isNotEmpty ||
                           steps.isNotEmpty ||
                           (goalId == null && sessions.isNotEmpty))
                         const SizedBox(height: 20),
                     ],
-                    Text(
-                      results.isEmpty
-                          ? 'No matching tasks.'
-                          : '${results.length} ${widget.progress ? 'tasks' : 'matches'}',
-                      style: const TextStyle(color: mutedInk),
-                    ),
+                    if (results.isEmpty)
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            widget.progress && !hasFilters
+                                ? tr(context, "No tasks on these dates.")
+                                : tr(context, "No matching tasks."),
+                            style: const TextStyle(color: mutedInk),
+                          ),
+                          if (hasFilters)
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  query.clear();
+                                  status = 'all';
+                                  goalId = null;
+                                  limit = 40;
+                                });
+                                (widget.progress ? dateFocus : searchFocus)
+                                    .requestFocus();
+                              },
+                              child: Text(tr(context, "Reset filters")),
+                            ),
+                        ],
+                      )
+                    else
+                      Text(
+                        widget.progress
+                            ? (results.length == 1
+                                  ? tr(context, "{0} task", [1])
+                                  : tr(context, "{0} tasks", [results.length]))
+                            : (results.length == 1
+                                  ? tr(context, "{0} match", [1])
+                                  : tr(context, "{0} matches", [
+                                      results.length,
+                                    ])),
+                        style: const TextStyle(color: mutedInk),
+                      ),
                     for (final row in results.take(limit)) ...[
                       const SizedBox(height: 8),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(
                           row.task.text.isEmpty
-                              ? 'Untitled task'
+                              ? tr(context, "Untitled task")
                               : row.task.text,
                         ),
                         subtitle: Text(
-                          '${row.parents.isEmpty ? '' : '${row.parents.join(' › ')}\n'}${row.date} · ${statusText(row.task.status)}${row.task.finish?.by == null ? '' : ' · Due ${row.task.finish!.by}'}',
+                          '${row.parents.isEmpty ? '' : '${row.parents.join(' › ')}\n'}${row.date} · ${tr(context, statusText(row.task.status))}${row.task.finish?.by == null ? '' : ' · ${tr(context, "Due {0}", [row.task.finish!.by])}'}',
                         ),
                         trailing: const Icon(Icons.chevron_right, size: 18),
                         onTap: () => Navigator.push(
@@ -361,7 +438,11 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     if (results.length > limit)
                       TextButton(
                         onPressed: () => setState(() => limit += 40),
-                        child: Text('Show more (${results.length - limit})'),
+                        child: Text(
+                          tr(context, "Show more ({0})", [
+                            results.length - limit,
+                          ]),
+                        ),
                       ),
                   ],
                 ),
@@ -374,6 +455,26 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   );
 }
 
+class _ProgressInfo extends StatelessWidget {
+  const _ProgressInfo({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: message,
+    child: Builder(
+      builder: (buttonContext) => IconButton(
+        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+        onPressed: () => buttonContext
+            .findAncestorStateOfType<TooltipState>()
+            ?.ensureTooltipVisible(),
+        icon: const Icon(Icons.info_outline, size: 18, color: mutedInk),
+      ),
+    ),
+  );
+}
+
 String statusText(TaskStatus status) => switch (status) {
   TaskStatus.done => 'Completed',
   TaskStatus.todo => 'To do',
@@ -383,12 +484,14 @@ String statusText(TaskStatus status) => switch (status) {
 };
 
 class TaskReviewScreen extends StatelessWidget {
+  final Map? mynitSource;
   final StickyStore store;
   final AiService ai;
   final ArchiveRow row;
   final VoidCallback openFocus;
   const TaskReviewScreen({
     super.key,
+    this.mynitSource,
     required this.store,
     required this.ai,
     required this.row,
@@ -400,7 +503,7 @@ class TaskReviewScreen extends StatelessWidget {
     builder: (context, _) {
       final task = store.findTask(row.date, row.root.id);
       return Scaffold(
-        appBar: AppBar(title: Text('Task · ${row.date}')),
+        appBar: AppBar(title: Text(tr(context, "Task · {0}", [row.date]))),
         body: SafeArea(
           child: ListView(
             children: [
@@ -409,13 +512,15 @@ class TaskReviewScreen extends StatelessWidget {
                   title: Text(store.saveError!),
                   trailing: TextButton(
                     onPressed: store.retrySave,
-                    child: const Text('Retry save'),
+                    child: Text(tr(context, "Retry save")),
                   ),
                 ),
               if (task == null)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(24),
-                  child: Text('This task has moved or been removed.'),
+                  child: Text(
+                    tr(context, "This task has moved or been removed."),
+                  ),
                 )
               else
                 TaskTile(
@@ -426,11 +531,12 @@ class TaskReviewScreen extends StatelessWidget {
                   task: task,
                   openFocus: openFocus,
                   revealId: row.task.id,
+                  linkedCitation: mynitSource,
                 ),
               if (store.undoLabel != null)
                 TextButton(
                   onPressed: store.undo,
-                  child: Text('Undo · ${store.undoLabel}'),
+                  child: Text(tr(context, "Undo · {0}", [store.undoLabel])),
                 ),
             ],
           ),

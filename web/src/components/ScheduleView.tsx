@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useEffect, useId, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { api } from '../api'
@@ -64,7 +65,7 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
     const generation = ++generationRef.current
     const context: PlanningContext = { date, start, end, tasks, machines: selected, unavailable, estimates }
     try { localStorage.setItem('todo-sticky-planning-preferences-v1', JSON.stringify({ start, end, machines: selectedMachines })); setPreferenceError('') }
-    catch { setPreferenceError('These preferences could not be remembered on this device.') }
+    catch { setPreferenceError(ui("These preferences could not be remembered on this device.")) }
     setLoading(true)
     setError(null)
     setProposal(null)
@@ -78,7 +79,7 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
       setProposal({ result: validated, context, taskKey })
     } catch (cause) {
       if (generation !== generationRef.current) return
-      setError(aiErrorMessage(cause, 'Could not generate a plan. Try again; your tasks have not changed.'))
+      setError(aiErrorMessage(cause, ui("Could not generate a plan. Try again; your tasks have not changed.")))
     } finally {
       if (generation === generationRef.current) setLoading(false)
     }
@@ -89,44 +90,44 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
       <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId}
         className="day-plan-panel" onClick={event => event.stopPropagation()}>
         <header className="day-plan-header">
-          <div><h2 id={titleId}>Plan day</h2><p>{format(new Date(`${date}T12:00:00`), 'EEE, MMM d, yyyy')}</p></div>
-          <button onClick={onClose} aria-label="Close day plan">✕</button>
+          <div><h2 id={titleId}>{ui("Plan day")}</h2><p>{format(new Date(`${date}T12:00:00`), 'EEE, MMM d, yyyy')}</p></div>
+          <button onClick={onClose} aria-label={ui("Close day plan")}>✕</button>
         </header>
         <div className="day-plan-body">
           <form className="day-plan-options" onSubmit={event => { event.preventDefault(); void generate() }}>
             <fieldset disabled={loading}>
-              <legend>Your available time</legend>
+              <legend>{ui("Your available time")}</legend>
               <div className="day-plan-times">
-                <label>From<input type="time" value={start} onChange={event => setStart(event.target.value)} required /></label>
-                <label>Until<input type="time" value={end} onChange={event => setEnd(event.target.value)} required /></label>
+                <label>{ui("From")}<input type="time" value={start} onChange={event => setStart(event.target.value)} required /></label>
+                <label>{ui("Until")}<input type="time" value={end} onChange={event => setEnd(event.target.value)} required /></label>
               </div>
-              {!validTimes && <p className="day-plan-error">Each end time must be later than its start time.</p>}
+              {!validTimes && <p className="day-plan-error">{ui("Each end time must be later than its start time.")}</p>}
             </fieldset>
             <details className="planning-adjustments" open={adjustmentsOpen} onToggle={event => setAdjustmentsOpen(event.currentTarget.open)}>
-              <summary>Adjust task time & breaks</summary>
+              <summary>{ui("Adjust task time & breaks")}</summary>
               <fieldset disabled={loading}>
-                <legend>Time budget per task</legend>
-                <p className="day-plan-hint">Auto lets AI estimate. List order guides priority.</p>
+                <legend>{ui("Time budget per task")}</legend>
+                <p className="day-plan-hint">{ui("Auto lets AI estimate. List order guides priority.")}</p>
                 {eligible.map(task => <label className="planning-estimate" key={task.id}>
-                  <span>{task.text}</span><select aria-label={`Time budget for ${task.text}`} value={estimates[task.id] ?? ''} onChange={event => setEstimates(current => {
+                  <span>{task.text}</span><select aria-label={ui("Time budget for {0}", [task.text])} value={estimates[task.id] ?? ''} onChange={event => setEstimates(current => {
                     const next = { ...current }; if (event.target.value) next[task.id] = Number(event.target.value); else delete next[task.id]; return next
-                  })}><option value="">Auto</option>{[15, 30, 45, 60, 90, 120, 180, 240].map(minutes => <option key={minutes} value={minutes}>{minutes} min</option>)}</select>
+                  })}><option value="">{ui("Auto")}</option>{[15, 30, 45, 60, 90, 120, 180, 240].map(minutes => <option key={minutes} value={minutes}>{ui("{0} min", [minutes])}</option>)}</select>
                 </label>)}
               </fieldset>
               <fieldset disabled={loading}>
-                <legend>Unavailable time</legend>
+                <legend>{ui("Unavailable time")}</legend>
                 {unavailable.map((period, index) => <div className="planning-break" key={index}>
-                  <input type="time" aria-label={`Break ${index + 1} start`} value={period.start} onChange={event => setUnavailable(current => current.map((entry, i) => i === index ? { ...entry, start: event.target.value } : entry))} />
-                  <span>to</span><input type="time" aria-label={`Break ${index + 1} end`} value={period.end} onChange={event => setUnavailable(current => current.map((entry, i) => i === index ? { ...entry, end: event.target.value } : entry))} />
-                  <button type="button" aria-label={`Remove break ${index + 1}`} onClick={() => setUnavailable(current => current.filter((_, i) => i !== index))}>×</button>
+                  <input type="time" aria-label={ui("Break {0} start", [index + 1])} value={period.start} onChange={event => setUnavailable(current => current.map((entry, i) => i === index ? { ...entry, start: event.target.value } : entry))} />
+                  <span>{ui("to")}</span><input type="time" aria-label={ui("Break {0} end", [index + 1])} value={period.end} onChange={event => setUnavailable(current => current.map((entry, i) => i === index ? { ...entry, end: event.target.value } : entry))} />
+                  <button type="button" aria-label={ui("Remove break {0}", [index + 1])} onClick={() => setUnavailable(current => current.filter((_, i) => i !== index))}>×</button>
                 </div>)}
-                <button type="button" disabled={unavailable.length >= 6} onClick={() => setUnavailable(current => [...current, { start: '12:00', end: '13:00' }])}>Add break</button>
+                <button type="button" disabled={unavailable.length >= 6} onClick={() => setUnavailable(current => [...current, { start: '12:00', end: '13:00' }])}>{ui("Add break")}</button>
               </fieldset>
             </details>
             {preferenceError && <p role="status" className="day-plan-hint">{preferenceError}</p>}
             {machines.length ? (
               <fieldset disabled={loading} className="day-plan-machines">
-                <legend>Available machines <span>(optional)</span></legend>
+                <legend>{ui("Available machines") + " "}<span>{ui("(optional)")}</span></legend>
                 {machines.map(machine => (
                   <label key={machine.name}>
                     <input type="checkbox" checked={selectedMachines.includes(machine.name)} onChange={event => setSelectedMachines(current => event.target.checked
@@ -137,16 +138,16 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
               </fieldset>
             ) : null}
             <button type="submit" className="day-plan-generate" disabled={loading || tasksLoading || !validTimes || !eligible.length}>
-              {loading ? 'Generating proposal…' : proposal ? 'Generate another proposal' : 'Generate proposal'}
+              {loading ? ui("Generating proposal…") : proposal ? ui("Generate another proposal") : ui("Generate proposal")}
             </button>
           </form>
 
-          {loading && <p role="status">Building a proposed plan. Your tasks stay editable after you close this view.</p>}
-          {tasksLoading && <p role="status">Refreshing tasks. Wait before applying this proposal.</p>}
+          {loading && <p role="status">{ui("Building a proposed plan. Your tasks stay editable after you close this view.")}</p>}
+          {tasksLoading && <p role="status">{ui("Refreshing tasks. Wait before applying this proposal.")}</p>}
           {error && <p className="day-plan-error" role="alert">{error}</p>}
           {proposal && (
-            <section aria-label="Proposed plan" className="day-plan-proposal">
-              <h3 ref={proposalHeading} tabIndex={-1}>{proposal.result.schedule.length} proposed {proposal.result.schedule.length === 1 ? 'block' : 'blocks'}</h3>
+            <section aria-label={ui("Proposed plan")} className="day-plan-proposal">
+              <h3 ref={proposalHeading} tabIndex={-1}>{ui("{0} proposed {1}", [proposal.result.schedule.length, proposal.result.schedule.length === 1 ? ui("block") : ui("blocks")])}</h3>
               {proposal.result.plan && <p>{proposal.result.plan}</p>}
               <ol className="day-plan-timeline">
                 {proposal.result.schedule.map((block, index) => (
@@ -158,20 +159,18 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
                   </li>
                 ))}
               </ol>
-              {deferred.length > 0 && <details><summary>{deferred.length} {deferred.length === 1 ? 'task' : 'tasks'} left unscheduled</summary>
+              {deferred.length > 0 && <details><summary>{ui("{0} {1} left unscheduled", [deferred.length, deferred.length === 1 ? ui("task") : ui("tasks")])}</summary>
                 <ul>{deferred.map(task => <li key={task.id}>{task.text}</li>)}</ul>
               </details>}
-              <p className="day-plan-hint">Apply adds these blocks to your tasks and replaces untouched suggestions from this date’s previous plan. Edited, started and older untracked steps stay. You can undo the change.</p>
-              {contextChanged && <p className="day-plan-error" role="status">Tasks or planning details changed. Generate a fresh proposal before applying.</p>}
+              <p className="day-plan-hint">{ui("Apply adds these blocks to your tasks and replaces untouched suggestions from this date’s previous plan. Edited, started and older untracked steps stay. You can undo the change.")}</p>
+              {contextChanged && <p className="day-plan-error" role="status">{ui("Tasks or planning details changed. Generate a fresh proposal before applying.")}</p>}
             </section>
           )}
         </div>
         <footer className="day-plan-actions">
-          <button onClick={onClose}>{proposal ? 'Discard' : 'Cancel'}</button>
+          <button onClick={onClose}>{proposal ? ui("Discard") : ui("Cancel")}</button>
           <button className="primary" disabled={!proposal || Boolean(contextChanged) || loading || tasksLoading}
-            onClick={() => { if (proposal && !contextChanged && !tasksLoading) onApply(proposal.result.schedule, proposal.context.date, proposal.taskKey) }}>
-            Apply plan
-          </button>
+            onClick={() => { if (proposal && !contextChanged && !tasksLoading) onApply(proposal.result.schedule, proposal.context.date, proposal.taskKey) }}>{ui("Apply plan")}</button>
         </footer>
       </div>
     </div>

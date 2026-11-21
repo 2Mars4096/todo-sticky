@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'package:flutter/material.dart';
 
 import '../models/models.dart';
@@ -77,7 +79,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
       window.validate();
       final goal = widget.store.findGoal(widget.goalId);
       if (goal == null || goal.done) {
-        throw StateError('Open an active project to plan its work.');
+        throw StateError(ui("Open an active project to plan its work."));
       }
       final key = widget.store.projectFingerprint(goal.id);
       final snapshot = GoalItem.fromJson(goal.toJson());
@@ -101,7 +103,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
       if (!mounted) return;
       if (widget.store.projectFingerprint(goal.id) != key) {
         throw StateError(
-          'Project or daily work changed. Generate a fresh proposal.',
+          ui("Project or daily work changed. Generate a fresh proposal."),
         );
       }
       setState(() {
@@ -135,7 +137,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, update) => AlertDialog(
-          title: const Text('Edit task'),
+          title: Text(tr(context, "Edit task")),
           scrollable: true,
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -144,13 +146,13 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                 controller: text,
                 minLines: 2,
                 maxLines: 6,
-                decoration: const InputDecoration(labelText: 'Task'),
+                decoration: InputDecoration(labelText: tr(context, "Task")),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: minutes,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Minutes'),
+                decoration: InputDecoration(labelText: tr(context, "Minutes")),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.calendar_today_outlined, size: 18),
@@ -172,11 +174,11 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(tr(context, "Cancel")),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Save'),
+              child: Text(tr(context, "Save")),
             ),
           ],
         ),
@@ -259,7 +261,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
       }
       final actions = [...?proposal]..sort((a, b) => a.date.compareTo(b.date));
       return Scaffold(
-        appBar: AppBar(title: const Text('Plan across days')),
+        appBar: AppBar(title: Text(tr(context, "Plan across days"))),
         body: SafeArea(
           child: Column(
             children: [
@@ -269,7 +271,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                   padding: const EdgeInsets.all(20),
                   children: [
                     Text(
-                      goal?.text ?? 'Project removed',
+                      goal?.text ?? tr(context, "Project removed"),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
@@ -282,7 +284,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                       spacing: 12,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        const Text('Daily project budget'),
+                        Text(tr(context, "Daily project budget")),
                         DropdownButton<int>(
                           value: budget,
                           items: [
@@ -297,7 +299,10 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                               240,
                               480,
                             ])
-                              DropdownMenuItem(value: n, child: Text('$n min')),
+                              DropdownMenuItem(
+                                value: n,
+                                child: Text(tr(context, "{0} min", [n])),
+                              ),
                           ],
                           onChanged: busy || applied
                               ? null
@@ -307,7 +312,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                                 }),
                         ),
                         FilterChip(
-                          label: const Text('Weekdays only'),
+                          label: Text(tr(context, "Weekdays only")),
                           selected: weekdays,
                           onSelected: busy || applied
                               ? null
@@ -335,10 +340,10 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                             : const Icon(Icons.auto_awesome_outlined),
                         label: Text(
                           busy
-                              ? 'Working…'
+                              ? tr(context, "Working…")
                               : proposal == null
-                              ? 'Generate proposal'
-                              : 'Generate again',
+                              ? tr(context, "Generate proposal")
+                              : tr(context, "Generate again"),
                         ),
                       ),
                     ),
@@ -356,8 +361,10 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                       const SizedBox(height: 16),
                       Text(
                         applied
-                            ? 'Tasks added'
-                            : '${actions.length} proposed tasks',
+                            ? tr(context, "Tasks added")
+                            : tr(context, "{0} proposed tasks", [
+                                actions.length,
+                              ]),
                         key: resultKey,
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
@@ -367,7 +374,10 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                           contentPadding: EdgeInsets.zero,
                           title: Text(action.text),
                           subtitle: Text(
-                            '${action.date} · ${action.minutes} min',
+                            tr(context, "{0} · {1} min", [
+                              action.date,
+                              action.minutes,
+                            ]),
                           ),
                           onTap: busy || applied ? null : () => edit(action),
                           trailing: applied
@@ -376,7 +386,10 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      tooltip: 'Edit proposed task',
+                                      tooltip: tr(
+                                        context,
+                                        "Edit proposed task",
+                                      ),
                                       icon: const Icon(
                                         Icons.edit_outlined,
                                         size: 18,
@@ -386,7 +399,10 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                                           : () => edit(action),
                                     ),
                                     IconButton(
-                                      tooltip: 'Remove proposed task',
+                                      tooltip: tr(
+                                        context,
+                                        "Remove proposed task",
+                                      ),
                                       icon: const Icon(Icons.close, size: 18),
                                       onPressed: busy
                                           ? null
@@ -399,8 +415,11 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                         ),
                       ],
                       if (!applied && stale)
-                        const Text(
-                          'Project or daily work changed. Generate a fresh proposal.',
+                        Text(
+                          tr(
+                            context,
+                            "Project or daily work changed. Generate a fresh proposal.",
+                          ),
                         ),
                       if (validation != null)
                         Text(
@@ -423,7 +442,11 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                     children: [
                       TextButton(
                         onPressed: busy ? null : () => Navigator.pop(context),
-                        child: Text(applied ? 'Done' : 'Discard'),
+                        child: Text(
+                          applied
+                              ? tr(context, "Done")
+                              : tr(context, "Discard"),
+                        ),
                       ),
                       if (applied && widget.store.saveError != null)
                         FilledButton(
@@ -436,14 +459,14 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                                     Navigator.pop(context, true);
                                   }
                                 },
-                          child: const Text('Retry save'),
+                          child: Text(tr(context, "Retry save")),
                         ),
                       if (!applied)
                         FilledButton(
                           onPressed: busy || stale || validation != null
                               ? null
                               : apply,
-                          child: const Text('Add to daily tasks'),
+                          child: Text(tr(context, "Add to daily tasks")),
                         ),
                     ],
                   ),

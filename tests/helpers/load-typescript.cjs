@@ -5,7 +5,7 @@ const ts = require('typescript')
 
 // Execute source modules, rather than duplicate their logic in regression tests.
 module.exports = function loadTypeScript(file, mocks = {}, globals = {}, cache = new Map()) {
-  file = path.resolve(file)
+  file = fs.realpathSync(file)
   if (cache.has(file)) return cache.get(file)
   const result = {}
   cache.set(file, result)
@@ -16,6 +16,7 @@ module.exports = function loadTypeScript(file, mocks = {}, globals = {}, cache =
     exports: result, console, setTimeout, clearTimeout, ...globals,
     require(name) {
       if (Object.prototype.hasOwnProperty.call(mocks, name)) return mocks[name]
+      if (name.endsWith('.json') && name.startsWith('.')) return {default:JSON.parse(fs.readFileSync(path.resolve(path.dirname(file),name),'utf8'))}
       if (name.startsWith('.')) {
         return module.exports(path.resolve(path.dirname(file), `${name}.ts`), mocks, globals, cache)
       }

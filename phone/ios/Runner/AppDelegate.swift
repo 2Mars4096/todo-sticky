@@ -34,8 +34,12 @@ import UniformTypeIdentifiers
 
   func receive(_ url: URL) {
     // Dart validates the complete task URI again before reading any record.
-    guard url.scheme == "todo-sticky", url.host == "task", url.user == nil,
-          url.password == nil, url.query == nil, url.fragment == nil else { return }
+    guard url.user == nil, url.password == nil, url.port == nil,
+          url.query == nil, url.fragment == nil else { return }
+    let parts = url.path.split(separator: "/")
+    let native = url.scheme == "todo-sticky" && url.host == "task" && parts.count == 1
+    let web = url.scheme == "https" && url.host == "dockit.pipedreams.work" && parts.count == 2 && parts.first == "tasks"
+    guard native || web else { return }
     pendingLink = url.absoluteString
     links?.invokeMethod("available", arguments: nil)
   }

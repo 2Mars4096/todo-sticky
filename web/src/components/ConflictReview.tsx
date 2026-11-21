@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useEffect, useRef, useState } from 'react'
 import type { CloudAccount } from './AccountPanel'
 import { conflictFingerprint, conflictRows, rowDifference, visibleConflictRows, type SyncRecoveryEntry } from '../syncConflicts'
@@ -15,10 +16,10 @@ function Version({ title, recordKey, payload, other, differences, emptyLabel }: 
   return <section className="cloud-version" aria-label={title}>
     <header><strong>{title}</strong><span>{all.length}</span></header>
     <div className="cloud-version-rows">
-      {!payload ? <p className="cloud-version-empty">{emptyLabel}</p> : !all.length ? <p className="cloud-version-empty">Empty</p> : !rows.length ? <p className="cloud-version-empty">No differences here</p> : rows.map((row, index) => <div key={`${row.group}:${row.id}`}>
+      {!payload ? <p className="cloud-version-empty">{emptyLabel}</p> : !all.length ? <p className="cloud-version-empty">{ui("Empty")}</p> : !rows.length ? <p className="cloud-version-empty">{ui("No differences here")}</p> : rows.map((row, index) => <div key={`${row.group}:${row.id}`}>
         {row.group && row.group !== rows[index - 1]?.group && <h5>{row.group}</h5>}
         <div className="cloud-version-row" style={{ paddingLeft: Math.min(row.depth, 6) * 9 }}>
-          <div className="cloud-version-title"><span aria-label={row.status} title={row.status}>{({ done: '☑', partial: '◧', stopped: '−', question: '?' } as Record<string, string>)[row.status] ?? '□'}</span><span>{row.text || '(Blank task)'}</span></div>
+          <div className="cloud-version-title"><span aria-label={row.status} title={row.status}>{({ done: '☑', partial: '◧', stopped: '−', question: '?' } as Record<string, string>)[row.status] ?? '□'}</span><span>{row.text || ui("(Blank task)")}</span></div>
           {rowDifference(row, opposite) && <small className="cloud-diff-label">{rowDifference(row, opposite)}</small>}
           {row.details.map((detail, i) => <small className="cloud-version-detail" key={i}>{detail}</small>)}
         </div>
@@ -30,14 +31,14 @@ function SavedInspector({ entry, account }: { entry: Entry; account: CloudAccoun
   const [differences, setDifferences] = useState(true)
   const cloud = entry.remote?.deleted ? null : entry.remote?.payload ?? null
   return <>
-    <p className="cloud-sync-status">Saved before sync for recovery. No action needed here.</p>
-    <div className="cloud-review-options"><label><input type="checkbox" checked={differences} onChange={e => setDifferences(e.target.checked)} />Differences only</label><span className="cloud-saved-label">Read-only backup</span></div>
+    <p className="cloud-sync-status">{ui("Saved before sync for recovery. No action needed here.")}</p>
+    <div className="cloud-review-options"><label><input type="checkbox" checked={differences} onChange={e => setDifferences(e.target.checked)} />{ui("Differences only")}</label><span className="cloud-saved-label">{ui("Read-only backup")}</span></div>
     <div className="cloud-compare">
-      <Version title="Mac before sync" recordKey={entry.key} payload={entry.local} other={cloud} differences={differences} emptyLabel="Not on this Mac" />
-      <Version title="Cloud before sync" recordKey={entry.key} payload={cloud} other={entry.local} differences={differences} emptyLabel={entry.remote?.deleted ? 'Deleted' : 'Not in cloud'} />
+      <Version title={ui("Mac before sync")} recordKey={entry.key} payload={entry.local} other={cloud} differences={differences} emptyLabel={ui("Not on this Mac")} />
+      <Version title={ui("Cloud before sync")} recordKey={entry.key} payload={cloud} other={entry.local} differences={differences} emptyLabel={entry.remote?.deleted ? ui("Deleted") : ui("Not in cloud")} />
     </div>
     <div className="cloud-review-footer">
-      <button type="button" className="cloud-quiet" onClick={() => account.exportRecovery({ key: entry.key, at: entry.at })}>Export backup</button>
+      <button type="button" className="cloud-quiet" onClick={() => account.exportRecovery({ key: entry.key, at: entry.at })}>{ui("Export backup")}</button>
     </div>
   </>
 }
@@ -47,21 +48,21 @@ function ItemInspector({ entry, account, onBack }: { entry: Entry; account: Clou
   const selected = Object.fromEntries(issues.filter(issue => picks[issue.path]?.fingerprint === canonical(issue)).map(issue => [issue.path, picks[issue.path].choice]))
   return <>
     {entry.mergeProblem && <p role="alert" className="settings-error">{entry.mergeProblem}</p>}
-    <div className="cloud-review-options"><span>{issues.length - Object.keys(selected).length} remaining</span><span className="cloud-saved-label">Both copies saved</span></div>
+    <div className="cloud-review-options"><span>{ui("{0} remaining", [issues.length - Object.keys(selected).length])}</span><span className="cloud-saved-label">{ui("Both copies saved")}</span></div>
     <div className="cloud-item-conflicts">{issues.map(issue => <fieldset key={issue.path} className="cloud-item-conflict">
       <legend>{issue.label}</legend>
       <div className="cloud-item-versions">{(['local', 'cloud'] as const).map(choice => <label key={choice} className={selected[issue.path] === choice ? 'is-selected' : ''}>
-        <span><input type="radio" name={`merge:${issue.path}`} checked={selected[issue.path] === choice} onChange={() => setPicks(previous => ({ ...previous, [issue.path]: { fingerprint: canonical(issue), choice } }))} />{choice === 'local' ? 'This Mac' : 'Cloud'}</span>
+        <span><input type="radio" name={`merge:${issue.path}`} checked={selected[issue.path] === choice} onChange={() => setPicks(previous => ({ ...previous, [issue.path]: { fingerprint: canonical(issue), choice } }))} />{choice === 'local' ? ui("This Mac") : ui("Cloud")}</span>
         <span className="cloud-item-value">{mergeValueText(issue[choice])}</span>
       </label>)}</div>
     </fieldset>)}</div>
     <div className="cloud-review-footer">
-      <button type="button" className="cloud-quiet" onClick={() => account.exportRecovery({ key: entry.key })}>Export copies</button>
-      <button type="button" className="cloud-quiet" onClick={onBack}>Later</button>
+      <button type="button" className="cloud-quiet" onClick={() => account.exportRecovery({ key: entry.key })}>{ui("Export copies")}</button>
+      <button type="button" className="cloud-quiet" onClick={onBack}>{ui("Later")}</button>
       <button type="button" className="cloud-primary" disabled={!issues.length || Object.keys(selected).length !== issues.length || account.busy} onClick={() => {
         if (entry.merge) void account.resolveItems(entry.key, selected, conflictFingerprint(entry))
         else void account.resolve(entry.key, selected[''], conflictFingerprint(entry))
-      }}>Apply choices</button>
+      }}>{ui("Apply choices")}</button>
     </div>
   </>
 }
@@ -75,12 +76,12 @@ export function ConflictReview({ account, initialHistory, onBack }: { account: C
     : account.conflicts.map(conflict => ({ ...conflict, id: conflict.key }))
   const entry = entries.find(item => item.id === selected) ?? entries[0]
   return <section className="cloud-account cloud-review" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); onBack() } }} aria-labelledby="conflict-heading">
-    <div className="cloud-review-heading"><button type="button" className="cloud-quiet" onClick={onBack}>← Account</button><h3 ref={heading} tabIndex={-1} id="conflict-heading">{history ? 'Recovery backups' : 'Review sync changes'}</h3></div>
-    <div className="cloud-review-tabs" role="group" aria-label="Review type"><button type="button" aria-pressed={!history} onClick={() => { setHistory(false); setSelected('') }}>Needs review {account.conflicts.length}</button><button type="button" aria-pressed={history} onClick={() => { setHistory(true); setSelected('') }}>Backups {account.recovery.length}</button></div>
+    <div className="cloud-review-heading"><button type="button" className="cloud-quiet" onClick={onBack}>{ui("← Account")}</button><h3 ref={heading} tabIndex={-1} id="conflict-heading">{history ? ui("Recovery backups") : ui("Review sync changes")}</h3></div>
+    <div className="cloud-review-tabs" role="group" aria-label={ui("Review type")}><button type="button" aria-pressed={!history} onClick={() => { setHistory(false); setSelected('') }}>{ui("Needs review {0}", [account.conflicts.length])}</button><button type="button" aria-pressed={history} onClick={() => { setHistory(true); setSelected('') }}>{ui("Backups {0}", [account.recovery.length])}</button></div>
     {entry ? <>
-      <label className="cloud-review-select">{history ? 'Saved backup' : 'Conflict'}<select aria-label={history ? 'Saved backup' : 'Conflict'} value={entry.id} onChange={e => setSelected(e.target.value)}>{entries.map(item => <option key={item.id} value={item.id}>{syncRecordLabel(item.key)}{item.at ? ` · ${new Date(item.at).toLocaleString()}` : ''}</option>)}</select></label>
+      <label className="cloud-review-select">{history ? ui("Saved backup") : ui("Conflict")}<select aria-label={history ? ui("Saved backup") : ui("Conflict")} value={entry.id} onChange={e => setSelected(e.target.value)}>{entries.map(item => <option key={item.id} value={item.id}>{syncRecordLabel(item.key)}{item.at ? ` · ${new Date(item.at).toLocaleString()}` : ''}</option>)}</select></label>
       {history ? <SavedInspector key={entry.id} entry={entry} account={account} /> : <ItemInspector key={entry.id} entry={entry} account={account} onBack={onBack} />}
-    </> : <p className="cloud-review-empty">{history ? 'No recovery backups' : 'No conflicts to resolve'}</p>}
+    </> : <p className="cloud-review-empty">{history ? ui("No recovery backups") : ui("No conflicts to resolve")}</p>}
     {account.progress && !account.background && <SyncProgressView progress={account.progress} />}
     {account.error && <p role="alert" className="settings-error">{account.error}</p>}
   </section>

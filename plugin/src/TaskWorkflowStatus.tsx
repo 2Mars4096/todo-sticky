@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import { createContext, useContext } from 'react';
 import type { Workflow } from '@diane/plugin-sdk/client';
 import { workflowLabel } from './taskExecutionState';
@@ -10,7 +11,7 @@ export function TaskWorkflowStatus({taskId}: {taskId: string}) {
   const workflow = byId[taskId];
   if (!workflow) return null;
   const state = workflow.state === 'running' ? 'Working' : workflowLabel(workflow.state);
-  const label = unavailable ? 'Status unavailable' : state;
+  const label = unavailable ? ui("Status unavailable") : state;
   return <span className={`todo-workflow-badge ${unavailable ? 'is-unavailable' : ''}`}
-    title={unavailable ? `Last known: ${state}${checkedAt ? '. Checked ' + new Date(checkedAt).toLocaleTimeString() : ''}` : 'Shiprite · ' + state}>{label}</span>;
+    title={unavailable ? ui("Last known: {0}{1}", [state, checkedAt ? '. Checked ' + new Date(checkedAt).toLocaleTimeString() : '']) : ui("Diane · {0}", [state])}>{label}</span>;
 }

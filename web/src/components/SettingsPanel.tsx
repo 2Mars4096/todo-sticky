@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { NOTE_MATERIALS, type NoteMaterial } from '../noteMaterial'
 import { AccountPanel, type CloudAccount } from './AccountPanel'
@@ -31,12 +32,12 @@ const EMPTY_SETTINGS: AppSettings = {
 
 type SettingsSection = 'style' | 'tasks' | 'ai' | 'integrations' | 'updates' | 'account'
 const SECTIONS: { id: SettingsSection; label: string }[] = [
-  { id: 'tasks', label: 'Storage' },
-  { id: 'style', label: 'Style' },
+  { id: 'tasks', get label(){ return ui("Storage") } },
+  { id: 'style', get label(){ return ui("Style") } },
   { id: 'ai', label: 'AI' },
-  { id: 'integrations', label: 'Integrations' },
-  { id: 'account', label: 'Account' },
-  { id: 'updates', label: 'Updates' },
+  { id: 'integrations', get label(){ return ui("Integrations") } },
+  { id: 'account', get label(){ return ui("Account") } },
+  { id: 'updates', get label(){ return ui("Updates") } },
 ]
 
 interface Props {
@@ -82,13 +83,13 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
     setSettingsError(null)
     api.getSettings().then(s => {
       if (disposed) return
-      if (!s) throw new Error('Settings unavailable')
+      if (!s) throw new Error(ui("Settings unavailable"))
       setSettings(initialProvider ? settingsForProvider(s, initialProvider) : s)
       setDirty(Boolean(initialProvider && initialProvider !== s.provider))
     }).catch(() => {
       if (!disposed) {
         setLoadFailed(true)
-        setSettingsError('Could not load settings. Try again before making changes.')
+        setSettingsError(ui("Could not load settings. Try again before making changes."))
       }
     }).finally(() => { if (!disposed) setLoading(false) })
     return () => { disposed = true }
@@ -109,10 +110,10 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
   useEffect(() => {
     if (!settings.connectDiane || loading || loadFailed) return
     let disposed = false
-    setDianeDestination('Checking Shiprite on this computer…')
+    setDianeDestination(ui("Checking Shiprite on this computer…"))
     void dianeRequest<DianeProjects>('projects').then(data => {
-      if (!disposed) setDianeDestination(data.projects.length ? 'Connected · choose a workspace when sending a task.' : 'Connected · choose a folder when sending a task.')
-    }).catch(() => { if (!disposed) setDianeDestination('Not connected. Open Shiprite on this computer.') })
+      if (!disposed) setDianeDestination(data.projects.length ? ui("Connected · choose a workspace when sending a task.") : ui("Connected · choose a folder when sending a task."))
+    }).catch(() => { if (!disposed) setDianeDestination(ui("Not connected. Open Shiprite on this computer.")) })
     return () => { disposed = true }
   }, [settings.connectDiane, loading, loadFailed])
 
@@ -143,7 +144,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
       onSaved?.(settingsToSave)
       onClose()
     } catch {
-      setSettingsError('Could not save settings. Your changes are still here; try again.')
+      setSettingsError(ui("Could not save settings. Your changes are still here; try again."))
     } finally {
       setSaving(false)
     }
@@ -173,7 +174,7 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
       const folder = await api.selectFolder()
       if (folder) update({ kbPath: folder })
     } catch {
-      setSettingsError('Could not open the folder chooser. You can enter the folder path instead.')
+      setSettingsError(ui("Could not open the folder chooser. You can enter the folder path instead."))
     }
   }
 
@@ -188,30 +189,28 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
   const isCodex = settings.provider === 'codex'
   const isOpenRouter = settings.provider === 'openrouter' || settings.apiBase.toLowerCase().includes('openrouter.ai')
   const fieldsDisabled = loading || loadFailed || saving || testing || updating
-  const updateReason = dirty ? 'Save your settings before updating.'
-    : loading || loadFailed ? 'Wait for settings to load before updating.'
-    : saving || testing ? 'Wait for the current operation to finish.' : updateBlockedReason
+  const updateReason = dirty ? ui("Save your settings before updating.")
+    : loading || loadFailed ? ui("Wait for settings to load before updating.")
+    : saving || testing ? ui("Wait for the current operation to finish.") : updateBlockedReason
 
   return (
     <div className="settings-overlay" onClick={requestClose}>
       <div ref={dialogRef} className="settings-panel settings-wide settings-refined" role="dialog" aria-modal="true" aria-labelledby={id + '-title'} tabIndex={-1} onClick={event => event.stopPropagation()}>
         <header className="settings-dialog-header">
-          <h2 id={id + '-title'}>{firstRun ? 'Make Dockit yours' : 'Settings'}</h2>
-          <button ref={closeButtonRef} type="button" className="settings-close" onClick={requestClose} disabled={updating || saving} aria-label="Close settings">×</button>
+          <h2 id={id + '-title'}>{ui("Settings")}</h2>
+          <button ref={closeButtonRef} type="button" className="settings-close" onClick={requestClose} disabled={updating || saving} aria-label={ui("Close settings")}>×</button>
         </header>
-        {firstRun && <p className="settings-subtitle">You can capture tasks now and set up optional tools whenever you need them.</p>}
 
-        <nav className="settings-section-nav" aria-label="Settings sections">
+        <nav className="settings-section-nav" aria-label={ui("Settings sections")}>
           {SECTIONS.filter(item => isTauri() || !['integrations', 'updates'].includes(item.id)).map(item => <button key={item.id} type="button" aria-pressed={section === item.id} aria-controls={id + '-section'} onClick={() => setSection(item.id)}>{item.label}</button>)}
         </nav>
 
         <div className="settings-scroll" id={id + '-section'}>
-          {loading && <p className="settings-status" role="status">Loading settings…</p>}
-          {settingsError && <div className="settings-error" role="alert"><p>{settingsError}</p>{loadFailed && <button type="button" onClick={() => setLoadAttempt(value => value + 1)}>Retry</button>}</div>}
+          {loading && <p className="settings-status" role="status">{ui("Loading settings…")}</p>}
+          {settingsError && <div className="settings-error" role="alert"><p>{settingsError}</p>{loadFailed && <button type="button" onClick={() => setLoadAttempt(value => value + 1)}>{ui("Retry")}</button>}</div>}
           {section === 'style' && <section className="settings-section" aria-labelledby={id + '-material-title'}>
-            <h3 className="section-title" id={id + '-material-title'}>Note material</h3>
-            <p className="settings-description">Choose how your working note catches the light.</p>
-            <div className="material-options" role="group" aria-label="Note material">
+            <h3 className="section-title" id={id + '-material-title'}>{ui("Note material")}</h3>
+            <div className="material-options" role="group" aria-label={ui("Note material")}>
               {NOTE_MATERIALS.map(item => <button key={item.id} type="button"
                 className="material-option" aria-pressed={noteMaterial === item.id}
                 onClick={() => onNoteMaterial?.(item.id)}>
@@ -220,91 +219,91 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
                 <span className="material-check" aria-hidden="true">{noteMaterial === item.id ? '✓' : ''}</span>
               </button>)}
             </div>
-            <p className="hint">Applies immediately on this device.</p>
-            {materialSaveError && <p role="alert" className="settings-error">This style could not be saved. Choose it again to retry.</p>}
+            <p className="hint">{ui("Applies immediately on this device.")}</p>
+            {materialSaveError && <p role="alert" className="settings-error">{ui("This style could not be saved. Choose it again to retry.")}</p>}
           </section>}
           {section === 'tasks'  && <fieldset className="settings-fields" disabled={fieldsDisabled}>
             <section className="settings-section" aria-labelledby={id + '-storage-title'}>
-              <h3 className="section-title" id={id + '-storage-title'}>Tasks & storage</h3>
-              {isTauri() ? <><p className="settings-description">Your tasks are saved as Markdown in your task folder.</p>
-              <p className="settings-path" aria-label="Current task folder">{settings.kbPath || '~/Documents/Sticky Todo'}</p>
+              <h3 className="section-title" id={id + '-storage-title'}>{ui("Tasks & storage")}</h3>
+              {isTauri() ? <><p className="settings-description">{ui("Your tasks are saved as Markdown in your task folder.")}</p>
+              <p className="settings-path" aria-label={ui("Current task folder")}>{settings.kbPath || ui("~/Documents/Sticky Todo")}</p>
               <details className="settings-details">
-                <summary>Change task folder</summary>
-                <label htmlFor={id + '-folder'}>Task folder</label>
+                <summary>{ui("Change task folder")}</summary>
+                <label htmlFor={id + '-folder'}>{ui("Task folder")}</label>
                 <div className="input-row">
-                  <input id={id + '-folder'} value={settings.kbPath} onChange={event => update({ kbPath: event.target.value })} placeholder="~/Documents/Sticky Todo" aria-describedby={id + '-folder-hint'} />
-                  <button type="button" className="input-row-btn" onClick={handleSelectFolder} aria-label="Choose storage folder">Browse</button>
+                  <input id={id + '-folder'} value={settings.kbPath} onChange={event => update({ kbPath: event.target.value })} placeholder={ui("~/Documents/Sticky Todo")} aria-describedby={id + '-folder-hint'} />
+                  <button type="button" className="input-row-btn" onClick={handleSelectFolder} aria-label={ui("Choose storage folder")}>{ui("Browse")}</button>
                 </div>
-                <p className="hint" id={id + '-folder-hint'}>Leave blank for the default folder. Task files live in content/to-do inside it. Existing task files stay in their current location.</p>
-              </details></> : <p>Your notebook is saved in this browser.</p>}
+                <p className="hint" id={id + '-folder-hint'}>{ui("Leave blank for the default folder. Task files live in content/to-do inside it. Existing task files stay in their current location.")}</p>
+              </details></> : <p>{ui("Your notebook is saved in this browser.")}</p>}
             </section>
           </fieldset>}
 
           {section === 'ai' && <fieldset className="settings-fields" disabled={fieldsDisabled}>
             <section className="settings-section" aria-labelledby={id + '-ai-title'}>
-              <h3 className="section-title" id={id + '-ai-title'}>AI assistance</h3>
-              <p className="settings-description">Optional help with outcomes, steps, and planning. Tasks work without AI.</p>
-              <label htmlFor={id + '-provider'}>Provider</label>
+              <h3 className="section-title" id={id + '-ai-title'}>{ui("AI assistance")}</h3>
+              <p className="settings-description">{ui("Optional help with outcomes, steps, and planning. Tasks work without AI.")}</p>
+              <label htmlFor={id + '-provider'}>{ui("Provider")}</label>
               <select id={id + '-provider'} value={settings.provider} onChange={event => handleProviderChange(event.target.value as Provider)}>
                 {PROVIDER_ORDER.filter(provider => isTauri() || provider === 'diane').map(provider => <option key={provider} value={provider}>{PROVIDER_PRESETS[provider].label}</option>)}
               </select>
-              {isDiane ? <p className="hint">Uses the OpenRouter key saved in your Pipe Dreams account.</p> : isCodex ? <p className="hint">Uses your existing Codex CLI login. No API key is needed.</p> : <>
-                <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? 'Dockit API key (fallback)' : 'Dockit API key'}</label>
+              {isDiane ? <p className="hint">{ui("Uses the OpenRouter key saved in your Pipe Dreams account.")}</p> : isCodex ? <p className="hint">{ui("Uses your existing Codex CLI login. No API key is needed.")}</p> : <>
+                <label htmlFor={id + '-key'}>{settings.preferDianeCredentials !== false && dianeAvailable ? ui("Dockit API key (fallback)") : ui("Dockit API key")}</label>
                 <div className="input-row">
-                  <input id={id + '-key'} type={showKey ? 'text' : 'password'} value={settings.apiKey} onChange={event => update({ apiKey: event.target.value })} placeholder={isOpenRouter ? 'sk-or-v1-…' : 'sk-…'} autoComplete="off" spellCheck={false} />
-                  <button type="button" className="input-row-btn" onClick={() => setShowKey(value => !value)} aria-label={showKey ? 'Hide API key' : 'Show API key'}>{showKey ? 'Hide' : 'Show'}</button>
+                  <input id={id + '-key'} type={showKey ? 'text' : 'password'} value={settings.apiKey} onChange={event => update({ apiKey: event.target.value })} placeholder={isOpenRouter ? ui("sk-or-v1-…") : ui("sk-…")} autoComplete="off" spellCheck={false} />
+                  <button type="button" className="input-row-btn" onClick={() => setShowKey(value => !value)} aria-label={showKey ? ui("Hide API key") : ui("Show API key")}>{showKey ? ui("Hide") : ui("Show")}</button>
                 </div>
-                {settings.preferDianeCredentials !== false && dianeAvailable && <p className="hint">A matching Shiprite key is available. You can change key reuse in Integrations.</p>}
+                {settings.preferDianeCredentials !== false && dianeAvailable && <p className="hint">{ui("A matching Shiprite key is available. You can change key reuse in Integrations.")}</p>}
               </>}
               {!isDiane && <details className="settings-details" key={settings.provider} open={settings.provider === 'custom' || undefined}>
-                <summary>Model and connection options</summary>
-                <label htmlFor={id + '-model'}>{isCodex ? 'Model (optional)' : 'Model'}</label>
-                <input id={id + '-model'} value={settings.model} onChange={event => update({ model: event.target.value })} placeholder={isCodex ? 'Use Codex default' : preset.model || 'model-name'} list={id + '-models'} />
+                <summary>{ui("Model and connection options")}</summary>
+                <label htmlFor={id + '-model'}>{isCodex ? ui("Model (optional)") : ui("Model")}</label>
+                <input id={id + '-model'} value={settings.model} onChange={event => update({ model: event.target.value })} placeholder={isCodex ? ui("Use Codex default") : preset.model || 'model-name'} list={id + '-models'} />
                 {preset.models.length > 0 && <datalist id={id + '-models'}>{preset.models.map(model => <option key={model} value={model} />)}</datalist>}
-                <p className="hint">{isCodex ? 'Leave blank to use your Codex default model.' : isOpenRouter ? 'Use the model name from the OpenRouter catalog.' : 'Use a model supported by your provider.'}</p>
-                <label htmlFor={id + '-endpoint'}>{isCodex ? 'Codex executable' : 'API base URL'}</label>
-                <input id={id + '-endpoint'} value={settings.apiBase} onChange={event => update({ apiBase: event.target.value })} placeholder={isCodex ? 'codex or full executable path' : preset.apiBase || 'https://api.example.com/v1'} spellCheck={false} />
+                <p className="hint">{isCodex ? ui("Leave blank to use your Codex default model.") : isOpenRouter ? ui("Use the model name from the OpenRouter catalog.") : ui("Use a model supported by your provider.")}</p>
+                <label htmlFor={id + '-endpoint'}>{isCodex ? ui("Codex executable") : ui("API base URL")}</label>
+                <input id={id + '-endpoint'} value={settings.apiBase} onChange={event => update({ apiBase: event.target.value })} placeholder={isCodex ? ui("codex or full executable path") : preset.apiBase || 'https://api.example.com/v1'} spellCheck={false} />
               </details>}
               <div className="test-row">
-                <button type="button" onClick={handleTest} disabled={testing || (!isDiane && (!settings.apiBase || (!isCodex && !settings.apiKey && !(settings.preferDianeCredentials !== false && dianeAvailable))))}>{testing ? 'Testing…' : 'Test connection'}</button>
-                {testResult && <span className={'test-result ' + (testResult.ok ? 'ok' : 'fail')} role="status">{testResult.ok ? dirty ? 'Connected. Save to use these settings.' : 'Connected' : testResult.message || 'Could not connect. Check the provider settings.'}</span>}
+                <button type="button" onClick={handleTest} disabled={testing || (!isDiane && (!settings.apiBase || (!isCodex && !settings.apiKey && !(settings.preferDianeCredentials !== false && dianeAvailable))))}>{testing ? ui("Testing…") : ui("Test connection")}</button>
+                {testResult && <span className={'test-result ' + (testResult.ok ? 'ok' : 'fail')} role="status">{testResult.ok ? dirty ? ui("Connected. Save to use these settings.") : ui("Connected") : testResult.message || ui("Could not connect. Check the provider settings.")}</span>}
               </div>
-              <p className="hint">Test connection checks this form. Planning uses your saved provider and model.</p>
+              <p className="hint">{ui("Test connection checks this form. Planning uses your saved provider and model.")}</p>
               <details className="settings-details">
-                <summary>Scheduling machines (optional)</summary>
-                <p className="hint">Add computers that can run scheduled work.</p>
+                <summary>{ui("Scheduling machines (optional)")}</summary>
+                <p className="hint">{ui("Add computers that can run scheduled work.")}</p>
                 {settings.machines.map((machine, index) => <div className="machine-card" key={index}>
-                  <div className="settings-machine-heading"><strong>Machine {index + 1}</strong><button type="button" className="machine-rm" onClick={() => update({ machines: settings.machines.filter((_, i) => i !== index) })} aria-label={'Remove machine ' + (machine.name || index + 1)}>Remove</button></div>
-                  <label htmlFor={id + '-machine-name-' + index}>Name</label>
+                  <div className="settings-machine-heading"><strong>{ui("Machine {0}", [index + 1])}</strong><button type="button" className="machine-rm" onClick={() => update({ machines: settings.machines.filter((_, i) => i !== index) })} aria-label={ui("Remove machine {0}", [(machine.name || index + 1)])}>{ui("Remove")}</button></div>
+                  <label htmlFor={id + '-machine-name-' + index}>{ui("Name")}</label>
                   <input id={id + '-machine-name-' + index} value={machine.name} onChange={event => updateMachine(index, { name: event.target.value })} />
-                  <label htmlFor={id + '-machine-type-' + index}>Type</label>
-                  <select id={id + '-machine-type-' + index} value={machine.type} onChange={event => updateMachine(index, { type: event.target.value })}><option value="server">Server</option><option value="workstation">Workstation</option></select>
-                  <label htmlFor={id + '-machine-specs-' + index}>Specifications (optional)</label>
-                  <input id={id + '-machine-specs-' + index} value={machine.specs || ''} onChange={event => updateMachine(index, { specs: event.target.value })} placeholder="For example, 64 GB RAM" />
-                  <label htmlFor={id + '-machine-capabilities-' + index}>Capabilities (comma separated)</label>
+                  <label htmlFor={id + '-machine-type-' + index}>{ui("Type")}</label>
+                  <select id={id + '-machine-type-' + index} value={machine.type} onChange={event => updateMachine(index, { type: event.target.value })}><option value="server">{ui("Server")}</option><option value="workstation">{ui("Workstation")}</option></select>
+                  <label htmlFor={id + '-machine-specs-' + index}>{ui("Specifications (optional)")}</label>
+                  <input id={id + '-machine-specs-' + index} value={machine.specs || ''} onChange={event => updateMachine(index, { specs: event.target.value })} placeholder={ui("For example, 64 GB RAM")} />
+                  <label htmlFor={id + '-machine-capabilities-' + index}>{ui("Capabilities (comma separated)")}</label>
                   <input id={id + '-machine-capabilities-' + index} value={(machine.capabilities || []).join(', ')} onChange={event => updateMachine(index, { capabilities: event.target.value.split(',').map(value => value.trim()).filter(Boolean) })} />
                 </div>)}
-                <button type="button" className="add-machine" onClick={() => update({ machines: [...settings.machines, { name: '', type: 'server', specs: '', capabilities: [] }] })}>Add machine</button>
+                <button type="button" className="add-machine" onClick={() => update({ machines: [...settings.machines, { name: '', type: 'server', specs: '', capabilities: [] }] })}>{ui("Add machine")}</button>
               </details>
             </section>
           </fieldset>}
 
           {section === 'integrations' && <fieldset className="settings-fields" disabled={fieldsDisabled}>
             <section className="settings-section" aria-labelledby={id + '-integrations-title'}>
-              <h3 className="section-title" id={id + '-integrations-title'}>Integrations</h3>
+              <h3 className="section-title" id={id + '-integrations-title'}>{ui("Integrations")}</h3>
               {isTauri() && /Mac/.test(navigator.platform) && (
                 <button type="button" disabled={captureSettingsOpen} onClick={async () => {
                   setCaptureSettingsOpen(true)
                   try { await invoke('open_capture_settings') }
                   catch (error) { setSettingsError(String(error)) }
                   finally { setCaptureSettingsOpen(false) }
-                }}>Flameshot settings…</button>
+                }}>{ui("Flameshot settings…")}</button>
               )}
-              <p className="settings-description">Connect optional tools on this computer.</p>
-              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} onChange={event => update({ connectDiane: event.target.checked })} /> Connect to Shiprite on this computer</label>
-              <p className="hint">{settings.connectDiane ? dianeDestination : 'Enable task handoff to Shiprite. Your task list works independently.'}</p>
-              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.preferDianeCredentials !== false} onChange={event => update({ preferDianeCredentials: event.target.checked })} /> Use Shiprite credentials when available</label>
-              <p className="hint">{settings.preferDianeCredentials === false ? 'Using Dockit’s own key.' : dianeAvailable ? 'A matching key is available. Shiprite does not need to be open.' : 'No matching key found. Dockit will use its own key.'}</p>
+              <p className="settings-description">{ui("Connect optional tools on this computer.")}</p>
+              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.connectDiane === true} onChange={event => update({ connectDiane: event.target.checked })} />{" " + ui("Connect to Shiprite on this computer")}</label>
+              <p className="hint">{settings.connectDiane ? dianeDestination : ui("Enable task handoff to Shiprite. Your task list works independently.")}</p>
+              <label className="diane-credentials-choice"><input type="checkbox" checked={settings.preferDianeCredentials !== false} onChange={event => update({ preferDianeCredentials: event.target.checked })} />{" " + ui("Use Shiprite credentials when available")}</label>
+              <p className="hint">{settings.preferDianeCredentials === false ? ui("Using Dockit’s own key.") : dianeAvailable ? ui("A matching key is available. Shiprite does not need to be open.") : ui("No matching key found. Dockit will use its own key.")}</p>
             </section>
           </fieldset>}
 
@@ -313,8 +312,8 @@ export function SettingsPanel({ account, initialAccount = false, noteMaterial = 
         </div>
 
         <div className="btn-row">
-          <button type="button" onClick={requestClose} disabled={updating || saving}>{firstRun ? 'Back to tasks' : 'Cancel'}</button>
-          <button type="button" className="primary" onClick={handleSave} disabled={fieldsDisabled}>{saving ? 'Saving…' : firstRun ? isProviderConfigured(settings, settings.provider) ? 'Save & start' : 'Start without AI' : 'Save'}</button>
+          <button type="button" onClick={requestClose} disabled={updating || saving}>{firstRun ? ui("Back to tasks") : ui("Cancel")}</button>
+          <button type="button" className="primary" onClick={handleSave} disabled={fieldsDisabled}>{saving ? ui("Saving…") : firstRun ? isProviderConfigured(settings, settings.provider) ? ui("Save & start") : ui("Start without AI") : ui("Save")}</button>
         </div>
       </div>
     </div>

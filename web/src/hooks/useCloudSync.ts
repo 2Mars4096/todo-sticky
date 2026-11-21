@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { invoke } from '../notebookCommand'
@@ -54,7 +55,7 @@ function metadata(key: string): Metadata {
   const raw = localStorage.getItem(key)
   if (!raw) return { enabled: false, baseline: {}, pending: {}, conflicts: [] }
   const value = JSON.parse(raw)
-  if (!value || typeof value.enabled !== 'boolean' || !value.baseline || !value.pending || !Array.isArray(value.conflicts)) throw new Error('Sync metadata needs recovery. Local tasks have not been changed.')
+  if (!value || typeof value.enabled !== 'boolean' || !value.baseline || !value.pending || !Array.isArray(value.conflicts)) throw new Error(ui("Sync metadata needs recovery. Local tasks have not been changed."))
   return value
 }
 function baseline(record: CloudRecord, payloadSchemaVersion: number): SyncBaseline {
@@ -74,6 +75,7 @@ export function useCloudSync(hooks: Hooks) {
     }catch{return current}
   })
   const [auth, setAuth] = useState<Auth | null>(null)
+  const [identityReady,setIdentityReady] = useState(false)
   const [connectAttempt, setConnectAttempt] = useState(0)
   const [user, setUser] = useState<User | null>(null)
   const [busy, setBusy] = useState(false)
@@ -117,13 +119,13 @@ export function useCloudSync(hooks: Hooks) {
     epoch.current++
     let disposed = false
     let unsubscribe: (() => void) | undefined
-    setAuth(null); setUser(null); setEnabled(false); setConflicts([])
+    setIdentityReady(!server); setAuth(null); setUser(null); setEnabled(false); setConflicts([])
     if (server) void connectAccount(server,hooks.kbPath).then(result => {
       if (disposed) return
       if (!stored(SERVER_KEY)) localStorage.setItem(SERVER_KEY, server)
       setAuth(result)
-      unsubscribe = onAuthStateChanged(result, value => { epoch.current++; setUser(value) })
-    }).catch(cause => { if (!disposed) setError(cause.message) })
+      unsubscribe = onAuthStateChanged(result, value => { if (!disposed) {epoch.current++; setUser(value); setIdentityReady(true)} })
+    }).catch(cause => { if (!disposed) {setIdentityReady(true);setError(cause.message)} })
     return () => { disposed = true; unsubscribe?.(); signInController.current?.abort() }
   }, [server, connectAttempt])
 
@@ -136,7 +138,7 @@ export function useCloudSync(hooks: Hooks) {
 
   const configure = useCallback((value: string) => {
     try {
-      if (running.current || signingIn) throw new Error('Wait for the current account operation to finish.')
+      if (running.current || signingIn) throw new Error(ui("Wait for the current account operation to finish."))
       const url = syncServerUrl(value)
       localStorage.setItem(SERVER_KEY, url)
       setServer(url); setConnectAttempt(value => value + 1); setError(null)
@@ -145,9 +147,9 @@ export function useCloudSync(hooks: Hooks) {
 
   const login = useCallback(async () => {
     if (!auth || signingIn) return
-    setSigningIn(true); setError(null); setMessage('Waiting for Google')
+    setSigningIn(true); setError(null); setMessage(ui("Waiting for Google"))
     const controller = new AbortController(); signInController.current = controller
-    try { await googleSignIn(server, auth, controller.signal, hooks.kbPath); setMessage('Signed in'); setConnectAttempt(value=>value+1) }
+    try { await googleSignIn(server, auth, controller.signal, hooks.kbPath); setMessage(ui("Signed in")); setConnectAttempt(value=>value+1) }
     catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
     finally { setSigningIn(false); signInController.current = null }
   }, [auth, signingIn, server, hooks.kbPath])
@@ -157,7 +159,7 @@ export function useCloudSync(hooks: Hooks) {
     signInController.current?.abort()
     try {
       if (key) { const meta = metadata(key); meta.enabled = false; localStorage.setItem(key, JSON.stringify(meta)) }
-      await signOut(auth); setEnabled(false); setMessage('Signed out')
+      await signOut(auth); setEnabled(false); setMessage(ui("Signed out"))
     } catch (cause) { setError(String(cause)) }
   }, [auth, key])
 
@@ -165,12 +167,12 @@ export function useCloudSync(hooks: Hooks) {
     if (!key || !owner || running.current) return false
     try {
       const linked = localStorage.getItem(OWNER_KEY)
-      if (value && linked && linked !== owner) throw new Error('These local notes belong to another account. Sign in with the original account, or use a separate app data profile.')
+      if (value && linked && linked !== owner) throw new Error(ui("These local notes belong to another account. Sign in with the original account, or use a separate app data profile."))
       // Bind before storing enablement; a failed write must never leave an unbound upload.
       if (value) localStorage.setItem(OWNER_KEY, owner)
       const meta = metadata(key); meta.enabled = value
       localStorage.setItem(key, JSON.stringify(meta)); setEnabled(value); setError(null)
-      setMessage(value ? 'Sync on' : 'Sync paused')
+      setMessage(value ? ui("Sync on") : ui("Sync paused"))
       return true
     } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); return false }
   }, [key, owner])
@@ -192,8 +194,8 @@ export function useCloudSync(hooks: Hooks) {
     if (!user || !auth || !key || !hooksRef.current.ready) return
     if (!enabled && (!manual || !toggleEnabled(true))) return
     if (running.current) { followUp.current = true; return }
-    if (hooksRef.current.blocked) { setMessage('Waiting for current task'); return }
-    if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+    if (hooksRef.current.blocked) { setMessage(ui("Waiting for current task")); return }
+    if (hasDraftEditor()) { waitingForEdit.current = true; setMessage(ui("Waiting for editing to finish")); return }
     waitingForEdit.current = false
     followUp.current = false
     foreground.current = manual || Boolean(resolution)
@@ -201,15 +203,15 @@ export function useCloudSync(hooks: Hooks) {
     running.current = true; setBusy(true); setBackground(!foreground.current); setError(null)
     progressRef.current = null; report('Checking account')
     const generation = epoch.current
-    const assertCurrent = () => { if (generation !== epoch.current || keyRef.current !== key || auth.currentUser?.uid !== user.uid) throw new Error('Account or task folder changed; sync stopped safely.') }
+    const assertCurrent = () => { if (generation !== epoch.current || keyRef.current !== key || auth.currentUser?.uid !== user.uid) throw new Error(ui("Account or task folder changed; sync stopped safely.")) }
     const localChanged = () => {
       followUp.current = localRaceRetries.current++ === 0
-      setMessage(followUp.current ? 'Local notes changed; checking again' : 'Local notes changed; retrying on the next check')
+      setMessage(followUp.current ? ui("Local notes changed; checking again") : ui("Local notes changed; retrying on the next check"))
     }
     let pulled = false
     let deferredFocus = false
     try {
-      if (localStorage.getItem(OWNER_KEY) !== owner) throw new Error('Enable sync to link these notes to this account.')
+      if (localStorage.getItem(OWNER_KEY) !== owner) throw new Error(ui("Enable sync to link these notes to this account."))
       const meta = metadata(key)
       let savedMetadata = JSON.stringify(meta)
       const persist = () => {
@@ -227,7 +229,7 @@ export function useCloudSync(hooks: Hooks) {
       const local = await snapshot(() => report('Reading local history'))
       if (payloadSchemaVersion === 1 && (Object.values(local).some(hasGoalPlanningMetadata)
         || Object.values(meta.baseline).some(item => hasGoalPlanningMetadata(item.payload)))) {
-        throw new Error('Update the sync service to sync goal plans. Your goals and tasks remain saved on this device.')
+        throw new Error(ui("Update the sync service to sync goal plans. Your goals and tasks remain saved on this device."))
       }
       const cloud: CloudRecord[] = []
       let cursor: string | null = null
@@ -237,7 +239,7 @@ export function useCloudSync(hooks: Hooks) {
       let generationAvailable = true
       const cached = remoteSnapshot.current?.key===key && remoteSnapshot.current.schema===payloadSchemaVersion ? remoteSnapshot.current : null
       do {
-        report('Reading cloud', { detail: `Page ${++pageNumber}` })
+        report('Reading cloud', { detail: ui("Page {0}", [++pageNumber]) })
         const parameters = new URLSearchParams()
         if (cursor) parameters.set('after', cursor)
         else if (cached) parameters.set('ifGeneration',cached.generation)
@@ -245,19 +247,19 @@ export function useCloudSync(hooks: Hooks) {
         const query = parameters.toString()
         const page = await requestJson(server, '/v1/sync' + (query ? '?' + query : ''), {}, token)
         assertCurrent()
-        if (page.schemaVersion !== 1) throw new Error('The sync service version is incompatible.')
-        if (payloadSchemaVersion === 2 && page.payloadSchemaVersion !== 2) throw new Error('The sync service did not return goal plans. Sync stopped before changing local data.')
+        if (page.schemaVersion !== 1) throw new Error(ui("The sync service version is incompatible."))
+        if (payloadSchemaVersion === 2 && page.payloadSchemaVersion !== 2) throw new Error(ui("The sync service did not return goal plans. Sync stopped before changing local data."))
         if(page.notModified===true){
-          if(!cached||cursor||page.generation!==cached.generation||page.nextCursor)throw new Error('The conditional sync response is incompatible.')
+          if(!cached||cursor||page.generation!==cached.generation||page.nextCursor)throw new Error(ui("The conditional sync response is incompatible."))
           cloud.push(...validateRecords(JSON.parse(JSON.stringify(cached.records))));observedGeneration=cached.generation;break
         }
         if(typeof page.generation==='string'&&/^[a-f0-9]{64}$/.test(page.generation)){
-          if(observedGeneration&&observedGeneration!==page.generation)throw new Error('Cloud records changed during paging. Sync again; local notes are unchanged.')
+          if(observedGeneration&&observedGeneration!==page.generation)throw new Error(ui("Cloud records changed during paging. Sync again; local notes are unchanged."))
           observedGeneration=page.generation
         }else generationAvailable=false
         cloud.push(...validateRecords(page.records))
         cursor = page.nextCursor ?? null
-        if (cursor && (typeof cursor !== 'string' || cursors.has(cursor))) throw new Error('The sync service returned an invalid page cursor.')
+        if (cursor && (typeof cursor !== 'string' || cursors.has(cursor))) throw new Error(ui("The sync service returned an invalid page cursor."))
         if (cursor) cursors.add(cursor)
       } while (cursor)
       validateRecords(cloud)
@@ -268,7 +270,7 @@ export function useCloudSync(hooks: Hooks) {
           const migrated = migrateGoalMetadata(original, remote, meta.baseline[remote.key])
           if (migrated.baseline === meta.baseline[remote.key]) continue
           if (canonical(migrated.local) !== canonical(original)) {
-            if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+            if (hasDraftEditor()) { waitingForEdit.current = true; setMessage(ui("Waiting for editing to finish")); return }
             report('Restoring goal links', { detail: syncRecordLabel(remote.key) })
             setApplying(true)
             await yieldSyncUi()
@@ -308,7 +310,7 @@ export function useCloudSync(hooks: Hooks) {
       setConflicts(previous => canonical(previous) === canonical(pendingConflicts) ? previous : pendingConflicts)
       if (resolution && !reviewedConflictMatches(actions, resolution.key, resolution.fingerprint)) {
         setConflicts(pendingConflicts)
-        throw new Error('Conflict changed. Review again.')
+        throw new Error(ui("Conflict changed. Review again."))
       }
       // Already-equal records only need a checkpoint when their baseline changed.
       for (const action of actions.filter(item => item.kind === 'ack')) {
@@ -327,7 +329,7 @@ export function useCloudSync(hooks: Hooks) {
           // Both reviewed copies were durably saved before any version is applied.
           if (action.merge) {
             const choices = resolution.choices ?? Object.fromEntries(action.merge.issues.map(issue => [issue.path, resolution.choice!]))
-            if (action.merge.issues.some(issue => !['local', 'cloud'].includes(choices[issue.path])) || Object.keys(choices).some(path => !action.merge!.issues.some(issue => issue.path === path))) throw new Error('Choose a version for each conflicting item.')
+            if (action.merge.issues.some(issue => !['local', 'cloud'].includes(choices[issue.path])) || Object.keys(choices).some(path => !action.merge!.issues.some(issue => issue.path === path))) throw new Error(ui("Choose a version for each conflicting item."))
             action.merge = mergeSyncPayload(action.key, action.ancestor, action.local, action.remote?.deleted ? null : action.remote?.payload ?? null, Boolean(action.hasAncestor), choices, action.atomicTasks)
             action.kind = 'merge'
           } else action.kind = resolution.choice === 'local' ? 'push' : 'pull'
@@ -335,14 +337,14 @@ export function useCloudSync(hooks: Hooks) {
         if (action.kind === 'conflict') { unresolved.push(action); advance(); continue }
         let upload = action.local
         if (action.kind === 'merge') {
-          if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+          if (hasDraftEditor()) { waitingForEdit.current = true; setMessage(ui("Waiting for editing to finish")); return }
           if (action.key.startsWith('focus:') && hooksRef.current.focusActive) { deferredFocus = true; continue }
           upload = action.merge!.payload
           validateRecords([{ ...action.remote!, payload: upload, deleted: upload === null }])
           report('Combining changes', { detail })
           const latest = await snapshot(undefined, action.key)
           assertCurrent()
-          if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+          if (hasDraftEditor()) { waitingForEdit.current = true; setMessage(ui("Waiting for editing to finish")); return }
           if (canonical(latest[action.key] ?? null) !== canonical(action.local)) { localChanged(); return }
           if (canonical(upload) !== canonical(action.local)) {
             setApplying(true)
@@ -377,12 +379,12 @@ export function useCloudSync(hooks: Hooks) {
           }, token)
           assertCurrent()
           const record = validateRecords([result])[0]
-          if (record.key !== action.key || canonical(record.payload) !== fingerprint) throw new Error('The sync acknowledgement did not match the saved record.')
+          if (record.key !== action.key || canonical(record.payload) !== fingerprint) throw new Error(ui("The sync acknowledgement did not match the saved record."))
           meta.baseline[action.key] = baseline(record, payloadSchemaVersion); delete meta.pending[action.key]; persist(); advance()
           continue
         }
         // Only the short local-apply phase locks interaction. Never lock during HTTP requests.
-        if (hasDraftEditor()) { waitingForEdit.current = true; setMessage('Waiting for editing to finish'); return }
+        if (hasDraftEditor()) { waitingForEdit.current = true; setMessage(ui("Waiting for editing to finish")); return }
         // An active timer is device-local. It must only defer incoming history,
         // rather than blocking unrelated tasks/goals for the whole session.
         if (action.key.startsWith('focus:') && hooksRef.current.focusActive) { deferredFocus = true; continue }
@@ -413,7 +415,7 @@ export function useCloudSync(hooks: Hooks) {
       setLastSynced(new Date().toISOString())
       if (deferredFocus) setAcknowledged(null)
       else if (!unresolved.length && hooksRef.current.changeKey === changeAtStart) setAcknowledged({ key, change: changeAtStart })
-      setMessage(unresolved.length ? `${unresolved.length} conflicts` : deferredFocus ? 'Focus history waits for session to finish' : hooksRef.current.changeKey !== changeAtStart && !pulled ? 'Changes queued' : 'Up to date')
+      setMessage(unresolved.length ? ui("{0} conflicts", [unresolved.length]) : deferredFocus ? ui("Focus history waits for session to finish") : hooksRef.current.changeKey !== changeAtStart && !pulled ? ui("Changes queued") : ui("Up to date"))
     } catch (cause) {
       if(remoteSnapshot.current?.key===key)remoteSnapshot.current=null
       const detail = cause instanceof Error ? cause.message : String(cause)
@@ -421,7 +423,7 @@ export function useCloudSync(hooks: Hooks) {
       else {
         const step = progressRef.current as SyncProgress | null
         setError(`${step?.stage ?? 'Sync'}${step?.detail ? ` (${step.detail})` : ''}: ${detail}`)
-        setMessage('Sync stopped')
+        setMessage(ui("Sync stopped"))
       }
     }
     finally {
@@ -472,6 +474,6 @@ export function useCloudSync(hooks: Hooks) {
     return () => { clearInterval(timer); clearTimeout(editTimer.current); document.removeEventListener('focusout', edited); document.removeEventListener('visibilitychange', refresh); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh) }
   }, [enabled])
 
-  return { upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready, server, configure, user, auth, connected: Boolean(auth), busy, background, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
+  return { identityReady, upToDate: acknowledged?.key === key && acknowledged?.change === hooks.changeKey && hooks.ready, server, configure, user, auth, connected: Boolean(auth), busy, background, progress, applying, signingIn, enabled, message, error, conflicts, recovery, lastSynced, login, logout, toggleEnabled, exportRecovery,
     cancelSignIn: () => signInController.current?.abort(), sync: () => synchronize(undefined, true), resolve: (key: string, choice: 'local' | 'cloud', fingerprint: string) => synchronize({ key, choice, fingerprint }), resolveItems: (key: string, choices: MergeChoices, fingerprint: string) => synchronize({ key, choices, fingerprint }) }
 }

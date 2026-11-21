@@ -82,3 +82,11 @@
 .assignment-fields{display:grid;gap:8px;min-width:0;padding:4px 0 12px}
 .assignment-fields label,.assignment-fields input,.assignment-fields select{min-width:0;box-sizing:border-box;width:100%}
 .assignment-fields button{justify-self:start}
+
+.assignment-preview,.assignment-receipt{padding-block:8px;overflow-wrap:anywhere;line-height:1.5}
+.assignment-receipt{display:flex;flex-wrap:wrap;column-gap:8px;align-items:center;border-top:1px solid var(--ruled-border,#e8d9a0)}
+.assignment-preview small{display:block;margin-top:4px}
+.assignment-preview ul{padding-inline-start:18px;margin:4px 0}
+.assignment-actions{display:flex;flex-wrap:wrap;gap:8px}
+.assignment-receipt a,.meeting-drafts a{color:var(--focus-ring,#705415);text-decoration:underline;text-underline-offset:2px}
+.assignment-fields :focus-visible,.meeting-drafts :focus-visible{outline:2px solid var(--focus-ring,#856519);outline-offset:2px}

@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const load=require('./helpers/load-typescript.cjs');
 async function run(count,pulls=false,changeDuringPull=false){
@@ -21,7 +22,7 @@ async function run(count,pulls=false,changeDuringPull=false){
   return {dates:Object.entries(local).filter(([key])=>key.startsWith('day:')&&(!request.date||key==='day:'+request.date)).map(([key,value])=>({...structuredClone(value),filePath:'fixture.md',revision:'r',weekStart:key.slice(4)}))};
  }}},'../cloudAccount':{connectAccount:async()=>auth,requestJson:async(_,path,options={})=>{if(options.method==='PUT'){writes.push(path);throw Error('Unexpected upload')}return path==='/v1/config'?{schemaVersion:1}:{schemaVersion:1,records:cloud,nextCursor:null}}},'../cloudSync':load('src/cloudSync.ts',{}, {URL}),'../syncConflicts':load('src/syncConflicts.ts'),'../syncProgress':{...load('src/syncProgress.ts'),yieldSyncUi:async()=>{}}};
  const exported={};const code=ts.transpileModule(fs.readFileSync('src/hooks/useCloudSync.ts','utf8').replace('import.meta.env.VITE_SYNC_SERVER_URL',"''"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText;
- vm.runInNewContext(code,{exports:exported,require:n=>mocks[n],URLSearchParams,crypto:require('node:crypto').webcrypto,localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>{if(k===key)metadataWrites++;storage.set(k,v)}},setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},window:{addEventListener(){},removeEventListener(){}},document:{visibilityState:'visible',querySelector:()=>null,addEventListener(){},removeEventListener(){}}});
+ vm.runInNewContext(code,{exports:exported,require:n => n.endsWith('/interfaceLocale') ? testedInterface : mocks[n],URLSearchParams,crypto:require('node:crypto').webcrypto,localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>{if(k===key)metadataWrites++;storage.set(k,v)}},setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},window:{addEventListener(){},removeEventListener(){}},document:{visibilityState:'visible',querySelector:()=>null,addEventListener(){},removeEventListener(){}}});
  const hooks={kbPath:'/fixture',ready:true,blocked:false,changeKey:'fixture',flush:async()=>{},reload:async()=>{reloads++},goals:local.goals,missions:[],applyGoals:async()=>{},applyMission:async()=>{}};
  const render=()=>{cursor=0;const result=exported.useCloudSync(hooks);effects.splice(0).forEach(fn=>fn());return result};
  for(let i=0;i<4;i++){render();await new Promise(setImmediate)}

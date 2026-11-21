@@ -1,3 +1,4 @@
+import { signInInterface } from '/signin-interface.js'
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js'
 import { getAuth, GoogleAuthProvider, signInWithPopup, inMemoryPersistence, setPersistence, signOut } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js'
 
@@ -7,6 +8,7 @@ const challenge = params.get('challenge')
 const nativeReturn = params.get('returnTo') === 'app'
 const returnUrl = 'todo-sticky://account-return'
 // Fragments never reach HTTP access logs; clear them once captured.
+const ui = signInInterface(new URLSearchParams(location.hash.slice(1)).get('language'))
 history.replaceState(null, '', '/signin')
 // A browser can reuse this tab for a new app request via hash-only navigation.
 // Reload its fresh fragment rather than keeping the previous verifier challenge.
@@ -40,8 +42,8 @@ button.onclick = async () => {
     }
     // The user's Google selection completes this explicit sign-in action.
     // Do not stop here and ask them to confirm the same account again.
-    status.textContent = 'Finishing sign-in…'
-    button.textContent = 'Connecting…'
+    status.textContent = ui("Finishing sign-in\u2026")
+    button.textContent = ui("Connecting\u2026")
     const token = await signedIn.getIdToken()
     const response = await fetch('/v1/auth/complete', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -51,25 +53,25 @@ button.onclick = async () => {
       const body = await response.json()
       // A rejected/expired identity needs another Google selection, not a loop.
       if (response.status === 401 || response.status === 403) signedIn = null
-      throw new Error(typeof body.detail === 'string' ? body.detail : 'Could not finish sign-in. Try again.')
+      throw new Error(typeof body.detail === 'string' ? body.detail : ui("Could not finish sign-in. Try again."))
     }
     completed = true
     button.hidden = true
     // Cleanup must neither block return nor report an accepted handoff as failed.
     void signOut(auth).catch(() => {})
     if (nativeReturn) {
-      status.textContent = 'Google sign-in complete. Finishing in Dockit…'
+      status.textContent = ui("Google sign-in complete. Finishing in Dockit\u2026")
       returnLink.href = returnUrl
       returnLink.hidden = false
       try { window.location.assign(returnUrl) } catch (_) {}
     } else {
-      status.textContent = 'Google sign-in complete. Switch back to Dockit.'
+      status.textContent = ui("Google sign-in complete. Switch back to Dockit.")
     }
   } catch (cause) {
     status.textContent = ''
     error.textContent = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(cause.code)
-      ? 'Sign-in cancelled.' : cause.message
-    button.textContent = signedIn ? 'Retry connection' : 'Continue with Google'
+      ? ui("Sign-in cancelled.") : cause.message
+    button.textContent = signedIn ? ui("Retry connection") : ui("Continue with Google")
     button.disabled = false
   } finally {
     connecting = false

@@ -1,3 +1,15 @@
+import { ui } from './interfaceLocale'
+import './app-menu.js'
+import './app-menu.css'
+import { invoke, isTauri } from '@tauri-apps/api/core'
+
+if (isTauri()) {
+  document.addEventListener('pipedreams-open-app', event => {
+    const {url, opened, failed} = (event as CustomEvent).detail
+    event.preventDefault()
+    void invoke('open_suite_link', {url}).then(opened, failed)
+  })
+}
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
@@ -43,7 +55,7 @@ window.__stickyTodoBoot?.record('main-module-loaded', '')
 
 const rootElement = document.getElementById('root')
 if (!rootElement) {
-  const error = new Error('Missing application root element')
+  const error = new Error(ui("Missing application root element"))
   recordBootError(error)
   throw error
 }

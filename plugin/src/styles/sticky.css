@@ -882,13 +882,6 @@
   line-height: 1.45;
 }
 
-.diane-todo-port .task-empty-brand {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: url("../brand/dockit.png") center / contain no-repeat;
-}
-
 .diane-todo-port .task-empty-mark {
   display: grid;
   place-items: center;

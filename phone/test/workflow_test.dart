@@ -64,6 +64,22 @@ Future<void> captureReview(WidgetTester tester, String name) async {
 }
 
 void main() {
+  testWidgets('a day with hidden finished tasks can be reopened without changing its records', (tester) async {
+    final store = await notebook();
+    final row = store.addTask('Print the guide');
+    store.updateTask(store.today, row.id, status: TaskStatus.done);
+    store.preferences.showCompleted = false;
+    await tester.pumpWidget(StickyApp(store: store));
+    await tester.pumpAndSettle();
+    expect(find.text('No open tasks on this day'), findsOneWidget);
+    await tester.tap(find.text('Show finished tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Print the guide'), findsOneWidget);
+    expect(store.selectedTasks.single.task.status, TaskStatus.done);
+    await tester.pumpWidget(const SizedBox());
+    store.dispose();
+  }, variant: const TargetPlatformVariant({TargetPlatform.android, TargetPlatform.iOS}));
+
   test(
     'fingerprints and occurrence identities match desktop Unicode semantics',
     () {

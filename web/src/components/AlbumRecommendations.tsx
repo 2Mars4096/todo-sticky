@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import type { AlbumRecommendationResult } from '../types'
 
 interface Props {
@@ -24,12 +25,12 @@ export function AlbumRecommendations({
       aria-busy={loading}
     >
       <header className="album-recommendations-header">
-        <h2 id="album-recommendations-title">Albums for working</h2>
+        <h2 id="album-recommendations-title">{ui("Albums for working")}</h2>
         <button
           className="album-recommendations-close"
           onClick={onClose}
-          aria-label="Close album recommendations"
-          title="Close"
+          aria-label={ui("Close album recommendations")}
+          title={ui("Close")}
         >
           ×
         </button>
@@ -37,7 +38,7 @@ export function AlbumRecommendations({
 
       <div className="album-recommendations-body" aria-live="polite">
         {loading ? (
-          <div className="album-loading-list" aria-label="Finding album recommendations">
+          <div className="album-loading-list" aria-label={ui("Finding album recommendations")}>
             {[0, 1, 2, 3].map(index => (
               <div className="album-loading-row" key={index} aria-hidden="true">
                 <span className="album-loading-disc" />
@@ -70,8 +71,8 @@ export function AlbumRecommendations({
       </div>
 
       <footer className="album-recommendations-footer">
-        <span>{providerLabel} · Current tasks</span>
-        <button onClick={onRegenerate} disabled={loading}>Regenerate</button>
+        <span>{ui("{0} · Current tasks", [providerLabel])}</span>
+        <button onClick={onRegenerate} disabled={loading}>{ui("Regenerate")}</button>
       </footer>
     </section>
   )

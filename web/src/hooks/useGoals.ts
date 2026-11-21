@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { canonical } from '../cloudSync'
 import { validateGoalPlan } from '../projectPlanning'
@@ -95,7 +96,7 @@ export function useGoals() {
 
   const save = useCallback(() => {
     if (stored.readFailed) {
-      setStorageError('Saved goals could not be read. New edits are only in this window; existing saved data has not been replaced.')
+      setStorageError(ui("Saved goals could not be read. New edits are only in this window; existing saved data has not been replaced."))
       return
     }
     try {
@@ -107,13 +108,13 @@ export function useGoals() {
         for (let suffix = 1; window.localStorage.getItem(key) !== null; suffix += 1) key = `${base}-${suffix}`
         window.localStorage.setItem(key, stored.unreadable)
         recoveryKey.current = key
-        setRecoveryNotice('Some saved goals could not be read. A recovery copy of the original data was saved on this device.')
+        setRecoveryNotice(ui("Some saved goals could not be read. A recovery copy of the original data was saved on this device."))
       }
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
       setStorageError(null)
     } catch (error) {
       console.error('Failed to persist long-term sidebar state:', error)
-      setStorageError('Goals could not be saved. Your current edits stay in this window. Retry when storage is available.')
+      setStorageError(ui("Goals could not be saved. Your current edits stay in this window. Retry when storage is available."))
     }
   }, [state, stored])
 
@@ -185,11 +186,11 @@ export function useGoals() {
 
   const applyCloudGoals = useCallback((value: { targets: GoalItem[]; recurring: GoalItem[] }) => {
     if (stored.readFailed || (stored.unreadable !== null && recoveryKey.current === null)) {
-      throw new Error('Recover the saved goals before applying cloud changes.')
+      throw new Error(ui("Recover the saved goals before applying cloud changes."))
     }
     if (!value || !Array.isArray(value.targets) || !Array.isArray(value.recurring)
       || [...value.targets, ...value.recurring].some(item => !normalizeItem(item) || typeof item.done !== 'boolean')) {
-      throw new Error('The sync service returned invalid goals. Local goals are unchanged.')
+      throw new Error(ui("The sync service returned invalid goals. Local goals are unchanged."))
     }
     const next = { ...state, targets: value.targets, recurring: value.recurring }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
@@ -198,18 +199,18 @@ export function useGoals() {
   }, [state, stored])
 
   const saveProject = useCallback((before: GoalItem, after: GoalItem) => {
-    if (stored.readFailed || (stored.unreadable !== null && recoveryKey.current === null)) throw new Error('Recover saved goals before editing this project.')
+    if (stored.readFailed || (stored.unreadable !== null && recoveryKey.current === null)) throw new Error(ui("Recover saved goals before editing this project."))
     const current = stateRef.current
     const existing = current.targets.find(goal => goal.id === before.id)
-    if (!existing) throw new Error('This project was removed.')
+    if (!existing) throw new Error(ui("This project was removed."))
     if (canonical(existing) === canonical(after)) return
-    if (existing.done) throw new Error('Reopen this project before editing.')
-    if (canonical(existing) !== canonical(before)) throw new Error('The project changed. Refresh before saving.')
+    if (existing.done) throw new Error(ui("Reopen this project before editing."))
+    if (canonical(existing) !== canonical(before)) throw new Error(ui("The project changed. Refresh before saving."))
     validateGoalPlan(after.plan ?? [])
-    if (!after.text.trim() || after.text.length > 5000 || after.id !== before.id) throw new Error('Keep the project text within 1–5,000 characters.')
+    if (!after.text.trim() || after.text.length > 5000 || after.id !== before.id) throw new Error(ui("Keep the project text within 1–5,000 characters."))
     const next = {...current,targets:current.targets.map(goal=>goal.id===after.id?after:goal)}
     try { window.localStorage.setItem(STORAGE_KEY,JSON.stringify(next)) }
-    catch { throw new Error('Project changes were not saved. Retry when storage is available.') }
+    catch { throw new Error(ui("Project changes were not saved. Retry when storage is available.")) }
     stateRef.current = next; setState(next); setStorageError(null)
   }, [stored])
   const currentProject = useCallback((id: string) => stateRef.current.targets.find(goal=>goal.id===id), [])

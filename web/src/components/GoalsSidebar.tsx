@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useEffect, useRef, useState } from 'react'
 import { nextOccurrence, type Cadence, type RoutineSchedules } from '../routines'
 import { format } from 'date-fns'
@@ -44,6 +45,13 @@ interface RowProps {
   onToggleGoal: SidebarProps['onToggleGoal']
 }
 
+function goalCount(category: GoalCategory, count: number) {
+  if (category === 'targets') {
+    return count === 1 ? ui("{0} unfinished goal", [count]) : ui("{0} unfinished goals", [count])
+  }
+  return count === 1 ? ui("{0} active routine", [count]) : ui("{0} active routines", [count])
+}
+
 function GoalRow({
   scheduled, paused,
   category,
@@ -77,8 +85,8 @@ function GoalRow({
       {scheduled ? <span className="routine-symbol" aria-hidden="true">↻</span> : <button
         className={`goal-toggle ${item.done ? 'done' : ''}`}
         onClick={() => onToggleGoal(category, item.id)}
-        title={scheduled ? paused ? 'Resume routine' : 'Pause routine' : item.done ? 'Mark active' : 'Mark done'}
-        aria-label={`${scheduled ? paused ? 'Resume' : 'Pause' : item.done ? 'Reactivate' : 'Complete'} ${item.text}`}
+        title={scheduled ? paused ? ui("Resume routine") : ui("Pause routine") : item.done ? ui("Mark active") : ui("Mark done")}
+        aria-label={`${scheduled ? paused ? ui("Resume") : ui("Pause") : item.done ? ui("Reactivate") : ui("Complete")} ${item.text}`}
         aria-pressed={scheduled ? paused : item.done}
       />}
       {editing ? (
@@ -86,7 +94,7 @@ function GoalRow({
           ref={inputRef}
           className="goal-edit-input"
           rows={1}
-          aria-label={`Edit ${item.text}`}
+          aria-label={ui("Edit {0}", [item.text])}
           value={draft}
           onChange={event => setDraft(event.target.value)}
           onBlur={commit}
@@ -108,22 +116,22 @@ function GoalRow({
           className="goal-text"
           role="button"
           tabIndex={0}
-          aria-label={category === 'targets' && onOpenProject ? `Open project ${item.text.split('\n')[0]}` : undefined}
+          aria-label={category === 'targets' && onOpenProject ? ui("Open project {0}", [item.text.split('\n')[0]]) : undefined}
           data-project-id={category === 'targets' ? item.id : undefined}
           onClick={category === 'targets' && onOpenProject ? () => onOpenProject(item.id) : undefined}
           onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if(category === 'targets' && onOpenProject) onOpenProject(item.id); else setEditing(true) } }}
           onDoubleClick={category === 'targets' && onOpenProject ? undefined : () => setEditing(true)}
-          title={category === 'targets' && onOpenProject ? 'Open project' : 'Double-click or press Enter to edit'}
+          title={category === 'targets' && onOpenProject ? ui("Open project") : ui("Double-click or press Enter to edit")}
         >
           {item.text}
         </span>
       )}
-      {category === 'targets' && onOpenProject && <span className="goal-plan-entry" aria-hidden="true">{item.plan?.length ? `${item.plan.length} steps` : '›'}</span>}
+      {category === 'targets' && onOpenProject && <span className="goal-plan-entry" aria-hidden="true">{item.plan?.length ? ui("{0} steps", [item.plan.length]) : '›'}</span>}
       <button
         className="goal-delete"
-        onClick={() => { if (category !== 'targets' || !onOpenProject || window.confirm('Delete this project? Its daily tasks will remain.')) onDeleteGoal(category, item.id) }}
-        title="Delete item"
-        aria-label={`Delete ${item.text}`}
+        onClick={() => { if (category !== 'targets' || !onOpenProject || window.confirm(ui("Delete this project? Its daily tasks will remain."))) onDeleteGoal(category, item.id) }}
+        title={ui("Delete item")}
+        aria-label={ui("Delete {0}", [item.text])}
       >
         <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h10M6 2h4l.75 2.5M4.5 4.5l.6 9h5.8l.6-9M6.5 7v4M9.5 7v4" /></svg>
       </button>
@@ -157,9 +165,9 @@ function GoalSection({
     <section className="goal-section">
       <div className="goal-section-header">
         <h2>{title}</h2>
-        {items.length > 0 && <span>{openCount} open</span>}
+        {items.length > 0 && <span>{goalCount(category, openCount)}</span>}
       </div>
-      {category === 'recurring' && <p className="goal-section-description">Schedules run on this device.</p>}
+      {category === 'recurring' && <p className="goal-section-description">{ui("Schedules run on this device.")}</p>}
 
       <div className="goal-list">
         {items.map(item => (
@@ -175,14 +183,14 @@ function GoalSection({
             paused={routines?.schedules[item.id]?.paused}
           />
           {category === 'recurring' && routines && <div className="routine-options">
-            <select aria-label={`Repeat ${item.text}`} disabled={!routines.available} value={routines.schedules[item.id]?.cadence ?? 'manual'}
+            <select aria-label={ui("Repeat {0}", [item.text])} disabled={!routines.available} value={routines.schedules[item.id]?.cadence ?? 'manual'}
               onChange={event => routines.configure(item.id, event.target.value as Cadence | 'manual')}>
-              <option value="manual">Manual</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option>
+              <option value="manual">{ui("Manual")}</option><option value="daily">{ui("Daily")}</option><option value="weekdays">{ui("Weekdays")}</option><option value="weekly">{ui("Weekly")}</option>
             </select>
             {scheduled(item.id) && <>
-              <span>{routines.schedules[item.id].paused ? 'Paused' : `Next ${nextOccurrence(routines.schedules[item.id], format(new Date(), 'yyyy-MM-dd'))}`}</span>
-              <button onClick={() => routines!.pause(item.id)}>{routines.schedules[item.id].paused ? 'Resume' : 'Pause'}</button>
-              {!routines.schedules[item.id].paused && <button onClick={() => routines.skip(item.id)}>Skip next</button>}
+              <span>{routines.schedules[item.id].paused ? ui("Paused") : ui("Next {0}", [nextOccurrence(routines.schedules[item.id], format(new Date(), 'yyyy-MM-dd'))])}</span>
+              <button onClick={() => routines!.pause(item.id)}>{routines.schedules[item.id].paused ? ui("Resume") : ui("Pause")}</button>
+              {!routines.schedules[item.id].paused && <button onClick={() => routines.skip(item.id)}>{ui("Skip next")}</button>}
             </>}
           </div>}
           </div>
@@ -226,30 +234,30 @@ export function GoalsSidebar({
   const openTargets = targets.filter(item => !item.done).length
   const openRoutines = recurring.filter(item => routines?.schedules[item.id] && routines.schedules[item.id].cadence !== 'manual' ? !routines.schedules[item.id].paused : !item.done).length
   return (
-    <aside id="goals-panel" className={`goals-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Goals and routines">
+    <aside id="goals-panel" className={`goals-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label={ui("Goals and routines")}>
       <div className="sidebar-top">
-        {collapsed ? <div className="sidebar-spacer" /> : <span className="goals-heading">Goals</span>}
+        {collapsed ? <div className="sidebar-spacer" /> : <span className="goals-heading">{ui("Goals")}</span>}
         <button
           className="sidebar-toggle"
           onClick={onToggleCollapse}
-          title={collapsed ? 'Open goals' : 'Close goals'}
-          aria-label={collapsed ? 'Open goals' : 'Close goals'}
+          title={collapsed ? ui("Open goals") : ui("Close goals")}
+          aria-label={collapsed ? ui("Open goals") : ui("Close goals")}
           aria-expanded={!collapsed}
         >
-          {collapsed ? '›' : <span className="goals-close-label">Close</span>}
+          {collapsed ? '›' : <span className="goals-close-label">{ui("Close")}</span>}
         </button>
       </div>
 
       {collapsed ? (
-        <div className="sidebar-mini-stats" aria-label={`${openTargets} open long-term goals and ${openRoutines} open routines`}>
-          <span className="rail-name">Goals</span>
+        <div className="sidebar-mini-stats" aria-label={[goalCount('targets', openTargets), goalCount('recurring', openRoutines)].join(' · ')}>
+          <span className="rail-name">{ui("Goals")}</span>
           <div className="mini-stat">
             <strong>{openTargets}</strong>
-            <span>Long</span>
+            <span>{ui("Long")}</span>
           </div>
           <div className="mini-stat">
             <strong>{openRoutines}</strong>
-            <span>Routines</span>
+            <span>{ui("Routines")}</span>
           </div>
         </div>
       ) : (
@@ -257,13 +265,13 @@ export function GoalsSidebar({
           {recoveryNotice && <p className="goal-section-description" role="status">{recoveryNotice}</p>}
           {storageError && <div className="settings-error" role="alert">
             <p>{storageError}</p>
-            {onRetrySave && <button type="button" onClick={onRetrySave}>Retry save</button>}
+            {onRetrySave && <button type="button" onClick={onRetrySave}>{ui("Retry save")}</button>}
           </div>}
           <GoalSection
-            title="Long-term"
+            title={ui("Long-term")}
             category="targets"
             items={targets}
-            placeholder="Add a goal"
+            placeholder={ui("Add a goal")}
             onAddGoal={onAddGoal}
             onOpenProject={onOpenProject}
             onUpdateGoal={onUpdateGoal}
@@ -271,13 +279,13 @@ export function GoalsSidebar({
             onToggleGoal={onToggleGoal}
           />
 
-          {routines?.error && <p className="workflow-error" role="alert">{routines.error} <button onClick={routines.retry}>Retry</button></p>}
+          {routines?.error && <p className="workflow-error" role="alert">{routines.error} <button onClick={routines.retry}>{ui("Retry")}</button></p>}
           <GoalSection
             routines={routines}
-            title="Routines"
+            title={ui("Routines")}
             category="recurring"
             items={recurring}
-            placeholder="Add a routine"
+            placeholder={ui("Add a routine")}
             onAddGoal={onAddGoal}
             onOpenProject={onOpenProject}
             onUpdateGoal={onUpdateGoal}

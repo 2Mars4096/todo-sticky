@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:convert';
 import 'dart:math';
 
@@ -14,28 +16,28 @@ String dateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 DateTime parseDate(String value) {
   if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
-    throw const FormatException('Invalid date');
+    throw FormatException(ui("Invalid date"));
   }
   final d = DateTime.parse(value);
-  if (dateKey(d) != value) throw const FormatException('Invalid date');
+  if (dateKey(d) != value) throw FormatException(ui("Invalid date"));
   return d;
 }
 
 Map<String, dynamic> object(Object? value) {
-  if (value is! Map) throw const FormatException('Expected an object');
+  if (value is! Map) throw FormatException(ui("Expected an object"));
   return Map<String, dynamic>.from(value);
 }
 
 String textValue(Object? value, {int max = 20000}) {
   if (value is! String || value.length > max) {
-    throw const FormatException('Invalid text');
+    throw FormatException(ui("Invalid text"));
   }
   return value;
 }
 
 int integerValue(Object? value) {
   if (value is! num || !value.isFinite || value != value.roundToDouble()) {
-    throw const FormatException('Invalid whole number');
+    throw FormatException(ui("Invalid whole number"));
   }
   return value.toInt();
 }
@@ -103,21 +105,21 @@ class Task {
        subtasks = subtasks ?? [];
   bool get closed => status == TaskStatus.done || status == TaskStatus.stopped;
   factory Task.fromJson(Map<String, dynamic> json, [int depth = 0]) {
-    if (depth > 32) throw const FormatException('Task nesting is too deep');
+    if (depth > 32) throw FormatException(ui("Task nesting is too deep"));
     final id = textValue(json['id'], max: 300);
-    if (id.isEmpty) throw const FormatException('Task ID is required');
+    if (id.isEmpty) throw FormatException(ui("Task ID is required"));
     final status = TaskStatus.values
         .where((s) => s.name == json['status'])
         .firstOrNull;
-    if (status == null) throw const FormatException('Unknown task status');
+    if (status == null) throw FormatException(ui("Unknown task status"));
     final children = json['subtasks'];
     if (children is! List || children.length > 10000) {
-      throw const FormatException('Invalid task steps');
+      throw FormatException(ui("Invalid task steps"));
     }
     final goalId = goalLinkId(json['goalId']);
     final goalStepId = goalLinkId(json['goalStepId']);
     if (goalStepId != null && goalId == null) {
-      throw const FormatException('A goal step needs its goal');
+      throw FormatException(ui("A goal step needs its goal"));
     }
     return Task(
       id: id,
@@ -170,7 +172,7 @@ class Task {
 String? goalLinkId(Object? value) {
   if (value == null) return null;
   if (value is! String || !RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(value)) {
-    throw const FormatException('Invalid goal link');
+    throw FormatException(ui("Invalid goal link"));
   }
   return value;
 }
@@ -183,7 +185,7 @@ class GoalPlanStep {
     final id = goalLinkId(json['id']);
     final text = textValue(json['text'], max: 5000);
     if (id == null || text.trim().isEmpty) {
-      throw const FormatException('Invalid goal step');
+      throw FormatException(ui("Invalid goal step"));
     }
     return GoalPlanStep(id: id, text: text);
   }
@@ -205,11 +207,11 @@ class GoalItem {
   factory GoalItem.fromJson(Map<String, dynamic> j) {
     final raw = j['plan'] ?? [];
     if (raw is! List || raw.length > 200) {
-      throw const FormatException('Invalid goal plan');
+      throw FormatException(ui("Invalid goal plan"));
     }
     final plan = raw.map((v) => GoalPlanStep.fromJson(object(v))).toList();
     if (plan.map((step) => step.id).toSet().length != plan.length) {
-      throw const FormatException('Duplicate goal step IDs');
+      throw FormatException(ui("Duplicate goal step IDs"));
     }
     return GoalItem(
       id: textValue(j['id'], max: 300),
@@ -408,6 +410,7 @@ class ProviderProfile {
 }
 
 class Preferences {
+  String interfaceLanguage;
   String provider;
   bool providerChosen;
   Map<String, ProviderProfile> profiles;
@@ -419,6 +422,7 @@ class Preferences {
   String planningEnd;
   List<String> planningMachines;
   Preferences({
+    this.interfaceLanguage = 'system',
     this.provider = 'moonshot',
     this.providerChosen = false,
     Map<String, ProviderProfile>? profiles,
@@ -445,15 +449,17 @@ class Preferences {
   }
 
   factory Preferences.fromJson(Map<String, dynamic> j) => Preferences(
+    interfaceLanguage: languageNames.containsKey(j['interfaceLanguage'])
+        ? j['interfaceLanguage'] as String
+        : 'system',
     provider: providerPresets.containsKey(j['provider'])
         ? j['provider'] as String
         : 'moonshot',
     providerChosen: j['providerChosen'] is bool
         ? j['providerChosen'] as bool
         : j.containsKey('provider'),
-    profiles: object(
-      j['profiles'] ?? {},
-    ).map((k, v) => MapEntry(k, ProviderProfile.fromJson(object(v)))),
+    profiles: object(j['profiles'] ?? {})
+        .map((k, v) => MapEntry(k, ProviderProfile.fromJson(object(v)))),
     machines: (j['machines'] as List? ?? []).map(object).toList(),
     material: ['paper', 'frosted', 'liquid'].contains(j['material'])
         ? j['material'] as String
@@ -477,6 +483,7 @@ class Preferences {
   );
   Map<String, dynamic> toJson() => {
     'provider': provider,
+    'interfaceLanguage': interfaceLanguage,
     'providerChosen': providerChosen,
     'profiles': profiles.map((k, v) => MapEntry(k, v.toJson())),
     'machines': machines,

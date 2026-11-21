@@ -1,0 +1,1020 @@
+{
+  "web-wide": {
+    "stateRenders": 900,
+    "states": [
+      "app-switcher",
+      "calendar",
+      "day-plan",
+      "editing-task",
+      "empty-notebook",
+      "focus",
+      "goals",
+      "notebook",
+      "progress",
+      "search",
+      "search-no-results",
+      "settings-tab-0",
+      "settings-tab-1",
+      "settings-tab-2",
+      "settings-tab-2-details-0",
+      "settings-tab-3",
+      "settings-tab-3-details-0",
+      "task-tree"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 6680,
+    "observedInAllFive": 6680,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 6680,
+      "2": 6680,
+      "3": 6680,
+      "4": 6680,
+      "5": 6680
+    },
+    "reviews": 33400,
+    "candidates": {},
+    "copyClassifications": {
+      "context-or-framework-review": 816,
+      "catalog-literal": 4120,
+      "proper-name-or-autonym": 100,
+      "numeric-or-symbol": 960,
+      "synthetic-record": 320,
+      "catalog-template": 364
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 192,
+      "en": 183,
+      "es": 191,
+      "fr": 192,
+      "ja": 187,
+      "ko": 189,
+      "pt": 185,
+      "yue": 189,
+      "zh-Hans": 189,
+      "zh-Hant": 187
+    }
+  },
+  "web-compact": {
+    "stateRenders": 900,
+    "states": [
+      "app-switcher",
+      "calendar",
+      "day-plan",
+      "editing-task",
+      "empty-notebook",
+      "focus",
+      "goals",
+      "notebook",
+      "progress",
+      "search",
+      "search-no-results",
+      "settings-tab-0",
+      "settings-tab-1",
+      "settings-tab-2",
+      "settings-tab-2-details-0",
+      "settings-tab-3",
+      "settings-tab-3-details-0",
+      "task-tree"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 5710,
+    "observedInAllFive": 5710,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 5710,
+      "2": 5710,
+      "3": 5710,
+      "4": 5710,
+      "5": 5710
+    },
+    "reviews": 28550,
+    "candidates": {},
+    "copyClassifications": {
+      "context-or-framework-review": 726,
+      "catalog-literal": 3520,
+      "proper-name-or-autonym": 100,
+      "numeric-or-symbol": 760,
+      "synthetic-record": 320,
+      "catalog-template": 284
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 178,
+      "en": 168,
+      "es": 177,
+      "fr": 178,
+      "ja": 173,
+      "ko": 175,
+      "pt": 171,
+      "yue": 175,
+      "zh-Hans": 175,
+      "zh-Hant": 173
+    }
+  },
+  "mac-shared": {
+    "stateRenders": 1000,
+    "states": [
+      "app-switcher",
+      "calendar",
+      "day-plan",
+      "editing-task",
+      "focus",
+      "goals",
+      "notebook",
+      "progress",
+      "search",
+      "search-no-results",
+      "settings-tab-0",
+      "settings-tab-0-details-0",
+      "settings-tab-1",
+      "settings-tab-2",
+      "settings-tab-2-details-0",
+      "settings-tab-3",
+      "settings-tab-4",
+      "settings-tab-4-details-0",
+      "settings-tab-5",
+      "task-tree"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 8940,
+    "observedInAllFive": 8940,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 8940,
+      "2": 8940,
+      "3": 8940,
+      "4": 8940,
+      "5": 8940
+    },
+    "reviews": 44700,
+    "candidates": {},
+    "copyClassifications": {
+      "context-or-framework-review": 1481,
+      "catalog-literal": 5060,
+      "proper-name-or-autonym": 90,
+      "numeric-or-symbol": 1070,
+      "catalog-template": 1239
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 221,
+      "en": 212,
+      "es": 222,
+      "fr": 224,
+      "ja": 222,
+      "ko": 221,
+      "pt": 218,
+      "yue": 220,
+      "zh-Hans": 221,
+      "zh-Hant": 218
+    }
+  },
+  "signin": {
+    "stateRenders": 250,
+    "states": [
+      "account-confirmation",
+      "cancelled",
+      "confirmed",
+      "connection-retry",
+      "invalid-link"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 280,
+    "observedInAllFive": 280,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 280,
+      "2": 280,
+      "3": 280,
+      "4": 280,
+      "5": 280
+    },
+    "reviews": 1400,
+    "candidates": {},
+    "copyClassifications": {
+      "catalog-literal": 220,
+      "catalog-template": 50,
+      "context-or-framework-review": 10
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 9,
+      "en": 9,
+      "es": 9,
+      "fr": 9,
+      "ja": 9,
+      "ko": 9,
+      "pt": 9,
+      "yue": 10,
+      "zh-Hans": 10,
+      "zh-Hant": 10
+    }
+  },
+  "embedded": {
+    "stateRenders": 550,
+    "states": [
+      "disconnected",
+      "document-choose",
+      "document-loaded",
+      "document-pending",
+      "document-unavailable",
+      "panel",
+      "panel-task",
+      "settings-backups",
+      "settings-machines",
+      "task-editor",
+      "task-execution"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 1670,
+    "observedInAllFive": 1670,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 1670,
+      "2": 1670,
+      "3": 1670,
+      "4": 1670,
+      "5": 1670
+    },
+    "reviews": 8350,
+    "candidates": {},
+    "copyClassifications": {
+      "catalog-literal": 1300,
+      "synthetic-record": 190,
+      "numeric-or-symbol": 100,
+      "catalog-template": 60,
+      "context-or-framework-review": 20
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 65,
+      "en": 61,
+      "es": 65,
+      "fr": 64,
+      "ja": 64,
+      "ko": 63,
+      "pt": 63,
+      "yue": 62,
+      "zh-Hans": 64,
+      "zh-Hant": 62
+    }
+  },
+  "account-fixture": {
+    "stateRenders": 500,
+    "states": [
+      "access-required",
+      "awaiting-review",
+      "conflicts-empty",
+      "included-steps",
+      "ready",
+      "recovery-empty",
+      "retry",
+      "signed-in",
+      "task-preview",
+      "workspace-selected"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 2060,
+    "observedInAllFive": 2060,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 2060,
+      "2": 2060,
+      "3": 2060,
+      "4": 2060,
+      "5": 2060
+    },
+    "reviews": 10300,
+    "candidates": {},
+    "copyClassifications": {
+      "catalog-literal": 1400,
+      "catalog-template": 70,
+      "context-or-framework-review": 160,
+      "numeric-or-symbol": 160,
+      "synthetic-record": 270
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 33,
+      "en": 32,
+      "es": 33,
+      "fr": 33,
+      "ja": 33,
+      "ko": 33,
+      "pt": 33,
+      "yue": 33,
+      "zh-Hans": 34,
+      "zh-Hant": 33
+    }
+  },
+  "web-components": {
+    "stateRenders": 1150,
+    "states": [
+      "albums",
+      "albums-empty",
+      "albums-loading",
+      "archive-progress-week",
+      "archive-search-empty",
+      "closed-project",
+      "missing-project",
+      "plan",
+      "progress",
+      "progress-localized-count",
+      "progress-many",
+      "progress-many-localized-count",
+      "project",
+      "project-description-editor",
+      "project-planning-window",
+      "project-proposal-response",
+      "project-remove-confirmation",
+      "project-schedule-selected",
+      "project-step-editor",
+      "search",
+      "search-localized-count",
+      "search-many",
+      "search-many-localized-count"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 5210,
+    "observedInAllFive": 5210,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 5210,
+      "2": 5210,
+      "3": 5210,
+      "4": 5210,
+      "5": 5210
+    },
+    "reviews": 26050,
+    "candidates": {},
+    "copyClassifications": {
+      "synthetic-record": 570,
+      "numeric-or-symbol": 950,
+      "catalog-literal": 3210,
+      "catalog-template": 458,
+      "context-or-framework-review": 22
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 98,
+      "en": 91,
+      "es": 96,
+      "fr": 95,
+      "ja": 93,
+      "ko": 94,
+      "pt": 91,
+      "yue": 97,
+      "zh-Hans": 89,
+      "zh-Hant": 89
+    }
+  },
+  "embedded-components": {
+    "stateRenders": 1150,
+    "states": [
+      "albums",
+      "albums-empty",
+      "albums-loading",
+      "archive-progress-week",
+      "archive-search-empty",
+      "closed-project",
+      "missing-project",
+      "plan",
+      "progress",
+      "progress-localized-count",
+      "progress-many",
+      "progress-many-localized-count",
+      "project",
+      "project-description-editor",
+      "project-planning-window",
+      "project-proposal-response",
+      "project-remove-confirmation",
+      "project-schedule-selected",
+      "project-step-editor",
+      "search",
+      "search-localized-count",
+      "search-many",
+      "search-many-localized-count"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 5770,
+    "observedInAllFive": 5770,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 5770,
+      "2": 5770,
+      "3": 5770,
+      "4": 5770,
+      "5": 5770
+    },
+    "reviews": 28850,
+    "candidates": {
+      "zero-area": 10
+    },
+    "copyClassifications": {
+      "synthetic-record": 570,
+      "numeric-or-symbol": 1510,
+      "catalog-literal": 3540,
+      "catalog-template": 122,
+      "context-or-framework-review": 28
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 95,
+      "en": 91,
+      "es": 93,
+      "fr": 92,
+      "ja": 100,
+      "ko": 97,
+      "pt": 92,
+      "yue": 97,
+      "zh-Hans": 92,
+      "zh-Hant": 90
+    }
+  },
+  "flutter-android": {
+    "stateRenders": 950,
+    "states": [
+      "account-fixture-editor",
+      "account-signed-out",
+      "albums",
+      "checklist-import",
+      "expanded-task",
+      "focus",
+      "focus/end",
+      "goals",
+      "language-menu",
+      "machines",
+      "notebook",
+      "plan",
+      "progress",
+      "project",
+      "project-schedule",
+      "provider",
+      "search",
+      "settings",
+      "settings/end"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 6035,
+    "observedInAllFive": 6035,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 6035,
+      "2": 6035,
+      "3": 6035,
+      "4": 6035,
+      "5": 6035
+    },
+    "reviews": 30175,
+    "candidates": {},
+    "copyClassifications": {
+      "numeric-or-symbol": 1509,
+      "context-or-framework-review": 702,
+      "catalog-literal": 2861,
+      "catalog-template": 290,
+      "synthetic-record": 310,
+      "proper-name-or-autonym": 363
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 113,
+      "en": 113,
+      "es": 111,
+      "fr": 112,
+      "ja": 111,
+      "ko": 111,
+      "pt": 108,
+      "yue": 112,
+      "zh-Hans": 115,
+      "zh-Hant": 112
+    }
+  },
+  "flutter-iOS": {
+    "stateRenders": 865,
+    "states": [
+      "account-fixture-editor",
+      "account-signed-out",
+      "albums",
+      "checklist-import",
+      "expanded-task",
+      "focus",
+      "goals",
+      "language-menu",
+      "machines",
+      "notebook",
+      "plan",
+      "progress",
+      "project",
+      "project-schedule",
+      "provider",
+      "search",
+      "settings",
+      "settings/end"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 5172,
+    "observedInAllFive": 5172,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 5172,
+      "2": 5172,
+      "3": 5172,
+      "4": 5172,
+      "5": 5172
+    },
+    "reviews": 25860,
+    "candidates": {},
+    "copyClassifications": {
+      "numeric-or-symbol": 1359,
+      "context-or-framework-review": 525,
+      "catalog-literal": 2392,
+      "catalog-template": 243,
+      "synthetic-record": 290,
+      "proper-name-or-autonym": 363
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 113,
+      "en": 113,
+      "es": 111,
+      "fr": 112,
+      "ja": 111,
+      "ko": 111,
+      "pt": 108,
+      "yue": 112,
+      "zh-Hans": 115,
+      "zh-Hant": 112
+    }
+  },
+  "counter-android": {
+    "stateRenders": 200,
+    "states": [
+      "progress-plural",
+      "progress-singular",
+      "search-plural",
+      "search-singular"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 40,
+    "observedInAllFive": 40,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 40,
+      "2": 40,
+      "3": 40,
+      "4": 40,
+      "5": 40
+    },
+    "reviews": 200,
+    "candidates": {},
+    "copyClassifications": {
+      "catalog-template": 40
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 4,
+      "en": 4,
+      "es": 4,
+      "fr": 4,
+      "ja": 4,
+      "ko": 4,
+      "pt": 4,
+      "yue": 4,
+      "zh-Hans": 4,
+      "zh-Hant": 4
+    }
+  },
+  "counter-iOS": {
+    "stateRenders": 200,
+    "states": [
+      "progress-plural",
+      "progress-singular",
+      "search-plural",
+      "search-singular"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 40,
+    "observedInAllFive": 40,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 40,
+      "2": 40,
+      "3": 40,
+      "4": 40,
+      "5": 40
+    },
+    "reviews": 200,
+    "candidates": {},
+    "copyClassifications": {
+      "catalog-template": 40
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 4,
+      "en": 4,
+      "es": 4,
+      "fr": 4,
+      "ja": 4,
+      "ko": 4,
+      "pt": 4,
+      "yue": 4,
+      "zh-Hans": 4,
+      "zh-Hant": 4
+    }
+  },
+  "android-installed": {
+    "stateRenders": 150,
+    "states": [
+      "language-menu",
+      "notebook",
+      "settings"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 480,
+    "observedInAllFive": 480,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 480,
+      "2": 480,
+      "3": 480,
+      "4": 480,
+      "5": 480
+    },
+    "reviews": 2400,
+    "candidates": {},
+    "copyClassifications": {
+      "catalog-literal": 248,
+      "proper-name-or-autonym": 110,
+      "context-or-framework-review": 82,
+      "catalog-template": 20,
+      "synthetic-record": 20
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 29,
+      "en": 26,
+      "es": 26,
+      "fr": 26,
+      "ja": 27,
+      "ko": 26,
+      "pt": 26,
+      "yue": 26,
+      "zh-Hans": 29,
+      "zh-Hant": 26
+    }
+  },
+  "ios-native-xctest": {
+    "stateRenders": 150,
+    "states": [
+      "language-menu",
+      "notebook",
+      "settings"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 606,
+    "observedInAllFive": 574,
+    "partialFive": 32,
+    "cycleObservations": {
+      "1": 590,
+      "2": 590,
+      "3": 590,
+      "4": 590,
+      "5": 590
+    },
+    "reviews": 2950,
+    "candidates": {
+      "content-varies": 2
+    },
+    "copyClassifications": {
+      "proper-name-or-autonym": 140,
+      "numeric-or-symbol": 110,
+      "catalog-literal": 248,
+      "context-or-framework-review": 82,
+      "catalog-template": 10
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 27,
+      "en": 25,
+      "es": 25,
+      "fr": 25,
+      "ja": 25,
+      "ko": 25,
+      "pt": 25,
+      "yue": 25,
+      "zh-Hans": 28,
+      "zh-Hant": 25
+    }
+  },
+  "ios-cantonese-guard": {
+    "stateRenders": 15,
+    "states": [
+      "language-menu",
+      "notebook",
+      "settings"
+    ],
+    "locales": [
+      "yue"
+    ],
+    "uniqueLocaleStateElements": 59,
+    "observedInAllFive": 59,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 59,
+      "2": 59,
+      "3": 59,
+      "4": 59,
+      "5": 59
+    },
+    "reviews": 295,
+    "candidates": {},
+    "copyClassifications": {
+      "proper-name-or-autonym": 14,
+      "numeric-or-symbol": 11,
+      "catalog-literal": 25,
+      "context-or-framework-review": 8,
+      "catalog-template": 1
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "yue": 25
+    }
+  },
+  "ios-simulator-engine": {
+    "stateRenders": 950,
+    "states": [
+      "account-fixture-editor",
+      "account-signed-out",
+      "albums",
+      "checklist-import",
+      "expanded-task",
+      "focus",
+      "focus/end",
+      "goals",
+      "language-menu",
+      "machines",
+      "notebook",
+      "plan",
+      "progress",
+      "project",
+      "project-schedule",
+      "provider",
+      "search",
+      "settings",
+      "settings/end"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 5741,
+    "observedInAllFive": 5623,
+    "partialFive": 118,
+    "cycleObservations": {
+      "1": 5639,
+      "2": 5625,
+      "3": 5633,
+      "4": 5741,
+      "5": 5629
+    },
+    "reviews": 28267,
+    "candidates": {},
+    "copyClassifications": {
+      "numeric-or-symbol": 1524,
+      "context-or-framework-review": 574,
+      "catalog-literal": 2673,
+      "catalog-template": 290,
+      "synthetic-record": 310,
+      "proper-name-or-autonym": 254
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 113,
+      "en": 113,
+      "es": 111,
+      "fr": 112,
+      "ja": 111,
+      "ko": 111,
+      "pt": 108,
+      "yue": 112,
+      "zh-Hans": 115,
+      "zh-Hant": 112
+    }
+  },
+  "mac-native-debug": {
+    "stateRenders": 1000,
+    "states": [
+      "app-switcher",
+      "calendar",
+      "day-plan",
+      "editing-task",
+      "focus",
+      "goals",
+      "notebook",
+      "progress",
+      "search",
+      "settings-tab-0",
+      "settings-tab-0-details-0",
+      "settings-tab-1",
+      "settings-tab-2",
+      "settings-tab-2-details-0",
+      "settings-tab-2-details-1",
+      "settings-tab-3",
+      "settings-tab-4",
+      "settings-tab-4-details-0",
+      "settings-tab-5",
+      "task-tree"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 6310,
+    "observedInAllFive": 6310,
+    "partialFive": 0,
+    "cycleObservations": {
+      "1": 6310,
+      "2": 6310,
+      "3": 6310,
+      "4": 6310,
+      "5": 6310
+    },
+    "reviews": 31550,
+    "candidates": {},
+    "copyClassifications": {
+      "context-or-framework-review": 848,
+      "catalog-literal": 4180,
+      "proper-name-or-autonym": 90,
+      "numeric-or-symbol": 740,
+      "catalog-template": 452
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 206,
+      "en": 197,
+      "es": 207,
+      "fr": 208,
+      "ja": 205,
+      "ko": 203,
+      "pt": 200,
+      "yue": 203,
+      "zh-Hans": 204,
+      "zh-Hant": 201
+    }
+  }
+}

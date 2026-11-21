@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -10,7 +12,37 @@ class WorkspaceAssignment {
   final String id, workspace;
   final Map<String, dynamic> body;
   WorkspaceAssignment(this.id, this.workspace, this.body);
-  String get path => '/shiprite/workspaces/$workspace/assignments/$id';
+  String get path =>
+      '/api/connected-apps/workspaces/$workspace/shiprite/assignments';
+
+  ({String label, int revision, Uri url}) receipt(Map<String, dynamic> value) {
+    const states = {
+      'ready': 'Ready to start',
+      'working': 'In progress',
+      'review': 'Awaiting review',
+      'approved': 'Approved',
+    };
+    final state = states[value['state']], revision = value['revision'];
+    if (value['id'] != id ||
+        value['workspaceId'] != workspace ||
+        state == null ||
+        revision is! int ||
+        revision < 1) {
+      throw StateError(
+        ui(
+          "Shiprite did not confirm this assignment. Check status or retry with the same task and recipient.",
+        ),
+      );
+    }
+    return (
+      label: state,
+      revision: revision,
+      url: Uri.https('shiprite.pipedreams.work', '/', {
+        'workspace': workspace,
+        'assignment': id,
+      }),
+    );
+  }
 
   factory WorkspaceAssignment.fromTask(
     String uid,
@@ -18,8 +50,9 @@ class WorkspaceAssignment {
     DatedTask row,
     String assignee,
   ) {
-    if (!workspaceSlug.hasMatch(workspace))
-      throw StateError('Choose a workspace.');
+    if (!workspaceSlug.hasMatch(workspace)) {
+      throw StateError(ui("Choose a workspace."));
+    }
     final lines = [row.task.text.trim()];
     void append(List<Task> steps, String indent) {
       for (final step in steps) {
@@ -34,7 +67,9 @@ class WorkspaceAssignment {
         instructions.runes.length > 12000 ||
         assignee.runes.length > 128) {
       throw StateError(
-        'Use a task with at most 12,000 characters including its steps and a valid member UID.',
+        ui(
+          "Use a task with at most 12,000 characters including its steps and a valid member UID.",
+        ),
       );
     }
     final identity = jsonEncode([
@@ -57,6 +92,13 @@ class WorkspaceAssignment {
       hex.substring(20),
     ].join('-');
     return WorkspaceAssignment(id, workspace, {
+      'id': id,
+      'source': {
+        'app': 'dockit',
+        'workspaceId': workspace,
+        'date': row.date,
+        'taskId': row.task.id,
+      },
       'title': String.fromCharCodes(lines.first.runes.take(200)),
       'instructions': instructions,
       'assigneeUid': assignee.isEmpty ? null : assignee,

@@ -1,3 +1,5 @@
+import { formatLanguage } from '../interfaceLocale'
+import { displayLanguage } from '../interfaceLocale'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { format, addDays, subDays } from 'date-fns'
 
@@ -44,7 +46,7 @@ export function useCalendar() {
   }, [])
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd')
-  const displayDate = format(selectedDate, 'EEEE, MMM d, yyyy')
+  const displayDate = displayLanguage() === 'en' ? format(selectedDate, 'EEEE, MMM d, yyyy') : new Intl.DateTimeFormat(formatLanguage(), {dateStyle:'full'}).format(selectedDate)
 
   const goNext = useCallback(() => {
     setSelectedDate(d => addDays(d, 1))

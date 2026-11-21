@@ -1,11 +1,12 @@
+import { ui } from './interfaceLocale'
 import { useState } from 'react'
 
 export type NoteMaterial = 'paper' | 'frosted' | 'liquid'
 const KEY = 'todo-sticky-note-material-v1'
 export const NOTE_MATERIALS: { id: NoteMaterial; label: string; detail: string }[] = [
-  { id: 'paper', label: 'Paper', detail: 'The familiar warm note' },
-  { id: 'frosted', label: 'Frosted glass', detail: 'Soft light, satin edges' },
-  { id: 'liquid', label: 'Liquid glass', detail: 'Flowing light, polished edges' },
+  { id: 'paper', get label(){ return ui("Paper") }, get detail(){ return ui("The familiar warm note") } },
+  { id: 'frosted', get label(){ return ui("Frosted glass") }, get detail(){ return ui("Soft light, satin edges") } },
+  { id: 'liquid', get label(){ return ui("Liquid glass") }, get detail(){ return ui("Flowing light, polished edges") } },
 ]
 export function useNoteMaterial() {
   const [material, setMaterial] = useState<NoteMaterial>(() => {

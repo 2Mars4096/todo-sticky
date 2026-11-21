@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -46,7 +48,9 @@ class FilePersistence implements StatePersistence {
       await _file.copy(
         '${directory.path}/sticky-todo.corrupt-${DateTime.now().millisecondsSinceEpoch}.json',
       );
-      recoveryNotice = 'Recovered the previous local save. The unreadable file was kept for recovery.';
+      recoveryNotice = ui(
+        "Recovered the previous local save. The unreadable file was kept for recovery.",
+      );
       return data;
     }
   }

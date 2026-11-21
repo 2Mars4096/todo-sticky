@@ -2,6 +2,8 @@
 
 ## Dockit client delivery
 
+Ten offline interface languages now cover the standalone notebook and hosted workbench. Package compatibility and review limits are tracked in [Plan 24](plans/24-interface-languages.md).
+
 The web, macOS and Android preview builds are locally available. Signed iPhone delivery, native Mac window acceptance and live workspace assignment remain in [the client transfer plan](plans/23-dockit-transfer.md).
 
 ## Todo as a meeting dashboard

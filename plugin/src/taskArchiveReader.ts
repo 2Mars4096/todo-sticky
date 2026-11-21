@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import { createTodoApi } from './api'
 
 const pending = new Map<string, ReturnType<ReturnType<typeof createTodoApi>['extractTaskApi']>>()
@@ -14,7 +15,7 @@ export async function readTaskArchive(folder: string) {
   let timer: ReturnType<typeof setTimeout> | undefined
   try {
     return await Promise.race([request, new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new Error('History is taking too long. Try again.')), 8000)
+      timer = setTimeout(() => reject(new Error(ui("History is taking too long. Try again."))), 8000)
     })])
   } finally { clearTimeout(timer) }
 }

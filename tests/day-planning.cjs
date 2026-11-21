@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -18,7 +19,7 @@ function createTsLoader(stubs = {}, globals = {}) {
     }).outputText
     vm.runInNewContext(source, {
       module, exports: module.exports, console, setTimeout, clearTimeout,
-      require: request => Object.hasOwn(stubs, request) ? stubs[request]
+      require: request => request.endsWith('/interfaceLocale') ? testedInterface : Object.hasOwn(stubs, request) ? stubs[request]
         : request.startsWith('.') ? load(path.resolve(path.dirname(absolute), request)) : require(request),
       ...globals,
     }, { filename: absolute })

@@ -1,3 +1,8 @@
+import { ui } from '../interfaceLocale'
+import { Chevron } from 'react-day-picker'
+import { AssignmentEntry } from '../assignmentEntry'
+import { useContext } from 'react'
+import { TaskCitation } from './MynitCitation'
 import { DeleteAction } from './DeleteAction'
 import { DianeAction } from './DianeAction'
 import { ParagraphInput } from './ParagraphInput'
@@ -114,14 +119,17 @@ export function TaskItem({
   todaySubtasks, otherSubtasks, onToggleSubtask, onDeleteSubtask, onPushSubtask, onSubtaskTextChange,
   sortable, getSubtaskSortable, parentText, selectedFocusId, finish, onUpdateFinish, onReview,
 }: Props) {
+  const assignment = useContext(AssignmentEntry)
   const [selected, setSelected] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
   const [stepsOpen, setStepsOpen] = useState(false)
+  const [pointerDisclosure, setPointerDisclosure] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
   const [breakingDown, setBreakingDown] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(text)
   const [subInput, setSubInput] = useState('')
+  const [composingStep, setComposingStep] = useState(false)
   const groupRef = useRef<HTMLDivElement>(null)
   const rowRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLSpanElement>(null)
@@ -208,26 +216,31 @@ export function TaskItem({
     if (event.key !== 'Enter' && event.key !== ' ') return
     event.preventDefault(); beginEditing()
   }
+  const showSteps = () => { setPointerDisclosure(false); setStepsOpen(true) }
   const openStepEntry = () => {
-    setStepsOpen(true); setAddingStep(true)
+    showSteps(); setAddingStep(true)
     requestAnimationFrame(() => stepInputRef.current?.focus())
   }
   const handleSubAdd = () => {
     const trimmed = subInput.trim()
-    if (trimmed && onAddSubtask) { onAddSubtask(trimmed); setSubInput(''); setStepsOpen(true) }
+    if (!trimmed || composingStep || !onAddSubtask) return
+    onAddSubtask(trimmed)
+    setSubInput('')
+    showSteps()
+    stepInputRef.current?.focus({preventScroll: true})
   }
   const breakdown = async () => {
     if (!onAIBreakdown || breakingDown || closed) return
-    setBreakingDown(true); setStepsOpen(true)
+    setBreakingDown(true); showSteps()
     try { await onAIBreakdown() }
     finally { setBreakingDown(false) }
   }
   const dateLabel = sourceDate
     ? (isOtherDate ? format(new Date(sourceDate + 'T00:00:00'), 'MMMd')
-      : `From ${sourceDate === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'yesterday' : sourceDate}`)
+      : ui("From {0}", [sourceDate === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'yesterday' : sourceDate]))
     : undefined
-  const statusLabel = status === 'done' ? 'Complete' : status === 'stopped' ? 'Stopped'
-    : finish?.reviewReady ? '' : status === 'partial' ? 'In progress' : status === 'question' ? 'Needs a decision' : ''
+  const statusLabel = status === 'done' ? ui("Complete") : status === 'stopped' ? ui("Stopped")
+    : finish?.reviewReady ? '' : status === 'partial' ? ui("In progress") : status === 'question' ? ui("Needs a decision") : ''
   const cls = [
     'task-item', isSubtask ? 'subtask' : 'main-task', isOtherDate ? 'other-date' : '',
     isFocusSelected ? 'selected-for-focus' : '', selected ? 'task-selected' : '', sortable?.state ?? '',
@@ -251,16 +264,16 @@ export function TaskItem({
       {sortable && <button type="button" className="task-drag-handle"
         onPointerDown={sortable.onPointerDown} onPointerMove={sortable.onPointerMove} onPointerUp={sortable.onPointerUp}
         onPointerCancel={sortable.onCancel} onLostPointerCapture={sortable.onCancel} onDragStart={event => event.preventDefault()}
-        onKeyDown={handleReorderKeyDown} title="Drag to reorder. Use Arrow Up or Arrow Down from this handle." aria-label={sortable.label}>
+        onKeyDown={handleReorderKeyDown} title={ui("Drag to reorder. Use Arrow Up or Arrow Down from this handle.")} aria-label={sortable.label}>
         <DragHandleIcon />
       </button>}
       <button type="button" className={`task-checkbox ${status === 'done' ? 'done' : ''} ${status === 'partial' ? 'partial' : ''} ${status === 'stopped' ? 'stopped' : ''}`}
         onClick={onToggle} disabled={isOtherDate}
-        title={isOtherDate ? 'Historical step · read only' : closed ? 'Reopen task' : finish?.doneWhen ? 'Review outcome' : 'Complete task'}
-        aria-label={`${text}. Status ${status}. Change status`} />
+        title={isOtherDate ? ui("Historical step · read only") : closed ? ui("Reopen task") : finish?.doneWhen ? ui("Review outcome") : ui("Complete task")}
+        aria-label={ui("{0}. Status {1}. Change status", [text, status])} />
       <div className={`task-content-flow${isOtherDate ? '' : ' editable'}${editing ? ' editing' : ''}`}>
         <div className="task-title-line">
-          {editing ? <ParagraphInput ref={inputRef} aria-label={`Edit title: ${text}`} className="task-text-input task-inline-edit"
+          {editing ? <ParagraphInput ref={inputRef} aria-label={ui("Edit title: {0}", [text])} className="task-text-input task-inline-edit"
             value={editText} onChange={event => setEditText(event.target.value)} onBlur={() => commitEdit()}
             onKeyDown={event => {
               if (event.nativeEvent.isComposing) return
@@ -269,9 +282,10 @@ export function TaskItem({
             }} /> : <span ref={titleRef} className={`task-text ${status === 'done' ? 'done' : ''}`}
               role={isOtherDate ? undefined : 'button'} tabIndex={isOtherDate ? undefined : 0}
               onClick={() => setSelected(true)} onDoubleClick={beginEditing} onKeyDown={isOtherDate ? undefined : handleTaskTextKeyDown}
-              title={isOtherDate ? undefined : 'Select task. Double-click or press Enter to edit title.'}>{text}</span>}
-          {editing && <button type="button" className="task-text-action" onClick={() => commitEdit(true)}>Save</button>}
+              title={isOtherDate ? undefined : ui("Select task. Double-click or press Enter to edit title.")}>{text}</span>}
+          {editing && <button type="button" className="task-text-action" onClick={() => commitEdit(true)}>{ui("Save")}</button>}
         </div>
+        <TaskCitation id={id} selected={selected}/>
         {(statusLabel || dateLabel) && <div className="task-state-line">
           {statusLabel && <span className={`task-state-label state-${status}`}>{statusLabel}</span>}
           {dateLabel && <span className="task-source-label">{dateLabel}</span>}
@@ -279,33 +293,35 @@ export function TaskItem({
         {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
           selected={selected && !editing} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
         {!isOtherDate && projects.length>0 && (goalId || selected) && <div className="task-project">
-          {selected && !editing && onAssignProject ? <select aria-label={`Project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
-            <option value="" disabled={Boolean(goalId)}>No project</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
-          </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title="Open project">{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??'Project'}</button>}
+          {selected && !editing && onAssignProject ? <select aria-label={ui("Project for {0}", [text])} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
+            <option value="" disabled={Boolean(goalId)}>{ui("No project")}</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
+          </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title={ui("Open project")}>{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??ui("Project")}</button>}
         </div>}
         {!isSubtask && steps.length > 0 && <div className="task-steps-summary">
           <button type="button" className="task-steps-toggle" aria-expanded={stepsOpen} aria-controls={stepsId}
-            aria-label={`${stepsOpen ? 'Hide' : 'Show'} steps for ${text}. ${doneSteps} of ${steps.length} done`}
-            onClick={() => setStepsOpen(value => !value)}>
-            <span aria-hidden="true">{stepsOpen ? '▾' : '▸'}</span>
-            {`${doneSteps}/${steps.length} steps done`}
+            aria-label={ui("{0} steps for {1}. {2} of {3} done", [stepsOpen ? 'Hide' : 'Show', text, doneSteps, steps.length])}
+            data-pointer-disclosure={pointerDisclosure || undefined}
+            onClick={event => { setPointerDisclosure(event.detail > 0); setStepsOpen(value => !value) }}>
+            <span className="step-disclosure-icon" aria-hidden="true"><Chevron orientation="right" size={14}/></span>
+            {ui("{0}/{1} steps done", [doneSteps, steps.length])}
           </button>
-          {!stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
+          {!stepsOpen && nextStep && <p className="task-next-step"><span>{ui("Next")}</span> {nextStep.text}</p>}
         </div>}
         {(selected && !isOtherDate) && !editing && <div className="task-primary-actions">
+          {!isOtherDate && assignment && <button type="button" className="task-text-action" onClick={() => assignment.open(id,dianeSourceDate ?? sourceDate)}>{ui("Assign in Shiprite")}</button>}
           <DianeAction id={id} text={text} sourceDate={dianeSourceDate??sourceDate} parent={parentText} steps={steps.map(step=>`${step.status==='done'?'[done] ':''}${step.text}`)} />
           {!isOtherDate && !closed && onFocusSelect && <button type="button" className={`task-text-action task-icon-action task-focus-action${isFocusSelected ? ' active' : ''}`}
             onClick={event => { event.currentTarget.focus(); onFocusSelect() }} disabled={Boolean(isFocusLocked && !isFocusSelected)}
-            title={isFocusLocked && !isFocusSelected ? 'A focus session is already active' : 'Focus'}
-            aria-label={isFocusSelected ? `Focused task: ${text}` : `Focus on ${text}`}><FocusIcon /></button>}
-          {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title="Add step" aria-label="Add step" onClick={openStepEntry}><AddStepIcon /></button>}
-          {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? 'Preparing suggested steps…' : 'Suggest steps with AI'} disabled={breakingDown}
-            onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /></button>}
-          {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={`Move to ${moveTargetLabel} · due date stays unchanged`}
-            onClick={() => { onPush() }} aria-label={`Move ${text} to ${moveTargetLabel}`}><PushIcon /></button>}
-          {!isOtherDate && <DeleteAction label={`Delete ${text}`} onClick={onDelete} />}
+            title={isFocusLocked && !isFocusSelected ? ui("A focus session is already active") : ui("Focus")}
+            aria-label={isFocusSelected ? ui("Focused task: {0}", [text]) : ui("Focus on {0}", [text])}><FocusIcon /></button>}
+          {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title={ui("Add step")} aria-label={ui("Add step")} onClick={openStepEntry}><AddStepIcon /></button>}
+          {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? ui("Preparing suggested steps…") : ui("Suggest steps with AI")} disabled={breakingDown}
+            onClick={() => void breakdown()} aria-label={ui("Break {0} into steps with AI", [text])}><BreakdownIcon /></button>}
+          {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={ui("Move to {0} · due date stays unchanged", [moveTargetLabel])}
+            onClick={() => { onPush() }} aria-label={ui("Move {0} to {1}", [text, moveTargetLabel])}><PushIcon /></button>}
+          {!isOtherDate && <DeleteAction label={ui("Delete {0}", [text])} onClick={onDelete} />}
         </div>}
-        {breakingDown && <span className="task-inline-status" role="status">Preparing suggested steps…</span>}
+        {breakingDown && <span className="task-inline-status" role="status">{ui("Preparing suggested steps…")}</span>}
       </div>
     </div>
     {!isSubtask && stepsOpen && <div id={stepsId} className="task-steps-body">
@@ -317,21 +333,23 @@ export function TaskItem({
         onFocusSelect={() => onFocusSubtask?.(sub.id, sub.text)} sortable={getSubtaskSortable?.(sub.id, sub.text)} />)}
     </div>}
     {!isSubtask && history.length > 0 && <details className="task-earlier-steps">
-      <summary>Earlier steps ({history.length})</summary>
+      <summary>{ui("Earlier steps ({0})", [history.length])}</summary>
       {history.map(sub => <TaskItem key={`${sub.sourceDate}-${sub.id}`} id={sub.id} text={sub.text} status={sub.status}
         isSubtask isOtherDate sourceDate={sub.sourceDate} moveTargetLabel={moveTargetLabel}
         onToggle={() => {}} onDelete={() => {}} onPush={() => {}} onTextChange={() => {}} parentText={text} />)}
     </details>}
     {!isSubtask && !isOtherDate && !closed && onAddSubtask && (selected || addingStep || subInput) && <div className="task-step-composer">
-      <ParagraphInput ref={stepInputRef} className="task-text-input task-step-add-input" placeholder="Add a step…" aria-label={`New step for ${text}`}
+      <ParagraphInput ref={stepInputRef} className="task-text-input task-step-add-input" placeholder={ui("Add a step…")} aria-label={ui("New step for {0}", [text])}
         value={subInput} onChange={event => setSubInput(event.target.value)}
+        onCompositionStart={() => setComposingStep(true)} onCompositionEnd={() => setComposingStep(false)}
+        onBlur={() => setComposingStep(false)}
         onFocus={() => { setSelected(true); setAddingStep(true) }}
         onKeyDown={event => {
-          if (event.nativeEvent.isComposing) return
+          if (composingStep || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return
           if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); handleSubAdd() }
           if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setSubInput(''); setAddingStep(false); returnToTitle() }
         }} />
-      {subInput.trim() && <button type="button" className="task-text-action" onClick={handleSubAdd} aria-label="Add step">Add</button>}
+      {subInput.trim() && <button type="button" className="task-text-action" onClick={handleSubAdd} disabled={composingStep} aria-label={ui("Add step")}>{ui("Add")}</button>}
     </div>}
   </div>
 }

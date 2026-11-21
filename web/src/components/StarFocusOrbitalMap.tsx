@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useId, useRef, useState, type CSSProperties } from 'react'
 import type { StarFocusMissionRecord, StarFocusPhase, StarFocusSession } from '../types'
 import type { StarFocusSnapshot } from '../hooks/useStarFocus'
@@ -964,17 +965,17 @@ export function StarFocusOrbitalMap({
   const phaseClassName = `phase-${phaseTheme}`
   const phaseTuning = STARMAP_PHASE_TUNING[phaseTheme]
   const topHud = destinationLabel
-    ? { label: hasLiveFlight ? 'Destination' : 'Next stop', value: destinationLabel }
+    ? { label: hasLiveFlight ? ui("Destination") : ui("Next stop"), value: destinationLabel }
     : hasLiveFlight
-      ? { label: 'Track', value: activeSnapshot?.isPaused ? 'Hold' : liveLabel }
+      ? { label: ui("Track"), value: activeSnapshot?.isPaused ? ui("Hold") : liveLabel }
       : latestMission
-        ? { label: 'Latest', value: latestMission.vehicleCode }
-        : { label: 'Grid', value: 'Standby' }
+        ? { label: ui("Latest"), value: latestMission.vehicleCode }
+        : { label: ui("Grid"), value: ui("Standby") }
   const bottomHud = hasLiveFlight && activeSnapshot
-    ? { label: 'T-Remain', value: formatClock(activeSnapshot.remainingMs) }
+    ? { label: ui("T-Remain"), value: formatClock(activeSnapshot.remainingMs) }
     : missionHistory.length
-      ? { label: 'Archive', value: `${missionHistory.length} retained` }
-      : { label: 'Archive', value: 'Empty' }
+      ? { label: ui("Archive"), value: `${missionHistory.length} retained` }
+      : { label: ui("Archive"), value: ui("Empty") }
   const showMapChrome = variant === 'overlay'
   const tiltMode = camera.tilt > 8 ? 'above' : camera.tilt < -8 ? 'below' : 'level'
   const viewportStyle = {
@@ -1218,7 +1219,7 @@ export function StarFocusOrbitalMap({
         onPointerCancel={finishDrag}
         onWheel={handleWheel}
         onDoubleClick={resetCamera}
-        title="Drag to orbit camera. Scroll to zoom."
+        title={ui("Drag to orbit camera. Scroll to zoom.")}
       >
         <div className="starmap-scene">
           <div className="starmap-grid" />
@@ -1475,33 +1476,27 @@ export function StarFocusOrbitalMap({
       {showMapChrome && (
         <div className="starmap-controls">
           <div className="starmap-control-row">
-            <button className="starmap-control-btn" onClick={() => handleZoom(-config.zoomStep)} title="Zoom out">-</button>
+            <button className="starmap-control-btn" onClick={() => handleZoom(-config.zoomStep)} title={ui("Zoom out")}>-</button>
             <span className="starmap-control-readout">{camera.zoom.toFixed(1)}x</span>
-            <button className="starmap-control-btn" onClick={() => handleZoom(config.zoomStep)} title="Zoom in">+</button>
+            <button className="starmap-control-btn" onClick={() => handleZoom(config.zoomStep)} title={ui("Zoom in")}>+</button>
           </div>
           <div className="starmap-control-row">
             <button
               className={`starmap-control-btn ${tiltMode === 'above' ? 'active' : ''}`}
               onClick={() => handleTilt(28)}
-              title="View from above"
-            >
-              Above
-            </button>
+              title={ui("View from above")}
+            >{ui("Above")}</button>
             <button
               className={`starmap-control-btn ${tiltMode === 'level' ? 'active' : ''}`}
               onClick={() => handleTilt(0)}
-              title="Level view"
-            >
-              Level
-            </button>
+              title={ui("Level view")}
+            >{ui("Level")}</button>
             <button
               className={`starmap-control-btn ${tiltMode === 'below' ? 'active' : ''}`}
               onClick={() => handleTilt(-24)}
-              title="View from below"
-            >
-              Below
-            </button>
-            <button className="starmap-control-btn" onClick={resetCamera} title="Reset camera">Reset</button>
+              title={ui("View from below")}
+            >{ui("Below")}</button>
+            <button className="starmap-control-btn" onClick={resetCamera} title={ui("Reset camera")}>{ui("Reset")}</button>
           </div>
         </div>
       )}

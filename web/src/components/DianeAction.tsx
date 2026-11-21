@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { open as chooseDirectory } from '@tauri-apps/plugin-dialog'
 import { suggestDianeSetup } from '../dianePreparation'
 import { suggestWorkspace } from '../dianeWorkspace'
@@ -28,25 +29,25 @@ export function DianeProvider({ enabled = false, children, date, kbPath }: { ena
 function ConnectedDianeProvider({ children, date, kbPath }: { children: ReactNode; date: string; kbPath: string }) {
   const [entries, setEntries] = useState<Entries>({})
   const saved = useRef<Entries>({})
-  const [storageError, setStorageError] = useState('Loading Shiprite links')
+  const [storageError, setStorageError] = useState(ui("Loading Shiprite links"))
   const [projects, setProjects] = useState<DianeProjects>()
   const locks = useRef(new Set<string>())
   const [busy, setBusy] = useState(new Set<string>())
   const chooseFolder = async () => {
     if (!projects) return
-    const root = await chooseDirectory({directory:true,multiple:false,title:'Choose Shiprite workspace'})
+    const root = await chooseDirectory({directory:true,multiple:false,title:ui("Choose Shiprite workspace")})
     if(typeof root !== 'string')return
     const known=projects?.projects.find(p=>p.root.replace(/\/$/,'')===root.replace(/\/$/,''))
     if(known)return known
     const data=await dianeRequest<DianeProjects>('choose-project',undefined,{root})
     setProjects(data)
     const selected=data.projects.find(p=>p.id===data.selected_project_id)||data.projects.find(p=>p.root.replace(/\/$/,'')===root.replace(/\/$/,''))
-    if(!selected)throw Error('Open this folder in Shiprite, then choose it here.')
+    if(!selected)throw Error(ui("Open this folder in Shiprite, then choose it here."))
     return selected
   }
   const persist = (next: Entries) => {
     try { localStorage.setItem(STORAGE, JSON.stringify(next)) }
-    catch { setStorageError('Cannot save Shiprite links. Free local storage before dispatching.'); throw Error('Cannot save Shiprite links') }
+    catch { setStorageError(ui("Cannot save Shiprite links. Free local storage before dispatching.")); throw Error(ui("Cannot save Shiprite links")) }
     saved.current = next
     setEntries(next)
   }
@@ -57,7 +58,7 @@ function ConnectedDianeProvider({ children, date, kbPath }: { children: ReactNod
       const parsed = readDianeReceipts(localStorage.getItem(STORAGE))
       saved.current = parsed; setEntries(parsed); setStorageError('')
     } catch {
-      setStorageError('Saved Shiprite links could not be read. Dockit remains available; open Shiprite for existing sessions.')
+      setStorageError(ui("Saved Shiprite links could not be read. Dockit remains available; open Shiprite for existing sessions."))
       return // Preserve unreadable receipts; never replace them with an empty poll result.
     }
     const poll = async () => {
@@ -142,7 +143,7 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
       const suggestion = await suggestDianeSetup({ id, date: sourceDate ?? context.date, text, parent, steps, projects: context.projects })
       if (token !== generation.current || version !== edited.current) return
       setSelectedProject(suggestion.project_id ?? ''); setSetupContext(suggestion.context)
-      if (!suggestion.project_id) setFolderError(suggestion.reason || 'Choose a workspace.')
+      if (!suggestion.project_id) setFolderError(suggestion.reason || ui("Choose a workspace."))
     } catch (error) { if (token === generation.current) setFolderError(String(error)) }
     finally { if (token === generation.current) setPreparing(false) }
   }
@@ -189,8 +190,8 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
     const timer=setTimeout(()=>panel.current?.querySelector<HTMLElement>('select,button')?.focus(),0)
     return () => {clearTimeout(timer);document.removeEventListener('pointerdown', dismiss)}
   }, [expanded])
-  if (!context) return <span className="diane-action-wrap" title="Enable the local Shiprite connection in Settings → Integrations">
-    <button type="button" className="task-action diane-action" disabled aria-label="Push to Shiprite · Connection disabled">
+  if (!context) return <span className="diane-action-wrap" title={ui("Enable the local Shiprite connection in Settings → Integrations")}>
+    <button type="button" className="task-action diane-action" disabled aria-label={ui("Push to Shiprite · Connection disabled")}>
       <svg className="diane-dot diane-new" viewBox="0 0 16 16" aria-hidden="true"><path d="m5 3 8 5-8 5z"/></svg>
     </button>
   </span>
@@ -198,11 +199,11 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
   const result = receipt?.result
   const unavailable = Boolean(receipt?.error)
   const state = unavailable ? 'unavailable' : result?.status || (receipt ? 'queued' : 'new')
-  const label = unavailable ? 'Disconnected' : result?.stopping ? 'Stopping' : result ? statusLabels[result.status] : receipt ? 'Sending to Shiprite' : 'Run in Shiprite'
+  const label = unavailable ? ui("Disconnected") : result?.stopping ? ui("Stopping") : result ? statusLabels[result.status] : receipt ? ui("Sending to Shiprite") : ui("Run in Shiprite")
   const suggested=suggestWorkspace(context.projects,[text,parent,...steps].join('\n'))
   const projectId=selectedProject??suggested?.id??''
   const project=context.projects.find(item=>item.id===projectId)
-  const title = !receipt && !context.connected ? 'Push to Shiprite · Local Shiprite is not connected' : receipt ? `${label}. Open details for ${text}` : `Push to Shiprite · ${project?.name||'Choose workspace'}`
+  const title = !receipt && !context.connected ? ui("Push to Shiprite · Local Shiprite is not connected") : receipt ? ui("{0}. Open details for {1}", [label, text]) : ui("Push to Shiprite · {0}", [project?.name||'Choose workspace'])
   return <span ref={root} className="diane-action-wrap" title={title} onKeyDown={event => { if (event.key === 'Escape') { setExpanded(false); root.current?.querySelector('button')?.focus() } }}>
     <button type="button" className={`task-action diane-action${receipt ? " diane-linked" : ""}`} title={title} aria-label={title}
       aria-expanded={expanded} aria-haspopup="dialog" disabled={busy || (!receipt && !context.connected) || (!receipt && Boolean(context.storageError))}
@@ -215,31 +216,31 @@ export function DianeAction({ id, text, sourceDate, parent = '', steps = [] }: {
       </svg>
       {receipt && <span className="diane-status-label">{label}</span>}
     </button>
-    {expanded && createPortal(<span ref={panel} style={position} className="diane-details" role="dialog" aria-label="Shiprite task details">
+    {expanded && createPortal(<span ref={panel} style={position} className="diane-details" role="dialog" aria-label={ui("Shiprite task details")}>
       <span className="diane-detail-header">
-        <strong>{receipt ? label : 'Set up session'}</strong>
-        <button type="button" className="diane-detail-close" aria-label="Close Shiprite details" onClick={()=>{setExpanded(false);root.current?.querySelector('button')?.focus()}}>×</button>
+        <strong>{receipt ? label : ui("Set up session")}</strong>
+        <button type="button" className="diane-detail-close" aria-label={ui("Close Shiprite details")} onClick={()=>{setExpanded(false);root.current?.querySelector('button')?.focus()}}>×</button>
       </span>
       {!receipt ? <>
-          <label>Workspace<select aria-label="Shiprite workspace" value={projectId} onChange={event=>{edited.current++;setSelectedProject(event.target.value)}}><option value="">Choose workspace</option>{context.projects.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label>{ui("Workspace")}<select aria-label={ui("Shiprite workspace")} value={projectId} onChange={event=>{edited.current++;setSelectedProject(event.target.value)}}><option value="">{ui("Choose workspace")}</option>{context.projects.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
           {project&&<small className="diane-workspace-path">{project.root}</small>}
-          <label>Context<textarea aria-label="Session context" rows={4} maxLength={4000} value={setupContext} onChange={event=>{edited.current++;setSetupContext(event.target.value)}}/></label>
+          <label>{ui("Context")}<textarea aria-label={ui("Session context")} rows={4} maxLength={4000} value={setupContext} onChange={event=>{edited.current++;setSetupContext(event.target.value)}}/></label>
           <span className="diane-detail-actions">
-            <button disabled={choosing || !context.connected} onClick={()=>{edited.current++;setChoosing(true);setFolderError('');void context.chooseFolder().then(value=>{if(value)setSelectedProject(value.id)}).catch(e=>setFolderError(String(e))).finally(()=>setChoosing(false))}}>{choosing?'Choosing…':'Choose folder…'}</button>
-            <button disabled={preparing||!context.connected} onClick={()=>void suggestSetup()}>{preparing?'Suggesting…':'Suggest setup'}</button>
+            <button disabled={choosing || !context.connected} onClick={()=>{edited.current++;setChoosing(true);setFolderError('');void context.chooseFolder().then(value=>{if(value)setSelectedProject(value.id)}).catch(e=>setFolderError(String(e))).finally(()=>setChoosing(false))}}>{choosing?ui("Choosing…"):ui("Choose folder…")}</button>
+            <button disabled={preparing||!context.connected} onClick={()=>void suggestSetup()}>{preparing?ui("Suggesting…"):ui("Suggest setup")}</button>
             <button disabled={busy||preparing||!context.connected||!project||Boolean(context.storageError)||text.length+setupContext.length+12>20000}
-              onClick={()=>void context.run(key, setupContext.trim() ? text+'\n\nContext\n'+setupContext.trim() : text, parent, steps, projectId)}>Start</button>
+              onClick={()=>void context.run(key, setupContext.trim() ? text+'\n\nContext\n'+setupContext.trim() : text, parent, steps, projectId)}>{ui("Start")}</button>
           </span>
         {(context.storageError||folderError)&&<span role="alert">{context.storageError||folderError}</span>}
       </> : <>
       {result && <span>{result.project_name}</span>}
-      <span>{receipt.error || result?.summary || 'Waiting for Shiprite to acknowledge this request.'}</span>
-      {unavailable && receipt.checkedAt && <small>Last checked {new Date(receipt.checkedAt).toLocaleString()}</small>}
-      {result?.artifacts.map((artifact, index) => <span key={index}>{String(artifact.path || artifact.title || artifact.name || 'Artifact available in Shiprite')}</span>)}
+      <span>{receipt.error || result?.summary || ui("Waiting for Shiprite to acknowledge this request.")}</span>
+      {unavailable && receipt.checkedAt && <small>{ui("Last checked {0}", [new Date(receipt.checkedAt).toLocaleString()])}</small>}
+      {result?.artifacts.map((artifact, index) => <span key={index}>{String(artifact.path || artifact.title || artifact.name || ui("Artifact available in Shiprite"))}</span>)}
       <span className="diane-detail-actions">
-        <button type="button" disabled={busy || !context.connected || !result} onClick={() => void context.action(key, 'open')}>Open in Shiprite</button>
-        {(!result || unavailable) && <button type="button" disabled={busy || !context.connected} onClick={() => void context.action(key, 'retry')}>Reconnect</button>}
-        {result && ['queued', 'running'].includes(result.status) && <button type="button" disabled={busy || !context.connected || result.stopping} onClick={() => void context.action(key, 'stop')}>{result.stopping ? 'Stopping…' : 'Stop'}</button>}
+        <button type="button" disabled={busy || !context.connected || !result} onClick={() => void context.action(key, 'open')}>{ui("Open in Shiprite")}</button>
+        {(!result || unavailable) && <button type="button" disabled={busy || !context.connected} onClick={() => void context.action(key, 'retry')}>{ui("Reconnect")}</button>}
+        {result && ['queued', 'running'].includes(result.status) && <button type="button" disabled={busy || !context.connected || result.stopping} onClick={() => void context.action(key, 'stop')}>{result.stopping ? ui("Stopping…") : ui("Stop")}</button>}
       </span>
       </>}
     </span>, document.body)}

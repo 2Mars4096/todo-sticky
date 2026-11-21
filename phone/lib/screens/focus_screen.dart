@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:async';
 import 'dart:math';
 
@@ -73,7 +75,7 @@ class _FocusScreenState extends State<FocusScreen> {
             child: TextButton.icon(
               onPressed: () => widget.onReview!(reviewId!, reviewText!),
               icon: const Icon(Icons.checklist),
-              label: const Text('Review task'),
+              label: Text(tr(context, "Review task")),
             ),
           ),
         Container(
@@ -98,7 +100,7 @@ class _FocusScreenState extends State<FocusScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'SOLAR ROUTE · $next',
+                      tr(context, "SOLAR ROUTE · {0}", [next]),
                       style: const TextStyle(
                         fontSize: 11,
                         color: Color(0xffd9c98b),
@@ -122,8 +124,10 @@ class _FocusScreenState extends State<FocusScreen> {
               ],
               const SizedBox(height: 16),
               Semantics(
-                label:
-                    '${remaining ~/ 60} minutes ${remaining % 60} seconds remaining',
+                label: tr(context, "{0} minutes {1} seconds remaining", [
+                  remaining ~/ 60,
+                  remaining % 60,
+                ]),
                 child: Text(
                   '${(remaining ~/ 60).toString().padLeft(2, '0')}:${(remaining % 60).toString().padLeft(2, '0')}',
                   style: const TextStyle(
@@ -137,18 +141,18 @@ class _FocusScreenState extends State<FocusScreen> {
               if (session != null)
                 Text(
                   session.pausedAt != null
-                      ? 'Paused'
+                      ? tr(context, "Paused")
                       : remaining == 0
-                      ? 'Ready to finish'
+                      ? tr(context, "Ready to finish")
                       : ratio < .15
-                      ? 'Ignition'
+                      ? tr(context, "Ignition")
                       : ratio < .35
-                      ? 'Ascent'
+                      ? tr(context, "Ascent")
                       : ratio < .55
-                      ? 'Heating'
+                      ? tr(context, "Heating")
                       : ratio < .8
-                      ? 'Staging'
-                      : 'Orbit',
+                      ? tr(context, "Staging")
+                      : tr(context, "Orbit"),
                   style: const TextStyle(color: Color(0xffd9c98b)),
                 ),
               if (session != null) ...[
@@ -166,7 +170,9 @@ class _FocusScreenState extends State<FocusScreen> {
                           minimumSize: const Size(48, 48),
                         ),
                         child: Text(
-                          session.pausedAt == null ? 'Pause' : 'Resume',
+                          session.pausedAt == null
+                              ? tr(context, "Pause")
+                              : tr(context, "Resume"),
                         ),
                       ),
                     ),
@@ -183,8 +189,10 @@ class _FocusScreenState extends State<FocusScreen> {
                             if (mounted && scroll.hasClients) scroll.jumpTo(0);
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Session saved. Task unchanged.'),
+                            SnackBar(
+                              content: Text(
+                                tr(context, "Session saved. Task unchanged."),
+                              ),
                             ),
                           );
                         },
@@ -192,7 +200,7 @@ class _FocusScreenState extends State<FocusScreen> {
                           backgroundColor: const Color(0xffd9c98b),
                           foregroundColor: ink,
                         ),
-                        child: const Text('Finish session'),
+                        child: Text(tr(context, "Finish session")),
                       ),
                     ),
                   ],
@@ -202,18 +210,21 @@ class _FocusScreenState extends State<FocusScreen> {
                     final discard = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Discard this session?'),
-                        content: const Text(
-                          'The session will not enter your travel log. Your task stays unchanged.',
+                        title: Text(tr(context, "Discard this session?")),
+                        content: Text(
+                          tr(
+                            context,
+                            "The session will not enter your travel log. Your task stays unchanged.",
+                          ),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Keep focusing'),
+                            child: Text(tr(context, "Keep focusing")),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Discard'),
+                            child: Text(tr(context, "Discard")),
                           ),
                         ],
                       ),
@@ -223,13 +234,15 @@ class _FocusScreenState extends State<FocusScreen> {
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xffd9c98b),
                   ),
-                  child: const Text('Discard session'),
+                  child: Text(tr(context, "Discard session")),
                 ),
               ],
               const SizedBox(height: 20),
               Semantics(
-                label:
-                    'Solar route to $next, ${(ratio * 100).round()} percent complete',
+                label: tr(context, "Solar route to {0}, {1} percent complete", [
+                  next,
+                  (ratio * 100).round(),
+                ]),
                 child: SizedBox(
                   height: 190,
                   child: InteractiveViewer(
@@ -253,7 +266,7 @@ class _FocusScreenState extends State<FocusScreen> {
           DropdownButtonFormField<String>(
             initialValue: selected,
             isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Focus on'),
+            decoration: InputDecoration(labelText: tr(context, "Focus on")),
             items: [
               for (final t in tasks)
                 DropdownMenuItem(
@@ -270,7 +283,7 @@ class _FocusScreenState extends State<FocusScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Text('Minutes'),
+              Text(tr(context, "Minutes")),
               Expanded(
                 child: Slider(
                   value: focus.sessionDurationMinutes.toDouble(),
@@ -303,7 +316,7 @@ class _FocusScreenState extends State<FocusScreen> {
                     store.startFocus(t.task, focus.sessionDurationMinutes);
                   },
             icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Start focus'),
+            label: Text(tr(context, "Start focus")),
           ),
         ],
         const SizedBox(height: 32),
@@ -311,20 +324,27 @@ class _FocusScreenState extends State<FocusScreen> {
           children: [
             Expanded(
               child: Text(
-                'Travel log',
+                tr(context, "Travel log"),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
             TextButton(
               onPressed: () => setState(() => allHistory = !allHistory),
-              child: Text(allHistory ? 'Recent' : 'Full archive'),
+              child: Text(
+                allHistory
+                    ? tr(context, "Recent")
+                    : tr(context, "Full archive"),
+              ),
             ),
           ],
         ),
         if (focus.missionHistory.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text('No sessions yet', style: TextStyle(color: mutedInk)),
+            child: Text(
+              tr(context, "No sessions yet"),
+              style: TextStyle(color: mutedInk),
+            ),
           ),
         for (final mission in focus.missionHistory.take(
           allHistory ? focus.missionHistory.length : 3,
@@ -334,7 +354,13 @@ class _FocusScreenState extends State<FocusScreen> {
             leading: const Icon(Icons.public, color: amber),
             title: Text(mission.taskText),
             subtitle: Text(
-              '${mission.orbitLabel} · ${mission.durationMinutes} min planned\n${DateFormat('d MMM, HH:mm').format(DateTime.fromMillisecondsSinceEpoch(mission.completedAt))}',
+              tr(context, "{0} · {1} min planned\n{2}", [
+                mission.orbitLabel,
+                mission.durationMinutes,
+                DateFormat('d MMM, HH:mm').format(
+                  DateTime.fromMillisecondsSinceEpoch(mission.completedAt),
+                ),
+              ]),
             ),
             isThreeLine: true,
             trailing: Text(
@@ -345,9 +371,9 @@ class _FocusScreenState extends State<FocusScreen> {
         const SizedBox(height: 12),
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
-                'Keep completed sessions',
+                tr(context, "Keep completed sessions"),
                 style: TextStyle(fontSize: 12, color: mutedInk),
               ),
             ),

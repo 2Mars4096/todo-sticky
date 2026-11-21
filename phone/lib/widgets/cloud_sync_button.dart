@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'package:flutter/material.dart';
 
 import '../app.dart';
@@ -16,14 +18,14 @@ class CloudSyncButton extends StatelessWidget {
       final local = !account.enabled;
       final foreground = account.busy && !account.background;
       final label = attention
-          ? 'Sync needs attention'
+          ? ui("Sync needs attention")
           : local
-          ? 'Sync is off'
+          ? ui("Sync is off")
           : foreground
-          ? 'Syncing'
+          ? ui("Syncing")
           : account.upToDate
-          ? 'Synced with cloud'
-          : 'Waiting to sync';
+          ? ui("Synced with cloud")
+          : ui("Waiting to sync");
       final icon = attention
           ? Icons.error_outline
           : local
@@ -34,8 +36,8 @@ class CloudSyncButton extends StatelessWidget {
       final color = attention ? Theme.of(context).colorScheme.error : mutedInk;
       return IconButton(
         tooltip: local
-            ? 'Sync is off. Settings → Account & sync'
-            : '$label. Sync now',
+            ? tr(context, "Sync is off. Settings → Account & sync")
+            : tr(context, "{0}. Sync now", [label]),
         icon: foreground
             ? SizedBox(
                 width: 18,
@@ -60,7 +62,7 @@ class CloudSyncButton extends StatelessWidget {
                   SnackBar(
                     content: Text(
                       account.message.isEmpty
-                          ? 'Sync requested'
+                          ? tr(context, "Sync requested")
                           : account.message,
                     ),
                     duration: const Duration(seconds: 3),

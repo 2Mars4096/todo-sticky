@@ -319,3 +319,8 @@ Mac project operations persist a local recovery journal before sequential writes
 `diane_request` also supports `connection`, `preparation-records` (body `{scope,cursor?}`), `prepare` (body `{scope,payload}` with `action: "prepare"`) and `preparation-status` (requestId plus `{scope}`). These use only local Diane `/api/plugins/connection` and scoped `/api/plugins/todo/records` or `/intelligence` routes. Prepare requires a canonical source revision, execution-contract digest and known workspace candidates. Persist the request ID before sending; uncertain retries inspect the same receipt. Approved context is included after the original task in dispatch `text`; no schema change or execution happens during preparation/editing; explicit Start sends the edited setup.
 
 The Todo dashboard accepts `POST /todo-reviews/clear` under its meeting-monitor prefix. Send `through` from the review sequence with `meeting_id` for one meeting, or the returned page head for all reviewed meetings. The list reports cleared rows with zero available suggestions.
+
+
+## Interface language and native menu refresh
+
+`set_interface_menu` is a local Tauri presentation command. The client submits translated `toggle`, `quit`, `about`, `hide`, `hideOthers`, `edit`, `copy`, `paste` and `tray` strings. The tray template retains `{0}` for the active shortcut. Notebook APIs continue to exchange stored task text, date keys, status identifiers and existing revisions. [Language contract](plans/24-interface-languages.md)

@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useMemo } from 'react'
 import { pluginScope } from '@diane/plugin-sdk/client'
 import { useEffect, useRef, useState } from 'react'
@@ -57,9 +58,9 @@ export function ProjectPage({goalId,goals,folder,flush,getGoal,saveGoal,reloadTa
         setPending(pendingProject(folder))
         await latest.current.flush()
         const data=await readTaskArchive(folder)
-        if(data.unavailableFiles?.length)throw new Error('Some task dates are unavailable. Retry after they are downloaded.')
+        if(data.unavailableFiles?.length)throw new Error(ui("Some task dates are unavailable. Retry after they are downloaded."))
         if(!cancelled)setDates(data.dates)
-      } catch(cause){if(!cancelled){setLoadFailed(true);setError(aiErrorMessage(cause,'Could not load project work.'))}}
+      } catch(cause){if(!cancelled){setLoadFailed(true);setError(aiErrorMessage(cause,ui("Could not load project work.")))}}
       finally{if(!cancelled)setLoading(false)}
     })()
     return()=>{cancelled=true}
@@ -70,13 +71,13 @@ export function ProjectPage({goalId,goals,folder,flush,getGoal,saveGoal,reloadTa
   const stale=proposal && goal && (proposal.stamp!==projectFingerprint(goal,dates) || proposal.mode==='schedule' && canonical(proposal.window)!==canonical(window))
   const disabled=busy||loading||!goal||goal.done||Boolean(pending)||loadFailed
   const editingNow=Boolean(edit)
-  const fail=(cause:unknown)=>setError(aiErrorMessage(cause,'Could not save this change.'))
+  const fail=(cause:unknown)=>setError(aiErrorMessage(cause,ui("Could not save this change.")))
   useEffect(()=>{if(!edit&&!busy&&!loading&&restoreFocus.current){restoreFocus.current=false;requestAnimationFrame(()=>{(document.querySelector<HTMLElement>(`[data-project-edit="${CSS.escape(editFocus.current)}"]`)??heading.current)?.focus()})}},[edit,busy,loading])
   const refresh=()=>{setLoading(true);setRevision(value=>value+1);setProposal(null)}
   const fresh=async()=>{
     await latest.current.flush()
     const data=await readTaskArchive(folder)
-    if(data.unavailableFiles?.length)throw new Error('Some task dates are unavailable. No new tasks were scheduled.')
+    if(data.unavailableFiles?.length)throw new Error(ui("Some task dates are unavailable. No new tasks were scheduled."))
     return data.dates
   }
   const run=async(action:()=>Promise<void>,write=true)=>{
@@ -102,14 +103,14 @@ export function ProjectPage({goalId,goals,folder,flush,getGoal,saveGoal,reloadTa
   const saveEdit=()=>run(async()=>{
     if(!edit)return
     const current=getGoal(goalId)
-    if(!current||current.done||canonical(current)!==canonical(edit.before))throw new Error('The project changed while you were editing. Cancel and reopen the editor to see the latest version.')
+    if(!current||current.done||canonical(current)!==canonical(edit.before))throw new Error(ui("The project changed while you were editing. Cancel and reopen the editor to see the latest version."))
     if(edit.kind==='description')await saveGoal(edit.before,{...current,text:edit.text.trim()})
     else {
       const source=await fresh()
-      if(canonical(getGoal(goalId))!==canonical(edit.before))throw new Error('The project changed. Cancel and reopen this edit.')
+      if(canonical(getGoal(goalId))!==canonical(edit.before))throw new Error(ui("The project changed. Cancel and reopen this edit."))
       if(edit.kind==='step'){
-        if(linkedStepRows(current,edit.id!,archiveRows(source,goals)).length)throw new Error('This step was scheduled while you were editing. Open its daily task to revise it.')
-        if(!current.plan?.some(step=>step.id===edit.id))throw new Error('This step was removed.')
+        if(linkedStepRows(current,edit.id!,archiveRows(source,goals)).length)throw new Error(ui("This step was scheduled while you were editing. Open its daily task to revise it."))
+        if(!current.plan?.some(step=>step.id===edit.id))throw new Error(ui("This step was removed."))
         await saveGoal(edit.before,{...current,plan:current.plan.map(step=>step.id===edit.id?{...step,text:edit.text.trim()}:step)})
       } else await commit(reviseProjectTask(folder,current,source,edit.row!,edit.text,edit.date))
     }
@@ -118,14 +119,14 @@ export function ProjectPage({goalId,goals,folder,flush,getGoal,saveGoal,reloadTa
   const editor=(label:string)=><div className="project-inline-editor">
     <textarea ref={editInput} autoFocus aria-label={label} value={edit?.text??''} disabled={busy||Boolean(pending)} onChange={event=>setEdit(current=>current?{...current,text:event.target.value}:null)}
       onKeyDown={event=>{if(event.nativeEvent.isComposing||pending)return;if(event.key==='Escape'){event.preventDefault();event.stopPropagation();cancelEdit()}else if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();void saveEdit()}}}/>
-    {edit?.kind==='task'&&!edit.row?.parents.length&&<label className="project-edit-date">Work date<input type="date" aria-label="Work date" value={edit.date} disabled={busy||Boolean(pending)} onChange={event=>setEdit(current=>current?{...current,date:event.target.value}:null)}/></label>}
-    {leaveBlocked&&<p className="project-edit-notice" role="status">Save or cancel this edit first.</p>}
-    <div className="project-editor-actions"><button disabled={busy||Boolean(pending)||!edit?.text.trim()} onClick={()=>void saveEdit()}>Save</button><button disabled={busy||Boolean(pending)} onClick={cancelEdit}>Cancel</button></div>
+    {edit?.kind==='task'&&!edit.row?.parents.length&&<label className="project-edit-date">{ui("Work date")}<input type="date" aria-label={ui("Work date")} value={edit.date} disabled={busy||Boolean(pending)} onChange={event=>setEdit(current=>current?{...current,date:event.target.value}:null)}/></label>}
+    {leaveBlocked&&<p className="project-edit-notice" role="status">{ui("Save or cancel this edit first.")}</p>}
+    <div className="project-editor-actions"><button disabled={busy||Boolean(pending)||!edit?.text.trim()} onClick={()=>void saveEdit()}>{ui("Save")}</button><button disabled={busy||Boolean(pending)} onClick={cancelEdit}>{ui("Cancel")}</button></div>
   </div>
   const leave=()=>{if(canLeave())onBack()}
   const addSteps=async(texts:string[],expected=goal)=>{
     if(!expected)return
-    if(texts.some(value=>!value.trim()||value.length>5000))throw new Error('Each step needs 1–5,000 characters.')
+    if(texts.some(value=>!value.trim()||value.length>5000))throw new Error(ui("Each step needs 1–5,000 characters."))
     const known=new Set(expected.plan?.map(step=>step.text.trim())??[])
     const additions=texts.map(value=>value.trim()).filter(value=>{if(!value||known.has(value))return false;known.add(value);return true})
       .map(value=>({id:newProjectId(),text:value}))
@@ -134,17 +135,17 @@ export function ProjectPage({goalId,goals,folder,flush,getGoal,saveGoal,reloadTa
   }
   const suggest=(kind:'steps'|'schedule')=>run(async()=>{
     const source=await fresh(),current=getGoal(goalId)
-    if(!current||current.done)throw new Error('Reopen this project before planning.')
+    if(!current||current.done)throw new Error(ui("Reopen this project before planning."))
     if(kind==='schedule')validateProjectWindow(window)
     const stamp=projectFingerprint(current,source),sourceRows=archiveRows(source,goals)
     const relevant=sourceRows.filter(row=>(row.goalId===current.id&&row.parentGoalId!==current.id)||(kind==='schedule'&&!row.parents.length&&row.date>=window.from&&row.date<=window.until))
     const raw=await api.llmProjectPlan({mode:kind,goal:current,window,tasks:relevant.slice(0,500).map(row=>({date:row.date,text:row.task.text,status:row.task.status,finish:row.task.finish,goalId:row.goalId})),contextTruncated:relevant.length>500,scheduledStepIds:(current.plan??[]).filter(step=>linkedStepRows(current,step.id,sourceRows).length).map(step=>step.id)})
     if(!alive.current)return
-    if(canonical(getGoal(goalId))!==canonical(current))throw new Error('The project changed. Generate a fresh proposal.')
+    if(canonical(getGoal(goalId))!==canonical(current))throw new Error(ui("The project changed. Generate a fresh proposal."))
     let actions:ProjectAction[]
     if(kind==='steps'){
       const steps=(raw as {steps?:unknown})?.steps
-      if(!Array.isArray(steps)||!steps.length||steps.length>30||steps.some(step=>typeof step!=='string'||!step.trim()||step.length>5000))throw new Error('The provider returned no usable steps.')
+      if(!Array.isArray(steps)||!steps.length||steps.length>30||steps.some(step=>typeof step!=='string'||!step.trim()||step.length>5000))throw new Error(ui("The provider returned no usable steps."))
       actions=steps.map(step=>({id:newProjectId(),text:step,date:today(),minutes:30}))
     }else{actions=parseProjectActions(raw);validateProjectActions(actions,current,sourceRows,window)}
     setDates(source);setMode(kind);setProposal({mode:kind,stamp,window:{...window},actions})
@@ -152,65 +153,65 @@ export function ProjectPage({goalId,goals,folder,flush,getGoal,saveGoal,reloadTa
   const applyProposal=()=>run(async()=>{
     if(!proposal)return
     const source=await fresh(),current=getGoal(goalId)
-    if(!current||current.done||projectFingerprint(current,source)!==proposal.stamp || proposal.mode==='schedule' && canonical(window)!==canonical(proposal.window))throw new Error('Project or daily work changed. Generate a fresh proposal.')
+    if(!current||current.done||projectFingerprint(current,source)!==proposal.stamp || proposal.mode==='schedule' && canonical(window)!==canonical(proposal.window))throw new Error(ui("Project or daily work changed. Generate a fresh proposal."))
     if(proposal.mode==='steps'){await addSteps(proposal.actions.map(action=>action.text),current);setProposal(null);setMode(null)}
     else{validateProjectActions(proposal.actions,current,archiveRows(source,goals),proposal.window);await commit(scheduledOperation(folder,current,source,proposal.actions))}
   })
-  return <section className="archive-page project-page" aria-label="Project" onKeyDown={event=>{if(event.key==='Escape'&&!writing){event.stopPropagation();if(pending){leave()}else if(edit){cancelEdit()}else if(proposal){setProposal(null)}else if(mode)setMode(null);else leave()}}}>
-    <header className="archive-heading"><button disabled={writing} onClick={leave}>‹ Goals</button><h2 ref={heading} tabIndex={-1}>Project</h2>
-      <button disabled={busy||loading||editingNow} onClick={refresh} title="Refresh project" aria-label="Refresh project">↻</button></header>
+  return <section className="archive-page project-page" aria-label={ui("Project")} onKeyDown={event=>{if(event.key==='Escape'&&!writing){event.stopPropagation();if(pending){leave()}else if(edit){cancelEdit()}else if(proposal){setProposal(null)}else if(mode)setMode(null);else leave()}}}>
+    <header className="archive-heading"><button disabled={writing} onClick={leave}>{ui("‹ Goals")}</button><h2 ref={heading} tabIndex={-1}>{ui("Project")}</h2>
+      <button disabled={busy||loading||editingNow} onClick={refresh} title={ui("Refresh project")} aria-label={ui("Refresh project")}>↻</button></header>
     <div className="archive-scroll project-body">
-      {!goal?<p>This project was removed.</p>:<>
-        {edit?.kind==='description'?editor('Project title and description')
-          :<div className="project-description"><p>{goal.text}</p><button disabled={disabled} onClick={()=>startEdit('description',goal.text)} data-project-edit="description" aria-label="Edit project description" title="Edit project">✎</button></div>}
-        {loading&&<p role="status">Loading project…</p>}
+      {!goal?<p>{ui("This project was removed.")}</p>:<>
+        {edit?.kind==='description'?editor(ui("Project title and description"))
+          :<div className="project-description"><p>{goal.text}</p><button disabled={disabled} onClick={()=>startEdit('description',goal.text)} data-project-edit="description" aria-label={ui("Edit project description")} title={ui("Edit project")}>✎</button></div>}
+        {loading&&<p role="status">{ui("Loading project…")}</p>}
         {error&&<p className="workflow-error" role="alert">{error}</p>}
-        {pending&&<div className="project-recovery"><p>Pending save for {pending.after.text.split('\n')[0]}. Saved tasks and steps will remain.</p>
-          <button disabled={busy} onClick={()=>void run(async()=>{await resumeProjectOperation(folder,getGoal,saveGoal);await reloadTasks();setEdit(null);setLeaveBlocked(false);setMode(null);setSelected([]);setRemove(null);refresh()})}>Retry save</button>
-          <button disabled={busy} onClick={()=>{discardProjectOperation(folder);setPending(null);setEdit(null);setLeaveBlocked(false);refresh()}}>Discard remaining</button></div>}
-        {goal.done&&<p>Project completed. Reopen it in Goals to edit.</p>}
+        {pending&&<div className="project-recovery"><p>{ui("Pending save for") + " "}{pending.after.text.split('\n')[0]}{ui(". Saved tasks and steps will remain.")}</p>
+          <button disabled={busy} onClick={()=>void run(async()=>{await resumeProjectOperation(folder,getGoal,saveGoal);await reloadTasks();setEdit(null);setLeaveBlocked(false);setMode(null);setSelected([]);setRemove(null);refresh()})}>{ui("Retry save")}</button>
+          <button disabled={busy} onClick={()=>{discardProjectOperation(folder);setPending(null);setEdit(null);setLeaveBlocked(false);refresh()}}>{ui("Discard remaining")}</button></div>}
+        {goal.done&&<p>{ui("Project completed. Reopen it in Goals to edit.")}</p>}
         {!mode&&<>
-          <div className="project-toolbar"><span>{progress?.completed}/{progress?.total} steps</span><button disabled={disabled||editingNow} onClick={()=>void suggest('steps')}>Suggest steps</button><button disabled={disabled||editingNow} onClick={()=>{setMode('schedule');setProposal(null)}}>Plan across days</button></div>
+          <div className="project-toolbar"><span>{progress?.completed}/{progress?.total}{" " + ui("steps")}</span><button disabled={disabled||editingNow} onClick={()=>void suggest('steps')}>{ui("Suggest steps")}</button><button disabled={disabled||editingNow} onClick={()=>{setMode('schedule');setProposal(null)}}>{ui("Plan across days")}</button></div>
           <form className="project-add" onSubmit={event=>{event.preventDefault();void run(async()=>{await addSteps([text]);setText('');setError('')})}}>
-            <textarea rows={1} aria-label="New project step" placeholder="Add a step" disabled={disabled||editingNow} value={text} onChange={event=>setText(event.target.value)} onKeyDown={event=>{if(!event.nativeEvent.isComposing&&event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();event.currentTarget.form?.requestSubmit()}}}/>
-            <button disabled={disabled||editingNow||!text.trim()}>Add</button>
+            <textarea rows={1} aria-label={ui("New project step")} placeholder={ui("Add a step")} disabled={disabled||editingNow} value={text} onChange={event=>setText(event.target.value)} onKeyDown={event=>{if(!event.nativeEvent.isComposing&&event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();event.currentTarget.form?.requestSubmit()}}}/>
+            <button disabled={disabled||editingNow||!text.trim()}>{ui("Add")}</button>
           </form>
           <ul className="project-steps">{progress?.steps.map(({step,work:linked,done})=><li key={step.id}>
-            <div className="project-step-line"><input type="checkbox" aria-label={`${linked.length?(done?'Completed':'Scheduled'):'Schedule'} ${linked.length===1?linked[0].task.text:step.text}`} checked={linked.length?done:selected.includes(step.id)} disabled={disabled||editingNow||Boolean(linked.length)} onChange={event=>setSelected(ids=>event.target.checked?[...ids,step.id]:ids.filter(id=>id!==step.id))}/>
-              {edit?.kind==='step'&&edit.id===step.id?editor('Edit project step'):<span className={done?'project-done':''}>{linked.length===1?linked[0].task.text:step.text}</span>}
-              {!linked.length&&!(edit?.kind==='step'&&edit.id===step.id)&&<button disabled={disabled} data-project-edit={`step:${step.id}`} aria-label={`Edit ${step.text}`} title="Edit step" onClick={()=>startEdit('step',step.text,step.id)}>✎</button>}
-              <button disabled={disabled||editingNow} title="Remove step" aria-label={`Remove ${linked.length===1?linked[0].task.text:step.text}`} onClick={()=>setRemove(step.id)}>×</button>
+            <div className="project-step-line"><input type="checkbox" aria-label={`${linked.length?(done?ui("Completed"):ui("Scheduled")):ui("Schedule")} ${linked.length===1?linked[0].task.text:step.text}`} checked={linked.length?done:selected.includes(step.id)} disabled={disabled||editingNow||Boolean(linked.length)} onChange={event=>setSelected(ids=>event.target.checked?[...ids,step.id]:ids.filter(id=>id!==step.id))}/>
+              {edit?.kind==='step'&&edit.id===step.id?editor(ui("Edit project step")):<span className={done?'project-done':''}>{linked.length===1?linked[0].task.text:step.text}</span>}
+              {!linked.length&&!(edit?.kind==='step'&&edit.id===step.id)&&<button disabled={disabled} data-project-edit={`step:${step.id}`} aria-label={ui("Edit {0}", [step.text])} title={ui("Edit step")} onClick={()=>startEdit('step',step.text,step.id)}>✎</button>}
+              <button disabled={disabled||editingNow} title={ui("Remove step")} aria-label={ui("Remove {0}", [linked.length===1?linked[0].task.text:step.text])} onClick={()=>setRemove(step.id)}>×</button>
             </div>
             {linked.map(row=><div className="project-scheduled-row" key={`${row.date}:${row.task.id}`}>
-              {edit?.kind==='task'&&edit.row?.date===row.date&&edit.row.task.id===row.task.id?editor('Edit scheduled task'):<>
+              {edit?.kind==='task'&&edit.row?.date===row.date&&edit.row.task.id===row.task.id?editor(ui("Edit scheduled task")):<>
                 {linked.length>1&&<span className="project-fragment-text">{row.task.text}</span>}
-                <button className="project-work-link" disabled={busy||editingNow} onClick={()=>void onOpen(row).catch(fail)}>{row.date} · {row.task.status==='done'?'Completed':row.task.status==='stopped'?'Stopped':'Open task'}</button>
-                <button disabled={disabled} title="Edit scheduled task" data-project-edit={`task:${row.date}:${row.task.id}`} aria-label={`Edit scheduled task ${row.task.text} on ${row.date}`} onClick={()=>startEdit('task',row.task.text,undefined,row)}>✎</button>
+                <button className="project-work-link" disabled={busy||editingNow} onClick={()=>void onOpen(row).catch(fail)}>{row.date} · {row.task.status==='done'?ui("Completed"):row.task.status==='stopped'?ui("Stopped"):ui("Open task")}</button>
+                <button disabled={disabled} title={ui("Edit scheduled task")} data-project-edit={`task:${row.date}:${row.task.id}`} aria-label={ui("Edit scheduled task {0} on {1}", [row.task.text, row.date])} onClick={()=>startEdit('task',row.task.text,undefined,row)}>✎</button>
               </>}
             </div>)}
-            {remove===step.id&&<div className="project-remove"><p>Remove this step? Its daily tasks stay in the project.</p><button disabled={busy} onClick={()=>void run(async()=>{const source=await fresh();const current=getGoal(goalId);if(!current||canonical(current)!==canonical(goal))throw new Error('The project changed. Refresh before removing this step.');await commit(removeStepOperation(folder,current,source,step.id))})}>Remove step</button><button onClick={()=>setRemove(null)}>Keep</button></div>}
+            {remove===step.id&&<div className="project-remove"><p>{ui("Remove this step? Its daily tasks stay in the project.")}</p><button disabled={busy} onClick={()=>void run(async()=>{const source=await fresh();const current=getGoal(goalId);if(!current||canonical(current)!==canonical(goal))throw new Error(ui("The project changed. Refresh before removing this step."));await commit(removeStepOperation(folder,current,source,step.id))})}>{ui("Remove step")}</button><button onClick={()=>setRemove(null)}>{ui("Keep")}</button></div>}
           </li>)}</ul>
-          {work.length>0&&<details className="project-linked"><summary>Daily work ({work.length})</summary><ul className="archive-results">{work.slice(0,limit).map(row=><li key={`${row.date}:${row.task.id}`}><button disabled={busy||editingNow} onClick={()=>void onOpen(row).catch(fail)}><span>{row.task.text}</span><span className="archive-meta">{row.date} · {row.task.status==='done'?'Completed':row.task.status==='stopped'?'Stopped':'Open'}</span></button></li>)}</ul>{work.length>limit&&<button onClick={()=>setLimit(value=>value+40)}>Show more</button>}</details>}
+          {work.length>0&&<details className="project-linked"><summary>{ui("Daily work (")}{work.length})</summary><ul className="archive-results">{work.slice(0,limit).map(row=><li key={`${row.date}:${row.task.id}`}><button disabled={busy||editingNow} onClick={()=>void onOpen(row).catch(fail)}><span>{row.task.text}</span><span className="archive-meta">{row.date} · {row.task.status==='done'?ui("Completed"):row.task.status==='stopped'?ui("Stopped"):ui("Unfinished")}</span></button></li>)}</ul>{work.length>limit&&<button onClick={()=>setLimit(value=>value+40)}>{ui("Show more")}</button>}</details>}
         </>}
         {mode==='schedule'&&<>
-          <div className="project-toolbar"><button disabled={busy} onClick={()=>{setMode(null);setProposal(null)}}>‹ Steps</button></div>
-          <div className="project-window"><label>From<input type="date" value={window.from} disabled={busy} onChange={event=>setWindow({...window,from:event.target.value})}/></label><label>Until<input type="date" value={window.until} disabled={busy} onChange={event=>setWindow({...window,until:event.target.value})}/></label>
-            <label>Project time<select value={window.minutesPerDay} disabled={busy} onChange={event=>setWindow({...window,minutesPerDay:Number(event.target.value)})}>{[15,30,60,90,120,180,240,480].map(n=><option key={n} value={n}>{n} min/day</option>)}</select></label>
-            <label className="project-weekdays"><input type="checkbox" checked={window.weekdaysOnly} disabled={busy} onChange={event=>setWindow({...window,weekdaysOnly:event.target.checked})}/>Weekdays only</label></div>
-          <button disabled={busy||loading||Boolean(pending)} onClick={()=>void suggest('schedule')}>{proposal?'Generate again':'Generate proposal'}</button>
+          <div className="project-toolbar"><button disabled={busy} onClick={()=>{setMode(null);setProposal(null)}}>{ui("‹ Steps")}</button></div>
+          <div className="project-window"><label>{ui("From")}<input type="date" value={window.from} disabled={busy} onChange={event=>setWindow({...window,from:event.target.value})}/></label><label>{ui("Until")}<input type="date" value={window.until} disabled={busy} onChange={event=>setWindow({...window,until:event.target.value})}/></label>
+            <label>{ui("Project time")}<select value={window.minutesPerDay} disabled={busy} onChange={event=>setWindow({...window,minutesPerDay:Number(event.target.value)})}>{[15,30,60,90,120,180,240,480].map(n=><option key={n} value={n}>{n}{" " + ui("min/day")}</option>)}</select></label>
+            <label className="project-weekdays"><input type="checkbox" checked={window.weekdaysOnly} disabled={busy} onChange={event=>setWindow({...window,weekdaysOnly:event.target.checked})}/>{ui("Weekdays only")}</label></div>
+          <button disabled={busy||loading||Boolean(pending)} onClick={()=>void suggest('schedule')}>{proposal?ui("Generate again"):ui("Generate proposal")}</button>
         </>}
-        {busy&&<p role="status">Working…</p>}
-        {proposal&&<section className="project-proposal"><h3 ref={resultHeading} tabIndex={-1}>Proposed {proposal.mode==='steps'?'steps':'tasks'}</h3>
-          {proposal.actions.map((action,index)=><div className="project-proposal-row" key={action.id}><textarea aria-label={`Proposed task ${index+1}`} value={action.text} disabled={busy} onChange={event=>setProposal({...proposal,actions:proposal.actions.map(item=>item.id===action.id?{...item,text:event.target.value}:item)})}/>
-            {proposal.mode==='schedule'&&<div className="project-proposal-fields"><label>Date<input type="date" value={action.date} disabled={busy} onChange={event=>setProposal({...proposal,actions:proposal.actions.map(item=>item.id===action.id?{...item,date:event.target.value}:item)})}/></label><label>Minutes<input type="number" min={5} max={window.minutesPerDay} value={action.minutes} disabled={busy} onChange={event=>setProposal({...proposal,actions:proposal.actions.map(item=>item.id===action.id?{...item,minutes:Number(event.target.value)}:item)})}/></label></div>}
-            <button disabled={busy} aria-label={`Remove proposed task ${index+1}`} onClick={()=>setProposal({...proposal,actions:proposal.actions.filter(item=>item.id!==action.id)})}>Remove</button></div>)}
-          {stale&&<p role="status" className="workflow-error">Project or planning details changed. Generate a fresh proposal.</p>}
+        {busy&&<p role="status">{ui("Working…")}</p>}
+        {proposal&&<section className="project-proposal"><h3 ref={resultHeading} tabIndex={-1}>{ui("Proposed") + " "}{proposal.mode==='steps'?ui("steps"):ui("tasks")}</h3>
+          {proposal.actions.map((action,index)=><div className="project-proposal-row" key={action.id}><textarea aria-label={ui("Proposed task {0}", [index+1])} value={action.text} disabled={busy} onChange={event=>setProposal({...proposal,actions:proposal.actions.map(item=>item.id===action.id?{...item,text:event.target.value}:item)})}/>
+            {proposal.mode==='schedule'&&<div className="project-proposal-fields"><label>{ui("Date")}<input type="date" value={action.date} disabled={busy} onChange={event=>setProposal({...proposal,actions:proposal.actions.map(item=>item.id===action.id?{...item,date:event.target.value}:item)})}/></label><label>{ui("Minutes")}<input type="number" min={5} max={window.minutesPerDay} value={action.minutes} disabled={busy} onChange={event=>setProposal({...proposal,actions:proposal.actions.map(item=>item.id===action.id?{...item,minutes:Number(event.target.value)}:item)})}/></label></div>}
+            <button disabled={busy} aria-label={ui("Remove proposed task {0}", [index+1])} onClick={()=>setProposal({...proposal,actions:proposal.actions.filter(item=>item.id!==action.id)})}>{ui("Remove")}</button></div>)}
+          {stale&&<p role="status" className="workflow-error">{ui("Project or planning details changed. Generate a fresh proposal.")}</p>}
         </section>}
       </>}
     </div>
     {goal&&<footer className="project-footer">
-      {proposal?<><button disabled={busy} onClick={()=>{setProposal(null);setMode(null)}}>Discard</button><button disabled={busy||Boolean(stale)||!proposal.actions.length} onClick={()=>void applyProposal()}>{proposal.mode==='steps'?'Add steps':'Add to daily tasks'}</button></>
-        :!mode&&selected.length>0?<><input type="date" aria-label="Schedule date" value={date} disabled={busy} onChange={event=>setDate(event.target.value)}/><button disabled={disabled||editingNow} onClick={()=>void run(async()=>{const source=await fresh(),current=getGoal(goalId);if(!current||canonical(current)!==canonical(goal))throw new Error('The project changed. Select steps again.');const actions=selected.map(id=>{const step=current.plan?.find(step=>step.id===id);if(!step)throw new Error('A selected step was removed.');return {id,stepId:id,text:step.text,date,minutes:30}});validateProjectActions(actions,current,archiveRows(source,goals));await commit(scheduledOperation(folder,current,source,actions))})}>Add to daily tasks ({selected.length})</button></>:null}
+      {proposal?<><button disabled={busy} onClick={()=>{setProposal(null);setMode(null)}}>{ui("Discard")}</button><button disabled={busy||Boolean(stale)||!proposal.actions.length} onClick={()=>void applyProposal()}>{proposal.mode==='steps'?ui("Add steps"):ui("Add to daily tasks")}</button></>
+        :!mode&&selected.length>0?<><input type="date" aria-label={ui("Schedule date")} value={date} disabled={busy} onChange={event=>setDate(event.target.value)}/><button disabled={disabled||editingNow} onClick={()=>void run(async()=>{const source=await fresh(),current=getGoal(goalId);if(!current||canonical(current)!==canonical(goal))throw new Error(ui("The project changed. Select steps again."));const actions=selected.map(id=>{const step=current.plan?.find(step=>step.id===id);if(!step)throw new Error(ui("A selected step was removed."));return {id,stepId:id,text:step.text,date,minutes:30}});validateProjectActions(actions,current,archiveRows(source,goals));await commit(scheduledOperation(folder,current,source,actions))})}>{ui("Add to daily tasks (")}{selected.length})</button></>:null}
     </footer>}
   </section>
 }

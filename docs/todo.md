@@ -1,5 +1,28 @@
 # Todo
 
+- [x] Review adjacent controls, repair archive filter overflow and reset, simplify Settings, and verify build 34 on both phone emulators. [Evidence and local builds](plans/25-interface-element-review.md#archive-filters-and-adjacent-controls)
+
+- [x] Preserve focus and composition across repeated nested steps. Verify the signed Android and iPhone Simulator builds and the shared Mac and browser controls. [Step capture](plans/23-dockit-transfer.md#repeated-step-capture)
+
+- [x] Verify the build 32 deadline after 50 language switches and relaunches on the installed iPhone Simulator app. [Build 32 verification](plans/25-interface-element-review.md#build-32-deadline-verification)
+
+- [x] Exercise goals, reminder edits, deadlines, notebook retry, Focus and archive. Correct the three displayed-language findings and retest ten languages. [Evidence](plans/25-interface-element-review.md#goal-reminder-deadline-and-focus-follow-up)
+
+- [x] Publish the five-cycle source and rendered occurrence ledgers, targeted Cantonese/count retests and Flutter exports. [Per-platform record](plans/25-interface-element-review.md)
+- [ ] Verify the explicitly unobserved conditional states, physical iPhone and live external services listed in the [feature-gate breakdown](reviews/25-interface-elements/feature-gates.csv).
+
+- [x] Localize standalone and embedded Dockit across ten interface languages, audit source/placeholder parity, and verify notebook continuity. [Interface languages](plans/24-interface-languages.md)
+
+- [x] Give the task disclosure interruptible pointer feedback and instant keyboard and reduced-motion states. [Verification](plans/23-dockit-transfer.md#task-disclosure-feedback)
+
+- [x] Reopen the notebook calendar on the selected date, keep it inside compact windows, and verify historical phone dates. [Calendar review](plans/23-dockit-transfer.md#notebook-calendar)
+
+- [x] Preserve focus for repeat task capture and verify existing notebooks on web, Mac and Flutter. [Verification](plans/23-dockit-transfer.md#repeat-task-capture-and-existing-notebooks)
+
+- [x] Verify the internal product workflow update. [Product record](plans/23-dockit-transfer.md#in-app-workflow-review)
+
+- [x] Verify the [cited task and assignment handoffs](plans/23-dockit-transfer.md#suite-ui-and-record-handoffs) and rebuild local clients.
+
 - [x] Correct the workspace selector’s clipped label and recheck both phone renderings.
 
 - [x] Build and verify the Dockit web client, Mac release bundle and Android preview APK. Exercise both phone layouts and the web assignment form with fixtures. See [client verification](plans/23-dockit-transfer.md).

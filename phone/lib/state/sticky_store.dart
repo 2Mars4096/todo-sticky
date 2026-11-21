@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -46,20 +48,22 @@ class StickyStore extends ChangeNotifier {
       if (_materializeRoutines()) changed();
     } catch (_) {
       // An unreadable store is never treated as an empty notebook.
-      loadError = 'Your saved notebook could not be read. Your files have not been replaced. Retry or restore an exported backup.';
+      loadError = ui(
+        "Your saved notebook could not be read. Your files have not been replaced. Retry or restore an exported backup.",
+      );
     }
     _notify();
   }
 
   void _load(Map<String, dynamic> j) {
     if (j['schemaVersion'] != 1) {
-      throw const FormatException('Unsupported notebook version');
+      throw FormatException(ui("Unsupported notebook version"));
     }
     final parsed = <String, List<Task>>{};
     for (final entry in object(j['days']).entries) {
       parseDate(entry.key);
       final value = entry.value;
-      if (value is! List) throw const FormatException('Invalid date tasks');
+      if (value is! List) throw FormatException(ui("Invalid date tasks"));
       parsed[entry.key] = _parseTasks(value);
     }
     final parsedGoals = Goals.fromJson(object(j['goals'] ?? {}));
@@ -93,7 +97,7 @@ class StickyStore extends ChangeNotifier {
     final ids = <String>{};
     for (final task in parsed.expand((t) => t.flattened)) {
       if (!ids.add(task.id)) {
-        throw const FormatException('Duplicate task IDs in a day');
+        throw FormatException(ui("Duplicate task IDs in a day"));
       }
     }
     return parsed;
@@ -117,7 +121,7 @@ class StickyStore extends ChangeNotifier {
           .convert(toJson(includeSyncMetadata: false));
   Future<void> importJson(String value) async {
     if (value.length > 20 * 1024 * 1024) {
-      throw const FormatException('Backup exceeds 20 MB');
+      throw FormatException(ui("Backup exceeds 20 MB"));
     }
     final j = object(jsonDecode(value));
     final old = toJson();
@@ -141,7 +145,9 @@ class StickyStore extends ChangeNotifier {
         await persistence.save(snapshot);
         saveError = null;
       } catch (_) {
-        saveError = 'Changes are only on this screen. Retry saving before closing the app.';
+        saveError = ui(
+          "Changes are only on this screen. Retry saving before closing the app.",
+        );
       }
       _notify();
     });
@@ -378,11 +384,11 @@ class StickyStore extends ChangeNotifier {
   }
 
   GoalItem _editableGoal(String id) {
-    if (!ready) throw StateError('Notebook is loading');
+    if (!ready) throw StateError(ui("Notebook is loading"));
     final goal = findGoal(id);
-    if (goal == null) throw StateError('This goal was removed.');
+    if (goal == null) throw StateError(ui("This goal was removed."));
     if (goal.done) {
-      throw StateError('Reopen this goal before changing its plan.');
+      throw StateError(ui("Reopen this goal before changing its plan."));
     }
     return goal;
   }
@@ -390,19 +396,19 @@ class StickyStore extends ChangeNotifier {
   void addGoalSteps(String goalId, List<String> texts, {String? fingerprint}) {
     final goal = _editableGoal(goalId);
     if (fingerprint != null && jsonEncode(goal.toJson()) != fingerprint) {
-      throw StateError('This goal changed. Generate a fresh plan.');
+      throw StateError(ui("This goal changed. Generate a fresh plan."));
     }
     final known = goal.plan.map((step) => step.text.trim()).toSet();
     final additions = <GoalPlanStep>[];
     for (final raw in texts) {
       final text = raw.trim();
       if (text.isEmpty || text.length > 5000) {
-        throw ArgumentError('Steps must contain 1–5,000 characters.');
+        throw ArgumentError(ui("Steps must contain 1–5,000 characters."));
       }
       if (known.add(text)) additions.add(GoalPlanStep(text: text));
     }
     if (goal.plan.length + additions.length > 200) {
-      throw StateError('A goal can contain up to 200 steps.');
+      throw StateError(ui("A goal can contain up to 200 steps."));
     }
     if (additions.isEmpty) return;
     goal.plan.addAll(additions);
@@ -412,12 +418,12 @@ class StickyStore extends ChangeNotifier {
   void updateGoalStep(String goalId, String stepId, String text) {
     final goal = _editableGoal(goalId);
     final step = goal.plan.where((step) => step.id == stepId).firstOrNull;
-    if (step == null) throw StateError('This step was removed.');
+    if (step == null) throw StateError(ui("This step was removed."));
     if (goalStepTasks(goalId, stepId).isNotEmpty) {
-      throw StateError('Edit this step in its daily task.');
+      throw StateError(ui("Edit this step in its daily task."));
     }
     if (text.trim().isEmpty || text.trim().length > 5000) {
-      throw ArgumentError('Steps must contain 1–5,000 characters.');
+      throw ArgumentError(ui("Steps must contain 1–5,000 characters."));
     }
     step.text = text.trim();
     changed();
@@ -438,13 +444,17 @@ class StickyStore extends ChangeNotifier {
     final goal = _editableGoal(goalId);
     if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(goalId)) {
       throw StateError(
-        'This older goal cannot be linked safely. Create a new goal before scheduling its steps.',
+        ui(
+          "This older goal cannot be linked safely. Create a new goal before scheduling its steps.",
+        ),
       );
     }
     parseDate(date);
     final selected = stepIds.toSet();
     if (!selected.every((id) => goal.plan.any((step) => step.id == id))) {
-      throw StateError('The selected plan changed. Select the steps again.');
+      throw StateError(
+        ui("The selected plan changed. Select the steps again."),
+      );
     }
     final additions = <Task>[];
     for (final step in goal.plan.where((step) => selected.contains(step.id))) {
@@ -454,7 +464,9 @@ class StickyStore extends ChangeNotifier {
           .expand((root) => root.flattened)
           .any((task) => task.id == step.id)) {
         throw StateError(
-          'A task with this identity already exists. No steps were scheduled.',
+          ui(
+            "A task with this identity already exists. No steps were scheduled.",
+          ),
         );
       }
       additions.add(
@@ -481,10 +493,12 @@ class StickyStore extends ChangeNotifier {
   void assignProject(String date, String taskId, String goalId) {
     final goal = _editableGoal(goalId);
     if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(goal.id)) {
-      throw StateError('Create a new project before linking this older goal.');
+      throw StateError(
+        ui("Create a new project before linking this older goal."),
+      );
     }
     final task = findTask(date, taskId);
-    if (task == null) throw StateError('This task was moved or removed.');
+    if (task == null) throw StateError(ui("This task was moved or removed."));
     final oldGoal = goalIdForTask(task);
     if (oldGoal == goalId) return;
     // Preserve distinct projects explicitly assigned to descendants.
@@ -512,12 +526,12 @@ class StickyStore extends ChangeNotifier {
     final goal = _editableGoal(goalId);
     if (projectFingerprint(goalId) != fingerprint) {
       throw StateError(
-        'Project or daily work changed. Generate a fresh proposal.',
+        ui("Project or daily work changed. Generate a fresh proposal."),
       );
     }
     if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(goal.id)) {
       throw StateError(
-        'Create a new project before scheduling this older goal.',
+        ui("Create a new project before scheduling this older goal."),
       );
     }
     final scheduled = goal.plan
@@ -532,12 +546,14 @@ class StickyStore extends ChangeNotifier {
       (action) => linkedText.contains(action.text.trim().toLowerCase()),
     )) {
       throw StateError(
-        'This work already belongs to the project. Edit its existing daily task instead.',
+        ui(
+          "This work already belongs to the project. Edit its existing daily task instead.",
+        ),
       );
     }
     final additions = actions.where((action) => action.stepId == null).length;
     if (goal.plan.length + additions > 200) {
-      throw StateError('A project can contain up to 200 steps.');
+      throw StateError(ui("A project can contain up to 200 steps."));
     }
     final allIds = days.values
         .expand((list) => list)
@@ -549,7 +565,7 @@ class StickyStore extends ChangeNotifier {
       if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(id) ||
           allIds.contains(id)) {
         throw StateError(
-          'A task with this identity already exists. No plan was applied.',
+          ui("A task with this identity already exists. No plan was applied."),
         );
       }
     }
@@ -605,9 +621,9 @@ class StickyStore extends ChangeNotifier {
   }
 
   Task addTask(String text, {String? date, String? parentId}) {
-    if (!ready) throw StateError('Notebook is loading');
+    if (!ready) throw StateError(ui("Notebook is loading"));
     final normalized = text.trim();
-    if (normalized.isEmpty) throw ArgumentError('Write a task first');
+    if (normalized.isEmpty) throw ArgumentError(ui("Write a task first"));
     final d = date ?? selectedDate;
     final task = Task(text: normalized);
     if (parentId == null) {
@@ -615,7 +631,7 @@ class StickyStore extends ChangeNotifier {
     } else {
       final parent = findTask(d, parentId);
       if (parent == null || parent.status == TaskStatus.stopped) {
-        throw StateError('This task is no longer available');
+        throw StateError(ui("This task is no longer available"));
       }
       task.goalId = goalIdForTask(parent);
       parent.subtasks.add(task);
@@ -677,7 +693,7 @@ class StickyStore extends ChangeNotifier {
       destination.insert(min(index, destination.length), deleted);
       _normalizeParents(tasksFor(date));
     };
-    undoLabel = 'Task deleted';
+    undoLabel = ui("Task deleted");
     _normalizeParents(tasksFor(date));
     changed();
   }
@@ -715,7 +731,7 @@ class StickyStore extends ChangeNotifier {
     final siblings = _siblings(fromDate, id);
     if (original == null || siblings == null) return;
     if (findTask(toDate, id) != null) {
-      throw StateError('This task already exists on the destination date');
+      throw StateError(ui("This task already exists on the destination date"));
     }
     final destination = days[toDate] ??= [];
     Task? parent;
@@ -732,13 +748,17 @@ class StickyStore extends ChangeNotifier {
         .toSet();
     if (task.flattened.any((item) => destinationIds.contains(item.id))) {
       throw StateError(
-        'This task or one of its steps already exists on the destination date',
+        ui(
+          "This task or one of its steps already exists on the destination date",
+        ),
       );
     }
     // Copies retain identity across dates. A collision merges child moves instead of duplicating IDs.
     if (parent == null) {
       if (destination.any((t) => t.id == task.id)) {
-        throw StateError('This task already exists on the destination date');
+        throw StateError(
+          ui("This task already exists on the destination date"),
+        );
       }
       final index = beforeId == null
           ? -1
@@ -803,7 +823,9 @@ class StickyStore extends ChangeNotifier {
         task.closed ||
         jsonEncode(task.toJson()) != fingerprint) {
       throw StateError(
-        'The task changed while the suggestion was being generated. Please try again.',
+        ui(
+          "The task changed while the suggestion was being generated. Please try again.",
+        ),
       );
     }
     for (final text in steps) {
@@ -820,7 +842,7 @@ class StickyStore extends ChangeNotifier {
     if (plan.date != selectedDate ||
         plan.fingerprint != tasksFingerprint(planningTasks)) {
       throw StateError(
-        'Tasks changed while this plan was open. Generate a fresh plan.',
+        ui("Tasks changed while this plan was open. Generate a fresh plan."),
       );
     }
     final prefix = 'plan_${plan.date}_';
@@ -879,13 +901,13 @@ class StickyStore extends ChangeNotifier {
         }
       }
     };
-    undoLabel = 'Plan applied';
+    undoLabel = ui("Plan applied");
     changed();
   }
 
   void startFocus(Task task, int minutes) {
     if (focus.activeSession != null) {
-      throw StateError('Finish the current focus session first');
+      throw StateError(ui("Finish the current focus session first"));
     }
     final now = DateTime.now().millisecondsSinceEpoch;
     focus.sessionDurationMinutes = minutes.clamp(1, 240);
@@ -1000,7 +1022,7 @@ class StickyStore extends ChangeNotifier {
         days.remove(d);
       } else {
         if (payload?['date'] != d || payload?['tasks'] is! List) {
-          throw const FormatException('Invalid synced day');
+          throw FormatException(ui("Invalid synced day"));
         }
         days[d] = _parseTasks(payload!['tasks'] as List);
       }
@@ -1010,7 +1032,7 @@ class StickyStore extends ChangeNotifier {
       final id = key.substring(6);
       final mission = deleted ? null : MissionRecord.fromJson(payload!);
       if (mission != null && mission.id != id) {
-        throw const FormatException('Invalid mission ID');
+        throw FormatException(ui("Invalid mission ID"));
       }
       focus.missionHistory.removeWhere((m) => m.id == id);
       if (mission != null) focus.missionHistory.add(mission);
@@ -1025,7 +1047,7 @@ class StickyStore extends ChangeNotifier {
           .take(focus.archiveRetentionLimit)
           .toList();
     } else {
-      throw const FormatException('Unknown sync record');
+      throw FormatException(ui("Unknown sync record"));
     }
     _undo = null;
     undoLabel = null;

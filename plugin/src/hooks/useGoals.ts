@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 /** Original GoalsSidebar/ProjectPage contract, with acknowledged scoped writes. */
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {createTodoApi} from '../api';
@@ -26,14 +27,14 @@ export function useGoals(scope:string){
  useEffect(()=>{alive.current=true;try{
    setCollapsed(storage.getItem('goals-collapsed')!=='false');
    const value=JSON.parse(storage.getItem(DRAFT)||'null') as Pending|null;
-   if(value){if(!['put','remove'].includes(value.operation)||value.record?._scope!==scope||!value.requestId)throw Error('Saved goal draft needs recovery. Its original data is retained.');draft.current=value;setPending(true);setError('An unsaved goal change is retained. Retry save to finish it.');}
+   if(value){if(!['put','remove'].includes(value.operation)||value.record?._scope!==scope||!value.requestId)throw Error(ui("Saved goal draft needs recovery. Its original data is retained."));draft.current=value;setPending(true);setError(ui("An unsaved goal change is retained. Retry save to finish it."));}
   }catch(e){setError(String(e));}
   void reload().catch(e=>{if(alive.current)setError(String(e));});return()=>{alive.current=false;};
  },[reload,scope,storage]);
  const retrySave=useCallback(async()=>{
   if(lock.current)return lock.current;
   const saved=draft.current;if(!saved){await reload();return;}
-  if(pluginScope()!==scope)throw Error('The Pipe Dreams account changed. Reopen Dockit before retrying.');
+  if(pluginScope()!==scope)throw Error(ui("The Diane account changed. Reopen Todo before retrying."));
   setBusy(true);setError(null);
   const operation=(async()=>{try{
    if(saved.operation==='remove')await pluginApi.remove(saved.record,saved.requestId);
@@ -41,16 +42,16 @@ export function useGoals(scope:string){
    if(pluginScope()!==scope)return;
    if(draft.current===saved){storage.removeItem(DRAFT);draft.current=null;if(alive.current)setPending(false);}
    await reload();recordsChanged('todo',scope);
-  }catch(e){if(alive.current)setError((e instanceof Error?e.message:String(e))+' Your change is retained.');throw e;}
+  }catch(e){if(alive.current)setError(ui("{0} Your change is retained.", [(e instanceof Error?e.message:String(e))]));throw e;}
   finally{lock.current=null;if(alive.current)setBusy(false);}})();lock.current=operation;return operation;
  },[reload,scope,storage]);
  function queue(operation:Pending['operation'],record:PluginRecord):boolean{
-  if(draft.current||lock.current){setError('Finish the pending goal save before making another change.');return false;}
+  if(draft.current||lock.current){setError(ui("Finish the pending goal save before making another change."));return false;}
   const pendingWrite:Pending={operation,record:{...record,_scope:scope},before:latest.current.find(item=>item.record_id===record.record_id),requestId:newId()};
-  try{storage.setItem(DRAFT,JSON.stringify(pendingWrite));}catch{setError('The goal draft could not be retained. Keep this edit open and free local storage.');return false;}
+  try{storage.setItem(DRAFT,JSON.stringify(pendingWrite));}catch{setError(ui("The goal draft could not be retained. Keep this edit open and free local storage."));return false;}
   draft.current=pendingWrite;setPending(true);publish(applyDraft(latest.current,pendingWrite));void retrySave().catch(()=>{});return true;
  }
- function change(category:GoalCategory,id:string,update:(r:PluginRecord)=>Partial<PluginRecord>){const record=latest.current.find(r=>r.record_id===id&&r.record_type===(category==='targets'?'goal':'routine'));if(!record){setError('This goal was removed.');return false;}return queue('put',{...record,...update(record)});}
+ function change(category:GoalCategory,id:string,update:(r:PluginRecord)=>Partial<PluginRecord>){const record=latest.current.find(r=>r.record_id===id&&r.record_type===(category==='targets'?'goal':'routine'));if(!record){setError(ui("This goal was removed."));return false;}return queue('put',{...record,...update(record)});}
  const schedule=(id:string,patch:Record<string,unknown>)=>change('recurring',id,r=>({extensions:{...r.extensions,schedule:{...(r.extensions.schedule as object||{}),...patch}}}));
  const schedules:RoutineSchedules=Object.create(null);
  for(const r of records.filter(r=>r.record_type==='routine')){const s=r.extensions.schedule as {frequency:Cadence;anchor?:string;paused?:boolean;handled_through?:string}|undefined;if(s)schedules[r.record_id]={cadence:s.frequency,anchor:s.anchor||new Date().toLocaleDateString('en-CA'),paused:!!s.paused,handledThrough:s.handled_through};}
@@ -67,9 +68,9 @@ export function useGoals(scope:string){
    if(draft.current)await retrySave();
    const record=latest.current.find(r=>r.record_id===before.id&&r.record_type==='goal');
    if(record&&canonical(goal(record))===canonical(after))return;
-   if(!record||canonical(goal(record))!==canonical(before))throw Error('The project changed. Refresh before saving.');
+   if(!record||canonical(goal(record))!==canonical(before))throw Error(ui("The project changed. Refresh before saving."));
    validateGoalPlan(after.plan??[]);
-   if(!queue('put',{...record,title:after.text.slice(0,200),text:after.text,extensions:{...record.extensions,done:after.done,plan:after.plan??[]}}))throw Error('The goal draft could not be saved.');
+   if(!queue('put',{...record,title:after.text.slice(0,200),text:after.text,extensions:{...record.extensions,done:after.done,plan:after.plan??[]}}))throw Error(ui("The goal draft could not be saved."));
    await retrySave();
   },
   routines:{schedules,error:storageError||'',available:!busy&&!pending,configure:(id:string,cadence:Cadence)=>{const now=new Date();schedule(id,{frequency:cadence,anchor:`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`,days:cadence==='weekly'?[now.getDay()]:[],paused:false});},pause:(id:string)=>schedule(id,{paused:!schedules[id]?.paused}),skip:(id:string)=>schedule(id,{skip_next:true}),retry:()=>void retrySave().catch(()=>{})},

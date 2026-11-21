@@ -21,10 +21,7 @@ void main() {
       row,
       'editor',
     );
-    expect(
-      assignment.path,
-      '/shiprite/workspaces/workspace/assignments/5de11d38-9c01-8ee9-9f8f-da03e2761304',
-    );
+    expect(assignment.id, '5de11d38-9c01-8ee9-9f8f-da03e2761304');
     expect(assignment.body['instructions'], 'Review proposal\n- Check budget');
   });
   test('task links carry only canonical identity on approved origins', () {
@@ -108,20 +105,17 @@ void main() {
     );
     expect(accountConfigurationUri('https://old.example').path, '/v1/config');
   });
-  test(
-    'verified migration preserves acknowledged baselines, pending mutations and old keys',
-    () {
-      final before = metadata(), encoded = jsonEncode(metadata());
-      final updates = migrate(before);
-      expect(jsonEncode(before), encoded);
-      expect(updates['owner'], next);
-      expect(updates[target], before[source]);
-      before.addAll(updates);
-      expect(before[source], updates[target]);
-      expect(before['unrelated'], 'retain');
-      expect(migrate(before), isEmpty);
-    },
-  );
+  test('verified migration preserves acknowledged baselines, pending mutations and old keys', () {
+    final before = metadata(), encoded = jsonEncode(metadata());
+    final updates = migrate(before);
+    expect(jsonEncode(before), encoded);
+    expect(updates['owner'], next);
+    expect(updates[target], before[source]);
+    before.addAll(updates);
+    expect(before[source], updates[target]);
+    expect(before['unrelated'], 'retain');
+    expect(migrate(before), isEmpty);
+  });
   test('requires issuer-bound app aliases, not email or an unbound UID', () {
     for (final proof in [
       {

@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+import { ui } from '../interfaceLocale'
+import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { ParagraphInput } from './ParagraphInput'
 import { ScreenshotTask } from './ScreenshotTask'
 
@@ -21,11 +22,23 @@ export function AddTask({
 }: Props) {
   const [text, setText] = useState('')
 
+  const field = useRef<HTMLTextAreaElement>(null)
+  const [composing, setComposing] = useState(false)
+  const canAdd = !disabled && !composing && Boolean(text.trim())
+  const captureProps = {
+    ref: field,
+    onCompositionStart: () => setComposing(true),
+    onCompositionEnd: () => setComposing(false),
+  }
+  const isComposing = (event: KeyboardEvent<HTMLTextAreaElement>) =>
+    composing || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229
+
   const handleSubmit = () => {
     const trimmed = text.trim()
-    if (trimmed && !disabled) {
+    if (canAdd && trimmed) {
       onAdd(trimmed)
       setText('')
+      field.current?.focus({preventScroll: true})
     }
   }
 
@@ -33,15 +46,15 @@ export function AddTask({
     return (
       <div className={`task-step-add-row task-add-row${text ? ' has-draft' : ''}`}>
         <span className="task-step-add-handle-space" aria-hidden="true" />
-        <ParagraphInput
+        <ParagraphInput {...captureProps}
           className="task-text-input task-step-add-input"
-          placeholder="Add task..."
-          aria-label="New top-level task"
+          placeholder={ui("Add task...")}
+          aria-label={ui("New top-level task")}
           value={text}
           disabled={disabled}
           onChange={event => setText(event.target.value)}
           onKeyDown={event => {
-            if (event.nativeEvent.isComposing) return
+            if (isComposing(event)) return
             if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); handleSubmit() }
             if (event.key === 'Escape') {
               event.stopPropagation()
@@ -50,7 +63,7 @@ export function AddTask({
             }
           }}
         />
-        {text.trim() && <button type="button" className="task-text-action" onClick={handleSubmit} disabled={disabled} aria-label="Add task">Add</button>}
+        {text.trim() && <button type="button" className="task-text-action" onClick={handleSubmit} disabled={!canAdd} aria-label={ui("Add task")}>{ui("Add")}</button>}
       </div>
     )
   }
@@ -63,24 +76,22 @@ export function AddTask({
         handleSubmit()
       }}
     >
-      <ParagraphInput
+      <ParagraphInput {...captureProps}
         id="quick-add-task"
-        aria-label="New task"
-        placeholder="What needs doing?"
+        aria-label={ui("New task")}
+        placeholder={ui("What needs doing?")}
         value={text}
         onChange={e => setText(e.target.value)}
         disabled={disabled}
         autoFocus={autoFocus && !disabled}
         onKeyDown={event => {
-          if (!event.nativeEvent.isComposing && event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+          if (!isComposing(event) && event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
             event.preventDefault(); handleSubmit()
           }
         }}
       />
       {captureButton}
-      <button type="submit" disabled={disabled || !text.trim()} aria-label="Add task">
-        Add
-      </button>
+      <button type="submit" disabled={!canAdd} aria-label={ui("Add task")}>{ui("Add")}</button>
     </form>
   )
   return <div className={`add-task ${prominent ? 'prominent' : ''}`}>

@@ -1,3 +1,4 @@
+import '../interface_locale.dart';
 import 'models.dart';
 
 class ProjectWindow {
@@ -18,7 +19,9 @@ class ProjectWindow {
       end.day,
     ).difference(DateTime.utc(start.year, start.month, start.day)).inDays;
     if (span < 0 || span > 90 || minutes < 15 || minutes > 480) {
-      throw ArgumentError('Choose up to 90 days and 15–480 minutes per day.');
+      throw ArgumentError(
+        ui("Choose up to 90 days and 15–480 minutes per day."),
+      );
     }
   }
 
@@ -52,7 +55,7 @@ List<ProjectAction> validateProjectActions(
 ) {
   window.validate();
   if (actions.isEmpty || actions.length > 30) {
-    throw ArgumentError('Keep between 1 and 30 tasks in the proposal.');
+    throw ArgumentError(ui("Keep between 1 and 30 tasks in the proposal."));
   }
   final ids = <String>{}, texts = <String>{}, totals = <String, int>{};
   for (final action in actions) {
@@ -60,25 +63,27 @@ List<ProjectAction> validateProjectActions(
     if (action.date.compareTo(window.from) < 0 ||
         action.date.compareTo(window.until) > 0 ||
         window.weekdays && parseDate(action.date).weekday > 5) {
-      throw ArgumentError('Choose a permitted date within the plan range.');
+      throw ArgumentError(ui("Choose a permitted date within the plan range."));
     }
     if (action.text.trim().isEmpty ||
         action.text.length > 5000 ||
         action.minutes < 5 ||
         action.minutes > window.minutes) {
       throw ArgumentError(
-        'Each task needs text and an estimate within the daily budget.',
+        ui("Each task needs text and an estimate within the daily budget."),
       );
     }
     if (!ids.add(action.stepId ?? action.id) ||
         !texts.add(action.text.trim().toLowerCase())) {
-      throw ArgumentError('Remove duplicate tasks from the proposal.');
+      throw ArgumentError(ui("Remove duplicate tasks from the proposal."));
     }
     if (action.stepId != null &&
         (!goal.plan.any((step) => step.id == action.stepId) ||
             scheduled.contains(action.stepId))) {
       throw StateError(
-        'A step changed or is already scheduled. Generate a fresh proposal.',
+        ui(
+          "A step changed or is already scheduled. Generate a fresh proposal.",
+        ),
       );
     }
     if (action.stepId == null &&
@@ -88,12 +93,14 @@ List<ProjectAction> validateProjectActions(
               action.text.trim().toLowerCase(),
         )) {
       throw StateError(
-        'Use the existing project step instead of duplicating it.',
+        ui("Use the existing project step instead of duplicating it."),
       );
     }
     final total = (totals[action.date] ?? 0) + action.minutes;
     if (total > window.minutes) {
-      throw ArgumentError('The project budget is exceeded on ${action.date}.');
+      throw ArgumentError(
+        ui("The project budget is exceeded on {0}.", [action.date]),
+      );
     }
     totals[action.date] = total;
   }

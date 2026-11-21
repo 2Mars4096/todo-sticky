@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -90,7 +92,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
       if (!mounted) return;
       final current = widget.store.findGoal(widget.goalId);
       if (current == null || jsonEncode(current.toJson()) != fingerprint) {
-        throw StateError('This goal changed. Generate a fresh plan.');
+        throw StateError(ui("This goal changed. Generate a fresh plan."));
       }
       setState(() => generating = false);
       final accepted = await showNoteSheet<List<String>>(
@@ -129,12 +131,16 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '$count ${count == 1 ? 'task' : 'tasks'} added to ${dayLabel(targetDate)}',
+            tr(context, "{0} {1} added to {2}", [
+              count,
+              count == 1 ? 'task' : 'tasks',
+              dayLabel(targetDate),
+            ]),
           ),
           action: widget.openDay == null
               ? null
               : SnackBarAction(
-                  label: 'Open',
+                  label: tr(context, "Open day"),
                   onPressed: () => widget.openDay!(targetDate),
                 ),
         ),
@@ -149,22 +155,22 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
     final text = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit step'),
+        title: Text(tr(context, "Edit step")),
         content: TextField(
           controller: controller,
           autofocus: true,
           minLines: 1,
           maxLines: 6,
-          decoration: const InputDecoration(labelText: 'Step'),
+          decoration: InputDecoration(labelText: tr(context, "Step")),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(tr(context, "Cancel")),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Save'),
+            child: Text(tr(context, "Save")),
           ),
         ],
       ),
@@ -182,20 +188,23 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
     final remove = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove this step?'),
+        title: Text(tr(context, "Remove this step?")),
         content: Text(
           progress.scheduled
-              ? 'The step leaves this plan. Its daily tasks stay linked to the goal.'
+              ? tr(
+                  context,
+                  "The step leaves this plan. Its daily tasks stay linked to the goal.",
+                )
               : progress.step.text,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep'),
+            child: Text(tr(context, "Keep")),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove'),
+            child: Text(tr(context, "Remove")),
           ),
         ],
       ),
@@ -268,11 +277,11 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
           available.isNotEmpty && selected.containsAll(available);
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Project tasks'),
+          title: Text(tr(context, "Project tasks")),
           actions: [
             if (goal != null)
               IconButton(
-                tooltip: 'Goal progress',
+                tooltip: tr(context, "Goal progress"),
                 icon: const Icon(Icons.bar_chart_outlined),
                 onPressed: () => Navigator.push(
                   context,
@@ -291,7 +300,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
         ),
         body: SafeArea(
           child: goal == null
-              ? const Center(child: Text('This goal was removed.'))
+              ? Center(child: Text(tr(context, "This goal was removed.")))
               : Column(
                   children: [
                     if (widget.store.saveError != null)
@@ -300,7 +309,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                         actions: [
                           TextButton(
                             onPressed: widget.store.retrySave,
-                            child: const Text('Retry save'),
+                            child: Text(tr(context, "Retry save")),
                           ),
                         ],
                       ),
@@ -320,7 +329,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                                   Icons.date_range_outlined,
                                   size: 18,
                                 ),
-                                label: const Text('Plan across days'),
+                                label: Text(tr(context, "Plan across days")),
                                 onPressed: () => Navigator.push(
                                   context,
                                   MaterialPageRoute<void>(
@@ -337,7 +346,9 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                             TextButton.icon(
                               icon: const Icon(Icons.checklist, size: 18),
                               label: Text(
-                                '${widget.store.tasksForGoal(goal.id).length} linked tasks',
+                                tr(context, "{0} linked tasks", [
+                                  widget.store.tasksForGoal(goal.id).length,
+                                ]),
                               ),
                               onPressed: () => Navigator.push(
                                 context,
@@ -354,8 +365,11 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                           if (progress!.total > 0) ...[
                             const SizedBox(height: 12),
                             Semantics(
-                              label:
-                                  '${progress.completed} of ${progress.total} plan steps completed',
+                              label: tr(
+                                context,
+                                "{0} of {1} plan steps completed",
+                                [progress.completed, progress.total],
+                              ),
                               child: LinearProgressIndicator(
                                 value: progress.fraction,
                               ),
@@ -371,10 +385,13 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                               if (goal.done || progress.total > 0)
                                 Text(
                                   goal.done
-                                      ? 'Goal complete'
+                                      ? tr(context, "Goal complete")
                                       : progress.total == 0
                                       ? ''
-                                      : '${progress.completed}/${progress.total} completed',
+                                      : tr(context, "{0}/{1} completed", [
+                                          progress.completed,
+                                          progress.total,
+                                        ]),
                                   style: const TextStyle(color: mutedInk),
                                 ),
                               if (goal.done)
@@ -383,7 +400,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                                     goal.done = false;
                                     widget.store.changed();
                                   },
-                                  child: const Text('Reopen goal'),
+                                  child: Text(tr(context, "Reopen goal")),
                                 )
                               else
                                 TextButton.icon(
@@ -404,8 +421,8 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                                         ),
                                   label: Text(
                                     generating
-                                        ? 'Generating…'
-                                        : 'Suggest steps',
+                                        ? tr(context, "Generating…")
+                                        : tr(context, "Suggest steps"),
                                   ),
                                 ),
                             ],
@@ -418,9 +435,9 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                               textInputAction: TextInputAction.newline,
                               keyboardType: TextInputType.multiline,
                               decoration: InputDecoration(
-                                labelText: 'Add a step',
+                                labelText: tr(context, "Add a step"),
                                 suffixIcon: IconButton(
-                                  tooltip: 'Add plan step',
+                                  tooltip: tr(context, "Add plan step"),
                                   onPressed: add,
                                   icon: const Icon(Icons.add),
                                 ),
@@ -439,8 +456,8 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                                 }),
                                 child: Text(
                                   allSelected
-                                      ? 'Clear selection'
-                                      : 'Select all',
+                                      ? tr(context, "Clear selection")
+                                      : tr(context, "Select all"),
                                 ),
                               ),
                             )
@@ -457,7 +474,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                         child: Row(
                           children: [
                             IconButton(
-                              tooltip: 'Choose task date',
+                              tooltip: tr(context, "Choose task date"),
                               onPressed: chooseDate,
                               icon: const Icon(Icons.calendar_month_outlined),
                             ),
@@ -467,7 +484,12 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                                 onPressed: selected.isEmpty ? null : schedule,
                                 icon: const Icon(Icons.add_task, size: 18),
                                 label: Text(
-                                  'Add${selected.isEmpty ? '' : ' ${selected.length}'} to ${dayLabel(date)}',
+                                  tr(context, "Add{0} to {1}", [
+                                    selected.isEmpty
+                                        ? ''
+                                        : ' ${selected.length}',
+                                    dayLabel(date),
+                                  ]),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -504,7 +526,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
             )
           : Checkbox(
               value: selected.contains(step.id),
-              semanticLabel: 'Schedule ${step.text}',
+              semanticLabel: tr(context, "Schedule {0}", [step.text]),
               onChanged: goal.done
                   ? null
                   : (value) => setState(() {
@@ -538,7 +560,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                 ? const Icon(Icons.chevron_right, size: 18)
                 : null)
           : PopupMenuButton<String>(
-              tooltip: 'Plan step actions',
+              tooltip: tr(context, "Plan step actions"),
               icon: const Icon(Icons.more_horiz),
               onSelected: (action) {
                 if (action == 'edit') editStep(step);
@@ -549,12 +571,14 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
                 PopupMenuItem(
                   value: progress.scheduled ? 'open' : 'edit',
                   child: Text(
-                    progress.scheduled ? 'Open daily task' : 'Edit step',
+                    progress.scheduled
+                        ? tr(context, "Open daily task")
+                        : tr(context, "Edit step"),
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'remove',
-                  child: Text('Remove from plan'),
+                  child: Text(tr(context, "Remove from plan")),
                 ),
               ],
             ),
@@ -593,7 +617,7 @@ class _GoalPlanProposalState extends State<_GoalPlanProposal> {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Review plan',
+              tr(context, "Review plan"),
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
@@ -609,7 +633,7 @@ class _GoalPlanProposalState extends State<_GoalPlanProposal> {
                 children: [
                   Checkbox(
                     value: included[index],
-                    semanticLabel: 'Include step ${index + 1}',
+                    semanticLabel: tr(context, "Include step {0}", [index + 1]),
                     onChanged: (value) =>
                         setState(() => included[index] = value!),
                   ),
@@ -619,7 +643,7 @@ class _GoalPlanProposalState extends State<_GoalPlanProposal> {
                       minLines: 1,
                       maxLines: 5,
                       decoration: InputDecoration(
-                        labelText: 'Step ${index + 1}',
+                        labelText: tr(context, "Step {0}", [index + 1]),
                       ),
                     ),
                   ),
@@ -637,7 +661,7 @@ class _GoalPlanProposalState extends State<_GoalPlanProposal> {
             children: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Discard'),
+                child: Text(tr(context, "Discard")),
               ),
               FilledButton(
                 onPressed: !included.any((value) => value)
@@ -651,7 +675,7 @@ class _GoalPlanProposalState extends State<_GoalPlanProposal> {
                         ];
                         if (result.isNotEmpty) Navigator.pop(context, result);
                       },
-                child: const Text('Add steps'),
+                child: Text(tr(context, "Add steps")),
               ),
             ],
           ),

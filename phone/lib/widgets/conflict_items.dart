@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'package:flutter/material.dart';
 
 import '../services/cloud_sync.dart';
@@ -52,7 +54,7 @@ class _ConflictItemsState extends State<ConflictItems>
               conflict.mergeProblem!,
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
-          Text('${issues.length - choices.length} remaining'),
+          Text(tr(context, "{0} remaining", [issues.length - choices.length])),
           for (final issue in issues) ...[
             const SizedBox(height: 16),
             Text(
@@ -77,7 +79,11 @@ class _ConflictItemsState extends State<ConflictItems>
                     RadioListTile<String>(
                       value: choice,
                       contentPadding: EdgeInsets.zero,
-                      title: Text(choice == 'local' ? 'This device' : 'Cloud'),
+                      title: Text(
+                        choice == 'local'
+                            ? tr(context, "This device")
+                            : tr(context, "Cloud"),
+                      ),
                       subtitle: Text(
                         mergeValueText(
                           choice == 'local' ? issue.local : issue.cloud,
@@ -101,7 +107,7 @@ class _ConflictItemsState extends State<ConflictItems>
                     useCloud: choices[''] == 'cloud',
                     reviewedFingerprint: syncConflictFingerprint(conflict),
                   ),
-            child: const Text('Apply choices'),
+            child: Text(tr(context, "Apply choices")),
           ),
         ],
       ),

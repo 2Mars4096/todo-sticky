@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const vm = require('node:vm')
@@ -30,7 +31,7 @@ function mount(start) {
     exports, Date: Clock, window, document,
     setTimeout: (fn, delay) => { timers.set(++nextTimer, { fn, delay }); return nextTimer },
     clearTimeout: id => timers.delete(id),
-    require: name => name === 'react' ? {
+    require: name => name.endsWith('/interfaceLocale') ? testedInterface : name === 'react' ? {
       useState: initial => {
         const index = cursor++
         if (!mounted) states[index] = typeof initial === 'function' ? initial() : initial

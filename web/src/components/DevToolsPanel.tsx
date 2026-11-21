@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 interface Props {
   taskCount: number
   missionActive: boolean
@@ -26,25 +27,25 @@ export function DevToolsPanel({
       <div className="dev-tools-row">
         <div className="dev-tools-head">
           <div className="dev-tools-title">
-            <span>Dev Mode</span>
-            <strong>{taskCount} task{taskCount === 1 ? '' : 's'}</strong>
+            <span>{ui("Dev Mode")}</span>
+            <strong>{taskCount === 1 ? ui("{0} task", [taskCount]) : ui("{0} tasks", [taskCount])}</strong>
           </div>
-          <span className="dev-tools-badge">local</span>
+          <span className="dev-tools-badge">{ui("local")}</span>
         </div>
 
         <div className="dev-tools-actions">
-          <button onClick={onAddSampleTask}>Sample</button>
-          <button onClick={onAddTaskPack}>Pack</button>
-          <button onClick={onClearDay} disabled={!taskCount}>Clear Day</button>
-          <button onClick={onReload}>Reload</button>
+          <button onClick={onAddSampleTask}>{ui("Sample")}</button>
+          <button onClick={onAddTaskPack}>{ui("Pack")}</button>
+          <button onClick={onClearDay} disabled={!taskCount}>{ui("Clear Day")}</button>
+          <button onClick={onReload}>{ui("Reload")}</button>
         </div>
       </div>
 
       <div className="dev-tools-row mission">
         <div className="dev-tools-head">
           <div className="dev-tools-title">
-            <span>Mission Time</span>
-            <strong>{missionTimeScale}x {missionActive ? 'live' : 'next launch'}</strong>
+            <span>{ui("Mission Time")}</span>
+            <strong>{missionTimeScale}x {missionActive ? ui("live") : ui("next launch")}</strong>
           </div>
         </div>
 

@@ -1,6 +1,16 @@
 # Architecture
 
+## Interface languages
+
+The source English keys and nine translated catalogs live under `phone/assets/interface/`. React reads them at build time. `scripts/sync-interface.py` generates synchronous Flutter, embedded-plugin and standalone sign-in lookups. `node scripts/audit-interface.cjs` checks the source inventory, language parity and numbered placeholders. Interpolation arguments are inserted after translation. The runtime never submits notebook data for translation.
+
+The standalone browser and Mac shell use `pipedreams.displayLanguage`. Flutter stores `interfaceLanguage` in its existing local preferences and supplies Material localization delegates. The embedded plugin follows the host without writing its preference. Cantonese application text uses a separate catalog; Flutter's system-provided Material labels and date formatting use Hong Kong Chinese where a Cantonese library delegate is unavailable.
+
 ## Dockit notebooks and assignments
+
+Flutter’s top-level and nested capture fields share `NotebookCaptureField`. The owning screen or row keeps the controller, focus node and storage operation, so closing a step field can retain its draft.
+
+The daily React header anchors the calendar to its complete date navigation row. The Flutter Notes and Progress views share `showNotebookDatePicker` so archived notebook years stay selectable in both places.
 
 Web and macOS share the React task and account UI. The browser adapter stores each dated tree in IndexedDB and compares the caller’s observed revision inside a write transaction. macOS uses the Tauri Markdown store. Android and iPhone use the same Flutter app-private notebook with platform document channels. Assignment sends one selected tree after checking shared-account ownership. The workspace selector lists editor memberships and also scopes shared AI usage. Confirmation requires the assignment ID and workspace ID in the service receipt. See [client verification](plans/23-dockit-transfer.md).
 
@@ -466,3 +476,5 @@ Android Today mounts the optional meeting widget for the active shared owner. Re
 ## Selected icon assets
 
 The pipedreams icon source and prepared platform inputs live in [assets/brand/pipedreams-ink](../assets/brand/pipedreams-ink/HANDOFF.md). Staged web files live in web/public/brand/pipedreams-ink. The package is a handoff input; the existing runtime icon configuration determines what builds display.
+
+The web and Flutter notebook resolve source metadata under the signed-in owner's canonical record. Both construct the same dated Shiprite assignment ID. The receiver validates optional Dockit origin metadata and serves a minimal creator-scoped receipt. Desktop links use the native product URL handler. [Integration checks](plans/23-dockit-transfer.md#suite-ui-and-record-handoffs)

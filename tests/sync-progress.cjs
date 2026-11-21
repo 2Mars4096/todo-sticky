@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert = require('node:assert/strict')
 const load = require('./helpers/load-typescript.cjs')
 ;(async () => {
@@ -56,7 +57,7 @@ const load = require('./helpers/load-typescript.cjs')
     }
     const result = {}
     const code = ts.transpileModule(fs.readFileSync('src/hooks/useCloudSync.ts','utf8').replace('import.meta.env.VITE_SYNC_SERVER_URL', "''"), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText
-    vm.runInNewContext(code,{URLSearchParams,exports:result,require:n=>{if(!(n in mocks))throw Error(n);return mocks[n]},
+    vm.runInNewContext(code,{URLSearchParams,exports:result,require:n => { if (n.endsWith('/interfaceLocale')) return testedInterface; if(!(n in mocks))throw Error(n);return mocks[n]},
       localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)},crypto:require('node:crypto').webcrypto,
       setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},window:{addEventListener(){},removeEventListener(){}},document:{visibilityState:'visible',querySelector:()=>null,addEventListener(){},removeEventListener(){}}})
     const hooks={kbPath:'/fixture',ready:true,blocked:false,changeKey:'fixture',flush:async()=>{},reload:async()=>{},goals:{targets:[],recurring:[]},missions:[],applyGoals(){},applyMission:async()=>{}}

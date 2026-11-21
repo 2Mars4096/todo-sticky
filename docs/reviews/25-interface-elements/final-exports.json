@@ -1,0 +1,115 @@
+{
+  "productionAndroid": {
+    "name": "Dockit-arm64-v8a-release.apk",
+    "package": "io.github.twomars4096.sticky_todo",
+    "versionCode": 2030,
+    "versionName": "2.1.17",
+    "signerSHA256": "1940ced63b4e966de106a204f6a1e37a49559d9bc140f70bd1e27dad547d5aca",
+    "nativeCode": "'arm64-v8a'",
+    "apkSHA256": "9e61723a3ac90ffc8df8df976bddf26cb166f411d14bb76e5a521326d4eed2f8"
+  },
+  "otherAndroid": [
+    {
+      "name": "Dockit-arm64-v8a-release.apk",
+      "package": "io.github.twomars4096.sticky_todo",
+      "versionCode": 2030,
+      "versionName": "2.1.17",
+      "signerSHA256": "1940ced63b4e966de106a204f6a1e37a49559d9bc140f70bd1e27dad547d5aca",
+      "nativeCode": "'arm64-v8a'",
+      "apkSHA256": "9e61723a3ac90ffc8df8df976bddf26cb166f411d14bb76e5a521326d4eed2f8"
+    },
+    {
+      "name": "Dockit-armeabi-v7a-release.apk",
+      "package": "io.github.twomars4096.sticky_todo",
+      "versionCode": 1030,
+      "versionName": "2.1.17",
+      "signerSHA256": "1940ced63b4e966de106a204f6a1e37a49559d9bc140f70bd1e27dad547d5aca",
+      "nativeCode": "'armeabi-v7a'",
+      "apkSHA256": "998601fb50f6ffe3a443728dc8814f5ec5f562ef2db3a731868a4d2a0ae1c2ac"
+    },
+    {
+      "name": "Dockit-x86_64-release.apk",
+      "package": "io.github.twomars4096.sticky_todo",
+      "versionCode": 4030,
+      "versionName": "2.1.17",
+      "signerSHA256": "1940ced63b4e966de106a204f6a1e37a49559d9bc140f70bd1e27dad547d5aca",
+      "nativeCode": "'x86_64'",
+      "apkSHA256": "12727428799b732f1eaac56e4c92de7c19b1466ad7c77aa8bbc14c677a566cb3"
+    }
+  ],
+  "preview": {
+    "name": "Dockit-debug.apk",
+    "package": "io.github.twomars4096.sticky_todo.preview",
+    "versionCode": 29,
+    "versionName": "2.1.16",
+    "signerSHA256": "72752b1632749fc46ccefabf8c2fb865df121269af54f9777f0c6f448a199e74",
+    "nativeCode": "'arm64-v8a' 'armeabi-v7a' 'x86_64'",
+    "apkSHA256": "d020abbbf301478f94abf7c4a097c941b83bd6c49dfec8fa04093bbae2d57911"
+  },
+  "priorProductionAndroid": {
+    "name": "todo-sticky-latest.apk",
+    "package": "io.github.twomars4096.sticky_todo",
+    "versionCode": 2029,
+    "versionName": "2.1.16",
+    "signerSHA256": "1940ced63b4e966de106a204f6a1e37a49559d9bc140f70bd1e27dad547d5aca",
+    "nativeCode": "'arm64-v8a'",
+    "apkSHA256": "a6d4a541a604df85751ca324303f5498a328267e5179b2959f19eb54e7c561fc"
+  },
+  "apple": [
+    {
+      "variant": "simulator-export",
+      "path": "output/clients/ios-simulator/Dockit.app",
+      "platform": [
+        "IOSSIMULATOR"
+      ],
+      "bundleId": "work.pipedreams.dockit",
+      "version": "2.1.16",
+      "build": "29",
+      "runnerSHA256": "ac7384d52a27c006bf7618549e49504001983fc4f5e83231fec09542eb05c469",
+      "bundleTreeSHA256": "2749e79e09b6fc5f26a9ab95fa1fe5feaf7e543e6a437cd3a06a9d67c9454b35"
+    },
+    {
+      "variant": "cantonese-tested-simulator",
+      "path": "output/clients/ios-simulator/Dockit-Cantonese-tested.app",
+      "platform": [
+        "IOSSIMULATOR"
+      ],
+      "bundleId": "work.pipedreams.dockit",
+      "version": "2.1.16",
+      "build": "29",
+      "runnerSHA256": "f54995d3dc485203cb44fea624cecdc184ab3e3b49329c4810b6b2196ada47e7",
+      "bundleTreeSHA256": "0129df028255e1e38ed29abb4d2f640582b492b9eaf7673c3a0dd3a26e1965b3"
+    },
+    {
+      "variant": "initial-xctest-simulator",
+      "path": "output/clients/ios-simulator/Dockit-tested.app",
+      "platform": [
+        "IOSSIMULATOR"
+      ],
+      "bundleId": "work.pipedreams.dockit",
+      "version": "2.1.16",
+      "build": "29",
+      "runnerSHA256": "f2471ee65d5ca7850b92cd50b5ffd0a643ec0ce72fc9aa10467814aca542217a",
+      "bundleTreeSHA256": "46c3b5896d926ff535106c9c8ab56f9173d2335fbe81c8370487811c402d5eb2"
+    },
+    {
+      "variant": "unsigned-device",
+      "path": "output/clients/ios-device/Dockit.app",
+      "platform": [
+        "IOS"
+      ],
+      "bundleId": "work.pipedreams.dockit",
+      "version": "2.1.16",
+      "build": "29",
+      "runnerSHA256": "24a835fa6a2b22bb61fd3e7af8d3229731cb147e90d424bff6f1ec84825f464c",
+      "bundleTreeSHA256": "80f4aeedf012a266e8ac8aa5fdcbe8701f74c54bc1a24c34ed27750bfe18d681"
+    }
+  ],
+  "unsignedIPA": {
+    "path": "output/clients/ios-device/Dockit-unsigned.ipa",
+    "sha256": "78170f8dad6d90e28185d8dfbb5c9bb7156e405798561e9822bd27dc1a47b83c",
+    "signedForPhysicalInstallation": false
+  },
+  "pluginVersion": "0.1.23",
+  "pluginSHA256": "73902ddcdd505a80a69aab39de9ef22b03b09f06794bb80ea4afcbb7405ee787"
+}

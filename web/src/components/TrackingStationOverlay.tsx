@@ -1,3 +1,5 @@
+import { formatLanguage } from '../interfaceLocale'
+import { ui } from '../interfaceLocale'
 import { Component, Suspense, lazy, useRef, useState, type ReactNode } from 'react'
 import type { StarFocusMissionRecord, StarFocusSession } from '../types'
 import {
@@ -61,11 +63,11 @@ interface Props {
 const durationOptions = [15, 25, 45]
 const RECENT_ARCHIVE_MISSION_COUNT = 6
 const phaseCopy = {
-  ignition: 'Clamp release',
-  ascent: 'Outbound burn',
-  heating: 'Peak focus',
-  staging: 'Course correction',
-  orbit: 'Arrival window',
+  get ignition(){ return ui("Clamp release") },
+  get ascent(){ return ui("Outbound burn") },
+  get heating(){ return ui("Peak focus") },
+  get staging(){ return ui("Course correction") },
+  get orbit(){ return ui("Arrival window") },
 } as const
 
 function formatClock(ms: number) {
@@ -80,7 +82,7 @@ function formatDuration(minutes: number) {
 }
 
 function formatCompletedAt(timestamp: number) {
-  return new Date(timestamp).toLocaleString(undefined, {
+  return new Date(timestamp).toLocaleString(formatLanguage(), {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
@@ -100,10 +102,10 @@ function RouteReadout({
   return (
     <div className="solar-route-readout">
       <div className="solar-route-stop origin">
-        <span>From</span>
+        <span>{ui("From")}</span>
         <strong>{leg.origin.name}</strong>
       </div>
-      <div className="solar-route-track" aria-label={`${leg.origin.name} to ${leg.destination.name}`}>
+      <div className="solar-route-track" aria-label={ui("{0} to {1}", [leg.origin.name, leg.destination.name])}>
         <span className="solar-route-line" />
         <span
           className={`solar-route-craft ${arrived ? 'arrived' : ''}`}
@@ -111,7 +113,7 @@ function RouteReadout({
         />
       </div>
       <div className="solar-route-stop destination">
-        <span>To</span>
+        <span>{ui("To")}</span>
         <strong>{leg.destination.name}</strong>
       </div>
     </div>
@@ -124,7 +126,7 @@ function PhaseRoute({ activeSnapshot }: { activeSnapshot: StarFocusSnapshot | nu
     : -1
 
   return (
-    <div className="focus-phase-route" aria-label="Focus session phases">
+    <div className="focus-phase-route" aria-label={ui("Focus session phases")}>
       {STAR_FOCUS_PHASES.map((phase, index) => (
         <div
           key={phase.id}
@@ -180,8 +182,8 @@ export function TrackingStationOverlay({
     ? missionHistory.slice(0, RECENT_ARCHIVE_MISSION_COUNT)
     : missionHistory
   const liveLabel = activeSnapshot
-    ? STAR_FOCUS_PHASES.find(phase => phase.id === activeSnapshot.phase)?.label ?? 'Orbit'
-    : 'Idle'
+    ? STAR_FOCUS_PHASES.find(phase => phase.id === activeSnapshot.phase)?.label ?? ui("Orbit")
+    : ui("Idle")
   const phaseTheme = activeSnapshot
     ? `phase-${activeSnapshot.phase}`
     : latestCompletedMission
@@ -196,12 +198,12 @@ export function TrackingStationOverlay({
   const displayLeg = completedLeg ?? nextLeg
   const routeProgress = activeSnapshot?.progress ?? (completedLeg ? 1 : 0)
   const stateLabel = activeSession
-    ? activeSnapshot?.isPaused ? 'Paused' : liveLabel
+    ? activeSnapshot?.isPaused ? ui("Paused") : liveLabel
     : completedLeg
-      ? 'Arrived'
+      ? ui("Arrived")
       : selectedTaskText
-        ? 'Ready'
-        : 'Choose task'
+        ? ui("Ready")
+        : ui("Choose task")
 
   const projectedMap = (
     <StarFocusOrbitalMap
@@ -217,8 +219,8 @@ export function TrackingStationOverlay({
   const graphicsFallback = (
     <div className="focus-map-fallback">
       <div className="focus-map-notice" role="status">
-        <p>Showing the simplified map. Focus controls remain available.</p>
-        <button type="button" onClick={() => { setMapUnavailable(false); setMapAttempt(attempt => attempt + 1) }}>Try 3D again</button>
+        <p>{ui("Showing the simplified map. Focus controls remain available.")}</p>
+        <button type="button" onClick={() => { setMapUnavailable(false); setMapAttempt(attempt => attempt + 1) }}>{ui("Try 3D again")}</button>
       </div>
       {projectedMap}
     </div>
@@ -232,31 +234,29 @@ export function TrackingStationOverlay({
         onClick={event => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="Star Focus Mode"
+        aria-label={ui("Star Focus Mode")}
         tabIndex={-1}
       >
         <header className="tracking-header">
           <div className="tracking-heading">
-            <span className="mission-kicker">Star Focus · Solar Route</span>
-            <strong>Focus Mode</strong>
-            <span className="tracking-route-summary">
-              {displayLeg.origin.name} → {displayLeg.destination.name} · Tour {displayLeg.tour}, leg {displayLeg.legNumber} of {displayLeg.legCount}
-            </span>
+            <span className="mission-kicker">{ui("Star Focus · Solar Route")}</span>
+            <strong>{ui("Focus Mode")}</strong>
+            <span className="tracking-route-summary">{ui("{0} → {1} · Tour {2}, leg {3} of {4}", [displayLeg.origin.name, displayLeg.destination.name, displayLeg.tour, displayLeg.legNumber, displayLeg.legCount])}</span>
           </div>
           <div className="tracking-header-actions">
             <span className={`tracking-live-chip ${activeSession ? activeSnapshot?.isPaused ? 'paused' : 'live' : completedLeg ? 'complete' : selectedTaskText ? 'armed' : 'idle'}`}>
               {stateLabel}
             </span>
-            <button ref={closeButtonRef} className="tracking-close-btn" onClick={onClose} aria-label="Close Focus Mode">×</button>
+            <button ref={closeButtonRef} className="tracking-close-btn" onClick={onClose} aria-label={ui("Close Focus Mode")}>×</button>
           </div>
         </header>
 
         <div className="tracking-scroll-area">
           <main className="tracking-main">
-            <section className="tracking-map-surface" aria-label="Interactive solar route map">
+            <section className="tracking-map-surface" aria-label={ui("Interactive solar route map")}>
               <div className="tracking-section-head">
-                <span className="mission-section-label">Tracking Station</span>
-                <span className="tracking-map-note">Drag to orbit · Scroll to zoom</span>
+                <span className="mission-section-label">{ui("Tracking Station")}</span>
+                <span className="tracking-map-note">{ui("Drag to orbit · Scroll to zoom")}</span>
               </div>
 
               <FocusMapBoundary key={mapAttempt} fallback={graphicsFallback}>
@@ -279,26 +279,26 @@ export function TrackingStationOverlay({
                 <RouteReadout leg={displayLeg} progress={routeProgress} arrived={Boolean(completedLeg)} />
                 <div className="tracking-route-meta">
                   <span>{displayLeg.destination.code}</span>
-                  <strong>{activeSnapshot ? `${Math.round(activeSnapshot.progress * 100)}%` : completedLeg ? 'Arrived' : 'Next leg'}</strong>
+                  <strong>{activeSnapshot ? `${Math.round(activeSnapshot.progress * 100)}%` : completedLeg ? ui("Arrived") : ui("Next leg")}</strong>
                 </div>
               </div>
             </section>
 
-            <section className="tracking-focus-console" aria-label="Focus session controls">
+            <section className="tracking-focus-console" aria-label={ui("Focus session controls")}>
               <div className="tracking-section-head">
-                <span className="mission-section-label">Focus session</span>
-                {restoredSession && activeSession && <span className="focus-recovered-chip">Recovered</span>}
+                <span className="mission-section-label">{ui("Focus session")}</span>
+                {restoredSession && activeSession && <span className="focus-recovered-chip">{ui("Recovered")}</span>}
               </div>
 
               {activeSession && activeSnapshot ? (
                 <div className="focus-session active">
                   <div className="focus-task-block">
-                    <span>Current task</span>
+                    <span>{ui("Current task")}</span>
                     <h2>{activeSession.taskText}</h2>
                   </div>
-                  <div className="focus-clock-block" aria-label={`${formatClock(activeSnapshot.remainingMs)} remaining`}>
+                  <div className="focus-clock-block" aria-label={ui("{0} remaining", [formatClock(activeSnapshot.remainingMs)])}>
                     <strong>{formatClock(activeSnapshot.remainingMs)}</strong>
-                    <span>{activeSnapshot.isPaused ? `${liveLabel} paused` : phaseCopy[activeSnapshot.phase]}</span>
+                    <span>{activeSnapshot.isPaused ? ui("{0} paused", [liveLabel]) : phaseCopy[activeSnapshot.phase]}</span>
                   </div>
                   <div
                     className="focus-progress-shell"
@@ -306,44 +306,44 @@ export function TrackingStationOverlay({
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={Math.round(activeSnapshot.progress * 100)}
-                    aria-label="Focus session progress"
+                    aria-label={ui("Focus session progress")}
                   >
                     <div className="focus-progress-fill" style={{ width: `${Math.round(activeSnapshot.progress * 100)}%` }} />
                   </div>
                   <PhaseRoute activeSnapshot={activeSnapshot} />
                   <div className="focus-primary-actions">
                     <button className="focus-btn secondary" onClick={activeSnapshot.isPaused ? onResume : onPause}>
-                      {activeSnapshot.isPaused ? 'Resume' : 'Pause'}
+                      {activeSnapshot.isPaused ? ui("Resume") : ui("Pause")}
                     </button>
-                    <button className="focus-btn primary" onClick={onComplete}>Finish session</button>
+                    <button className="focus-btn primary" onClick={onComplete}>{ui("Finish session")}</button>
                   </div>
-                  <p className="focus-outcome-note">Record your focus session here. Review the task outcome in your task list.</p>
-                  <button className="focus-cancel-btn" onClick={onCancel}>Cancel session</button>
+                  <p className="focus-outcome-note">{ui("Record your focus session here. Review the task outcome in your task list.")}</p>
+                  <button className="focus-cancel-btn" onClick={onCancel}>{ui("Cancel session")}</button>
                 </div>
               ) : latestCompletedMission && completedLeg ? (
                 <div className="focus-session complete">
                   <div className="focus-arrival-mark" aria-hidden="true">✓</div>
-                  <span className="focus-eyebrow">Session saved · Arrived at</span>
+                  <span className="focus-eyebrow">{ui("Session saved · Arrived at")}</span>
                   <h2>{completedLeg.destination.name}</h2>
                   <p className="focus-complete-task">{latestCompletedMission.taskText}</p>
                   <div className="focus-complete-meta">
-                    <span>{formatDuration(latestCompletedMission.durationMinutes)} planned</span>
+                    <span>{ui("{0} planned", [formatDuration(latestCompletedMission.durationMinutes)])}</span>
                     <span>{formatCompletedAt(latestCompletedMission.completedAt)}</span>
                   </div>
-                  <p className="focus-outcome-note">Review the task outcome in your task list when you are ready.</p>
-                  {onReviewTask && <button className="focus-btn primary wide" onClick={onReviewTask}>Review task</button>}
-                  <button className="focus-cancel-btn" onClick={onClose}>Back to tasks</button>
-                  <button className="focus-cancel-btn" onClick={onDismissCompletion}>Another session</button>
+                  <p className="focus-outcome-note">{ui("Review the task outcome in your task list when you are ready.")}</p>
+                  {onReviewTask && <button className="focus-btn primary wide" onClick={onReviewTask}>{ui("Review task")}</button>}
+                  <button className="focus-cancel-btn" onClick={onClose}>{ui("Back to tasks")}</button>
+                  <button className="focus-cancel-btn" onClick={onDismissCompletion}>{ui("Another session")}</button>
                 </div>
               ) : selectedTaskText ? (
                 <div className="focus-session armed">
                   <div className="focus-task-block">
-                    <span>Task for this session</span>
+                    <span>{ui("Task for this session")}</span>
                     <h2>{selectedTaskText}</h2>
                   </div>
                   <div className="focus-duration-field">
-                    <span>Duration</span>
-                    <div className="focus-duration-options" role="group" aria-label="Focus duration">
+                    <span>{ui("Duration")}</span>
+                    <div className="focus-duration-options" role="group" aria-label={ui("Focus duration")}>
                       {durationOptions.map(option => (
                         <button
                           key={option}
@@ -356,18 +356,16 @@ export function TrackingStationOverlay({
                       ))}
                     </div>
                   </div>
-                  <button className="focus-btn primary wide" onClick={onLaunch}>
-                    Start focus
-                  </button>
-                  <button className="focus-cancel-btn" onClick={onClearSelection}>Choose another task</button>
+                  <button className="focus-btn primary wide" onClick={onLaunch}>{ui("Start focus")}</button>
+                  <button className="focus-cancel-btn" onClick={onClearSelection}>{ui("Choose another task")}</button>
                 </div>
               ) : (
                 <div className="focus-session idle">
                   <div className="focus-idle-orbit" aria-hidden="true"><span /></div>
-                  <span className="focus-eyebrow">Next destination</span>
+                  <span className="focus-eyebrow">{ui("Next destination")}</span>
                   <h2>{displayLeg.destination.name}</h2>
-                  <p>Choose one of your {taskCount || 'sticky'} task{taskCount === 1 ? '' : 's'}, then start a focus session.</p>
-                  <button className="focus-btn primary wide" onClick={onClose}>Choose a task</button>
+                  <p>{taskCount === 1 ? ui("Choose one of your {0} task, then start a focus session.", [taskCount || ui("sticky")]) : ui("Choose one of your {0} tasks, then start a focus session.", [taskCount || ui("sticky")])}</p>
+                  <button className="focus-btn primary wide" onClick={onClose}>{ui("Choose a task")}</button>
                 </div>
               )}
             </section>
@@ -377,13 +375,13 @@ export function TrackingStationOverlay({
             <section className="tracking-archive-section">
               <div className="tracking-section-head archive">
                 <div>
-                  <span className="mission-section-label">Travel Log</span>
-                  <strong>{orbitCount} saved session{orbitCount === 1 ? '' : 's'}</strong>
+                  <span className="mission-section-label">{ui("Travel Log")}</span>
+                  <strong>{orbitCount === 1 ? ui("{0} saved session", [orbitCount]) : ui("{0} saved sessions", [orbitCount])}</strong>
                 </div>
                 {canBrowseFullArchive && (
                   <div className="tracking-history-toggle">
-                    <button className={effectiveArchiveView === 'recent' ? 'active' : ''} onClick={() => setArchiveView('recent')} aria-pressed={effectiveArchiveView === 'recent'}>Recent</button>
-                    <button className={effectiveArchiveView === 'full' ? 'active' : ''} onClick={() => setArchiveView('full')} aria-pressed={effectiveArchiveView === 'full'}>Full</button>
+                    <button className={effectiveArchiveView === 'recent' ? 'active' : ''} onClick={() => setArchiveView('recent')} aria-pressed={effectiveArchiveView === 'recent'}>{ui("Recent")}</button>
+                    <button className={effectiveArchiveView === 'full' ? 'active' : ''} onClick={() => setArchiveView('full')} aria-pressed={effectiveArchiveView === 'full'}>{ui("Full")}</button>
                   </div>
                 )}
               </div>
@@ -399,7 +397,7 @@ export function TrackingStationOverlay({
                             <strong>{leg.destination.name}</strong>
                             <span>{mission.vehicleCode}</span>
                           </div>
-                          <span className="tracking-history-burn">{formatDuration(mission.durationMinutes)} planned</span>
+                          <span className="tracking-history-burn">{ui("{0} planned", [formatDuration(mission.durationMinutes)])}</span>
                         </div>
                         <div className="tracking-history-task">{mission.taskText}</div>
                         <div className="tracking-history-meta">
@@ -411,17 +409,17 @@ export function TrackingStationOverlay({
                   })}
                 </div>
               ) : (
-                <div className="tracking-archive-empty">Saved focus sessions will appear here.</div>
+                <div className="tracking-archive-empty">{ui("Saved focus sessions will appear here.")}</div>
               )}
             </section>
 
             <section className="tracking-settings-section">
               <div className="tracking-section-head">
-                <span className="mission-section-label">Log Settings</span>
-                <span className="tracking-map-note">On-device</span>
+                <span className="mission-section-label">{ui("Log Settings")}</span>
+                <span className="tracking-map-note">{ui("On-device")}</span>
               </div>
               <div className="tracking-retention-row">
-                <span>Keep latest</span>
+                <span>{ui("Keep latest")}</span>
                 <div className="tracking-retention-controls">
                   {STAR_FOCUS_ARCHIVE_LIMIT_OPTIONS.map(limit => (
                     <button
@@ -436,14 +434,12 @@ export function TrackingStationOverlay({
                 </div>
               </div>
               <div className="tracking-maintenance-row">
-                <button onClick={onClearHistory} disabled={!missionHistory.length}>Clear log</button>
+                <button onClick={onClearHistory} disabled={!missionHistory.length}>{ui("Clear log")}</button>
                 <button
                   onClick={onResetOrbitMap}
                   disabled={Boolean(activeSession) || (!missionHistory.length && !selectedTaskText && !latestCompletedMission)}
-                  title={activeSession ? 'Route reset is disabled during an active focus session' : 'Reset local Star Focus route data'}
-                >
-                  Reset route
-                </button>
+                  title={activeSession ? ui("Route reset is disabled during an active focus session") : ui("Reset local Star Focus route data")}
+                >{ui("Reset route")}</button>
               </div>
             </section>
           </div>

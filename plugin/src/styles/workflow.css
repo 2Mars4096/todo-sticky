@@ -1,5 +1,5 @@
 /* Ported from Todo Sticky; selectors scoped to Diane plugin root. */
-.diane-todo-port .archive-page { display:flex; flex-direction:column; flex:1; min-height:0; color:var(--text-primary); font-size:13px; }
+.diane-todo-port .archive-page { container-type:inline-size; display:flex; flex-direction:column; flex:1; min-height:0; color:var(--text-primary); font-size:13px; }
 .diane-todo-port .archive-heading { display:flex; align-items:center; gap:12px; padding:10px 12px; flex-shrink:0; border-bottom:1px solid var(--sticky-border); }
 .diane-todo-port .archive-heading h2 { font-size:16px; margin:0; flex:1; }
 .diane-todo-port .archive-page button, .diane-todo-port .archive-page input, .diane-todo-port .archive-page select, .diane-todo-port .routine-options button, .diane-todo-port .routine-options select { font:inherit; color:var(--text-primary); border:1px solid var(--sticky-border); border-radius:4px; background:transparent; min-height:30px; padding:4px 8px; }
@@ -9,6 +9,15 @@
 .diane-todo-port .archive-controls { display:flex; gap:8px; flex-wrap:wrap; padding:10px 12px; }
 .diane-todo-port .archive-controls input { flex:1; width:100%; min-width:0; }
 .diane-todo-port .archive-controls > input { flex-basis:160px; }
+.diane-todo-port .archive-project-filter { flex:1 1 11rem; min-width:0; max-width:min(100%, 24rem); overflow:hidden; text-overflow:ellipsis; }
+.diane-todo-port .archive-empty { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; padding-block:4px; }
+.diane-todo-port .archive-empty p { margin:0; }
+@container (max-width:36rem) {
+  .diane-todo-port .archive-controls:has(.archive-project-filter) > :is(input, .progress-period) { flex-basis:100%; }
+}
+@media (pointer:coarse) {
+  .diane-todo-port .archive-heading button, .diane-todo-port .archive-controls input, .diane-todo-port .archive-controls select, .diane-todo-port .archive-empty button { min-height:44px; }
+}
 .diane-todo-port .archive-scroll { overflow:auto; min-height:0; padding:0 12px 12px; overscroll-behavior:contain; }
 .diane-todo-port .archive-results { list-style:none; padding:0; margin:0; }
 .diane-todo-port .archive-results li { border-top:1px solid var(--sticky-border); }

@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import { invoke } from './notebookCommand'
 import { api } from './api'
 import { canonical, validateRecords } from './cloudSync'
@@ -9,7 +10,7 @@ export function pendingProject(folder: string): ProjectOperation | null {
   if (!raw) return null
   const value = JSON.parse(raw) as ProjectOperation
   if (!value || value.folder !== folder || !value.before?.id || value.after?.id !== value.before.id || !Array.isArray(value.days)
-    || value.days.some(day=>!validProjectDate(day.date)||!Array.isArray(day.before)||!Array.isArray(day.after))) throw new Error('The pending project save needs recovery. Its original data has been kept.')
+    || value.days.some(day=>!validProjectDate(day.date)||!Array.isArray(day.before)||!Array.isArray(day.after))) throw new Error(ui("The pending project save needs recovery. Its original data has been kept."))
   validateGoalPlan(value.after.plan ?? [])
   const record = (key:string,payload:unknown) => ({key,payload,revision:1,deleted:false,updatedAt:'',mutationId:'project-recovery'})
   for(const goal of [value.before,value.after]) validateRecords([record('goals',{targets:[goal],recurring:[]})])
@@ -17,7 +18,7 @@ export function pendingProject(folder: string): ProjectOperation | null {
   return value
 }
 export function beginProjectOperation(operation: ProjectOperation) {
-  if (pendingProject(operation.folder)) throw new Error('Finish the pending project save first.')
+  if (pendingProject(operation.folder)) throw new Error(ui("Finish the pending project save first."))
   localStorage.setItem(key(operation.folder),JSON.stringify(operation))
 }
 export function discardProjectOperation(folder: string) { localStorage.removeItem(key(folder)) }
@@ -25,14 +26,14 @@ export async function resumeProjectOperation(folder: string, getGoal: (id:string
   const operation = pendingProject(folder)
   if (!operation) return
   const goal = getGoal(operation.before.id)
-  if (!goal || (canonical(goal)!==canonical(operation.before) && canonical(goal)!==canonical(operation.after))) throw new Error('The project changed during a pending save. Saved work is safe; discard the remaining operation before editing again.')
+  if (!goal || (canonical(goal)!==canonical(operation.before) && canonical(goal)!==canonical(operation.after))) throw new Error(ui("The project changed during a pending save. Saved work is safe; discard the remaining operation before editing again."))
   // Goals first: a failed day write leaves valid unscheduled steps, never orphaned new tasks.
   saveGoal(operation.before,operation.after)
   for (const change of operation.days) {
     const current = await api.extractTaskApi({date:change.date,canonicalDates:true})
     const tasks = current.dates.find(day=>day.date===change.date)?.tasks ?? []
     if (canonical(tasks)===canonical(change.after)) continue // An acknowledged write or interrupted response.
-    if (canonical(tasks)!==canonical(change.before)) throw new Error(`Daily work changed on ${change.date}. Saved work is safe; discard the remaining operation and refresh.`)
+    if (canonical(tasks)!==canonical(change.before)) throw new Error(ui("Daily work changed on {0}. Saved work is safe; discard the remaining operation and refresh.", [change.date]))
     await invoke('cloud_apply_day',{date:change.date,tasks:change.after,expectedTasks:tasks,expectedKbPath:folder})
   }
   discardProjectOperation(folder)

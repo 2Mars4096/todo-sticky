@@ -19,13 +19,14 @@ void main() {
         String path, [
         Map<String, dynamic>? body,
       ]) async {
-        if (path.endsWith('/refresh'))
+        if (path.endsWith('/refresh')) {
           return {
             'head': 2,
             'before': 2,
             'reviews': [row],
           };
-        if (path.contains('before='))
+        }
+        if (path.contains('before=')) {
           return {
             'before': null,
             'reviews': [
@@ -37,9 +38,15 @@ void main() {
               },
             ],
           };
+        }
         if (body != null) {
           calls.add(body);
-          return {};
+          return {
+            'source_revision': 1,
+            'records': [
+              {'record_type': 'task', 'record_id': 'canonical'},
+            ],
+          };
         }
         return {
           'analysis_id': 'a',

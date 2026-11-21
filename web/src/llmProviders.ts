@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import type { AppSettings, Provider, ProviderProfile } from './types'
 
 interface ProviderPreset {
@@ -20,16 +21,16 @@ export const PROVIDER_ORDER: Provider[] = [
 ]
 
 export const PROVIDER_PRESETS: Record<Provider, ProviderPreset> = {
-  diane: {label:'Pipe Dreams account',shortLabel:'Pipe Dreams',apiBase:'https://dear-diane-202610-api.web.app',model:'',models:[]},
+  diane: {get label(){ return ui("Pipe Dreams account") },get shortLabel(){ return ui("Pipe Dreams") },apiBase:'https://dear-diane-202610-api.web.app',model:'',models:[]},
   codex: {
-    label: 'Codex (ChatGPT login)',
+    get label(){ return ui("Codex (ChatGPT login)") },
     shortLabel: 'Codex',
     apiBase: 'codex',
     model: '',
     models: [],
   },
   moonshot: {
-    label: 'Moonshot (Kimi)',
+    get label(){ return ui("Moonshot (Kimi)") },
     shortLabel: 'Kimi',
     apiBase: 'https://api.moonshot.ai/v1',
     model: 'kimi-k2.6',
@@ -37,7 +38,7 @@ export const PROVIDER_PRESETS: Record<Provider, ProviderPreset> = {
   },
   openrouter: {
     label: 'OpenRouter',
-    shortLabel: 'Router',
+    get shortLabel(){ return ui("Router") },
     apiBase: 'https://openrouter.ai/api/v1',
     model: 'moonshotai/kimi-k3',
     models: [
@@ -55,22 +56,22 @@ export const PROVIDER_PRESETS: Record<Provider, ProviderPreset> = {
     models: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini'],
   },
   anthropic: {
-    label: 'Anthropic (Claude)',
+    get label(){ return ui("Anthropic (Claude)") },
     shortLabel: 'Claude',
     apiBase: 'https://api.anthropic.com/v1',
     model: 'claude-sonnet-4-20250514',
     models: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022'],
   },
   gemini: {
-    label: 'Google Gemini',
+    get label(){ return ui("Google Gemini") },
     shortLabel: 'Gemini',
     apiBase: 'https://generativelanguage.googleapis.com/v1beta',
     model: 'gemini-2.0-flash',
     models: ['gemini-2.0-flash', 'gemini-2.0-pro', 'gemini-1.5-pro'],
   },
   custom: {
-    label: 'Custom (OpenAI-compatible)',
-    shortLabel: 'Custom',
+    get label(){ return ui("Custom (OpenAI-compatible)") },
+    get shortLabel(){ return ui("Custom") },
     apiBase: '',
     model: '',
     models: [],

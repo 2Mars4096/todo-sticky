@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const vm = require('node:vm')
@@ -8,7 +9,7 @@ const transpile = file => ts.transpileModule(fs.readFileSync(file, 'utf8'), {
 function fixture() {
   const writes=[], timers=new Map();let taskState=[],nextTimer=0
   const apiExports={}
-  vm.runInNewContext(transpile('src/api.ts'), {exports:apiExports,require:name=>{
+  vm.runInNewContext(transpile('src/api.ts'), {exports:apiExports,require:name => { if (name.endsWith('/interfaceLocale')) return testedInterface;
     if(name==='@tauri-apps/api/core') return {isTauri:()=>true}
     if(name==='./notebookCommand') return {invoke:(command,payload)=>new Promise((resolve,reject)=>writes.push({command,payload,resolve,reject}))}
     if(name==='@tauri-apps/api/event') return {listen:()=>{}}
@@ -19,7 +20,7 @@ function fixture() {
   vm.runInNewContext(transpile('src/hooks/useTasks.ts'),{
     exports:hookExports,console:{error:()=>{}},
     setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer},clearTimeout:id=>timers.delete(id),
-    require:name=>{
+    require:name => { if (name.endsWith('/interfaceLocale')) return testedInterface;
       if(name==='react')return {useRef:current=>({current}),useEffect:()=>{},useCallback:fn=>fn,useState:initial=>[initial,update=>{if(typeof update==='function')taskState=update(taskState)}]}
       if(name==='../api')return apiExports
       if(name==='../taskCarryForward')return {resolveTaskCarryForwardTarget:()=>({dateStr:'2026-10-04'})}

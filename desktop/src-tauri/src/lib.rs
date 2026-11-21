@@ -33,6 +33,39 @@ struct LaunchVisibility(AtomicBool);
 #[derive(Default)]
 struct PendingTaskLink(Mutex<Option<String>>);
 
+#[derive(serde::Deserialize)]
+#[serde(rename_all="camelCase")]
+struct InterfaceMenuLabels {
+    toggle: String, quit: String, about: String, hide: String, hide_others: String,
+    edit: String, copy: String, paste: String, tray: String,
+}
+
+#[tauri::command]
+fn set_interface_menu(app: AppHandle, labels: InterfaceMenuLabels) -> Result<(), String> {
+    let toggle = format!("{}    {}", labels.toggle, shortcut_label());
+    let update = || -> tauri::Result<()> {
+        #[cfg(target_os="macos")]
+        {
+            let show = MenuItem::with_id(&app,"show_hide",&toggle,true,None::<&str>)?;
+            let product = SubmenuBuilder::new(&app,"Dockit")
+                .about_with_text(&labels.about,None).separator().item(&show).separator()
+                .hide_with_text(&labels.hide).hide_others_with_text(&labels.hide_others).separator()
+                .quit_with_text(&labels.quit).build()?;
+            let edit = SubmenuBuilder::new(&app,&labels.edit).copy_with_text(&labels.copy)
+                .paste_with_text(&labels.paste).build()?;
+            MenuBuilder::new(&app).item(&product).item(&edit).build()?.set_as_app_menu()?;
+        }
+        if let Some(tray) = app.tray_by_id("main") {
+            let show = MenuItemBuilder::with_id("toggle",&toggle).build(&app)?;
+            let quit = MenuItemBuilder::with_id("quit",&labels.quit).accelerator("CmdOrCtrl+Q").build(&app)?;
+            tray.set_menu(Some(MenuBuilder::new(&app).items(&[&show,&quit]).build()?))?;
+            tray.set_tooltip(Some(labels.tray.replace("{0}",shortcut_label().as_ref())))?;
+        }
+        Ok(())
+    };
+    update().map_err(|error| error.to_string())
+}
+
 #[tauri::command]
 fn take_task_link(app: AppHandle) -> Option<String> { app.state::<PendingTaskLink>().0.lock().ok()?.take() }
 
@@ -367,7 +400,9 @@ pub fn run() {
             screenshot::open_capture_settings,
             screenshot::take_sent_screenshots,
             take_task_link,
+            set_interface_menu,
             cloud_sync::open_account_sign_in,
+            cloud_sync::open_suite_link,
             cloud_sync::cloud_apply_day,
             cloud_sync::cloud_task_folder,
             diane_credentials::diane_credential_status,

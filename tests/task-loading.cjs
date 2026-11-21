@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const vm = require('node:vm')
@@ -18,7 +19,7 @@ function fixture() {
  vm.runInNewContext(transpile('src/hooks/useTasks.ts'),{
   exports:out,console:{error:()=>{}},
   setTimeout:(fn,ms)=>{timers.set(++nextTimer,{fn,ms});return nextTimer},clearTimeout:id=>timers.delete(id),
-  require:name=>{
+  require:name => { if (name.endsWith('/interfaceLocale')) return testedInterface;
    if(name==='react')return {
     useState:initial=>{const i=cursor++;if(!(i in slots))slots[i]=initial;return [slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v}]},
     useRef:initial=>{const i=cursor++;return slots[i]??(slots[i]={current:initial})},

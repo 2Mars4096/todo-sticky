@@ -1,0 +1,77 @@
+{
+  "goal-focus": {
+    "stateRenders": 1150,
+    "states": [
+      "focus-armed",
+      "focus-completed",
+      "focus-full-archive",
+      "focus-paused",
+      "focus-recent-archive",
+      "focus-resumed",
+      "focus-running",
+      "goal-created",
+      "notebook-retry-committed",
+      "notebook-save-failed",
+      "reminder-edit-cancelled",
+      "reminder-editor-draft",
+      "reminder-paused",
+      "reminder-resumed",
+      "reminder-weekly",
+      "routine-created",
+      "task-due-date-cancelled",
+      "task-due-date-draft",
+      "task-due-date-saved",
+      "task-finish-review",
+      "task-finish-revise",
+      "task-finished",
+      "task-title-draft"
+    ],
+    "locales": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "yue",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "uniqueLocaleStateElements": 9300,
+    "observedInAllFive": 9279,
+    "partialFive": 21,
+    "cycleObservations": {
+      "1": 9297,
+      "2": 9300,
+      "3": 9297,
+      "4": 9279,
+      "5": 9297
+    },
+    "reviews": 46470,
+    "candidates": {
+      "source-language-candidate": 108,
+      "content-varies": 28
+    },
+    "copyClassifications": {
+      "catalog-literal": 4472,
+      "context-or-framework-review": 1810,
+      "catalog-template": 1980,
+      "numeric-or-symbol": 210,
+      "synthetic-record": 720,
+      "source-language-candidate": 108
+    },
+    "distinctCatalogCandidatesByLocale": {
+      "de": 117,
+      "en": 113,
+      "es": 122,
+      "fr": 123,
+      "ja": 123,
+      "ko": 118,
+      "pt": 118,
+      "yue": 120,
+      "zh-Hans": 123,
+      "zh-Hant": 123
+    }
+  }
+}

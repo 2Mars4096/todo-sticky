@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -11,6 +13,7 @@ import 'package:flutter/material.dart';
 import '../app.dart';
 import '../widgets/meeting_followups.dart';
 import '../widgets/workspace_assignments.dart';
+import '../widgets/assignment_entry.dart';
 import '../widgets/sync_progress.dart';
 import '../widgets/conflict_items.dart';
 import '../widgets/cloud_sync_button.dart';
@@ -108,7 +111,7 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
       SnackBar(
         content: Text(text),
         action: SnackBarAction(
-          label: 'Cancel link',
+          label: tr(context, "Cancel link"),
           onPressed: () {
             widget.store.syncMetadata.remove('pendingSharedTaskLink');
             widget.store.changed();
@@ -133,7 +136,7 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
     }
     if (account.session == null ||
         account.server != dianeSharedOrigin ||
-        !account.enabled) {
+        (!account.enabled && datedNotebookTask(id) == null)) {
       if (!accountRouteOpen) {
         accountRouteOpen = true;
         unawaited(
@@ -150,7 +153,11 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
     }
     openingLink = true;
     try {
-      final target = await account.resolveSharedTask(id);
+      Map? source;
+      final target = await account.resolveSharedTask(
+        id,
+        onSource: (value) => source = value,
+      );
       if (!mounted ||
           widget.store.syncMetadata['pendingSharedTaskLink'] != id ||
           account.isEditing()) {
@@ -163,7 +170,9 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
           .toList();
       if (matches.length != 1) {
         throw StateError(
-          'This shared task has not synced yet. Review sync in Account; the link is retained.',
+          ui(
+            "This shared task has not synced yet. Review sync in Account; the link is retained.",
+          ),
         );
       }
       await widget.store.flush();
@@ -175,6 +184,7 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
               store: widget.store,
               ai: linkAi,
               row: matches.single,
+              mynitSource: source,
               openFocus: () {
                 focusRequests.value++;
               },
@@ -210,36 +220,48 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
   }
 
   @override
-  Widget build(BuildContext context) => StickyApp(
-    store: widget.store,
-    navigatorKey: navigator,
-    externalFocusRequests: focusRequests,
-    sharedAgent: account.requestAgent,
-    meetingBuilder: (_) => ListenableBuilder(
-      listenable: account,
-      builder: (_, child) {
-        final session = account.session;
-        if (session == null || session.origin != dianeSharedOrigin)
-          return const SizedBox.shrink();
-        return MeetingFollowups(
-          key: ValueKey(session.owner),
-          request: (path, [body]) =>
-              account.meetingRequest(session.owner, path, body),
-          onAdded: () {
-            if (account.enabled)
-              unawaited(account.synchronize(background: true));
-          },
-        );
-      },
+  Widget build(BuildContext context) => AssignmentEntry(
+    account: account,
+    open: (date, id) => navigator.currentState?.push<void>(
+      MaterialPageRoute(
+        builder: (_) =>
+            AccountScreen(account: account, assignmentKey: '$date:$id'),
+      ),
     ),
-    accountBuilder: (_) => AccountScreen(account: account),
-    syncIndicatorBuilder: (_) => CloudSyncButton(account: account),
+    child: StickyApp(
+      store: widget.store,
+      navigatorKey: navigator,
+      externalFocusRequests: focusRequests,
+      sharedAgent: account.requestAgent,
+      meetingBuilder: (_) => ListenableBuilder(
+        listenable: account,
+        builder: (_, child) {
+          final session = account.session;
+          if (session == null || session.origin != dianeSharedOrigin) {
+            return const SizedBox.shrink();
+          }
+          return MeetingFollowups(
+            key: ValueKey(session.owner),
+            request: (path, [body]) =>
+                account.meetingRequest(session.owner, path, body),
+            onAdded: () {
+              if (account.enabled) {
+                unawaited(account.synchronize(background: true));
+              }
+            },
+          );
+        },
+      ),
+      accountBuilder: (_) => AccountScreen(account: account),
+      syncIndicatorBuilder: (_) => CloudSyncButton(account: account),
+    ),
   );
 }
 
 class AccountScreen extends StatefulWidget {
   final CloudSyncController account;
-  const AccountScreen({super.key, required this.account});
+  final String? assignmentKey;
+  const AccountScreen({super.key, required this.account, this.assignmentKey});
   @override
   State<AccountScreen> createState() => _AccountScreenState();
 }
@@ -300,10 +322,41 @@ class _AccountScreenState extends State<AccountScreen> {
           configuring || account.busy || account.signingIn || !account.ready;
       return Scaffold(
         appBar: AppBar(
+          actions: [
+            PopupMenuButton<String>(
+              tooltip: tr(context, "Switch pipedreams app"),
+              icon: const Icon(Icons.apps_outlined),
+              itemBuilder: (_) => [
+                for (final name in [
+                  'Mynit',
+                  'Dockit',
+                  'Shiprite',
+                  'Zilo',
+                  'Zethea',
+                ])
+                  PopupMenuItem(
+                    value: name,
+                    enabled: name != 'Dockit',
+                    child: Text(name),
+                  ),
+              ],
+              onSelected: (name) async {
+                try {
+                  if (!await account.openBrowser(
+                    Uri.https('${name.toLowerCase()}.pipedreams.work', '/'),
+                  )) {
+                    throw StateError(ui("Could not open {0}.", [name]));
+                  }
+                } catch (error) {
+                  if (context.mounted) showError(context, error);
+                }
+              },
+            ),
+          ],
           title: Text(
             account.server == dianeSharedOrigin
-                ? 'pipedreams account'
-                : 'Account & sync',
+                ? tr(context, "pipedreams account")
+                : tr(context, "Account & sync"),
           ),
         ),
         body: ListView(
@@ -317,6 +370,7 @@ class _AccountScreenState extends State<AccountScreen> {
               if (account.session!.origin == dianeSharedOrigin)
                 WorkspaceAssignments(
                   key: ValueKey(account.session!.owner),
+                  initialTask: widget.assignmentKey,
                   account: account,
                 ),
               const SizedBox(height: 16),
@@ -325,10 +379,10 @@ class _AccountScreenState extends State<AccountScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 initiallyExpanded: account.server.isEmpty,
-                title: const Text('Sync service'),
+                title: Text(tr(context, "Sync service")),
                 subtitle: Text(
                   account.server.isEmpty
-                      ? 'Connect your Google Cloud backend'
+                      ? tr(context, "Connect your Google Cloud backend")
                       : account.server,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -339,8 +393,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     enabled: !unavailable,
                     keyboardType: TextInputType.url,
                     autocorrect: false,
-                    decoration: const InputDecoration(
-                      labelText: 'Service URL',
+                    decoration: InputDecoration(
+                      labelText: tr(context, "Service URL"),
                       hintText: 'https://sticky-sync.example.com',
                     ),
                     onSubmitted: (_) {
@@ -363,7 +417,9 @@ class _AccountScreenState extends State<AccountScreen> {
                     child: FilledButton.tonal(
                       onPressed: unavailable ? null : configure,
                       child: Text(
-                        configuring ? 'Connecting…' : 'Connect service',
+                        configuring
+                            ? tr(context, "Connecting…")
+                            : tr(context, "Connect service"),
                       ),
                     ),
                   ),
@@ -376,21 +432,24 @@ class _AccountScreenState extends State<AccountScreen> {
                     ? null
                     : () => run(account.signIn),
                 icon: const Icon(Icons.account_circle_outlined),
-                label: const Text('Continue with Google'),
+                label: Text(tr(context, "Continue with Google")),
               ),
               if (account.signingIn)
                 TextButton(
                   onPressed: account.cancelSignIn,
-                  child: const Text('Cancel sign-in'),
+                  child: Text(tr(context, "Cancel sign-in")),
                 ),
             ] else ...[
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Sync this notebook'),
+                title: Text(tr(context, "Sync this notebook")),
                 subtitle: Text(
                   account.enabled
-                      ? 'Syncs while the app is open.'
-                      : 'Upload tasks, goals and completed sessions.',
+                      ? tr(context, "Syncs while the app is open.")
+                      : tr(
+                          context,
+                          "Upload tasks, goals and completed sessions.",
+                        ),
                 ),
                 value: account.enabled,
                 onChanged: unavailable
@@ -415,18 +474,18 @@ class _AccountScreenState extends State<AccountScreen> {
                         : const Icon(Icons.sync),
                     label: Text(
                       account.busy && !account.background
-                          ? 'Syncing…'
-                          : 'Sync now',
+                          ? tr(context, "Syncing…")
+                          : tr(context, "Sync now"),
                     ),
                   ),
                   OutlinedButton(
                     onPressed: unavailable ? null : () => run(account.signOut),
-                    child: const Text('Sign out'),
+                    child: Text(tr(context, "Sign out")),
                   ),
                   if (account.error != null)
                     TextButton(
                       onPressed: unavailable ? null : () => run(account.signIn),
-                      child: const Text('Reconnect Google'),
+                      child: Text(tr(context, "Reconnect Google")),
                     ),
                 ],
               ),
@@ -461,15 +520,23 @@ class _AccountScreenState extends State<AccountScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Text(
-                  'Last sync: ${account.lastSynced!.substring(0, 16).replaceAll('T', ' ')}',
+                  tr(context, "Last sync: {0}", [
+                    account.lastSynced!.substring(0, 16).replaceAll('T', ' '),
+                  ]),
                   style: const TextStyle(color: mutedInk, fontSize: 12),
                 ),
               ),
             if (account.conflicts.isNotEmpty) ...[
               const Divider(height: 36),
-              Text('Conflicts', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                tr(context, "Conflicts"),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
-              const Text('Both copies saved', style: TextStyle(height: 1.4)),
+              Text(
+                tr(context, "Both copies saved"),
+                style: TextStyle(height: 1.4),
+              ),
               for (final conflict in account.conflicts)
                 ConflictItems(
                   key: ValueKey(conflict.key),
@@ -489,7 +556,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                       ),
                 icon: const Icon(Icons.download_outlined),
-                label: const Text('Export conflict recovery copies'),
+                label: Text(tr(context, "Export conflict recovery copies")),
               ),
           ],
         ),

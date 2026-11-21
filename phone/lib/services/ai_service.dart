@@ -15,11 +15,10 @@ class AiException implements Exception {
   String toString() => message;
 }
 
-typedef SharedAgentRequest =
-    Future<Map<String, dynamic>> Function(
-      String action,
-      Map<String, dynamic> input,
-    );
+typedef SharedAgentRequest = Future<Map<String, dynamic>> Function(
+  String action,
+  Map<String, dynamic> input,
+);
 
 class AiService {
   final CredentialStore credentials;
@@ -117,9 +116,8 @@ class AiService {
       final streamed = await client
           .send(request)
           .timeout(const Duration(seconds: 90));
-      response = await http.Response.fromStream(
-        streamed,
-      ).timeout(const Duration(seconds: 90));
+      response = await http.Response.fromStream(streamed)
+          .timeout(const Duration(seconds: 90));
     } on TimeoutException {
       throw const AiException(
         'The provider took too long to reply. Your tasks are unchanged. Try again.',
@@ -241,8 +239,7 @@ class AiService {
         );
       }
       await sharedRequest!('breakdown', {
-        'taskText':
-            'Connection test: return one step named Connected. Do not use tools.',
+        'taskText': 'Connection test: return one step named Connected. Do not use tools.',
         'existingSubtasks': [],
       });
       return;

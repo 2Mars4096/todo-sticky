@@ -1,4 +1,4 @@
-.archive-page { display:flex; flex-direction:column; flex:1; min-height:0; color:var(--text-primary); font-size:13px; }
+.archive-page { container-type:inline-size; display:flex; flex-direction:column; flex:1; min-height:0; color:var(--text-primary); font-size:13px; }
 .archive-heading { display:flex; align-items:center; gap:12px; padding:10px 12px; flex-shrink:0; border-bottom:1px solid var(--sticky-border); }
 .archive-heading h2 { font-size:16px; margin:0; flex:1; }
 .archive-page button, .archive-page input, .archive-page select, .routine-options button, .routine-options select { font:inherit; color:var(--text-primary); border:1px solid var(--sticky-border); border-radius:4px; background:transparent; min-height:30px; padding:4px 8px; }
@@ -8,6 +8,15 @@
 .archive-controls { display:flex; gap:8px; flex-wrap:wrap; padding:10px 12px; }
 .archive-controls input { flex:1; width:100%; min-width:0; }
 .archive-controls > input { flex-basis:160px; }
+.archive-project-filter { flex:1 1 11rem; min-width:0; max-width:min(100%, 24rem); overflow:hidden; text-overflow:ellipsis; }
+.archive-empty { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; padding-block:4px; }
+.archive-empty p { margin:0; }
+@container (max-width:36rem) {
+  .archive-controls:has(.archive-project-filter) > :is(input, .progress-period) { flex-basis:100%; }
+}
+@media (pointer:coarse) {
+  .archive-heading button, .archive-controls input, .archive-controls select, .archive-empty button { min-height:44px; }
+}
 .archive-scroll { overflow:auto; min-height:0; padding:0 12px 12px; overscroll-behavior:contain; }
 .archive-results { list-style:none; padding:0; margin:0; }
 .archive-results li { border-top:1px solid var(--sticky-border); }

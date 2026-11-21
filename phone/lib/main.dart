@@ -1,3 +1,5 @@
+import 'interface_locale.dart';
+
 import 'package:flutter/material.dart';
 
 import 'services/persistence.dart';
@@ -14,15 +16,18 @@ Future<void> main() async {
     );
     runApp(AccountEnabledApp(store: store));
   } catch (_) {
+    currentLanguage = resolveLanguage('system');
     runApp(
-      const MaterialApp(
+      MaterialApp(
         home: Scaffold(
           body: SafeArea(
             child: Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'Dockit could not open its local storage. Please reopen the app. Your existing files have not been replaced.',
+                  ui(
+                    "Dockit could not open its local storage. Please reopen the app. Your existing files have not been replaced.",
+                  ),
                 ),
               ),
             ),

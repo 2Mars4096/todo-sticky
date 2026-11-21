@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useMemo } from 'react'
 import { pluginScope } from '@diane/plugin-sdk/client'
 import { useState, useCallback, useRef, useEffect } from 'react'
@@ -14,7 +15,7 @@ import { applyStepsWithUndo } from '../stepProposal'
 // A stalled archive must not leave the entire task surface waiting forever.
 function readWithTimeout<T>(request: Promise<T>, milliseconds = 8000): Promise<T> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('TASK_LOAD_TIMEOUT')), milliseconds)
+    const timer = setTimeout(() => reject(new Error(ui("TASK_LOAD_TIMEOUT"))), milliseconds)
     request.then(value => { clearTimeout(timer); resolve(value) }, error => { clearTimeout(timer); reject(error) })
   })
 }
@@ -149,7 +150,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     setSaving(true)
     let inFlight: Promise<void> | null = null
     const write = async () => {
-      if (!snapshotAuthority || snapshotAuthority.date !== snapshotDate) throw new Error('The edit snapshot is unavailable. Reload this day before saving.')
+      if (!snapshotAuthority || snapshotAuthority.date !== snapshotDate) throw new Error(ui("The edit snapshot is unavailable. Reload this day before saving."))
       const flat = flattenTasks(updatedTasks.filter(task => !task.sourceDate))
       if (snapshotPath) {
         const saved = await api.saveTasks({ filePath: snapshotPath, dateStr: snapshotDate, tasks: flat, expectedRevision: snapshotAuthority.revision })
@@ -191,7 +192,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           await write()
         } catch (error) {
           if (pendingSave.current === save) {
-            setSaveError({ date: snapshotDate, message: 'Changes are still in this window. Retry when Shiprite is connected.' })
+            setSaveError({ date: snapshotDate, message: ui("Changes are still in this window. Retry when Diane is connected.") })
             setSaving(false)
           }
           throw error
@@ -490,7 +491,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
         ? current?.todaySubtasks.find(step => step.id === subtaskId)
         : current && flattenTasks([current])[0]
       if (currentSnapshot && JSON.stringify(currentSnapshot) !== fingerprint) {
-        throw new Error(`The task changed while it was moving. Your edited task stays here; the earlier version was copied to ${target.actionLabel}. Review both before moving it again.`)
+        throw new Error(ui("The task changed while it was moving. Your edited task stays here; the earlier version was copied to {0}. Review both before moving it again.", [target.actionLabel]))
       }
       setUndo(null)
       setTasks(latest => {
@@ -502,7 +503,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
       })
       try { await flushPendingWrites() }
       catch {
-        throw new Error(`The task reached ${target.actionLabel}, but its original could not be removed from storage. Use Retry save to finish the move.`)
+        throw new Error(ui("The task reached {0}, but its original could not be removed from storage. Use Retry save to finish the move.", [target.actionLabel]))
       }
       return target
     })()
@@ -595,12 +596,12 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
   },[persist,setTasks])
 
   const addAISubtasks = useCallback((taskId: string, subtasks: { text: string }[], expectedDate: string, expectedTaskKey: string) => {
-    if (loadingRef.current) throw new Error('Wait for the current tasks before adding suggestions.')
+    if (loadingRef.current) throw new Error(ui("Wait for the current tasks before adding suggestions."))
     setTasks(prev => {
-      if (loadingRef.current || expectedDate !== loadedDateRef.current) throw new Error('The selected day changed. Generate new suggestions.')
+      if (loadingRef.current || expectedDate !== loadedDateRef.current) throw new Error(ui("The selected day changed. Generate new suggestions."))
       const target = prev.find(task => task.id === taskId)
       if (!target || target.status === 'done' || target.status === 'stopped'
-        || planningTaskKey([target]) !== expectedTaskKey) throw new Error('The task changed. Generate new suggestions before adding steps.')
+        || planningTaskKey([target]) !== expectedTaskKey) throw new Error(ui("The task changed. Generate new suggestions before adding steps."))
       const change = applyStepsWithUndo(prev, expectedDate, taskId, subtasks.map(step => step.text), newId)
       if (!change) return prev
       setUndo(change.undo)

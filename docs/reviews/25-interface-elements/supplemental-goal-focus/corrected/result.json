@@ -1,0 +1,24 @@
+{
+  "product": "Dockit",
+  "correctedFindings": [
+    "Focus phase names",
+    "saved and closed deadlines",
+    "goal and routine counts"
+  ],
+  "languages": 10,
+  "cycles": 5,
+  "targetedObservations": 4150,
+  "failed": 0,
+  "scopeByPlatform": {
+    "webFullNotebook": 850,
+    "webRealComponents": 1050,
+    "embeddedRealComponents": 1050,
+    "macOSNativeWKWebView": 1100,
+    "flutterAndroidHost": 50,
+    "flutterIPhoneHost": 50
+  },
+  "producer": "0.1.24",
+  "phoneRelease": "2.1.18+31",
+  "phoneArtifactFingerprints": "final-exports.json",
+  "scopeLimit": "Native APK/IPA packaging verified independently of hosted Flutter label assertions. Five-cycle installed phone baseline used earlier builds. Physical iPhone provisioning required."
+}

@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import { dianeRequest, type DianeProjects } from './diane'
 import { canonical } from './syncMerge'
 
@@ -14,12 +15,12 @@ export async function executionContract(record: RecordValue) {
 
 export async function suggestDianeSetup(input: { id: string; date: string; text: string; parent: string; steps: string[]; projects: DianeProjects['projects'] }): Promise<SetupSuggestion> {
   const { scope } = await dianeRequest<{ scope: string }>('connection')
-  if (!scope) throw Error('Sign into Shiprite before requesting setup suggestions.')
+  if (!scope) throw Error(ui("Sign into Shiprite before requesting setup suggestions."))
   let cursor: string | undefined, found: RecordValue | undefined
   const cursors = new Set<string>()
   for (let page = 0; page < 20; page++) {
     const result = await dianeRequest<{ items: RecordValue[]; next_cursor?: string }>('preparation-records', undefined, { scope, cursor })
-    if (!Array.isArray(result.items)) throw Error('Shiprite returned incompatible task records.')
+    if (!Array.isArray(result.items)) throw Error(ui("Shiprite returned incompatible task records."))
     for (const record of result.items) {
       if (record.deleted || record.deleted_at || record.record_type !== 'task') continue
       const source = record.extensions?.source
@@ -27,27 +28,27 @@ export async function suggestDianeSetup(input: { id: string; date: string; text:
       if (!/^[A-Za-z0-9_-]{1,128}$/.test(id ?? '')) id = 'diane_' + (await hash('task:' + record.record_id)).slice(0, 40)
       const date = record.extensions?.date || record.created_at?.slice(0, 10)
       if (id === input.id && date === input.date) {
-        if (found) throw Error('More than one synced task matches. Resolve sync before preparing.')
+        if (found) throw Error(ui("More than one synced task matches. Resolve sync before preparing."))
         found = record
       }
     }
     cursor = result.next_cursor
     if (!cursor) break
-    if (page === 19 || cursors.has(cursor)) throw Error('The task archive is too large to prepare safely. Use manual setup.')
+    if (page === 19 || cursors.has(cursor)) throw Error(ui("The task archive is too large to prepare safely. Use manual setup."))
     cursors.add(cursor)
   }
-  if (!found || (found.text || found.title) !== input.text) throw Error('Sync this task with the same Pipe Dreams account first, or set up the session manually.')
+  if (!found || (found.text || found.title) !== input.text) throw Error(ui("Sync this task with the same Pipe Dreams account first, or set up the session manually."))
   const candidates = input.projects.filter(p => p.root).map(p => ({ project_id: p.id, name: p.name, root: p.root }))
-  if (!candidates.length || candidates.length > 100) throw Error('Choose a local Shiprite workspace first.')
+  if (!candidates.length || candidates.length > 100) throw Error(ui("Choose a local Shiprite workspace first."))
   const payload = { action: 'prepare', sources: [{ record_id: found.record_id, revision: found.revision }], workspace_candidates: candidates,
     preparation_context: JSON.stringify({ parent: input.parent, steps: input.steps }), preparation_contract: await executionContract(found) }
-  if (payload.preparation_context.length > 16000) throw Error('Shorten the task context before requesting suggestions.')
+  if (payload.preparation_context.length > 16000) throw Error(ui("Shorten the task context before requesting suggestions."))
   const key = 'sticky-todo-setup-v1:' + await hash(canonical([scope, payload]))
   let result: any
   const saved = localStorage.getItem(key)
   if (saved) {
     const receipt = await dianeRequest<any>('preparation-status', saved, { scope })
-    if (receipt.status !== 'completed') throw Error(receipt.detail || 'Preparation is pending or uncertain. Check again later; no duplicate request was sent.')
+    if (receipt.status !== 'completed') throw Error(receipt.detail || ui("Preparation is pending or uncertain. Check again later; no duplicate request was sent."))
     result = receipt.result
   } else {
     const request_id = crypto.randomUUID()
@@ -55,9 +56,9 @@ export async function suggestDianeSetup(input: { id: string; date: string; text:
     result = await dianeRequest<any>('prepare', undefined, { scope, payload: { ...payload, request_id } })
   }
   const current = await dianeRequest<{ scope: string }>('connection')
-  if (current.scope !== scope) throw Error('The Pipe Dreams account changed. Reopen setup.')
+  if (current.scope !== scope) throw Error(ui("The Pipe Dreams account changed. Reopen setup."))
   const suggestion = result?.suggestion
   if (!suggestion || typeof suggestion.context !== 'string' || suggestion.context.length > 4000 || typeof suggestion.reason !== 'string'
-    || (suggestion.project_id !== null && !candidates.some(p => p.project_id === suggestion.project_id))) throw Error('Shiprite returned incompatible setup suggestions.')
+    || (suggestion.project_id !== null && !candidates.some(p => p.project_id === suggestion.project_id))) throw Error(ui("Shiprite returned incompatible setup suggestions."))
   return suggestion
 }

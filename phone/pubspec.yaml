@@ -8,6 +8,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   http: ^1.6.0
   crypto: ^3.0.7
   url_launcher: ^6.3.2
@@ -22,3 +24,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/brand/dockit.png
+    - assets/brand/suite-mynit.png
+    - assets/brand/suite-shiprite.png

@@ -280,3 +280,8 @@ Long-term titles are the direct project entry. Reuse the center page, selected m
 
 
 Project revision uses one inline Save/Cancel pattern for descriptions, unscheduled steps and scheduled task text/work date. Cmd/Ctrl+Enter saves; Escape cancels only that draft. Return focus to the invoking control. Keep changed drafts visible when navigation is attempted and show the brief Save/Cancel prompt only then. A compact Project button returns from full daily-task review. Status/deadline and removal consequences remain explicit; AI proposals retain direct field editing and Apply/Discard.
+
+
+## Task disclosure feedback
+
+The task disclosure points right when closed and down when open. Pointer and touch rotate the glyph over 150ms and can reverse it mid-turn. Enter, Space and reduced motion show the final orientation immediately. Its hit area stays fixed and the content is immediately available.

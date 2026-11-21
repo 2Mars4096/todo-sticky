@@ -53,6 +53,11 @@
   border: 0; border-radius: 4px; background: transparent; color: #645536;
   font: inherit; font-size: 12px; line-height: 1.4; cursor: pointer; text-align: left;
 }
+.task-steps-toggle .step-disclosure-icon { display: inline-flex; flex: none; fill: currentColor; }
+.task-steps-toggle[aria-expanded="true"] .step-disclosure-icon { transform: rotate(90deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .task-steps-toggle[data-pointer-disclosure] .step-disclosure-icon { transition: transform 150ms cubic-bezier(.23, 1, .32, 1); }
+}
 .task-entry .task-text-action:hover,
 .task-entry .task-steps-toggle:hover { background: rgba(166, 132, 43, .12); }
 .task-entry .task-focus-action { font-weight: 600; color: #5b4720; background: rgba(196, 164, 74, .13); }

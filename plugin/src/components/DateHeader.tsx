@@ -1,3 +1,5 @@
+import {hostLanguage,hostFormatLanguage} from '../interfaceLocale';
+import { ui } from '../interfaceLocale'
 import { useRef, useEffect } from 'react'
 import { format } from 'date-fns'
 import { MiniCalendar } from './MiniCalendar'
@@ -26,7 +28,7 @@ export function DateHeader({
 }: Props) {
   const calRef = useRef<HTMLDivElement>(null)
   const dateButtonRef = useRef<HTMLButtonElement>(null)
-  const shortDate = format(selectedDate, selectedDate.getFullYear() === new Date().getFullYear() ? 'EEE, MMM d' : 'EEE, MMM d, yyyy')
+  const shortDate = hostLanguage()!=='en' ? new Intl.DateTimeFormat(hostFormatLanguage(),{weekday:'short',day:'numeric',month:'short'}).format(selectedDate) : format(selectedDate, selectedDate.getFullYear() === new Date().getFullYear() ? 'EEE, MMM d' : 'EEE, MMM d, yyyy')
 
   useEffect(() => {
     if (!calendarOpen) return
@@ -48,17 +50,17 @@ export function DateHeader({
       }
     }}>
       <div className="date-nav">
-        <button className="date-step" onClick={onPrev} title="Previous day" aria-label="Previous day">‹</button>
+        <button className="date-step" onClick={onPrev} title={ui("Previous day")} aria-label={ui("Previous day")}>‹</button>
         <div className="date-title-slot" ref={calRef}>
           <button
             ref={dateButtonRef}
             className="date-title"
             onClick={onToggleCalendar}
             aria-expanded={calendarOpen}
-            aria-label={`${displayDate}. Open calendar`}
-            title={`Task list for ${displayDate}. Deadlines are shown on each task.`}
+            aria-label={ui("{0}. Open calendar", [displayDate])}
+            title={ui("Task list for {0}. Deadlines are shown on each task.", [displayDate])}
           >
-            <span className="date-title-label">{isCurrentDay ? 'Today · ' : ''}{shortDate}</span>
+            <span className="date-title-label">{isCurrentDay ? ui("Today · ") : ''}{shortDate}</span>
             <span className="cal-chevron">{calendarOpen ? '▴' : '▾'}</span>
           </button>
           {calendarOpen && (
@@ -67,11 +69,11 @@ export function DateHeader({
             </div>
           )}
         </div>
-        <button className="date-step" onClick={onNext} title="Next day" aria-label="Next day">›</button>
+        <button className="date-step" onClick={onNext} title={ui("Next day")} aria-label={ui("Next day")}>›</button>
       </div>
       {(!isCurrentDay || projectBackLabel) && <div className="header-row">
-        {projectBackLabel&&<button className="today-jump" onClick={onBackProject} aria-label={`Back to project ${projectBackLabel}`} title={projectBackLabel}>‹ Project</button>}
-        {!isCurrentDay&&<button className="today-jump" onClick={onToday}>Go to today</button>}
+        {projectBackLabel&&<button className="today-jump" onClick={onBackProject} aria-label={ui("Back to project {0}", [projectBackLabel])} title={projectBackLabel}>{ui("‹ Project")}</button>}
+        {!isCurrentDay&&<button className="today-jump" onClick={onToday}>{ui("Go to today")}</button>}
       </div>}
 
     </div>

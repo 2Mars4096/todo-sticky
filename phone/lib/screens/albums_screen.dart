@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -37,7 +39,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Music for this work')),
+    appBar: AppBar(title: Text(tr(context, "Music for this work"))),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -50,7 +52,11 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.headphones_outlined),
-          label: Text(albums.isEmpty ? 'Suggest albums' : 'Suggest more'),
+          label: Text(
+            albums.isEmpty
+                ? tr(context, "Suggest albums")
+                : tr(context, "Suggest more"),
+          ),
         ),
         if (error != null)
           Padding(
@@ -105,7 +111,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                           ),
                         ),
                         icon: const Icon(Icons.copy, size: 16),
-                        label: const Text('Copy to search'),
+                        label: Text(tr(context, "Copy to search")),
                       ),
                     ],
                   ),

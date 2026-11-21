@@ -1,3 +1,5 @@
+import { formatLanguage } from '../interfaceLocale'
+import { ui } from '../interfaceLocale'
 import type { StarFocusMissionRecord, StarFocusSession } from '../types'
 import { STAR_FOCUS_PHASES, type StarFocusSnapshot } from '../hooks/useStarFocus'
 import { getJourneyLeg, getNextJourneyLeg } from '../starFocusJourney'
@@ -32,19 +34,19 @@ interface Props {
 const durationOptions = [15, 25, 45]
 const phaseCopy = {
   ignition: {
-    callSign: 'Clamp Release',
+    get callSign(){ return ui("Clamp Release") },
   },
   ascent: {
-    callSign: 'Pitch Program',
+    get callSign(){ return ui("Pitch Program") },
   },
   heating: {
     callSign: 'Max-Q',
   },
   staging: {
-    callSign: 'Stage Separation',
+    get callSign(){ return ui("Stage Separation") },
   },
   orbit: {
-    callSign: 'Circularization',
+    get callSign(){ return ui("Circularization") },
   },
 } as const
 
@@ -60,7 +62,7 @@ function formatDuration(minutes: number) {
 }
 
 function formatCompletedAt(timestamp: number) {
-  return new Date(timestamp).toLocaleString(undefined, {
+  return new Date(timestamp).toLocaleString(formatLanguage(), {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
@@ -93,8 +95,8 @@ export function MissionControlSidebar({
 }: Props) {
   const orbitCount = missionHistory.length
   const liveLabel = activeSnapshot
-    ? STAR_FOCUS_PHASES.find(phase => phase.id === activeSnapshot.phase)?.label ?? 'Orbit'
-    : 'Idle'
+    ? STAR_FOCUS_PHASES.find(phase => phase.id === activeSnapshot.phase)?.label ?? ui("Orbit")
+    : ui("Idle")
   const phaseTheme = activeSnapshot
     ? `phase-${activeSnapshot.phase}`
     : latestCompletedMission
@@ -111,19 +113,19 @@ export function MissionControlSidebar({
   const displayLeg = completedLeg ?? nextLeg
 
   return (
-    <aside className={`mission-sidebar focus-refined ${collapsed ? 'collapsed' : ''}`} aria-label="Star Focus mission control">
+    <aside className={`mission-sidebar focus-refined ${collapsed ? 'collapsed' : ''}`} aria-label={ui("Star Focus mission control")}>
       <div className="mission-top">
         {!collapsed && (
           <div className="mission-heading">
-            <span className="mission-kicker">Star Focus</span>
-            <strong>Mission Control</strong>
+            <span className="mission-kicker">{ui("Star Focus")}</span>
+            <strong>{ui("Mission Control")}</strong>
           </div>
         )}
         <button
           className="sidebar-toggle"
           onClick={onToggleCollapse}
-          title={collapsed ? 'Expand Mission Control' : 'Collapse Mission Control'}
-          aria-label={collapsed ? 'Open Mission Control' : 'Close Mission Control'}
+          title={collapsed ? ui("Expand Mission Control") : ui("Collapse Mission Control")}
+          aria-label={collapsed ? ui("Open Mission Control") : ui("Close Mission Control")}
           aria-expanded={!collapsed}
         >
           {collapsed ? '‹' : '›'}
@@ -132,35 +134,35 @@ export function MissionControlSidebar({
 
       {collapsed ? (
         <div className="mission-mini-stats">
-          <span className="rail-name">Focus</span>
+          <span className="rail-name">{ui("Focus")}</span>
           <div className="mini-stat">
-            <strong>{activeSession ? activeSnapshot?.isPaused ? 'HOLD' : 'LIVE' : orbitCount}</strong>
-            <span>{activeSession ? 'State' : 'Orbit'}</span>
+            <strong>{activeSession ? activeSnapshot?.isPaused ? ui("HOLD") : ui("LIVE") : orbitCount}</strong>
+            <span>{activeSession ? ui("State") : ui("Orbit")}</span>
           </div>
           <div className="mini-stat">
             <strong>{displayLeg.destination.code}</strong>
-            <span>Next</span>
+            <span>{ui("Next")}</span>
           </div>
           <div className="mini-stat">
             <strong>{activeSnapshot ? formatClock(activeSnapshot.remainingMs) : formatDuration(sessionDurationMinutes)}</strong>
-            <span>{activeSnapshot ? 'Left' : 'Timer'}</span>
+            <span>{activeSnapshot ? ui("Left") : ui("Timer")}</span>
           </div>
           <button
             className="mission-mini-open"
             onClick={onOpenOverlay}
-            title="Open Focus Mode"
-            aria-label="Open Focus Mode"
-          >
-            Open
-          </button>
+            title={ui("Open Focus Mode")}
+            aria-label={ui("Open Focus Mode")}
+          ><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6m0 6 7-7"/>
+            </svg></button>
         </div>
       ) : (
         <div className="mission-body">
           <section className="mission-panel mission-status-panel">
             <div className="mission-panel-head">
-              <span className="mission-section-label">Flight Deck</span>
+              <span className="mission-section-label">{ui("Flight Deck")}</span>
               <span className={`mission-state-chip ${activeSession ? activeSnapshot?.isPaused ? 'paused' : 'live' : selectedTaskText ? 'armed' : 'idle'}`}>
-                {activeSession ? activeSnapshot?.isPaused ? 'Paused' : liveLabel : selectedTaskText ? 'Ready' : 'Idle'}
+                {activeSession ? activeSnapshot?.isPaused ? ui("Paused") : liveLabel : selectedTaskText ? ui("Ready") : ui("Idle")}
               </span>
             </div>
 
@@ -174,23 +176,23 @@ export function MissionControlSidebar({
             {activeSession && activeSnapshot ? (
               <div className={`mission-status-card active ${phaseTheme}`}>
                 <div className="mission-phase-banner">
-                  <span>{activePhaseCopy?.callSign ?? 'Flight Path'}</span>
-                  <strong>{activeSnapshot.isPaused ? 'Timer Held' : 'Tracking'}</strong>
+                  <span>{activePhaseCopy?.callSign ?? ui("Flight Path")}</span>
+                  <strong>{activeSnapshot.isPaused ? ui("Timer Held") : ui("Tracking")}</strong>
                 </div>
                 <div className="mission-task-title">{activeSession.taskText}</div>
                 <div className="mission-flag-row">
-                  {restoredSession && <span className="mission-flag">Reload Safe</span>}
-                  <span className="mission-flag">{activeSnapshot.isPaused ? 'Hold' : 'Live Burn'}</span>
+                  {restoredSession && <span className="mission-flag">{ui("Reload Safe")}</span>}
+                  <span className="mission-flag">{activeSnapshot.isPaused ? ui("Hold") : ui("Live Burn")}</span>
                   <span className="mission-flag">{formatDuration(activeSession.durationMinutes)}</span>
                 </div>
                 <div className="mission-time-row">
                   <div>
-                    <span className="mission-metric-label">{activeSnapshot.isPaused ? 'Time On Hold' : 'Time Remaining'}</span>
+                    <span className="mission-metric-label">{activeSnapshot.isPaused ? ui("Time On Hold") : ui("Time Remaining")}</span>
                     <strong>{formatClock(activeSnapshot.remainingMs)}</strong>
                   </div>
                   <div>
-                    <span className="mission-metric-label">Flight Phase</span>
-                    <strong>{activeSnapshot.isPaused ? `${liveLabel} Hold` : liveLabel}</strong>
+                    <span className="mission-metric-label">{ui("Flight Phase")}</span>
+                    <strong>{activeSnapshot.isPaused ? ui("{0} Hold", [liveLabel]) : liveLabel}</strong>
                   </div>
                 </div>
                 <div className="mission-progress-shell">
@@ -201,40 +203,40 @@ export function MissionControlSidebar({
                 </div>
                 <div className="mission-action-row">
                   <button className="mission-btn subtle" onClick={activeSnapshot.isPaused ? onResume : onPause}>
-                    {activeSnapshot.isPaused ? 'Resume' : 'Pause'}
+                    {activeSnapshot.isPaused ? ui("Resume") : ui("Pause")}
                   </button>
-                  <button className="mission-btn primary" onClick={onComplete}>Finish session</button>
-                  <button className="mission-btn subtle danger" onClick={onCancel}>Cancel session</button>
+                  <button className="mission-btn primary" onClick={onComplete}>{ui("Finish session")}</button>
+                  <button className="mission-btn subtle danger" onClick={onCancel}>{ui("Cancel session")}</button>
                 </div>
-                <p className="focus-outcome-note">Record your focus session here. Review the task outcome in your task list.</p>
+                <p className="focus-outcome-note">{ui("Record your focus session here. Review the task outcome in your task list.")}</p>
               </div>
             ) : latestCompletedMission ? (
               <div className="mission-status-card success">
                 <div className="mission-panel-head compact">
-                  <span className="mission-section-label">Session saved</span>
+                  <span className="mission-section-label">{ui("Session saved")}</span>
                   <span className="mission-success-tag">{latestCompletedMission.vehicleCode}</span>
                 </div>
                 <div className="mission-task-title">{latestCompletedMission.taskText}</div>
                 <div className="mission-time-row">
                   <div>
-                    <span className="mission-metric-label">Completed</span>
+                    <span className="mission-metric-label">{ui("Completed")}</span>
                     <strong>{formatCompletedAt(latestCompletedMission.completedAt)}</strong>
                   </div>
                   <div>
-                    <span className="mission-metric-label">Planned duration</span>
+                    <span className="mission-metric-label">{ui("Planned duration")}</span>
                     <strong>{formatDuration(latestCompletedMission.durationMinutes)}</strong>
                   </div>
                 </div>
                 <div className="mission-action-row">
-                  <button className="mission-btn primary" onClick={onDismissCompletion}>Another session</button>
+                  <button className="mission-btn primary" onClick={onDismissCompletion}>{ui("Another session")}</button>
                 </div>
-                <p className="focus-outcome-note">Review the task outcome in your task list when you are ready.</p>
-                {onReviewTask && <button className="mission-btn primary" onClick={onReviewTask}>Review task</button>}
+                <p className="focus-outcome-note">{ui("Review the task outcome in your task list when you are ready.")}</p>
+                {onReviewTask && <button className="mission-btn primary" onClick={onReviewTask}>{ui("Review task")}</button>}
               </div>
             ) : selectedTaskText ? (
               <div className="mission-status-card armed">
                 <div className="mission-task-title">{selectedTaskText}</div>
-                <div className="duration-row" role="group" aria-label="Focus duration">
+                <div className="duration-row" role="group" aria-label={ui("Focus duration")}>
                   {durationOptions.map(option => (
                     <button
                       key={option}
@@ -247,23 +249,21 @@ export function MissionControlSidebar({
                   ))}
                 </div>
                 <div className="mission-action-row">
-                  <button className="mission-btn primary" onClick={onLaunch}>Start focus</button>
-                  <button className="mission-btn subtle" onClick={onClearSelection}>Clear selection</button>
+                  <button className="mission-btn primary" onClick={onLaunch}>{ui("Start focus")}</button>
+                  <button className="mission-btn subtle" onClick={onClearSelection}>{ui("Clear selection")}</button>
                 </div>
               </div>
             ) : (
               <div className="mission-status-card idle">
-                <div className="mission-task-title">Choose a task to focus on</div>
+                <div className="mission-task-title">{ui("Choose a task to focus on")}</div>
               </div>
             )}
           </section>
 
           <section className="mission-panel starmap-panel">
             <div className="mission-panel-head">
-              <span className="mission-section-label">Orbital Map</span>
-              <button className="mission-link-btn" onClick={onOpenOverlay}>
-                Focus Mode
-              </button>
+              <span className="mission-section-label">{ui("Orbital Map")}</span>
+              <button className="mission-link-btn" onClick={onOpenOverlay}>{ui("Focus Mode")}</button>
             </div>
 
             <StarFocusOrbitalMap
@@ -301,7 +301,7 @@ export function MissionControlSidebar({
 
           <section className="mission-panel mission-history-panel">
             <div className="mission-panel-head">
-              <span className="mission-section-label">Recent sessions</span>
+              <span className="mission-section-label">{ui("Recent sessions")}</span>
             </div>
 
             {missionHistory.length ? (
@@ -315,22 +315,18 @@ export function MissionControlSidebar({
                     <div className="mission-history-copy">
                       <div className="mission-history-task">{mission.taskText}</div>
                       <div className="mission-history-meta">
-                        <span>{formatDuration(mission.durationMinutes)} planned</span>
+                        <span>{ui("{0} planned", [formatDuration(mission.durationMinutes)])}</span>
                         <span>{formatCompletedAt(mission.completedAt)}</span>
                       </div>
                     </div>
                   </div>
                 ))}
                 {hiddenHistoryCount > 0 && (
-                  <div className="mission-history-overflow">
-                    +{hiddenHistoryCount} archived mission{hiddenHistoryCount === 1 ? '' : 's'}
-                  </div>
+                  <div className="mission-history-overflow">{hiddenHistoryCount === 1 ? ui("+{0} archived mission", [hiddenHistoryCount]) : ui("+{0} archived missions", [hiddenHistoryCount])}</div>
                 )}
               </div>
             ) : (
-              <p className="mission-empty-copy">
-                No completed sessions.
-              </p>
+              <p className="mission-empty-copy">{ui("No completed sessions.")}</p>
             )}
 
             <div className="mission-maintenance-row">
@@ -338,23 +334,17 @@ export function MissionControlSidebar({
                 className="mission-maintenance-btn"
                 onClick={onClearHistory}
                 disabled={!missionHistory.length}
-                title={missionHistory.length ? 'Clear mission history but keep the current session shell' : 'No mission history to clear'}
-              >
-                Clear History
-              </button>
+                title={missionHistory.length ? ui("Clear mission history but keep the current session shell") : ui("No mission history to clear")}
+              >{ui("Clear History")}</button>
               <button
                 className="mission-maintenance-btn"
                 onClick={onResetOrbitMap}
                 disabled={Boolean(activeSession) || (!missionHistory.length && !selectedTaskText && !latestCompletedMission)}
-                title={activeSession ? 'Orbit reset is disabled while a session is active' : 'Reset the local Star Focus orbit map'}
-              >
-                Reset Orbit Map
-              </button>
+                title={activeSession ? ui("Orbit reset is disabled while a session is active") : ui("Reset the local Star Focus orbit map")}
+              >{ui("Reset Orbit Map")}</button>
             </div>
             {activeSession && (
-              <p className="mission-maintenance-note">
-                Disabled during an active mission.
-              </p>
+              <p className="mission-maintenance-note">{ui("Disabled during an active mission.")}</p>
             )}
           </section>
         </div>

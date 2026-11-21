@@ -53,7 +53,9 @@ async function run() {
   assert.equal(members.length, 1)
   const proposal = { ...task('Review proposal'), subtasks: [{ ...task('Check budget'), id: 'step' }] }
   const assignment = await taskAssignment('member', members[0].id, date, proposal, 'editor')
-  assert.equal(assignment.path, '/shiprite/workspaces/workspace/assignments/5de11d38-9c01-8ee9-9f8f-da03e2761304')
+  assert.equal(assignment.id, '5de11d38-9c01-8ee9-9f8f-da03e2761304')
+  assert.equal(assignment.path, '/api/connected-apps/workspaces/workspace/shiprite/assignments')
+  assert.equal(assignment.body.source.taskId,proposal.id)
   assert.equal(assignment.body.instructions, 'Review proposal\n- Check budget')
   console.log('Browser notebook kept the synced proposal after stale replacement and creation attempts.')
 }

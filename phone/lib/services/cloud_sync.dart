@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -26,6 +28,13 @@ String selectedSharedServiceOrigin(String current, bool cutover) {
 Uri accountConfigurationUri(String origin) => Uri.parse(
   '$origin${origin == dianeSharedOrigin ? '/api/connected-apps/config?appId=todo' : '/v1/config'}',
 );
+
+({String date, String taskId})? datedNotebookTask(String id) {
+  final match = RegExp(
+    r'^notebook\.(\d{4}-\d{2}-\d{2})\.([A-Za-z0-9_-]{1,128})$',
+  ).firstMatch(id);
+  return match == null ? null : (date: match[1]!, taskId: match[2]!);
+}
 
 String? parseTodoTaskLink(String value) {
   final uri = Uri.tryParse(value);
@@ -82,7 +91,9 @@ Map<String, dynamic> verifiedSharedOwnerMigration(
             '${entry['projectId']}:${entry['owner']}' == previous,
       )) {
     throw StateError(
-      'This notebook belongs to another account. The shared service has not verified its original account link.',
+      ui(
+        "This notebook belongs to another account. The shared service has not verified its original account link.",
+      ),
     );
   }
   final prefix = 'account:$previous:';
@@ -97,14 +108,16 @@ Map<String, dynamic> verifiedSharedOwnerMigration(
         value['pending'] is! Map ||
         value['conflicts'] is! List) {
       throw StateError(
-        'Original sync metadata needs recovery. Local notes are unchanged.',
+        ui("Original sync metadata needs recovery. Local notes are unchanged."),
       );
     }
   }
   if (candidates.map((entry) => canonicalJson(entry.value)).toSet().length >
       1) {
     throw StateError(
-      'Several original sync histories need review. Baselines and offline changes were kept.',
+      ui(
+        "Several original sync histories need review. Baselines and offline changes were kept.",
+      ),
     );
   }
   final target = 'account:$next:$origin';
@@ -114,7 +127,9 @@ Map<String, dynamic> verifiedSharedOwnerMigration(
     if (metadata.containsKey(target) &&
         canonicalJson(metadata[target]) != canonicalJson(source.value)) {
       throw StateError(
-        'The shared account has different saved sync history. Existing copies were kept for review.',
+        ui(
+          "The shared account has different saved sync history. Existing copies were kept for review.",
+        ),
       );
     }
     if (!metadata.containsKey(target)) {
@@ -144,8 +159,10 @@ String syncOrigin(String value) {
       uri.hasFragment ||
       (uri.path.isNotEmpty && uri.path != '/') ||
       (uri.scheme != 'https' && !(uri.scheme == 'http' && local))) {
-    throw const FormatException(
-      'Enter the HTTPS service origin, such as https://sticky-sync.example.com.',
+    throw FormatException(
+      ui(
+        "Enter the HTTPS service origin, such as https://sticky-sync.example.com.",
+      ),
     );
   }
   return uri.origin;
@@ -205,12 +222,16 @@ class CloudTransport {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           final detail = data['detail'];
           final message = response.statusCode == 409
-              ? 'This note changed on another device. Sync again to review both versions.'
+              ? ui(
+                  "This note changed on another device. Sync again to review both versions.",
+                )
               : response.statusCode == 401
-              ? 'Your account session expired. Sign in again.'
+              ? ui("Your account session expired. Sign in again.")
               : detail is String
               ? detail
-              : 'The account request failed (${response.statusCode}). Try again.';
+              : ui("The account request failed ({0}). Try again.", [
+                  response.statusCode,
+                ]);
           throw CloudFailure(response.statusCode, message);
         }
         return data;
@@ -255,9 +276,7 @@ class SyncRecord {
         (j['revision'] as int) < 1 ||
         j['deleted'] is! bool ||
         (j['deleted'] == true ? j['payload'] != null : j['payload'] is! Map)) {
-      throw const FormatException(
-        'The service returned an invalid sync record.',
-      );
+      throw FormatException(ui("The service returned an invalid sync record."));
     }
     if (key.startsWith('day:')) parseDate(key.substring(4));
     if (j['deleted'] != true) validateSyncPayload(key, object(j['payload']));
@@ -289,8 +308,8 @@ class SyncRecord {
 /// defaults are useful for local migrations but must not turn a partial remote
 /// response into a request to erase a date or a goal list.
 void validateSyncPayload(String key, Map<String, dynamic> payload) {
-  Never invalid() => throw const FormatException(
-    'The service returned an invalid note. No local data was changed.',
+  Never invalid() => throw FormatException(
+    ui("The service returned an invalid note. No local data was changed."),
   );
   void fields(
     Map<String, dynamic> value,
@@ -855,14 +874,14 @@ class CloudSyncController extends ChangeNotifier {
         meta['baseline'] is! Map ||
         meta['pending'] is! Map ||
         meta['conflicts'] is! List) {
-      throw const FormatException(
-        'Sync metadata needs recovery. Local notes have not changed.',
+      throw FormatException(
+        ui("Sync metadata needs recovery. Local notes have not changed."),
       );
     }
     for (final entry in object(meta['baseline']).values) {
       final base = object(entry);
       if (base['revision'] is! int || base['deleted'] is! bool) {
-        throw const FormatException('Sync metadata needs recovery.');
+        throw FormatException(ui("Sync metadata needs recovery."));
       }
     }
     return meta;
@@ -919,11 +938,13 @@ class CloudSyncController extends ChangeNotifier {
       }
       if (session != null) {
         _meta;
-        message = enabled ? 'Sync ready.' : 'Sync is off.';
+        message = enabled ? ui("Sync ready.") : ui("Sync is off.");
       }
     } catch (_) {
       session = null;
-      error = 'The saved account state could not be read. Local notes remain available. Sign in again to reconnect.';
+      error = ui(
+        "The saved account state could not be read. Local notes remain available. Sign in again to reconnect.",
+      );
     }
     if (_disposed) return;
     _lastObserved = canonicalJson(store.syncRecords());
@@ -990,8 +1011,8 @@ class CloudSyncController extends ChangeNotifier {
   void _localChangedDuringSync() {
     _needsSync = _localRaceRetries++ == 0;
     message = _needsSync
-        ? 'Local notes changed; checking again'
-        : 'Local notes changed; retrying on the next check';
+        ? ui("Local notes changed; checking again")
+        : ui("Local notes changed; retrying on the next check");
   }
 
   void editingFinished() {
@@ -1023,7 +1044,7 @@ class CloudSyncController extends ChangeNotifier {
 
   Future<void> configure(String value) async {
     if (busy || signingIn || session != null) {
-      throw StateError('Sign out before changing the sync service.');
+      throw StateError(ui("Sign out before changing the sync service."));
     }
     final origin = syncOrigin(value);
     busy = true;
@@ -1038,7 +1059,9 @@ class CloudSyncController extends ChangeNotifier {
                 firebase[key] is! String || (firebase[key] as String).isEmpty,
           )) {
         throw StateError(
-          'The service needs its Firebase web configuration before sign-in is available.',
+          ui(
+            "The service needs its Firebase web configuration before sign-in is available.",
+          ),
         );
       }
       store.syncMetadata['serviceOrigin'] = origin;
@@ -1046,7 +1069,7 @@ class CloudSyncController extends ChangeNotifier {
       await store.flush();
       server = origin;
       error = null;
-      message = 'Service connected.';
+      message = ui("Service connected.");
     } finally {
       busy = false;
       _notify();
@@ -1059,7 +1082,7 @@ class CloudSyncController extends ChangeNotifier {
   void cancelSignIn() {
     _epoch++;
     signingIn = false;
-    message = 'Sign-in cancelled.';
+    message = ui("Sign-in cancelled.");
     _notify();
   }
 
@@ -1069,7 +1092,9 @@ class CloudSyncController extends ChangeNotifier {
     final origin = server;
     signingIn = true;
     error = null;
-    message = 'Choose your Google account in the browser, then return here.';
+    message = ui(
+      "Choose your Google account in the browser, then return here.",
+    );
     _notify();
     try {
       final config = await transport.request(accountConfigurationUri(origin));
@@ -1080,7 +1105,9 @@ class CloudSyncController extends ChangeNotifier {
           firebase['projectId'] is! String ||
           (origin == dianeSharedOrigin &&
               firebase['projectId'] != 'dear-diane-202610')) {
-        throw StateError('The service has an invalid Firebase configuration.');
+        throw StateError(
+          ui("The service has an invalid Firebase configuration."),
+        );
       }
       final shared =
           config['login'] is Map &&
@@ -1094,12 +1121,13 @@ class CloudSyncController extends ChangeNotifier {
         queryParameters: {
           'sessionId': sessionId,
           'challenge': challenge,
+          'language': currentLanguage,
           if (shared) 'appId': 'todo',
           if (!const bool.fromEnvironment('STICKY_PREVIEW')) 'returnTo': 'app',
         },
       ).query;
       if (!await openBrowser(Uri.parse('$origin/signin#$fragment'))) {
-        throw StateError('Could not open your browser. Try again.');
+        throw StateError(ui("Could not open your browser. Try again."));
       }
       final until = DateTime.now().add(const Duration(minutes: 5));
       while (epoch == _epoch && !_disposed && DateTime.now().isBefore(until)) {
@@ -1116,6 +1144,7 @@ class CloudSyncController extends ChangeNotifier {
           body: {
             'sessionId': sessionId,
             'verifier': verifier,
+            'language': currentLanguage,
             if (shared) 'appId': 'todo',
           },
         );
@@ -1146,7 +1175,7 @@ class CloudSyncController extends ChangeNotifier {
             (user['localId'] as String).isEmpty ||
             user['email'] is! String ||
             user['emailVerified'] != true) {
-          throw StateError('Use a verified Google account to sync.');
+          throw StateError(ui("Use a verified Google account to sync."));
         }
         // Custom-token sign-in returns tokens only. The authenticated lookup
         // response supplies the UID and verified email for this ID token.
@@ -1166,7 +1195,9 @@ class CloudSyncController extends ChangeNotifier {
         if (owner != null && owner != next.owner) {
           if (!shared || origin != dianeSharedOrigin) {
             throw StateError(
-              'This notebook belongs to another account. Sign in with that account to protect its notes.',
+              ui(
+                "This notebook belongs to another account. Sign in with that account to protect its notes.",
+              ),
             );
           }
           final identity = await transport.request(
@@ -1190,12 +1221,12 @@ class CloudSyncController extends ChangeNotifier {
             await store.flush();
           }
         }
-        message = enabled ? 'Sync ready.' : 'Sync is off.';
+        message = enabled ? ui("Sync ready.") : ui("Sync is off.");
         _schedule();
         return;
       }
       if (epoch == _epoch) {
-        throw StateError('Sign-in expired. Try again from the app.');
+        throw StateError(ui("Sign-in expired. Try again from the app."));
       }
     } catch (cause) {
       if (epoch == _epoch) {
@@ -1209,16 +1240,31 @@ class CloudSyncController extends ChangeNotifier {
     }
   }
 
-  Future<({String date, String taskId})> resolveSharedTask(String id) async {
+  Future<({String date, String taskId})> resolveSharedTask(
+    String id, {
+    void Function(Map)? onSource,
+  }) async {
     if (!RegExp(r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$').hasMatch(id)) {
-      throw StateError('Invalid shared task link.');
+      throw StateError(ui("Invalid shared task link."));
     }
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
-      throw StateError('Sign in to the Pipe Dreams account to open this task.');
+      throw StateError(
+        ui("Sign in to the Pipe Dreams account to open this task."),
+      );
+    }
+    final local = datedNotebookTask(id);
+    if (local != null) {
+      if (store.syncMetadata['owner'] != null &&
+          store.syncMetadata['owner'] != current.owner) {
+        throw StateError(
+          ui("Open this task in the notebook of the account that assigned it."),
+        );
+      }
+      return local;
     }
     if (!enabled) {
-      throw StateError('Enable sync in Account to open this shared task.');
+      throw StateError(ui("Enable sync in Account to open this shared task."));
     }
     final token = await _token();
     final record = await transport.request(
@@ -1228,13 +1274,13 @@ class CloudSyncController extends ChangeNotifier {
       token: token,
     );
     if (_disposed || epoch != _epoch || session?.owner != current.owner) {
-      throw StateError('Account changed before the task opened.');
+      throw StateError(ui("Account changed before the task opened."));
     }
     if (record['record_id'] != id ||
         record['record_type'] != 'task' ||
         record['plugin_id'] != 'todo' ||
         record['deleted'] == true) {
-      throw StateError('The linked task is unavailable.');
+      throw StateError(ui("The linked task is unavailable."));
     }
     final extensions = object(record['extensions'] ?? {}),
         source = object(extensions['source'] ?? {});
@@ -1244,7 +1290,7 @@ class CloudSyncController extends ChangeNotifier {
         (created.length >= 10 ? created.substring(0, 10) : '');
     if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date) ||
         dateKey(parseDate(date)) != date) {
-      throw StateError('The task has no usable date.');
+      throw StateError(ui("The task has no usable date."));
     }
     var taskId =
         (source['app'] == 'todo-sticky' ? source['id'] : record['record_id'])
@@ -1256,7 +1302,15 @@ class CloudSyncController extends ChangeNotifier {
     }
     await synchronize();
     if (_disposed || epoch != _epoch || session?.owner != current.owner) {
-      throw StateError('Account changed before the task opened.');
+      throw StateError(ui("Account changed before the task opened."));
+    }
+    if (extensions['meeting_context'] case final Map source) {
+      if (id != taskId) {
+        store.syncMetadata['dockit-citation-id:${current.owner}:$taskId'] = id;
+        store.changed();
+        await store.flush();
+      }
+      onSource?.call(source);
     }
     return (date: date, taskId: taskId);
   }
@@ -1274,7 +1328,7 @@ class CloudSyncController extends ChangeNotifier {
           session?.owner != owner ||
           session?.origin != dianeSharedOrigin ||
           (bound != null && bound != owner)) {
-        throw StateError('Account changed. Reopen meeting follow-ups.');
+        throw StateError(ui("Account changed. Reopen meeting follow-ups."));
       }
     }
 
@@ -1295,19 +1349,23 @@ class CloudSyncController extends ChangeNotifier {
   String get selectedWorkspace {
     final value = store.syncMetadata['dockit-workspace:${session?.owner}'];
     if (value == null) return '';
-    if (value is! String || !workspaceSlug.hasMatch(value))
-      throw StateError('Choose a valid Pipe Dreams workspace in Account.');
+    if (value is! String || !workspaceSlug.hasMatch(value)) {
+      throw StateError(ui("Choose a valid Pipe Dreams workspace in Account."));
+    }
     return value;
   }
 
   Future<void> chooseWorkspace(String id) async {
-    if (session?.origin != dianeSharedOrigin)
-      throw StateError('Sign in to Pipe Dreams.');
+    if (session?.origin != dianeSharedOrigin) {
+      throw StateError(ui("Sign in to Pipe Dreams."));
+    }
     final key = 'dockit-workspace:${session!.owner}';
     if (id.isEmpty) {
       store.syncMetadata.remove(key);
     } else {
-      if (!workspaceSlug.hasMatch(id)) throw StateError('Invalid workspace.');
+      if (!workspaceSlug.hasMatch(id)) {
+        throw StateError(ui("Invalid workspace."));
+      }
       store.syncMetadata[key] = id;
     }
     store.changed();
@@ -1328,8 +1386,9 @@ class CloudSyncController extends ChangeNotifier {
           current.origin != dianeSharedOrigin ||
           current.projectId != 'dear-diane-202610' ||
           (store.syncMetadata['owner'] != null &&
-              store.syncMetadata['owner'] != current.owner))
-        throw StateError('Sign in to Pipe Dreams.');
+              store.syncMetadata['owner'] != current.owner)) {
+        throw StateError(ui("Sign in to Pipe Dreams."));
+      }
     }
 
     check();
@@ -1337,12 +1396,40 @@ class CloudSyncController extends ChangeNotifier {
     check();
     final result = await transport.request(
       Uri.parse('$dianeSharedOrigin$path'),
-      method: body == null ? 'GET' : 'PUT',
+      method: body == null ? 'GET' : 'POST',
       token: token,
       body: body,
     );
     check();
     return result;
+  }
+
+  Future<Map?> notebookCitation(String taskId) async {
+    final owner = session?.owner;
+    final recordId =
+        store.syncMetadata['dockit-citation-id:$owner:$taskId'] ?? taskId;
+    if (recordId is! String ||
+        !RegExp(r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$').hasMatch(recordId)) {
+      return null;
+    }
+    try {
+      final row = await _workspaceRequest(
+        '/api/plugins/todo/records/task/${Uri.encodeComponent(recordId)}',
+      );
+      if (row['record_id'] != recordId ||
+          row['record_type'] != 'task' ||
+          row['plugin_id'] != 'todo' ||
+          row['deleted'] == true) {
+        return null;
+      }
+      final ext = row['extensions'];
+      return ext is Map && ext['meeting_context'] is Map
+          ? ext['meeting_context'] as Map
+          : null;
+    } on CloudFailure catch (error) {
+      if (error.status == 404) return null;
+      rethrow;
+    }
   }
 
   Future<Map<String, String>> editorWorkspaces() async {
@@ -1354,18 +1441,24 @@ class CloudSyncController extends ChangeNotifier {
       );
       for (final row in page['workspaces'] as List) {
         if (row['role'] == 'editor' &&
-            workspaceSlug.hasMatch(row['id'] as String))
+            workspaceSlug.hasMatch(row['id'] as String)) {
           rows[row['id']] = row['name'] as String;
+        }
       }
       cursor = page['nextCursor'] as String? ?? '';
       if (cursor.isNotEmpty &&
-          (!workspaceSlug.hasMatch(cursor) || !seen.add(cursor)))
-        throw StateError('Could not finish loading workspaces.');
+          (!workspaceSlug.hasMatch(cursor) || !seen.add(cursor))) {
+        throw StateError(ui("Could not finish loading workspaces."));
+      }
     } while (cursor.isNotEmpty);
     return rows;
   }
 
-  Future<void> assignTask(DatedTask row, String assignee) async {
+  Future<({String label, int revision, Uri url})> assignTask(
+    DatedTask row,
+    String assignee, {
+    bool statusOnly = false,
+  }) async {
     final assignment = WorkspaceAssignment.fromTask(
       session!.uid,
       selectedWorkspace,
@@ -1373,14 +1466,12 @@ class CloudSyncController extends ChangeNotifier {
       assignee.trim(),
     );
     final receipt = await _workspaceRequest(
-      assignment.path,
-      body: assignment.body,
+      statusOnly
+          ? '${assignment.path}/${assignment.id}/receipt'
+          : assignment.path,
+      body: statusOnly ? null : assignment.body,
     );
-    if (receipt['id'] != assignment.id ||
-        receipt['workspaceId'] != assignment.workspace)
-      throw StateError(
-        'Could not confirm the assignment. Retry with the same task.',
-      );
+    return assignment.receipt(receipt);
   }
 
   Future<Map<String, dynamic>> requestAgent(
@@ -1390,18 +1481,20 @@ class CloudSyncController extends ChangeNotifier {
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
       throw StateError(
-        'Sign in to the Pipe Dreams account in Settings → Account.',
+        ui("Sign in to the Pipe Dreams account in Settings → Account."),
       );
     }
     final bound = store.syncMetadata['owner'];
     if (bound != null && bound != current.owner) {
       throw StateError(
-        'These notes belong to another account. Verify the shared account link first.',
+        ui(
+          "These notes belong to another account. Verify the shared account link first.",
+        ),
       );
     }
     final token = await _token();
     if (_disposed || epoch != _epoch || session?.owner != current.owner) {
-      throw StateError('Account changed before the request.');
+      throw StateError(ui("Account changed before the request."));
     }
     final requestId = 'todo-${_randomCode()}';
     final value = await transport.request(
@@ -1421,7 +1514,9 @@ class CloudSyncController extends ChangeNotifier {
     );
     if (_disposed || epoch != _epoch || session?.owner != current.owner) {
       throw StateError(
-        'Account changed while Shiprite was working; the result belongs to the earlier account.',
+        ui(
+          "Account changed while Shiprite was working; the result belongs to the earlier account.",
+        ),
       );
     }
     return value;
@@ -1503,13 +1598,15 @@ class CloudSyncController extends ChangeNotifier {
       },
     );
     if (_disposed || epoch != _epoch || session?.owner != current.owner) {
-      throw StateError('Account changed; session renewal stopped.');
+      throw StateError(ui("Account changed; session renewal stopped."));
     }
     // Secure Token's project_id is a project NUMBER, whereas Firebase config
     // uses the project ID slug. Google verifies API-key/project compatibility.
     if (refreshed['user_id'] != current.uid) {
       throw StateError(
-        'The refreshed session belongs to a different account. Sign in again.',
+        ui(
+          "The refreshed session belongs to a different account. Sign in again.",
+        ),
       );
     }
     final next = AccountSession(
@@ -1526,7 +1623,7 @@ class CloudSyncController extends ChangeNotifier {
           int.parse(refreshed['expires_in'].toString()) * 1000,
     );
     if (!await _persistSession(next, epoch)) {
-      throw StateError('Account changed; session renewal stopped.');
+      throw StateError(ui("Account changed; session renewal stopped."));
     }
     return next.idToken;
   }
@@ -1546,7 +1643,7 @@ class CloudSyncController extends ChangeNotifier {
       if (!await _persistSession(null, epoch)) return;
       conflicts = [];
       error = null;
-      message = 'Signed out. Local notes kept.';
+      message = ui("Signed out. Local notes kept.");
     } finally {
       busy = false;
       _notify();
@@ -1557,7 +1654,7 @@ class CloudSyncController extends ChangeNotifier {
     if (session == null || busy) return;
     final owner = store.syncMetadata['owner'];
     if (value && owner != null && owner != session!.owner) {
-      throw StateError('These notes belong to another account.');
+      throw StateError(ui("These notes belong to another account."));
     }
     if (value) store.syncMetadata['owner'] = session!.owner;
     final meta = _meta;
@@ -1565,8 +1662,8 @@ class CloudSyncController extends ChangeNotifier {
     await _saveMeta(meta);
     error = null;
     message = value
-        ? 'Sync enabled.'
-        : 'Sync paused. Local notes remain available.';
+        ? ui("Sync enabled.")
+        : ui("Sync paused. Local notes remain available.");
     _notify();
     if (value) _schedule();
   }
@@ -1591,13 +1688,13 @@ class CloudSyncController extends ChangeNotifier {
       return;
     }
     if (store.saveError != null || store.loadError != null) {
-      message = 'Save your local changes before syncing.';
+      message = ui("Save your local changes before syncing.");
       _notify();
       return;
     }
     if (isEditing()) {
       _waitingForEdit = true;
-      message = 'Waiting for editing to finish';
+      message = ui("Waiting for editing to finish");
       _notify();
       return;
     }
@@ -1623,13 +1720,15 @@ class CloudSyncController extends ChangeNotifier {
     final epoch = _epoch, owner = session!.owner, origin = session!.origin;
     void ensureCurrent() {
       if (_disposed || epoch != _epoch || session?.owner != owner) {
-        throw StateError('Account changed; sync stopped safely.');
+        throw StateError(ui("Account changed; sync stopped safely."));
       }
     }
 
     try {
       if (store.syncMetadata['owner'] != owner) {
-        throw StateError('Enable sync to link these notes to this account.');
+        throw StateError(
+          ui("Enable sync to link these notes to this account."),
+        );
       }
       await store.flush();
       _report('Checking account');
@@ -1652,7 +1751,9 @@ class CloudSyncController extends ChangeNotifier {
       if (!supportsGoals &&
           (containsGoalMetadata(local) || containsGoalMetadata(baseline))) {
         throw StateError(
-          'The sync service needs the goal-planning update. Your notebook is saved on this device; no cloud notes were replaced.',
+          ui(
+            "The sync service needs the goal-planning update. Your notebook is saved on this device; no cloud notes were replaced.",
+          ),
         );
       }
       final records = <SyncRecord>[], keys = <String>{}, cursors = <String>{};
@@ -1677,11 +1778,13 @@ class CloudSyncController extends ChangeNotifier {
         final page = await transport.request(uri, token: token);
         ensureCurrent();
         if (page['schemaVersion'] != 1 || page['records'] is! List) {
-          throw const FormatException('Incompatible sync response.');
+          throw FormatException(ui("Incompatible sync response."));
         }
         if (supportsGoals && page['payloadSchemaVersion'] != 2) {
-          throw const FormatException(
-            'The sync service did not return goal-aware notes. No local data was changed.',
+          throw FormatException(
+            ui(
+              "The sync service did not return goal-aware notes. No local data was changed.",
+            ),
           );
         }
         if (page['notModified'] == true) {
@@ -1689,8 +1792,8 @@ class CloudSyncController extends ChangeNotifier {
               cursor != null ||
               page['generation'] != cachedGeneration ||
               page['nextCursor'] != null) {
-            throw const FormatException(
-              'Incompatible conditional sync response.',
+            throw FormatException(
+              ui("Incompatible conditional sync response."),
             );
           }
           records.addAll(
@@ -1707,7 +1810,9 @@ class CloudSyncController extends ChangeNotifier {
             RegExp(r'^[a-f0-9]{64}$').hasMatch(generation)) {
           if (observedGeneration != null && observedGeneration != generation) {
             throw StateError(
-              'Cloud records changed during paging. Sync again; local notes are unchanged.',
+              ui(
+                "Cloud records changed during paging. Sync again; local notes are unchanged.",
+              ),
             );
           }
           observedGeneration = generation;
@@ -1717,15 +1822,15 @@ class CloudSyncController extends ChangeNotifier {
         for (final value in page['records'] as List) {
           final record = SyncRecord.fromJson(object(value));
           if (!keys.add(record.key)) {
-            throw const FormatException(
-              'The service returned a duplicate record.',
+            throw FormatException(
+              ui("The service returned a duplicate record."),
             );
           }
           records.add(record);
         }
         cursor = page['nextCursor'] as String?;
         if (cursor != null && !cursors.add(cursor)) {
-          throw const FormatException('The service returned a repeated page.');
+          throw FormatException(ui("The service returned a repeated page."));
         }
       } while (cursor != null);
       _remoteCacheKey = generationAvailable && observedGeneration != null
@@ -1752,7 +1857,7 @@ class CloudSyncController extends ChangeNotifier {
           if (canonicalJson(upgraded.local) != canonicalJson(original)) {
             if (isEditing()) {
               _waitingForEdit = true;
-              message = 'Waiting for editing to finish';
+              message = ui("Waiting for editing to finish");
               return;
             }
             if (canonicalJson(store.syncRecord(record.key)) !=
@@ -1830,7 +1935,7 @@ class CloudSyncController extends ChangeNotifier {
                 syncConflictFingerprint(action) == expectedReview,
           )) {
         conflicts = pendingConflicts;
-        throw StateError('Conflict changed. Review again.');
+        throw StateError(ui("Conflict changed. Review again."));
       }
       final beforeAcknowledgements = canonicalJson(meta);
       for (final action in actions.where(
@@ -1876,7 +1981,9 @@ class CloudSyncController extends ChangeNotifier {
                   (path) =>
                       !action.merge!.issues.any((issue) => issue.path == path),
                 )) {
-              throw StateError('Choose a version for each conflicting item.');
+              throw StateError(
+                ui("Choose a version for each conflicting item."),
+              );
             }
             action.merge = mergeSyncPayload(
               action.key,
@@ -1902,7 +2009,7 @@ class CloudSyncController extends ChangeNotifier {
           if (isEditing()) {
             _waitingForEdit = true;
             _needsSync = true;
-            message = 'Waiting for editing to finish';
+            message = ui("Waiting for editing to finish");
             return;
           }
           upload = action.merge!.payload;
@@ -1978,8 +2085,8 @@ class CloudSyncController extends ChangeNotifier {
           if (record.key != action.key ||
               canonicalJson(record.payload) != fingerprint ||
               record.deleted != (upload == null)) {
-            throw const FormatException(
-              'The sync acknowledgement did not match your note.',
+            throw FormatException(
+              ui("The sync acknowledgement did not match your note."),
             );
           }
           baseline[action.key] = {
@@ -1995,7 +2102,7 @@ class CloudSyncController extends ChangeNotifier {
         if (isEditing()) {
           _waitingForEdit = true;
           _needsSync = true;
-          message = 'Waiting for editing to finish';
+          message = ui("Waiting for editing to finish");
           return;
         }
         if (canonicalJson(store.syncRecord(action.key)) !=
@@ -2035,8 +2142,10 @@ class CloudSyncController extends ChangeNotifier {
       }
       lastSynced = DateTime.now().toLocal().toIso8601String();
       message = unresolved.isEmpty
-          ? 'Up to date across your devices.'
-          : '${unresolved.length} notes need your choice. Both versions are preserved.';
+          ? ui("Up to date across your devices.")
+          : ui("{0} notes need your choice. Both versions are preserved.", [
+              unresolved.length,
+            ]);
     } catch (cause) {
       _remoteCacheKey = null;
       _remoteGeneration = null;
@@ -2045,7 +2154,7 @@ class CloudSyncController extends ChangeNotifier {
         final step = progress;
         error =
             '${step?.stage ?? 'Sync'}${step?.detail == null ? '' : ' (${step!.detail})'}: ${cause.toString().replaceFirst('Bad state: ', '')}';
-        message = 'Sync stopped. Local notes are safe; retry when ready.';
+        message = ui("Sync stopped. Local notes are safe; retry when ready.");
       }
     } finally {
       busy = false;

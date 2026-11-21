@@ -35,3 +35,73 @@ Added top padding to the expanded workspace selector and verified the full float
 - Use synthetic notebooks, a mock account transport and local packages for review. The original production APK remains a historical release. Do not use it to verify this preview.
 
 An independent device build restored Flutter 3.47.8’s iOS engine and resolved the Swift packages. Xcode still reports that the iOS 26.4 device destination is unavailable. The normal iPhone build and physical installation remain open.
+
+## Suite UI and record handoffs
+
+A normal notebook open recovers an imported task's source from its owner's canonical record. Dockit displays the quote and timestamp, checks account changes, opens an exact Mynit reference, and tries the native app with a browser fallback on phones. Assigning a dated task sends its stable ID and origin to Shiprite, which returns a creator-scoped receipt. Checking status returns the shared state and revision. The link back opens the original dated task.
+
+The Chromium regression exercised Mynit decision export, ordinary notebook restart, source opening at 1:05, stable Shiprite retry after a lost response, restricted receipt access, status revision 3 and return focus. The web, ad-hoc Mac and Android builds include the shared product controls. Flutter tested 143 cases with one skip, and final analysis reported no issues. Android launch and the Mac bundle signature were verified. Mac window handoff, signed iPhone installation and live account delivery remain open. [Web citation](../../output/clients/handoff/web-citation.png) · [Receipt](../../output/clients/handoff/web-receipt.png)
+
+## Cross-product consistency pass
+
+The phone and web source and assignment links reuse the suite destination marks. The receipt places status, revision and action together; frequent date navigation updates immediately.
+
+## In-app workflow review
+
+The selected day shows open work on web and Mac. Phones can reveal hidden finished tasks without changing their completion status.
+
+## Repeat task capture and existing notebooks
+
+- [x] Restore focus after Add in the daily and inline React composers. Preserve multi-line paragraphs, guard IME composition, and retain the accessible Add action.
+- [x] Make phone Add unavailable for blank or composing text, retain the capture focus and accept Cmd/Ctrl+Enter on a hardware keyboard.
+- [x] Reopen pre-update synthetic data, add to it and reopen it again. Chromium used the original IndexedDB v1 day tree. The rebuilt Mac CLI read the earlier Markdown fixture at its recorded revision. Flutter opened an on-disk v1 notebook. All three preserved the original IDs and nested steps.
+- [x] Inspect 390px and 1100px Chromium renders and Android 360×740 and iOS 390×844 Flutter renders with multiline CJK text. Task text, controls and selected input fit at those sizes. Flutter also tested 150% text with a keyboard inset. The phone screenshots use host fonts; physical iPhone installation remains open.
+
+Browser and Mac share the React capture surface. Chromium verified repeated click and shortcut submissions independently in both composers. The production web build, strictly signature-verified Mac package and debug-signed Android Preview APK completed. All 32 Node suites and 148 Flutter tests passed, with one existing Flutter skip.
+
+The browser reopens the notebook on its original origin in the same browser profile. On Mac, choose the existing notebook root under Settings → Storage → Change task folder. On phone, an in-place update of the same application retains its private notebook. To transfer an existing notebook between installations, use Settings → Your notebook → Export a backup and Restore a backup. Restore replaces the receiving notebook after confirmation. Android Preview uses a separate application ID.
+
+[Compact web](../../output/clients/quick-capture-390.png) · [Wide web](../../output/clients/quick-capture-1100.png) · [Android layout](../../output/clients/quick-capture-android.png) · [iPhone layout](../../output/clients/quick-capture-iOS.png)
+
+On emulator-5582, the already-installed Dockit Preview (SHA-256 beginning `70e0efe0`) saved a synthetic task before the update. Android installed the new preview in place (`adb install -r`, SHA-256 beginning `76e6d8aa`). The two dated trees, goals, focus, preferences, sync metadata and routine schedules matched before and after installation. The updated app added another task and kept the earlier entries. The 1080×2400 device capture shows the before/after entries and the preserved Earlier tasks section. [Android upgrade screen](../../output/clients/quick-capture-android-upgrade.png)
+
+## Shared paragraph field
+
+Dockit owns the expanding textarea reused by Mynit and Shiprite. Its measured border follows the consuming app’s style and the field still measures after each controlled text change. The suite sync verifies identical source in all three clients.
+
+## Notebook calendar
+
+- [x] Open the selected month and day. Arrow keys move the calendar focus, Enter selects, and selection or Escape returns focus to the date button.
+- [x] Center the popup within the notebook header. Daily and monthly navigation use the same familiar chevron, retain distinct accessible names, and have 44px navigation targets for touch pointers.
+- [x] Preserve the selected historical date in the Flutter Notes and Progress pickers. Confirming the same Notes date keeps Undo available.
+- [x] Check Chromium at 320, 340, 460 and 1100px. The previous popup extended 4.5px beyond the 340px viewport. The revised popup fits each width. Flutter exercised November 1969 and December 2101. Both Android and iOS host layouts opened a historical day from Notes and Progress.
+
+[Compact touch calendar](../../output/clients/calendar-320.png) · [Desktop calendar](../../output/clients/calendar-1100.png) · [Android layout](../../output/clients/calendar-android.png) · [iPhone layout](../../output/clients/calendar-iOS.png)
+
+## Task disclosure feedback
+
+- [x] Keep the control and its hit area stationary as the chevron changes from right-facing (closed) to down-facing (open). Keep task actions and steps immediately usable.
+- [x] Check Enter and Space on the shared React control, touch on compact Chromium, and touch and keyboard on Flutter. A pointer or touch reversal continues from the current angle. Enter and Space set the exact final icon orientation on the first frame with a zero-duration transition. Reduced motion also makes pointer activation immediate.
+- [x] Exercise a parent and real nested step in the Chromium production build at 1100px and 390px. Check the Android and iPhone layouts through Flutter and inspect the rendered task actions and steps.
+
+The dedicated browser test is [check-disclosure-motion.cjs](../../tests/check-disclosure-motion.cjs). The pointer rotation runs for 150ms. Chromium reported a 0s transition under reduced motion. The ordinary-motion test reversed a running turn at 84.78 degrees without a position jump. Flutter tests verified that the visible step actions changed before the animation finished and the button retained its dimensions.
+
+All 32 Node regression suites and 151 Flutter tests passed; one existing phone test remained skipped. TypeScript and focused Dart analysis passed. The web preview, local signed Mac bundle and debug-signed Android Preview APK were rebuilt. The Mac interaction was exercised on the shared React implementation in Chromium. Android and iPhone layout images come from the Flutter host renderer.
+
+[Compact browser](../../output/clients/disclosure-390-no-preference.png) · [Desktop browser](../../output/clients/disclosure-1100-no-preference.png) · [Android](../../output/clients/disclosure-android.png) · [iPhone](../../output/clients/disclosure-iOS.png)
+
+## Current Flutter phone exports
+
+The iOS 26.4 simulator run and current Android/iPhone exports are now recorded in [Plan 25](25-interface-element-review.md). Physical iPhone installation still requires an authorized signing and provisioning setup.
+
+## Repeated step capture
+
+- [x] Compare three paths. The existing calendar already restores the selected date and control. Undo for deletion spans notebook history. Manual step capture had an observable focus loss after clicking Add and a phone composition gap, and both had a working model in top-level capture.
+- [x] Keep focus in the same parent’s step field after an accepted Add or Cmd/Ctrl+Enter. Plain Enter retains multiline entry. A composing or empty draft cannot submit, and the new child row provides immediate feedback. Existing locale keys, visual styles and notebook models are reused.
+- [x] Run the [step regression](../../tests/check-step-capture.cjs) at 360px with reduced motion and 1100px with standard motion in Chromium. The production browser notebook and synthetic Mac bridge each reopened exactly two children after a click, a shortcut and repeated input. The first child preserved a CJK paragraph and blank line. The [native macOS WebKit check](../../output/clients/step-capture/mac-webkit.json) exercised the production React bundle with a synthetic local bridge. The rebuilt standalone Mac app passed strict deep signature verification. Direct manipulation of its packaged Tauri window remains open.
+- [x] Check Flutter at 360×740 Android and 390×844 iPhone, including active composition, empty actions, repeat shortcuts and stable focus. The [installed API 35 Android release](../../output/clients/step-capture/installed-android.json) and [iOS 26.4 Simulator build](../../output/clients/step-capture/installed-ios.json) both accepted a second step without tapping the field again and showed both children after relaunch. Physical iPhone installation requires provisioning.
+- [x] Pass all 33 standalone Node suites, 75 embedded tests, plugin typecheck, production render and package checks. Flutter passed 159 tests with its existing optional preview skipped. Focused Dart analysis passed. The interface audit found matching entries and placeholders for all 1,366 keys in nine translations.
+
+[Compact browser](../../output/clients/step-capture/step-capture-browser-360.png) · [Wide browser](../../output/clients/step-capture/step-capture-browser-1100.png) · [Android screen](../../output/clients/step-capture/step-capture-android.png) · [iPhone screen](../../output/clients/step-capture/step-capture-iphone.png)
+
+The local phone exports retain version 2.1.19 and advance the build to 33. The three Android ABI splits match their prior package and certificate. The iPhone device IPA is unsigned. The [build manifest](../../output/clients/step-capture/builds.json) records identifiers and hashes for the [ARM64 APK](../../output/clients/step-capture/Dockit-arm64-v8a-release.apk), [device IPA](../../output/clients/step-capture/Dockit-unsigned.ipa), [Simulator app](../../output/clients/step-capture/iphonesimulator/Dockit.app), [Mac app](../../output/clients/step-capture/macOS/Dockit.app) and [embedded package 0.1.26](../../output/interface-five/diane-app-todo-plugin-0.1.26.tgz). Build 32 remains available at its previously recorded paths.

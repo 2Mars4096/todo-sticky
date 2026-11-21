@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useState } from 'react'
 import { ParagraphInput } from './ParagraphInput'
 
@@ -32,8 +33,8 @@ export function AddTask({
         <span className="task-step-add-handle-space" aria-hidden="true" />
         <ParagraphInput
           className="task-text-input task-step-add-input"
-          placeholder="Add task..."
-          aria-label="New top-level task"
+          placeholder={ui("Add task...")}
+          aria-label={ui("New top-level task")}
           value={text}
           disabled={disabled}
           onChange={event => setText(event.target.value)}
@@ -47,7 +48,7 @@ export function AddTask({
             }
           }}
         />
-        {text.trim() && <button type="button" className="task-text-action" onClick={handleSubmit} disabled={disabled} aria-label="Add task">Add</button>}
+        {text.trim() && <button type="button" className="task-text-action" onClick={handleSubmit} disabled={disabled} aria-label={ui("Add task")}>{ui("Add")}</button>}
       </div>
     )
   }
@@ -63,8 +64,8 @@ export function AddTask({
       <div className="add-task-row">
         <ParagraphInput
           id="quick-add-task"
-          aria-label="New task"
-          placeholder="What needs doing?"
+          aria-label={ui("New task")}
+          placeholder={ui("What needs doing?")}
           value={text}
           onChange={e => setText(e.target.value)}
           disabled={disabled}
@@ -75,9 +76,7 @@ export function AddTask({
             }
           }}
         />
-        <button type="submit" disabled={disabled || !text.trim()} aria-label="Add task">
-          Add
-        </button>
+        <button type="submit" disabled={disabled || !text.trim()} aria-label={ui("Add task")}>{ui("Add")}</button>
       </div>
     </form>
   )

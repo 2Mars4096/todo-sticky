@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useState, type ReactNode } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -8,7 +9,7 @@ export function outline(text: string) {
   const listOnly = lines.length > 1 && marker.test(lines[0])
   const clean = (line: string) => line.replace(marker, '').replace(/^\[[ xX]\]\s*/, '').trim()
   return {
-    title: listOnly ? 'Screenshot checklist' : clean(lines.shift() || ''),
+    title: listOnly ? ui("Screenshot checklist") : clean(lines.shift() || ''),
     steps: lines.map(clean).filter(Boolean).join('\n'),
   }
 }
@@ -32,7 +33,7 @@ export function ScreenshotTask({ disabled, composer }: {
     }
   }
 
-  const label = busy ? 'Opening Flameshot…' : 'Task from screenshot'
+  const label = busy ? ui("Opening Flameshot…") : ui("Task from screenshot")
   return <>
     {composer(<button type="button" className="screenshot-trigger" aria-label={label} title={label}
       aria-busy={busy} disabled={disabled || busy} onClick={capture}>
@@ -52,15 +53,15 @@ export function ScreenshotReview({ initial, disabled, onAdd, onClose }: {
   onClose: () => void
 }) {
   const [draft, setDraft] = useState(initial)
-  return <form className="screenshot-task" aria-label="Review screenshot task" onSubmit={event => {
+  return <form className="screenshot-task" aria-label={ui("Review screenshot task")} onSubmit={event => {
       event.preventDefault()
       if (disabled || !draft.title.trim()) return
       onAdd(draft.title.trim(), draft.steps.split('\n').map(line => line.trim()).filter(Boolean))
       onClose()
     }}>
-      <label>Task title<input autoFocus value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} /></label>
-      <label>Steps (one per line)<textarea rows={3} value={draft.steps} onChange={e => setDraft({ ...draft, steps: e.target.value })} /></label>
-      <button type="submit" className="task-text-action" disabled={disabled || !draft.title.trim()}>Add task</button>
-      <button type="button" className="task-text-action" onClick={() => onClose()}>Cancel</button>
+      <label>{ui("Task title")}<input autoFocus value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} /></label>
+      <label>{ui("Steps (one per line)")}<textarea rows={3} value={draft.steps} onChange={e => setDraft({ ...draft, steps: e.target.value })} /></label>
+      <button type="submit" className="task-text-action" disabled={disabled || !draft.title.trim()}>{ui("Add task")}</button>
+      <button type="button" className="task-text-action" onClick={() => onClose()}>{ui("Cancel")}</button>
     </form>
 }

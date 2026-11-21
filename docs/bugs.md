@@ -1,5 +1,41 @@
 # Bugs And Failed Approaches
 
+## 2026-11-22 — Archive project width and browser-storage translation
+
+Page-level width checks missed a project selector that overflowed its own filter region by 1,948px at 320px. The regression measures the filter region and checks focus and results after a reset. Catalog parity also missed a German storage sentence that displayed the update heading. A rendered check now confirms the intended storage text. [Evidence](plans/25-interface-element-review.md#archive-filters-and-adjacent-controls)
+
+## 2026-11-21 — Manual step capture
+
+Clicking Add removed the active React button and lost the typing position. The Flutter step action previously accepted a partially composed value. Step entry now follows the top-level composer’s focus and input-method behavior. A Flutter widget test must pump the enabled-state frame after entering text and before tapping Add. XCTest can relocate an installed app’s data container during a UI run. Resolve its current container again before inspecting or restoring a simulator notebook. [Checks](plans/23-dockit-transfer.md#repeated-step-capture)
+
+## 2026-11-21 — Deadline wording and archive row verification
+
+Build 31 rendered causal phrases for French, Spanish and Portuguese task deadlines and imposed day-first ordering in East Asian languages. Build 32 uses deadline terminology and Flutter’s locale-specific month/day skeleton. The first archive check selected the match counter because it shares a class with row metadata. Scoping the observation to the actual task row verified the corrected text. A fresh simulator XCTest build also required the simulator Flutter framework in its build products before Swift plugin compilation. [Evidence](plans/25-interface-element-review.md#build-32-deadline-verification)
+
+## 2026-11-21 — Goal counts, deadline locale and phase names
+
+The local ten-language traversal exposed English Focus phases, English future-date badges and ambiguous or singular goal counts. The corrected standalone and embedded controls use localized phrases and calendar formatting. [Regression evidence](plans/25-interface-element-review.md#goal-reminder-deadline-and-focus-follow-up)
+
+## 2026-11-21 — Distinguishing a rendered locale from a matching accessibility label
+
+Traditional Chinese and Cantonese both expose the globe as 顯示語言. After changing language, verify the locale-specific capture prompt before a force-stop and again after relaunch. Persist review rows externally during Flutter integration tests because the runner can remove the fixture app on exit. Separate animated menu exposure and accessibility-only nodes from visually clipped text. The archived fixture and device evidence preserves the original observations.
+
+## 2026-11-21 — Locale coverage and embedded baseline
+
+A browser ICU build fell back from Cantonese dates to the device's unrelated French locale. Use Hong Kong Chinese when Cantonese date data is unavailable. Keep server discriminators such as the Rust `Ok` receipt and the `failed` load-state enum outside display translation. A first plugin package used the older producer baseline; rebuild from the verified 0.1.19 integration before applying localization. Review machine output for translated product names, leaked translation instructions, unexpected scripts and damaged placeholders. [Verification](plans/24-interface-languages.md)
+
+## 2026-11-21 — Keyboard disclosure still turned
+
+The earlier control displayed the steps immediately but animated its icon for keyboard activation. Test Enter and Space on the actual focused control. Verify both the final angle and zero transition duration on the first rendered update. The separate all-task-interactions browser fixture stopped at the pre-existing mock AI suggestion before reaching the disclosure. The focused `tests/check-disclosure-motion.cjs` runs the real keyboard and touch sequence using the same synthetic notebook.
+
+## 2026-11-21 — Calendar reopened the wrong month
+
+The desktop day picker supplied the selected day without setting its displayed month. Its popover was centered on the date label, which put its right edge outside a 340px window. Open the selected month and position the popup against the complete date navigation row. On phone, include the selected notebook year in the picker range so archived dates can open safely.
+
+## 2026-11-21 — Flutter capture verification
+
+Existing task capture tests tapped Add in the same test frame as typing. Once Add reflected the current text and composition state, those taps targeted the previous disabled control. Pump one frame after text entry before simulating the tap. The host Flutter renderer also needs a CJK-capable test font for a legible multilingual screenshot.
+
 ## 2026-11-20 — Local client verification
 
 The child shell cannot bind the Gradle or adb listener sockets. The locally built preview APK, emulator activity and matching source tree provide separate Android evidence. The ordinary Flutter test runner also needs loopback. Running its widget cases with the matching host engine and compiled test assets allowed visual and interaction checks. The iPhone device engine is absent from the Flutter 3.47.8 cache, and CoreSimulator is unavailable. Keep these limits separate from failures in product code. See [client verification](plans/23-dockit-transfer.md).

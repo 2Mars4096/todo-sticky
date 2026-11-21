@@ -1,6 +1,13 @@
+import { useSyncExternalStore } from 'react'
+import { subscribeLanguage, languageSnapshot } from './interfaceLocale'
+import { ui } from './interfaceLocale'
 import { SentScreenshots } from './components/SentScreenshots'
 import { MeetingMonitor, type ReviewRequest } from './components/MeetingMonitor'
-import { requestJson } from './cloudAccount'
+import { CitationLookup,TaskCitationContext } from './components/MynitCitation'
+import type { MynitSource } from './mynitSource'
+import { AssignmentEntry } from './assignmentEntry'
+import { datedNotebookTask } from './suiteWorkspace'
+import { requestJson, assertSharedNotebookOwner, notebookCitation } from './cloudAccount'
 import { listen } from '@tauri-apps/api/event'
 import { DIANE_SHARED_ORIGIN, parseTodoTaskLink, readSharedTodoTask } from './cloudAccount'
 import { isTauri } from '@tauri-apps/api/core'
@@ -62,6 +69,14 @@ interface AppNotice {
 }
 
 export default function App() {
+  const interfaceVersion = useSyncExternalStore(subscribeLanguage,languageSnapshot)
+  useEffect(() => {
+    if (!isTauri()) return
+    const labels = {toggle:ui('Show or hide Dockit'),quit:ui('Quit Dockit'),about:ui('About Dockit'),
+      hide:ui('Hide Dockit'),hideOthers:ui('Hide others'),edit:ui('Edit'),copy:ui('Copy'),paste:ui('Paste'),
+      tray:ui('Dockit ({0} to toggle)')}
+    void invoke('set_interface_menu',{labels}).catch(error => console.warn('Dockit menu refresh',error))
+  },[interfaceVersion])
   const noteMaterial = useNoteMaterial()
   const calendar = useCalendar()
   const tasks = useTasks(calendar.dateStr, calendar.isCurrentDay)
@@ -112,10 +127,12 @@ export default function App() {
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [tasks.saving, tasks.saveError])
+  const [assignmentKey,setAssignmentKey] = useState<string>()
+  const [citation,setCitation] = useState<{uid:string;date:string;taskId:string;source:MynitSource}>()
   const [taskLink,setTaskLink]=useState<string|null>(()=>{try{return parseTodoTaskLink(window.location.href)||localStorage.getItem('todo-sticky-pending-task-link-v1')}catch{return null}})
   const linkBusy=useRef(false),linkAccountShown=useRef(false),linkMounted=useRef(true)
   const taskLinkRef=useRef(taskLink);taskLinkRef.current=taskLink
-  useEffect(()=>()=>{linkMounted.current=false},[])
+  useEffect(()=>{linkMounted.current=true;return()=>{linkMounted.current=false}},[])
   const [linkTick,setLinkTick]=useState(0)
 
 
@@ -154,9 +171,9 @@ export default function App() {
     return () => { cancelAnimationFrame(frame); clearTimeout(fallback) }
   }, [])
   const updateBlockedReason = starFocus.activeSession
-    ? 'Finish the focus session before updating.'
+    ? ui("Finish the focus session before updating.")
     : aiLoading || providerSwitching || tasks.loading
-      ? 'Wait for the current operation to finish.'
+      ? ui("Wait for the current operation to finish.")
       : undefined
   const appUpdates = useAppUpdates(async () => {
     if (updateBlockedReason) throw new Error(updateBlockedReason)
@@ -186,7 +203,7 @@ export default function App() {
     const request = ++navigationRequest.current
     try { await tasks.flushPendingSave(); if (request === navigationRequest.current) navigate() }
     catch {
-      presentNotice({ kind: 'error', title: 'Date unchanged', message: 'Retry saving your changes before switching days.' })
+      presentNotice({ kind: 'error', title: ui("Date unchanged"), message: ui("Retry saving your changes before switching days.") })
     }
   }, [tasks.flushPendingSave, presentNotice])
 
@@ -210,7 +227,7 @@ export default function App() {
   useEffect(() => {
     if (!archiveTarget || tasks.loading || tasks.dataDate !== archiveTarget.date || calendar.dateStr !== archiveTarget.date) return
     const root = document.querySelector<HTMLElement>(`[data-task-id="${CSS.escape(archiveTarget.rootId)}"]`)
-    if (!root) { if (!tasks.loadError) { presentNotice({ kind: 'error', title: 'Task is no longer on this date' }); setArchiveTarget(null) }; return }
+    if (!root) { if (!tasks.loadError) { presentNotice({ kind: 'error', title: ui("Task is no longer on this date") }); setArchiveTarget(null) }; return }
     const disclosure = root.querySelector<HTMLButtonElement>('.task-steps-toggle')
     if (archiveTarget.task.id !== archiveTarget.rootId && disclosure?.getAttribute('aria-expanded') === 'false') disclosure.click()
     const frame = requestAnimationFrame(() => {
@@ -231,25 +248,30 @@ export default function App() {
     window.addEventListener('popstate',fromUrl);window.addEventListener('focus',take);document.addEventListener('focusout',settled);document.addEventListener('keyup',settled)
     return()=>{disposed=true;unlisten?.();window.removeEventListener('popstate',fromUrl);window.removeEventListener('focus',take);document.removeEventListener('focusout',settled);document.removeEventListener('keyup',settled)}
   },[])
+  const lookupCitation = useMemo(() => {
+    const {auth,user,server} = account
+    return auth && user && server === DIANE_SHARED_ORIGIN ? (id:string) => notebookCitation(auth,user,id) : undefined
+  },[account.auth,account.user,account.server])
   const linkAccount=useRef(account);linkAccount.current=account
   const meetingRequest = useMemo<ReviewRequest>(() => {
     const user = account.user
     return async (path, body) => {
       const current = () => user && linkAccount.current.user === user && linkAccount.current.server === DIANE_SHARED_ORIGIN
-      if (!user || !current()) throw Error('Account changed. Reopen the meeting review.')
+      if (!user || !current()) throw Error(ui("Account changed. Reopen the meeting review."))
       const token = await user.getIdToken()
-      if (!current()) throw Error('Account changed. Reopen the meeting review.')
+      if (!current()) throw Error(ui("Account changed. Reopen the meeting review."))
       const value = await requestJson(DIANE_SHARED_ORIGIN, path, body ? {method:'POST', body:JSON.stringify(body)} : {}, token)
-      if (!current()) throw Error('Account changed. Reopen the meeting review.')
+      if (!current()) throw Error(ui("Account changed. Reopen the meeting review."))
       return value
     }
   }, [account.user])
   useEffect(()=>{
-    if(!taskLink||linkBusy.current||tasks.loading)return
-    if(!account.user||account.server!==DIANE_SHARED_ORIGIN||!account.enabled){
-      if(!linkAccountShown.current){linkAccountShown.current=true;setSettingsAccount(true);setShowSettings(true);presentNotice({kind:'success',title:'Shared task waiting',message:'Sign in and enable sync to open this task. It will not run automatically.'})}
+    if(!taskLink||linkBusy.current||tasks.loading||!account.identityReady)return
+    if(!account.user||account.server!==DIANE_SHARED_ORIGIN||(!datedNotebookTask(taskLink)&&!account.enabled)){
+      if(!linkAccountShown.current){linkAccountShown.current=true;setSettingsAccount(true);setShowSettings(true);presentNotice({kind:'success',title:ui("Shared task waiting"),message:datedNotebookTask(taskLink) ? ui("Sign in with the account that assigned this task.") : ui("Sign in and enable sync to open this task.")})}
       return
     }
+    if (linkAccountShown.current && showSettings) { linkAccountShown.current=false; setShowSettings(false); return }
     if(showSettings||showPlanner||showTrackingStation||projectWriting||!projectLeaveGuard.current())return
     const drafts=[...document.querySelectorAll<HTMLTextAreaElement>('textarea.task-inline-edit,textarea.outcome-editor,textarea#quick-add-task')]
     if(drafts.some(field=>field.value.trim()))return
@@ -257,24 +279,28 @@ export default function App() {
     const current=()=>linkMounted.current&&taskLinkRef.current===requested&&linkAccount.current.user?.uid===uid
     void (async()=>{
       try{
-        const folder=aiSettings?.kbPath||await invoke<string>('cloud_task_folder')
-        const target=await readSharedTodoTask(taskLink,folder)
-        await linkAccount.current.sync()
+        if (!account.auth || !account.user) throw Error(ui("Sign in to open this notebook task."))
+        assertSharedNotebookOwner(account.auth,account.user)
+        const local = datedNotebookTask(taskLink)
+        const shared = local ? undefined : await readSharedTodoTask(taskLink,aiSettings?.kbPath || await invoke<string>('cloud_task_folder'))
+        const target = local ?? shared!
+        if (!local) await linkAccount.current.sync()
         const data=await api.extractTaskApi({date:target.date,canonicalDates:true})
         if(!current()||!projectLeaveGuard.current())return
         const rows=archiveRows(data.dates,goals.targets).filter(row=>row.date===target.date&&row.task.id===target.taskId)
-        if(rows.length!==1)throw new Error('Sync this date in Account, then open the shared task again. The link is retained.')
+        if(rows.length!==1)throw new Error(local ? ui("Open this link in the notebook where you assigned the task. If it was synced, sync this date in Account.") : ui("Sync this date in Account, then open the shared task again. The link is retained."))
         await openArchiveTask(rows[0]);if(!current())return
+        setCitation(shared?.source ? {uid,date:target.date,taskId:target.taskId,source:shared.source} : undefined)
         localStorage.removeItem('todo-sticky-pending-task-link-v1');setTaskLink(null)
-      }catch(error){if(current())presentNotice({kind:'error',title:'Task link waiting',message:error instanceof Error?error.message:String(error)})}
+      }catch(error){if(current())presentNotice({kind:'error',title:ui("Task link waiting"),message:error instanceof Error?error.message:String(error)})}
       finally{linkBusy.current=false;if(linkMounted.current&&taskLinkRef.current!==requested)setLinkTick(value=>value+1)}
     })()
-  },[taskLink,account.user?.uid,account.server,account.enabled,tasks.loading,showSettings,showPlanner,showTrackingStation,projectWriting,linkTick])
+  },[taskLink,account.identityReady,account.user?.uid,account.server,account.enabled,tasks.loading,showSettings,showPlanner,showTrackingStation,projectWriting,linkTick])
 
   const syncState = account.error || account.conflicts.length ? 'attention'
     : !account.enabled || !account.user ? 'local'
       : account.busy && !account.background ? 'syncing' : account.upToDate && !tasks.saving ? 'synced' : 'waiting'
-  const syncLabel = { attention: 'Sync needs attention', local: 'Local only', syncing: 'Syncing', synced: 'Synced with cloud', waiting: 'Waiting to sync' }[syncState]
+  const syncLabel = { attention: ui("Sync needs attention"), local: ui("Local only"), syncing: ui("Syncing"), synced: ui("Synced with cloud"), waiting: ui("Waiting to sync") }[syncState]
 
   useEffect(()=>{
     document.querySelector('.action-bar')?.toggleAttribute('inert',projectWriting)
@@ -288,7 +314,7 @@ export default function App() {
   const assignProject = (taskId:string,goalId:string,subtaskId?:string) => {
     const project=goals.targets.find(goal=>goal.id===goalId)
     if(goalId && (!project || project.done))return
-    if(goalId && !/^[A-Za-z0-9_-]{1,128}$/.test(goalId)){presentNotice({kind:'error',title:'Create a new project before linking this older goal.'});return}
+    if(goalId && !/^[A-Za-z0-9_-]{1,128}$/.test(goalId)){presentNotice({kind:'error',title:ui("Create a new project before linking this older goal.")});return}
     const root=tasks.tasks.find(task=>task.id===taskId)
     if(!root)return
     const target=subtaskId?root.todaySubtasks.find(step=>step.id===subtaskId):root
@@ -324,17 +350,17 @@ export default function App() {
       setAiSettings(nextSettings)
       presentNotice({
         kind: 'success',
-        title: `AI: ${PROVIDER_PRESETS[provider].shortLabel}`,
+        title: ui("AI: {0}", [PROVIDER_PRESETS[provider].shortLabel]),
         message: provider === 'codex'
-          ? 'Using your local Codex login.'
-          : `Using ${nextSettings.model}.`,
+          ? ui("Using your local Codex login.")
+          : ui("Using {0}.", [nextSettings.model]),
       })
     } catch (error) {
       console.error('Provider switch failed', error)
       presentNotice({
         kind: 'error',
-        title: 'Provider unchanged',
-        message: 'Could not save the selected AI provider.',
+        title: ui("Provider unchanged"),
+        message: ui("Could not save the selected AI provider."),
       })
     } finally {
       setProviderSwitching(false)
@@ -496,8 +522,8 @@ export default function App() {
       console.error('AI breakdown failed:', e)
       presentNotice({
         kind: 'error',
-        title: 'Could not break down task',
-        message: 'Check the AI provider in Settings, then try again.',
+        title: ui("Could not break down task"),
+        message: ui("Check the AI provider in Settings, then try again."),
       })
     } finally {
       aiOperationRef.current = false
@@ -524,7 +550,7 @@ export default function App() {
         ? result.albums.filter(album => album?.title && album?.artist).slice(0, 4)
         : []
 
-      if (!albums.length) throw new Error('The AI provider returned no album recommendations')
+      if (!albums.length) throw new Error(ui("The AI provider returned no album recommendations"))
 
       setAlbumRecommendations({
         summary: typeof result.summary === 'string' ? result.summary : '',
@@ -536,8 +562,8 @@ export default function App() {
       setShowAlbumRecommendations(false)
       presentNotice({
         kind: 'error',
-        title: 'Could not find albums',
-        message: 'Check the AI provider in Settings, then try again.',
+        title: ui("Could not find albums"),
+        message: ui("Check the AI provider in Settings, then try again."),
       })
     } finally {
       aiOperationRef.current = false
@@ -568,10 +594,10 @@ export default function App() {
       else {
         setArchiveQuery(mission.taskText)
         setArchivePage('search')
-        presentNotice({ kind: 'error', title: matches.length ? 'Find the task by its date' : 'The focus task may have moved or been removed' })
+        presentNotice({ kind: 'error', title: matches.length ? ui("Find the task by its date") : ui("The focus task may have moved or been removed") })
       }
     } catch {
-      presentNotice({ kind: 'error', title: 'Could not open the task', message: 'Your focus session is saved. Retry from Focus when history is available.' })
+      presentNotice({ kind: 'error', title: ui("Could not open the task"), message: ui("Your focus session is saved. Retry from Focus when history is available.") })
     }
   }, [starFocus.latestCompletedMission, tasks.flushPendingSave, openArchiveTask, presentNotice])
 
@@ -582,14 +608,14 @@ export default function App() {
 
       presentNotice({
         kind: 'success',
-        title: `Moved to ${target.actionLabel}`,
+        title: ui("Moved to {0}", [target.actionLabel]),
       })
     } catch (error) {
       console.error('Carry task forward failed:', error)
       presentNotice({
         kind: 'error',
-        title: 'Could not move task',
-        message: error instanceof Error ? error.message : 'The task could not be moved. Your current edits are still here.',
+        title: ui("Could not move task"),
+        message: error instanceof Error ? error.message : ui("The task could not be moved. Your current edits are still here."),
       })
     }
   }, [tasks.carryForward, presentNotice])
@@ -603,15 +629,15 @@ export default function App() {
       }))
       presentNotice({
         kind: 'success',
-        title: 'Task copied',
-        message: 'Paste it into Codex or another execution agent.',
+        title: ui("Task copied"),
+        message: ui("Paste it into Codex or another execution agent."),
       })
     } catch (error) {
       console.error('Copy agent prompt failed:', error)
       presentNotice({
         kind: 'error',
-        title: 'Could not copy prompt',
-        message: 'Clipboard access was unavailable. Try again with the app active.',
+        title: ui("Could not copy prompt"),
+        message: ui("Clipboard access was unavailable. Try again with the app active."),
       })
     }
   }, [presentNotice])
@@ -647,7 +673,10 @@ export default function App() {
   ])
 
   return (
-    <><div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
+    <CitationLookup.Provider value={lookupCitation}><AssignmentEntry.Provider value={{requested:assignmentKey,open:(id,date) => {
+      setAssignmentKey((date || calendar.dateStr) + ':' + id)
+      setSettingsAccount(true); setShowSettings(true)
+    }}}><TaskCitationContext.Provider value={citation && citation.uid === account.user?.uid && citation.date === calendar.dateStr ? citation : undefined}><div data-material={noteMaterial.material} className={`app-shell ${isCompactWindow ? 'is-compact' : 'is-wide'}`}>
       {isTauri() && /Mac/.test(navigator.platform) && <SentScreenshots date={calendar.dateStr}
         disabled={tasks.loading || Boolean(tasks.loadError) || tasks.dataDate !== calendar.dateStr}
         onAdd={(title, steps) => { tasks.addTaskBundle(title, steps); if (firstRun) dismissIntro() }} />}
@@ -675,7 +704,7 @@ export default function App() {
             goals.setSidebarCollapsed(true)
             starFocus.setSidebarCollapsed(true)
           }}
-          aria-label="Close side panel"
+          aria-label={ui("Close side panel")}
         />
       )}
 
@@ -715,18 +744,18 @@ export default function App() {
           <MeetingMonitor key={account.user.uid} request={meetingRequest} onAdded={() => { if (account.enabled) void account.sync() }}/>}
         {firstRun && !showSettings && (
           <div className="first-use-note">
-            <p>AI assistance is optional.</p>
-            <button onClick={event => { event.currentTarget.focus(); openSettingsForProvider(aiSettings?.provider) }}>Set up AI</button>
-            <button onClick={dismissIntro} aria-label="Dismiss introduction">✕</button>
+            <p>{ui("AI assistance is optional.")}</p>
+            <button onClick={event => { event.currentTarget.focus(); openSettingsForProvider(aiSettings?.provider) }}>{ui("Set up AI")}</button>
+            <button onClick={dismissIntro} aria-label={ui("Dismiss introduction")}>✕</button>
           </div>
         )}
 
         {tasks.saveError && (
           <div className="task-save-error" role="alert">
-            <div><strong>Changes not saved · {tasks.saveError.date}</strong><p>{tasks.saveError.message}</p></div>
+            <div><strong>{ui("Changes not saved · {0}", [tasks.saveError.date])}</strong><p>{tasks.saveError.message}</p></div>
             <button disabled={tasks.saving} onClick={async () => {
               if (await tasks.retrySave() && tasks.dataDate !== calendar.dateStr) await tasks.load()
-            }}>{tasks.saving ? 'Retrying…' : 'Retry save'}</button>
+            }}>{tasks.saving ? ui("Retrying…") : ui("Retry save")}</button>
           </div>
         )}
 
@@ -735,10 +764,10 @@ export default function App() {
             <div className="spinner" />
             <span>
               {aiLoading === 'schedule'
-                ? 'Generating schedule...'
+                ? ui("Generating schedule...")
                 : aiLoading === 'albums'
-                  ? 'Finding albums...'
-                  : 'Breaking down task...'}
+                  ? ui("Finding albums...")
+                  : ui("Breaking down task...")}
             </span>
           </div>
         )}
@@ -804,8 +833,8 @@ export default function App() {
         {tasks.undo && (
           <div className="task-undo-notice" role="status">
             <span>{tasks.undo.label}</span>
-            <button disabled={tasks.loading} onClick={tasks.undoLastAction}>Undo</button>
-            <button onClick={tasks.dismissUndo} aria-label="Dismiss undo">✕</button>
+            <button disabled={tasks.loading} onClick={tasks.undoLastAction}>{ui("Undo")}</button>
+            <button onClick={tasks.dismissUndo} aria-label={ui("Dismiss undo")}>✕</button>
           </div>
         )}
 
@@ -815,30 +844,24 @@ export default function App() {
             <button
               className={`dev-toggle ${showDevTools ? 'active' : ''}`}
               onClick={() => setShowDevTools(value => !value)}
-            >
-              Dev
-            </button>
+            >{ui("Dev")}</button>
           )}
           {isCompactWindow && (
             <>
               <button className="compact-goals-entry" aria-controls="goals-panel" aria-expanded={!goals.sidebarCollapsed}
-                onClick={event => { event.currentTarget.focus(); handleToggleGoalsSidebar() }}>Goals</button>
+                onClick={event => { event.currentTarget.focus(); handleToggleGoalsSidebar() }}>{ui("Goals")}</button>
               <button className={`compact-focus-entry${starFocus.activeSession ? ' active' : ''}`}
                 onClick={event => { event.currentTarget.focus(); goals.setSidebarCollapsed(true); setShowTrackingStation(true) }}
-                title={starFocus.activeSession?.pausedAt ? 'Focus paused' : starFocus.activeSession ? 'Focus session in progress' : 'Open Focus Mode'}>
-                Focus{starFocus.activeSnapshot && <span className="compact-focus-clock">
+                title={starFocus.activeSession?.pausedAt ? ui("Focus paused") : starFocus.activeSession ? ui("Focus session in progress") : ui("Open Focus Mode")}>{ui("Focus")}{starFocus.activeSnapshot && <span className="compact-focus-clock">
                   {starFocus.activeSession?.pausedAt ? 'Ⅱ ' : ''}{Math.floor(Math.ceil(starFocus.activeSnapshot.remainingMs / 1000) / 60)}:{String(Math.ceil(starFocus.activeSnapshot.remainingMs / 1000) % 60).padStart(2, '0')}
-                </span>}
-              </button>
+                </span>}</button>
             </>
           )}
           <button
             onClick={event => { event.currentTarget.focus(); setShowPlanner(true) }}
             disabled={!!aiLoading || !tasks.tasks.some(task => task.status !== 'done' && task.status !== 'stopped') || tasks.loading}
-            title="Preview an AI plan for the selected date"
-          >
-            Plan
-          </button>
+            title={ui("Preview an AI plan for the selected date")}
+          >{ui("Plan")}</button>
           <button
             className={showAlbumRecommendations ? 'active' : ''}
             onClick={() => {
@@ -853,20 +876,18 @@ export default function App() {
             disabled={!!aiLoading || !tasks.tasks.length}
             aria-expanded={showAlbumRecommendations}
             title={tasks.tasks.length
-              ? 'Recommend albums for the current tasks'
-              : 'Add a task before finding albums'}
-          >
-            Albums
-          </button>
-          <button className="workflow-entry" aria-label="Search tasks" title="Search tasks" onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setActiveProject(null); setArchivePage('search') }}>
+              ? ui("Recommend albums for the current tasks")
+              : ui("Add a task before finding albums")}
+          >{ui("Albums")}</button>
+          <button className="workflow-entry" aria-label={ui("Search tasks")} title={ui("Search tasks")} onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setActiveProject(null); setArchivePage('search') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg>
           </button>
-          <button className="workflow-entry" aria-label="Progress" title="Progress" onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setActiveProject(null); setArchivePage('progress') }}>
+          <button className="workflow-entry" aria-label={ui("Progress")} title={ui("Progress")} onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setActiveProject(null); setArchivePage('progress') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3v14h14M7 14V9m4 5V5m4 9v-7"/></svg>
           </button>
           <div className="spacer" />
           <button className="sync-indicator" onClick={() => { setSettingsAccount(true); setSettingsProvider(undefined); setShowSettings(true) }}
-            title={`${syncLabel}. Open Account`} aria-label={`${syncLabel}. Open Account`}>
+            title={ui("{0}. Open Account", [syncLabel])} aria-label={ui("{0}. Open Account", [syncLabel])}>
             <span className={`sync-mark ${syncState}`} aria-hidden="true">{{ attention: '!', local: '−', syncing: '↻', synced: '✓', waiting: '·' }[syncState]}</span>
           </button>
           {!isCompactWindow && <div
@@ -877,9 +898,9 @@ export default function App() {
             }`}
             title={aiSettings
               ? isProviderConfigured(aiSettings, aiSettings.provider)
-                ? `AI provider: ${PROVIDER_PRESETS[aiSettings.provider].label}`
-                : `Set up ${PROVIDER_PRESETS[aiSettings.provider].label}`
-              : 'Loading AI provider'}
+                ? ui("AI provider: {0}", [PROVIDER_PRESETS[aiSettings.provider].label])
+                : ui("Set up {0}", [PROVIDER_PRESETS[aiSettings.provider].label])
+              : ui("Loading AI provider")}
           >
             <span className="provider-status-dot" aria-hidden="true" />
             <select
@@ -890,19 +911,17 @@ export default function App() {
               }
               onChange={event => handleQuickProviderChange(event.target.value as Provider)}
               disabled={!aiSettings || providerSwitching || Boolean(aiLoading)}
-              aria-label="Active AI provider"
+              aria-label={ui("Active AI provider")}
               aria-busy={providerSwitching}
             >
-              {!aiSettings && <option value="">AI</option>}
+              {!aiSettings && <option value="">{ui("AI")}</option>}
               {aiSettings && !isProviderConfigured(aiSettings, aiSettings.provider) && (
-                <option value="">
-                  Set up {PROVIDER_PRESETS[aiSettings.provider].shortLabel}
-                </option>
+                <option value="">{ui("Set up {0}", [PROVIDER_PRESETS[aiSettings.provider].shortLabel])}</option>
               )}
               {PROVIDER_ORDER.filter(provider => isTauri() || provider === 'diane').map(provider => (
                 <option key={provider} value={provider}>
                   {PROVIDER_PRESETS[provider].shortLabel}
-                  {aiSettings && !isProviderConfigured(aiSettings, provider) ? ' · Set up' : ''}
+                  {aiSettings && !isProviderConfigured(aiSettings, provider) ? ui(" · Set up") : ''}
                 </option>
               ))}
             </select>
@@ -910,8 +929,8 @@ export default function App() {
           <button
             className="gear settings-update-button"
             onClick={event => { event.currentTarget.focus(); openSettingsForProvider() }}
-            title={appUpdates.needsAttention ? "Settings · Update ready" : "Settings"}
-            aria-label={appUpdates.needsAttention ? "Settings, update ready" : "Settings"}
+            title={appUpdates.needsAttention ? ui("Settings · Update ready") : ui("Settings")}
+            aria-label={appUpdates.needsAttention ? ui("Settings, update ready") : ui("Settings")}
           >
             ⚙
             {appUpdates.needsAttention && <span className="update-dot settings-update-dot" aria-hidden="true" />}
@@ -942,6 +961,7 @@ export default function App() {
             appUpdates={appUpdates}
             updateBlockedReason={updateBlockedReason}
             onClose={() => {
+              setAssignmentKey(undefined)
               setShowSettings(false)
               dismissIntro()
               setSettingsProvider(undefined)
@@ -1010,6 +1030,6 @@ export default function App() {
           onResetOrbitMap={starFocus.resetOrbitMap}
         />
       )}
-    </div>{account.applying && !account.background && <div className="cloud-sync-applying"><div>{account.progress ? <SyncProgressView progress={account.progress} /> : 'Updating your notes…'}</div></div>}</>
+    </div>{account.applying && !account.background && <div className="cloud-sync-applying"><div>{account.progress ? <SyncProgressView progress={account.progress} /> : ui("Updating your notes…")}</div></div>}</TaskCitationContext.Provider></AssignmentEntry.Provider></CitationLookup.Provider>
   )
 }

@@ -20,10 +20,6 @@ Agent calls use the injected provider boundary, which the host must route throug
 
 Keep imported styles scoped under `.diane-todo-port`. Narrow layouts use `@container todo-port`; do not restore global source reset rules or viewport-sized app shells.
 
-## Editing tasks and steps
-
-Click task or step text to edit in place. Enter adds a paragraph break; Cmd/Ctrl+Enter or **Save** commits. **Cancel** or Escape restores the original. Clicking outside saves through the existing guarded persistence flow; moving between the field and its Save/Cancel controls keeps the draft open. Empty text never deletes a task. Select text by dragging to copy it. Historical steps remain read-only.
-
 ## Task execution
 
 UI 0.1.9 displays workflow status beside unselected tasks through the host's bounded batch-status API. One parent polling lifetime handles the active surface; unavailable contact is shown explicitly. Selecting a task still exposes its exact session and review controls.
@@ -62,3 +58,19 @@ After checks pass, build the UI archive from `plugin/` with `npm pack --ignore-s
 The published repository did not contain the `plugin/` directory referenced by Diane's releases. The initial UI source was recovered from the verified `@diane-app/todo-plugin@0.1.6` archive and the backend modules from `diane-todo-plugin@0.1.4`. Their recorded producer commits were unavailable on GitHub. `RECOVERY.json` retains the exact artifact checksums and member hashes; it is a historical baseline, not a claim that edited files still have those hashes. `src/SOURCE.json` retains the earlier port's source attribution, with the original machine-local path removed.
 
 The original MIT notice remains in `src/LICENSE.todo-sticky`. See `backend/README.md` for the unchanged compatibility modules and their independent wheel build. Source recovery does not recreate the unavailable producer Git history or deploy either application.
+
+UI0.1.11 adds the optional full-document KB workflow. Host capability and recovery contracts are documented in [HOST-CONTRACT.md](HOST-CONTRACT.md). Its companion backend is0.1.6; ordinary Todo remains available when the capability is absent.
+
+## Settings and weekly notes
+
+**Weekly notes** opens the weekly task files in the configured knowledge base for document editing and reviewed saves. **Settings** groups Machines and Backups, with a direct link to Diane AI settings. Switching sections retains drafts; Save machines commits changes. Carried tasks show their source date.
+
+## Continuous task editing
+
+Task text edits directly without expanding management controls. The single **…** opens Outcome, Due, Todo project, step/move/delete actions and Diane workspace/secondary actions. The compact Diane row retains status and Run/Open/Review. Opening details never dispatches; closing preserves mounted detail state. No right-click menu is added.
+
+## Display language
+
+The panel and workbench window follow the host's display language. An explicit `pipedreams.displayLanguage` preference wins. With the system choice, the panel follows the document language. Updating `<html lang>` or dispatching `pipedreams:localechange` refreshes its labels in place. The plugin does not change the host setting or add a second language control.
+
+The release includes its own generated `interfaceLabels.ts` and ESM translations, so both the source and built package run offline. Task titles, workspace names, source quotes and authored text belong to the user.

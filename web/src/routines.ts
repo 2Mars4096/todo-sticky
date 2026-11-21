@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import { planTextHash } from './taskPlanning'
 import { addDays, format, isValid, parseISO } from 'date-fns'
 
@@ -10,11 +11,11 @@ export function dateKeyValid(value: unknown): value is string {
 export function readRoutineSchedules(raw: string | null): RoutineSchedules {
   if (!raw) return Object.create(null)
   const value = JSON.parse(raw)
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Routine schedules need recovery. Existing schedules have been kept.')
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(ui("Routine schedules need recovery. Existing schedules have been kept."))
   for (const entry of Object.values(value) as RoutineSchedule[]) {
     if (!entry || !['daily', 'weekdays', 'weekly', 'manual'].includes(entry.cadence) || !dateKeyValid(entry.anchor)
       || typeof entry.paused !== 'boolean' || (entry.handledThrough !== undefined && !dateKeyValid(entry.handledThrough))) {
-      throw new Error('Routine schedules need recovery. Existing schedules have been kept.')
+      throw new Error(ui("Routine schedules need recovery. Existing schedules have been kept."))
     }
   }
   return Object.assign(Object.create(null), value)

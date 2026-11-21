@@ -1,0 +1,9 @@
+{
+  "profile": "notebook",
+  "buildSHA256": "f8fd720e441e570452a77c5b52507a62746caeee574199615c56f23a8035471c",
+  "languages": 10,
+  "cycles": 5,
+  "observations": 850,
+  "failed": 0,
+  "details": []
+}

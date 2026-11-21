@@ -1,0 +1,7 @@
+{
+  "observations": 100,
+  "gaps": [],
+  "locales": 10,
+  "cycles": 5,
+  "states": "Actual standalone and embedded archive rows with a persisted ISO deadline"
+}

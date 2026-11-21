@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -56,7 +58,9 @@ class _SyncProgressViewState extends State<SyncProgressView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                p.total == null ? 'Preparing' : '${p.completed} / ${p.total}',
+                p.total == null
+                    ? tr(context, "Preparing")
+                    : '${p.completed} / ${p.total}',
               ),
               Text(
                 seconds < 60
@@ -69,7 +73,7 @@ class _SyncProgressViewState extends State<SyncProgressView> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                'Waiting for this step · ${idle}s',
+                tr(context, "Waiting for this step · {0}s", [idle]),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),

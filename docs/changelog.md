@@ -1,5 +1,61 @@
 # Changelog
 
+## 2026-11-22 — Archive filters and settings navigation
+
+Search and Progress contain long project names and offer a focused reset from an empty result. Settings now opens under its own name and the German browser-storage sentence identifies the save location. Build 34 passed installed Android and iPhone Simulator checks, and all six Mac settings sections passed in native WebKit. [Geometry, screenshots and exports](plans/25-interface-element-review.md#archive-filters-and-adjacent-controls)
+
+## 2026-11-21 — Repeated nested steps
+
+The step field retains focus after Add and protects unfinished text composition on web, macOS and both phones. Phones accept Cmd/Ctrl+Enter for manual steps. Local build 33 passed installed API 35 Android and iOS 26.4 Simulator checks. The embedded package is 0.1.26. [Verification and exports](plans/23-dockit-transfer.md#repeated-step-capture)
+
+## 2026-11-21 — Build 32 deadline wording and exports
+
+Dockit 2.1.19+32 uses localized month and day order in the saved phone deadline. The French, Spanish and Portuguese translations identify deadlines on both phone and archive rows. Exported the signed Android releases, unsigned iPhone IPA and embedded plugin 0.1.25. The exact simulator export passed all 50 deadline checks after a language switch and relaunch. [Build and verification record](plans/25-interface-element-review.md#build-32-deadline-verification)
+
+## 2026-11-21 — Goal counts, deadlines and Focus phases
+
+Localized running and paused Focus phase names, saved and completed deadline badges, and singular/plural goal and routine counts. The incremental embedded plugin is 0.1.24. [Workflow evidence and exports](plans/25-interface-element-review.md#goal-reminder-deadline-and-focus-follow-up)
+
+## 2026-11-21 — Per-element evidence and Flutter exports
+
+Recorded five distinct source and runtime review results with retained partial observations. Fixed translated Focus rail sizing, timer wording, overly wide native settings tabs and unlocalized archive counters. Exported signed upgrade-compatible Android releases, a Flutter iPhone Simulator app and unsigned device app/IPA. The final embedded producer is 0.1.23. [Review record](plans/25-interface-element-review.md)
+
+## 2026-11-21 — Ten interface languages
+
+Added a persistent globe selector, localized notebook and account workflows, calendar controls, native Mac menus and owned sign-in copy. The embedded workbench follows its host in place. The locally built 0.1.21 package retains Shiprite’s actual 0.1.19 editor, weekly-document and settings capabilities. [Five review records](plans/24-interface-languages.md)
+
+## 2026-11-21 — Instant keyboard disclosure
+
+Enter and Space now update the task chevron and its content in the same frame. Browser tests check the actual rendered angle and active transitions. Flutter tests check the first-frame angle and duration on both opening and closing. Mouse and touch retain reversible feedback.
+
+## 2026-11-21 — Task disclosure feedback
+
+Opening a task's steps turns the disclosure chevron from right to down while the steps appear immediately. Rapid reversal follows the current angle. Reduced motion uses the final orientation immediately. Phone accessibility exposes the expanded state.
+
+## 2026-11-21 — Notebook calendar
+
+The web and Mac calendar opens the current notebook month and focuses its day. Daily and monthly navigation share chevrons. The phone Notes and Progress calendars accept an existing date outside the default range, and confirming the same Notes date retains Undo.
+
+## 2026-11-21 — Paragraph input reuse
+
+The existing notebook textarea now accommodates both bordered and unbordered controls when measuring its height. Mynit and Shiprite consume this implementation independently through the suite sync.
+
+## 2026-11-21 — Repeat task capture and notebook continuity
+
+Adding a task returns focus to the same capture field. The phone Add action follows draft validity, including input-method composition, and supports hardware Cmd/Ctrl+Enter. Chromium, the native Mac notebook reader and Flutter reopened synthetic pre-update data after another task was added. An in-place Android emulator upgrade preserved both existing dates and notebook settings. See the [verification record](plans/23-dockit-transfer.md#repeat-task-capture-and-existing-notebooks).
+
+## 2026-11-20 — In-app workflow review
+
+The selected day shows open work on web and Mac. Phones can reveal hidden finished tasks without changing their completion status.
+
+## 2026-11-20 — Handoff presentation
+
+The phone and web source and assignment links reuse the suite destination marks. The receipt places status, revision and action together; frequent date navigation updates immediately.
+
+## 2026-11-20 — Connected task handoffs
+
+Dockit now recovers the original Mynit source when a synced task is reopened normally. Added precise source links, canonical assignment intake, recoverable receipts, explicit status checks and the suite app picker. Verified the web workflow, signed the rebuilt local Mac and Android artifacts, and launched the Android app.
+
 ## 2026-11-20 — Phone assignment layout
 
 - [phone] Fixed the clipped workspace label, corrected the pipedreams account heading, and rebuilt the signed Android debug preview.

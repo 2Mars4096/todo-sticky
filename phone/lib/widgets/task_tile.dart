@@ -1,4 +1,9 @@
+import '../interface_locale.dart';
+
 import 'dart:convert';
+
+import 'assignment_entry.dart';
+import 'mynit_citation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +12,7 @@ import 'package:intl/intl.dart';
 
 import '../app.dart';
 import 'task_grip.dart';
+import 'notebook_capture_field.dart';
 import '../models/models.dart';
 import '../state/sticky_store.dart';
 import '../services/ai_service.dart';
@@ -25,6 +31,7 @@ class TaskTile extends StatefulWidget {
   final int? reorderIndex;
   final Widget? dragHandle;
   final String? revealId;
+  final Map? linkedCitation;
   const TaskTile({
     super.key,
     required this.store,
@@ -39,6 +46,7 @@ class TaskTile extends StatefulWidget {
     this.reorderIndex,
     this.dragHandle,
     this.revealId,
+    this.linkedCitation,
   });
   @override
   State<TaskTile> createState() => _TaskTileState();
@@ -46,6 +54,20 @@ class TaskTile extends StatefulWidget {
 
 class _TaskTileState extends State<TaskTile> {
   bool expanded = false;
+  bool animateDisclosure = false;
+
+  void toggleDisclosure() {
+    final pressed = HardwareKeyboard.instance.logicalKeysPressed;
+    final keyboardActivation =
+        pressed.contains(LogicalKeyboardKey.enter) ||
+        pressed.contains(LogicalKeyboardKey.numpadEnter) ||
+        pressed.contains(LogicalKeyboardKey.space);
+    setState(() {
+      animateDisclosure = !keyboardActivation;
+      expanded = !expanded;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,8 +78,10 @@ class _TaskTileState extends State<TaskTile> {
   bool adding = false;
   bool busy = false;
   final step = TextEditingController();
+  final stepFocus = FocusNode();
   @override
   void dispose() {
+    stepFocus.dispose();
     step.dispose();
     super.dispose();
   }
@@ -81,7 +105,7 @@ class _TaskTileState extends State<TaskTile> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Suggested steps',
+                tr(context, "Suggested steps"),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
@@ -103,12 +127,12 @@ class _TaskTileState extends State<TaskTile> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Discard'),
+                    child: Text(tr(context, "Discard")),
                   ),
                   const Spacer(),
                   FilledButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Add steps'),
+                    child: Text(tr(context, "Add steps")),
                   ),
                 ],
               ),
@@ -123,7 +147,12 @@ class _TaskTileState extends State<TaskTile> {
           fingerprint,
           result.steps,
         );
-        if (mounted) setState(() => expanded = true);
+        if (mounted) {
+          setState(() {
+            animateDisclosure = false;
+            expanded = true;
+          });
+        }
       }
     } catch (e) {
       if (mounted) showError(context, e);
@@ -151,7 +180,7 @@ class _TaskTileState extends State<TaskTile> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'What happened?',
+              tr(context, "What happened?"),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
@@ -159,21 +188,21 @@ class _TaskTileState extends State<TaskTile> {
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.check_circle_outline),
-              title: const Text('Complete'),
-              subtitle: const Text('The outcome is reached.'),
+              title: Text(tr(context, "Complete")),
+              subtitle: Text(tr(context, "The outcome is reached.")),
               onTap: () => Navigator.pop(context, 'done'),
             ),
             ListTile(
               leading: const Icon(Icons.edit_outlined),
-              title: const Text('Revise'),
-              subtitle: const Text('Keep working, adjust the outcome.'),
+              title: Text(tr(context, "Revise")),
+              subtitle: Text(tr(context, "Keep working, adjust the outcome.")),
               onTap: () => Navigator.pop(context, 'revise'),
             ),
             ListTile(
               leading: const Icon(Icons.stop_circle_outlined),
-              title: const Text('Stop'),
-              subtitle: const Text(
-                'Close deliberately without marking it achieved.',
+              title: Text(tr(context, "Stop")),
+              subtitle: Text(
+                tr(context, "Close deliberately without marking it achieved."),
               ),
               onTap: () => Navigator.pop(context, 'stopped'),
             ),
@@ -194,7 +223,6 @@ class _TaskTileState extends State<TaskTile> {
   }
 
   void addStep() {
-    if (step.text.trim().isEmpty) return;
     try {
       widget.store.addTask(
         step.text,
@@ -202,6 +230,7 @@ class _TaskTileState extends State<TaskTile> {
         parentId: widget.task.id,
       );
       step.clear();
+      stepFocus.requestFocus();
     } catch (e) {
       showError(context, e);
     }
@@ -220,14 +249,16 @@ class _TaskTileState extends State<TaskTile> {
               leading: const Icon(Icons.arrow_forward_rounded),
               title: Text(
                 destination == widget.store.today
-                    ? 'Move to today'
-                    : 'Move to ${DateFormat('EEE, d MMM').format(parseDate(destination))}',
+                    ? tr(context, "Move to today")
+                    : tr(context, "Move to {0}", [
+                        DateFormat('EEE, d MMM').format(parseDate(destination)),
+                      ]),
               ),
               onTap: () => Navigator.pop(context, destination),
             ),
             ListTile(
               leading: const Icon(Icons.calendar_month_outlined),
-              title: const Text('Choose another date'),
+              title: Text(tr(context, "Choose another date")),
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
@@ -267,7 +298,7 @@ class _TaskTileState extends State<TaskTile> {
         height: MediaQuery.sizeOf(context).height * .55,
         child: ListView(
           children: [
-            const ListTile(title: Text('Assign to project')),
+            ListTile(title: Text(tr(context, "Assign to project"))),
             for (final goal in goals)
               ListTile(
                 title: Text(goal.text),
@@ -330,7 +361,7 @@ class _TaskTileState extends State<TaskTile> {
                   ReorderableDragStartListener(
                     index: widget.reorderIndex!,
                     child: Semantics(
-                      label: 'Reorder ${task.text}',
+                      label: tr(context, "Reorder {0}", [task.text]),
                       customSemanticsActions: {
                         const CustomSemanticsAction(label: 'Move up'): () =>
                             widget.store.reorder(
@@ -348,7 +379,7 @@ class _TaskTileState extends State<TaskTile> {
                             ),
                       },
                       child: Tooltip(
-                        message: 'Drag to reorder',
+                        message: tr(context, "Drag to reorder"),
                         child: TaskGrip(height: controlHeight),
                       ),
                     ),
@@ -359,7 +390,9 @@ class _TaskTileState extends State<TaskTile> {
                   child: IconButton(
                     padding: EdgeInsets.zero,
                     iconSize: 24,
-                    tooltip: task.closed ? 'Reopen task' : 'Complete task',
+                    tooltip: task.closed
+                        ? tr(context, "Reopen task")
+                        : tr(context, "Complete task"),
                     onPressed: finish,
                     icon: Icon(
                       task.status == TaskStatus.done
@@ -377,7 +410,7 @@ class _TaskTileState extends State<TaskTile> {
                 ),
                 Expanded(
                   child: InkWell(
-                    onTap: () => setState(() => expanded = !expanded),
+                    onTap: toggleDisclosure,
                     onDoubleTap: () => editTask(
                       context,
                       widget.store,
@@ -405,7 +438,9 @@ class _TaskTileState extends State<TaskTile> {
                             Padding(
                               padding: const EdgeInsets.only(top: 5),
                               child: Text(
-                                'Outcome · ${task.finish!.doneWhen}',
+                                tr(context, "Outcome · {0}", [
+                                  task.finish!.doneWhen,
+                                ]),
                                 style: const TextStyle(
                                   color: mutedInk,
                                   fontSize: 13,
@@ -426,9 +461,11 @@ class _TaskTileState extends State<TaskTile> {
                                   if (widget.depth == 0 && goal != null)
                                     Semantics(
                                       button: true,
-                                      label: 'Open goal ${goal.text}',
+                                      label: tr(context, "Open goal {0}", [
+                                        goal.text,
+                                      ]),
                                       child: Tooltip(
-                                        message: 'Open goal plan',
+                                        message: tr(context, "Open goal plan"),
                                         child: InkWell(
                                           onTap: () => Navigator.push(
                                             context,
@@ -474,7 +511,11 @@ class _TaskTileState extends State<TaskTile> {
                                     ),
                                   if (task.finish?.by != null)
                                     Text(
-                                      'Due ${DateFormat('d MMM').format(parseDate(task.finish!.by!))}',
+                                      tr(context, "Due {0}", [
+                                        DateFormat.MMMd().format(
+                                          parseDate(task.finish!.by!),
+                                        ),
+                                      ]),
                                       style: TextStyle(
                                         fontSize: 12,
                                         color:
@@ -497,16 +538,16 @@ class _TaskTileState extends State<TaskTile> {
                                       ),
                                     ),
                                   if (task.status == TaskStatus.stopped)
-                                    const Text(
-                                      'Stopped',
+                                    Text(
+                                      tr(context, "Stopped"),
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: mutedInk,
                                       ),
                                     ),
                                   if (task.finish?.reviewReady == true)
-                                    const Text(
-                                      'Ready for outcome review',
+                                    Text(
+                                      tr(context, "Ready for outcome review"),
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
@@ -520,7 +561,12 @@ class _TaskTileState extends State<TaskTile> {
                             Padding(
                               padding: const EdgeInsets.only(top: 7),
                               child: Text(
-                                '$unfinished steps left${unfinished == 0 ? '' : ' · ${task.subtasks.firstWhere((s) => !s.closed).text}'}',
+                                tr(context, "{0} steps left{1}", [
+                                  unfinished,
+                                  unfinished == 0
+                                      ? ''
+                                      : ' · ${task.subtasks.firstWhere((s) => !s.closed).text}',
+                                ]),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -534,16 +580,35 @@ class _TaskTileState extends State<TaskTile> {
                     ),
                   ),
                 ),
-                IconButton(
-                  tooltip: expanded
-                      ? 'Hide task actions and steps'
-                      : 'Show task actions and steps',
-                  onPressed: () => setState(() => expanded = !expanded),
-                  icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                Semantics(
+                  expanded: expanded,
+                  child: IconButton(
+                    tooltip: expanded
+                        ? tr(context, "Hide task actions and steps")
+                        : tr(context, "Show task actions and steps"),
+                    onPressed: toggleDisclosure,
+                    icon: MediaQuery.disableAnimationsOf(context)
+                        ? RotatedBox(
+                            quarterTurns: expanded ? 1 : 0,
+                            child: const Icon(Icons.chevron_right),
+                          )
+                        : AnimatedRotation(
+                            turns: expanded ? .25 : 0,
+                            duration: animateDisclosure
+                                ? const Duration(milliseconds: 150)
+                                : Duration.zero,
+                            curve: const Cubic(.23, 1, .32, 1),
+                            child: const Icon(Icons.chevron_right),
+                          ),
+                  ),
                 ),
               ],
             ),
             if (expanded) ...[
+              if (widget.revealId == task.id && widget.linkedCitation != null)
+                MynitCitation(source: widget.linkedCitation!)
+              else
+                NotebookCitation(taskId: task.id),
               Padding(
                 padding: EdgeInsets.only(left: contentInset),
                 child: Wrap(
@@ -551,7 +616,7 @@ class _TaskTileState extends State<TaskTile> {
                   runSpacing: 2,
                   children: [
                     IconButton(
-                      tooltip: 'Focus on task',
+                      tooltip: tr(context, "Focus on task"),
                       onPressed: widget.store.focus.activeSession != null
                           ? null
                           : () {
@@ -565,15 +630,15 @@ class _TaskTileState extends State<TaskTile> {
                     ),
                     if (!task.closed)
                       IconButton(
-                        tooltip: 'Add a step',
+                        tooltip: tr(context, "Add a step"),
                         onPressed: () => setState(() => adding = !adding),
                         icon: const Icon(Icons.add, size: 18),
                       ),
                     if (!task.closed)
                       IconButton(
                         tooltip: busy
-                            ? 'Preparing suggested steps'
-                            : 'Suggest steps with AI',
+                            ? tr(context, "Preparing suggested steps")
+                            : tr(context, "Suggest steps with AI"),
                         onPressed: busy ? null : suggest,
                         icon: busy
                             ? const SizedBox(
@@ -586,14 +651,22 @@ class _TaskTileState extends State<TaskTile> {
                             : const Icon(Icons.auto_awesome_outlined, size: 18),
                       ),
                     IconButton(
-                      tooltip: 'Move task · due date stays unchanged',
+                      tooltip: tr(
+                        context,
+                        "Move task · due date stays unchanged",
+                      ),
                       onPressed: move,
                       icon: const Icon(Icons.arrow_forward, size: 20),
                     ),
                     PopupMenuButton<String>(
-                      tooltip: 'More task actions',
+                      tooltip: tr(context, "More task actions"),
                       icon: const Icon(Icons.more_horiz, size: 20),
                       onSelected: (action) async {
+                        if (action == 'shiprite') {
+                          AssignmentEntry.of(context)
+                              ?.open(widget.date, widget.task.id);
+                          return;
+                        }
                         if (action == 'project') {
                           await assignProject();
                           return;
@@ -616,8 +689,10 @@ class _TaskTileState extends State<TaskTile> {
                           );
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Agent prompt copied'),
+                              SnackBar(
+                                content: Text(
+                                  tr(context, "Agent prompt copied"),
+                                ),
                               ),
                             );
                           }
@@ -645,35 +720,40 @@ class _TaskTileState extends State<TaskTile> {
                         }
                       },
                       itemBuilder: (_) => [
-                        const PopupMenuItem(
+                        if (AssignmentEntry.of(context) != null)
+                          PopupMenuItem(
+                            value: 'shiprite',
+                            child: Text(tr(context, "Assign in Shiprite")),
+                          ),
+                        PopupMenuItem(
                           value: 'project',
-                          child: Text('Assign to project'),
+                          child: Text(tr(context, "Assign to project")),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'edit',
-                          child: Text('Edit task'),
+                          child: Text(tr(context, "Edit task")),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'copy',
-                          child: Text('Copy as agent prompt'),
+                          child: Text(tr(context, "Copy as agent prompt")),
                         ),
                         if (!task.closed) ...[
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'question',
-                            child: Text('Mark as question'),
+                            child: Text(tr(context, "Mark as question")),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'partial',
-                            child: Text('Mark partly done'),
+                            child: Text(tr(context, "Mark partly done")),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'stop',
-                            child: Text('Stop task'),
+                            child: Text(tr(context, "Stop task")),
                           ),
                         ],
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'delete',
-                          child: Text('Delete task'),
+                          child: Text(tr(context, "Delete task")),
                         ),
                       ],
                     ),
@@ -683,21 +763,14 @@ class _TaskTileState extends State<TaskTile> {
               if (adding)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(44, 4, 8, 12),
-                  child: TextField(
+                  child: NotebookCaptureField(
                     controller: step,
+                    focusNode: stepFocus,
                     autofocus: true,
-                    textInputAction: TextInputAction.newline,
-                    keyboardType: TextInputType.multiline,
-                    minLines: 1,
-                    maxLines: View.of(context).viewInsets.bottom > 0 ? 3 : 6,
-                    decoration: InputDecoration(
-                      hintText: 'Add a step',
-                      suffixIcon: IconButton(
-                        tooltip: 'Add step',
-                        onPressed: addStep,
-                        icon: const Icon(Icons.add),
-                      ),
-                    ),
+                    hint: tr(context, "Add a step"),
+                    actionLabel: tr(context, "Add step"),
+                    icon: Icons.add,
+                    onAdd: addStep,
                   ),
                 ),
               for (var i = 0; i < task.subtasks.length; i++)
@@ -718,6 +791,7 @@ class _TaskTileState extends State<TaskTile> {
                           leadingInset: hasHandle ? 36 : 12,
                           parentId: task.id,
                           revealId: widget.revealId,
+                          linkedCitation: widget.linkedCitation,
                         ),
                       ),
                       if (task.subtasks.length > 1)
@@ -726,7 +800,7 @@ class _TaskTileState extends State<TaskTile> {
                           child: Column(
                             children: [
                               IconButton(
-                                tooltip: 'Move step up',
+                                tooltip: tr(context, "Move step up"),
                                 padding: EdgeInsets.zero,
                                 onPressed: i == 0
                                     ? null
@@ -742,7 +816,7 @@ class _TaskTileState extends State<TaskTile> {
                                 ),
                               ),
                               IconButton(
-                                tooltip: 'Move step down',
+                                tooltip: tr(context, "Move step down"),
                                 padding: EdgeInsets.zero,
                                 onPressed: i == task.subtasks.length - 1
                                     ? null
@@ -769,7 +843,7 @@ class _TaskTileState extends State<TaskTile> {
                 child: ExpansionTile(
                   tilePadding: EdgeInsets.zero,
                   title: Text(
-                    'Earlier steps (${history.length})',
+                    tr(context, "Earlier steps ({0})", [history.length]),
                     style: const TextStyle(fontSize: 13, color: mutedInk),
                   ),
                   children: [
@@ -789,7 +863,9 @@ class _TaskTileState extends State<TaskTile> {
                           old.task.text,
                           style: const TextStyle(fontSize: 13),
                         ),
-                        subtitle: Text('${old.date} · ${old.task.status.name}'),
+                        subtitle: Text(
+                          '${old.date} · ${tr(context, const {TaskStatus.todo: "To do", TaskStatus.done: "Completed", TaskStatus.partial: "In progress", TaskStatus.question: "Needs a decision", TaskStatus.stopped: "Stopped"}[old.task.status]!)}',
+                        ),
                       ),
                   ],
                 ),
@@ -858,18 +934,21 @@ class _TaskEditorState extends State<TaskEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Edit task', style: Theme.of(context).textTheme.titleLarge),
+          Text(
+            tr(context, "Edit task"),
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 20),
           TextField(
             controller: title,
             maxLines: null,
-            decoration: const InputDecoration(labelText: 'Task'),
+            decoration: InputDecoration(labelText: tr(context, "Task")),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: outcome,
             maxLines: null,
-            decoration: const InputDecoration(labelText: 'Done when…'),
+            decoration: InputDecoration(labelText: tr(context, "Done when…")),
           ),
           const SizedBox(height: 4),
           TextButton.icon(
@@ -900,7 +979,7 @@ class _TaskEditorState extends State<TaskEditor> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.auto_awesome_outlined, size: 18),
-            label: const Text('Suggest outcome'),
+            label: Text(tr(context, "Suggest outcome")),
           ),
           if (suggestion?.isNotEmpty == true)
             Container(
@@ -913,8 +992,8 @@ class _TaskEditorState extends State<TaskEditor> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Unsaved suggestion',
+                  Text(
+                    tr(context, "Unsaved suggestion"),
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   Text(suggestion!),
@@ -923,7 +1002,7 @@ class _TaskEditorState extends State<TaskEditor> {
                       outcome.text = suggestion!;
                       suggestion = null;
                     }),
-                    child: const Text('Use suggestion'),
+                    child: Text(tr(context, "Use suggestion")),
                   ),
                 ],
               ),
@@ -933,7 +1012,7 @@ class _TaskEditorState extends State<TaskEditor> {
             leading: const Icon(Icons.event_outlined),
             title: Text(
               due == null
-                  ? 'No due date'
+                  ? tr(context, "No due date")
                   : DateFormat('EEE, d MMM y').format(parseDate(due!)),
             ),
             onTap: () async {
@@ -948,14 +1027,14 @@ class _TaskEditorState extends State<TaskEditor> {
             trailing: due == null
                 ? null
                 : IconButton(
-                    tooltip: 'Clear due date',
+                    tooltip: tr(context, "Clear due date"),
                     onPressed: () => setState(() => due = null),
                     icon: const Icon(Icons.close),
                   ),
           ),
           if (widget.task.finish?.deadlineChanges.isNotEmpty == true)
             ExpansionTile(
-              title: const Text('Deadline history'),
+              title: Text(tr(context, "Deadline history")),
               tilePadding: EdgeInsets.zero,
               children: [
                 for (final change in widget.task.finish!.deadlineChanges)
@@ -973,7 +1052,7 @@ class _TaskEditorState extends State<TaskEditor> {
             children: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(tr(context, "Cancel")),
               ),
               const Spacer(),
               FilledButton(
@@ -989,7 +1068,7 @@ class _TaskEditorState extends State<TaskEditor> {
                   );
                   Navigator.pop(context);
                 },
-                child: const Text('Save'),
+                child: Text(tr(context, "Save")),
               ),
             ],
           ),

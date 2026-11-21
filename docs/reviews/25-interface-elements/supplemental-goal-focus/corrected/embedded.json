@@ -1,0 +1,9 @@
+{
+  "profile": "embedded",
+  "buildSHA256": "bf8b8fe7a5e144779025955b5d3d5ed6900603e6f4d3a3438594c0a3316e8bbd",
+  "languages": 10,
+  "cycles": 5,
+  "observations": 1050,
+  "failed": 0,
+  "details": []
+}

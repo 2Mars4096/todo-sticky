@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const vm = require('node:vm')
@@ -14,7 +15,7 @@ vm.runInNewContext(source, {
   console,
   setTimeout: callback => { pendingSave = callback; return 1 },
   clearTimeout: () => {},
-  require: name => {
+  require: name => { if (name.endsWith('/interfaceLocale')) return testedInterface;
     if (name === 'react') return {
       useState: initial => [Array.isArray(initial) ? state : initial, update => {
         if (Array.isArray(initial)) state = typeof update === 'function' ? update(state) : update

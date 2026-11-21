@@ -1,3 +1,4 @@
+import { ui } from './interfaceLocale'
 import { canonical } from './cloudSync'
 import { differenceInCalendarDays, isValid, parseISO } from 'date-fns'
 import type { ExtractedTaskDate, GoalItem, GoalPlanStep, Task } from './types'
@@ -34,40 +35,40 @@ export function validateProjectWindow(window: ProjectWindow) {
   const span = differenceInCalendarDays(parseISO(window.until), parseISO(window.from))
   if (!validProjectDate(window.from) || !validProjectDate(window.until) || span < 0 || span > 90
     || !Number.isInteger(window.minutesPerDay) || window.minutesPerDay < 15 || window.minutesPerDay > 480) {
-    throw new Error('Choose a range of up to 90 days and 15–480 minutes per day.')
+    throw new Error(ui("Choose a range of up to 90 days and 15–480 minutes per day."))
   }
 }
 export function validateProjectActions(actions: ProjectAction[], goal: GoalItem, rows: ArchiveRow[], window?: ProjectWindow) {
-  if (goal.done) throw new Error('Reopen this project before changing its plan.')
-  if (!validId(goal.id)) throw new Error('Create a new project before linking this older goal.')
+  if (goal.done) throw new Error(ui("Reopen this project before changing its plan."))
+  if (!validId(goal.id)) throw new Error(ui("Create a new project before linking this older goal."))
   if (window) validateProjectWindow(window)
-  if (!actions.length || actions.length > (window ? 30 : 200)) throw new Error(window ? 'Keep between 1 and 30 tasks in the proposal.' : 'Select up to 200 project steps.')
+  if (!actions.length || actions.length > (window ? 30 : 200)) throw new Error(window ? ui("Keep between 1 and 30 tasks in the proposal.") : ui("Select up to 200 project steps."))
   const ids = new Set<string>(), texts = new Set<string>(), totals = new Map<string,number>()
   const linkedText = new Set(projectUnits(rows, goal.id).map(row => row.task.text.trim().toLowerCase()))
   for (const action of actions) {
     const id = action.stepId ?? action.id, text = action.text.trim(), normalized = text.toLowerCase()
-    if (!validId(id) || !text || text.length > 5000 || !validProjectDate(action.date)) throw new Error('Each task needs valid text, identity and date.')
-    if (ids.has(id) || texts.has(normalized) || linkedText.has(normalized)) throw new Error('This work is duplicated or already belongs to the project. Open its daily task instead.')
+    if (!validId(id) || !text || text.length > 5000 || !validProjectDate(action.date)) throw new Error(ui("Each task needs valid text, identity and date."))
+    if (ids.has(id) || texts.has(normalized) || linkedText.has(normalized)) throw new Error(ui("This work is duplicated or already belongs to the project. Open its daily task instead."))
     ids.add(id); texts.add(normalized)
-    if (rows.some(row => row.task.id === id) || linkedStepRows(goal,id,rows).length) throw new Error('A selected step is already scheduled. Refresh the project.')
-    if (action.stepId && !goal.plan?.some(step => step.id === action.stepId)) throw new Error('A step changed. Generate a fresh proposal.')
-    if (!action.stepId && goal.plan?.some(step => step.id === id || step.text.trim().toLowerCase() === normalized)) throw new Error('Use the existing project step instead of duplicating it.')
+    if (rows.some(row => row.task.id === id) || linkedStepRows(goal,id,rows).length) throw new Error(ui("A selected step is already scheduled. Refresh the project."))
+    if (action.stepId && !goal.plan?.some(step => step.id === action.stepId)) throw new Error(ui("A step changed. Generate a fresh proposal."))
+    if (!action.stepId && goal.plan?.some(step => step.id === id || step.text.trim().toLowerCase() === normalized)) throw new Error(ui("Use the existing project step instead of duplicating it."))
     if (window) {
-      if (action.date < window.from || action.date > window.until || window.weekdaysOnly && [0,6].includes(parseISO(action.date).getDay())) throw new Error('Choose a permitted date inside the plan range.')
-      if (!Number.isInteger(action.minutes) || action.minutes < 5 || action.minutes > window.minutesPerDay) throw new Error('Choose estimates within the daily budget.')
+      if (action.date < window.from || action.date > window.until || window.weekdaysOnly && [0,6].includes(parseISO(action.date).getDay())) throw new Error(ui("Choose a permitted date inside the plan range."))
+      if (!Number.isInteger(action.minutes) || action.minutes < 5 || action.minutes > window.minutesPerDay) throw new Error(ui("Choose estimates within the daily budget."))
       const total = (totals.get(action.date) ?? 0) + action.minutes
-      if (total > window.minutesPerDay) throw new Error(`The project budget is exceeded on ${action.date}.`)
+      if (total > window.minutesPerDay) throw new Error(ui("The project budget is exceeded on {0}.", [action.date]))
       totals.set(action.date,total)
     }
   }
-  if ((goal.plan?.length ?? 0) + actions.filter(action => !action.stepId).length > 200) throw new Error('A project can contain up to 200 steps.')
+  if ((goal.plan?.length ?? 0) + actions.filter(action => !action.stepId).length > 200) throw new Error(ui("A project can contain up to 200 steps."))
 }
 export function parseProjectActions(raw: unknown): ProjectAction[] {
   const list = (raw as { actions?: unknown })?.actions
-  if (!Array.isArray(list) || !list.length || list.length > 30) throw new Error('The provider returned no usable proposal.')
+  if (!Array.isArray(list) || !list.length || list.length > 30) throw new Error(ui("The provider returned no usable proposal."))
   return list.map(item => {
     if (!item || typeof item.text !== 'string' || typeof item.date !== 'string' || typeof item.minutes !== 'number'
-      || item.stepId != null && typeof item.stepId !== 'string') throw new Error('The provider returned an incomplete task.')
+      || item.stepId != null && typeof item.stepId !== 'string') throw new Error(ui("The provider returned an incomplete task."))
     return { id: newProjectId(), ...(item.stepId ? { stepId:item.stepId } : {}), text:item.text, date:item.date, minutes:item.minutes }
   })
 }
@@ -96,35 +97,35 @@ export function assignTaskProject(task: Task, goalId: string | undefined, previo
   return visit(task,true)
 }
 export function validateGoalPlan(plan: GoalPlanStep[]) {
-  if (plan.length > 200 || new Set(plan.map(step=>step.id)).size !== plan.length || plan.some(step=>!validId(step.id)||!step.text.trim()||step.text.length>5000)) throw new Error('Keep up to 200 distinct steps, each with 1–5,000 characters.')
+  if (plan.length > 200 || new Set(plan.map(step=>step.id)).size !== plan.length || plan.some(step=>!validId(step.id)||!step.text.trim()||step.text.length>5000)) throw new Error(ui("Keep up to 200 distinct steps, each with 1–5,000 characters."))
 }
 
 
 export function reviseProjectTask(folder: string, goal: GoalItem, dates: ExtractedTaskDate[], original: ArchiveRow, text: string, toDate = original.date): ProjectOperation {
   const value=text.trim()
-  if(!validProjectDate(toDate))throw new Error('Choose a valid work date.')
-  if(!value||value.length>5000) throw new Error('Task text must contain 1–5,000 characters.')
+  if(!validProjectDate(toDate))throw new Error(ui("Choose a valid work date."))
+  if(!value||value.length>5000) throw new Error(ui("Task text must contain 1–5,000 characters."))
   const day=dates.find(day=>day.date===original.date)
-  if(!day)throw new Error('This task moved or was removed. Refresh the project.')
+  if(!day)throw new Error(ui("This task moved or was removed. Refresh the project."))
   let found=false
   const update=(task:Task):Task=>{
     if(task.id===original.task.id){
-      if(canonical(task)!==canonical(original.task))throw new Error('This task changed while you were editing. Cancel and reopen it to see the latest version.')
+      if(canonical(task)!==canonical(original.task))throw new Error(ui("This task changed while you were editing. Cancel and reopen it to see the latest version."))
       found=true;return {...task,text:value}
     }
     return {...task,subtasks:task.subtasks.map(update)}
   }
   const after=day.tasks.map(update)
-  if(!found)throw new Error('This task moved or was removed. Refresh the project.')
+  if(!found)throw new Error(ui("This task moved or was removed. Refresh the project."))
   if(toDate===original.date)return {folder,before:goal,after:goal,days:[{date:day.date,before:day.tasks,after}]}
-  if(original.parents.length)throw new Error('Move this step through its parent task.')
+  if(original.parents.length)throw new Error(ui("Move this step through its parent task."))
   const moved=after.find(task=>task.id===original.task.id)!
   const destination=dates.find(day=>day.date===toDate)?.tasks??[]
   const ids=new Set<string>()
   const collect=(task:Task)=>{ids.add(task.id);task.subtasks.forEach(collect)}
   collect(moved)
   const collides=(task:Task):boolean=>ids.has(task.id)||task.subtasks.some(collides)
-  if(destination.some(collides))throw new Error('This task already exists on that date. Refresh before moving it.')
+  if(destination.some(collides))throw new Error(ui("This task already exists on that date. Refresh before moving it."))
   return {folder,before:goal,after:goal,days:[
     {date:toDate,before:destination,after:[...destination,moved]},
     {date:day.date,before:day.tasks,after:day.tasks.filter(task=>task.id!==original.task.id)},

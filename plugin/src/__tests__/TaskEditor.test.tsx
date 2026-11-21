@@ -1,0 +1,43 @@
+import { act, createElement as h } from 'react';
+import { createRoot } from 'react-dom/client';
+import { beforeEach, afterEach, expect, it, vi } from 'vitest';
+import { TaskEditorBridge, TaskEditorContext, type TodoTaskEditorProps } from '../TaskEditor';
+import { TodoPortContext } from '../TodoPortContext';
+import { TaskItem } from '../components/TaskItem';
+vi.mock('../TaskDianeAction', () => ({ TaskDianeAction: ({id}: {id:string}) => h('button', {'data-session-task':id}, 'Open session') }));
+let host: HTMLDivElement, root: ReturnType<typeof createRoot>;
+let received: TodoTaskEditorProps;
+const Editor = (props: TodoTaskEditorProps) => { received = props; return h('button', {'data-editor-task':props.taskId}, props.content); };
+beforeEach(() => { host=document.createElement('div'); document.body.append(host); root=createRoot(host); });
+afterEach(() => { act(()=>root.unmount()); host.remove(); });
+it('fences stale text/account callbacks and rejects blank text without changing identity', () => {
+ const onChange=vi.fn();
+ const render=(content='First',scope='owner')=>act(()=>root.render(h(TaskEditorBridge,{editor:Editor,scope,taskId:'record',content,readOnly:false,onChange})));
+ render(); const stale=received.onChange; render('Remote change'); act(()=>stale('Old edit')); expect(onChange).not.toHaveBeenCalled();
+ expect(host.textContent).toContain('This task changed');
+ const priorOwner=received.onChange; render('Remote change','another'); act(()=>priorOwner('Wrong owner')); expect(onChange).not.toHaveBeenCalled();
+ act(()=>received.onChange('  ')); expect(onChange).not.toHaveBeenCalled();
+ act(()=>received.onChange('**Exact**\n\nMarkdown\n')); expect(onChange).toHaveBeenCalledWith('**Exact**\n\nMarkdown\n');
+});
+it('injects by canonical record, retains controls and session identity across reorder', () => {
+ const changes=vi.fn(),move=vi.fn();
+ const context={scope:'owner',active:true,enabled:true,flush:async()=>{}};
+ const row=(id:string)=>h(TaskItem,{key:id,id:`carried:${id}`,recordId:id,text:id,status:'todo',moveTargetLabel:'Tomorrow',onToggle:vi.fn(),onDelete:vi.fn(),onPush:vi.fn(),onTextChange:(text:string)=>changes(id,text),sortable:{label:`Move ${id}`,onPointerDown:vi.fn(),onPointerMove:vi.fn(),onPointerUp:vi.fn(),onCancel:vi.fn(),onMove:move}});
+ const render=(ids:string[])=>act(()=>root.render(h(TodoPortContext.Provider,{value:context},h(TaskEditorContext.Provider,{value:Editor},...ids.map(row)))));
+ render(['a','b']);
+ act(()=>host.querySelector<HTMLButtonElement>('[data-editor-task="a"]')!.click());
+ expect(host.querySelector('[data-session-task="a"]')).toBeTruthy();
+ expect(host.querySelector('[aria-label="Delete a"]')).toBeTruthy();
+ render(['b','a']);
+ expect([...host.querySelectorAll('[data-editor-task]')].map(n=>n.getAttribute('data-editor-task'))).toEqual(['b','a']);
+ expect(host.querySelector('[data-session-task="a"]')).toBeTruthy();
+ act(()=>host.querySelector('[aria-label="Move a"]')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true})));
+ expect(move).toHaveBeenCalledWith(-1);
+ act(()=>received.onChange('changed a')); expect(changes).toHaveBeenCalledWith('a','changed a');
+});
+it('keeps historical and disabled task content read-only',()=>{
+ const onChange=vi.fn();
+ act(()=>root.render(h(TodoPortContext.Provider,{value:{scope:'owner',active:true,enabled:true,flush:async()=>{}}},h(TaskEditorContext.Provider,{value:Editor},h(TaskItem,{id:'historic',text:'Old',status:'done',isOtherDate:true,sourceDate:'2026-11-01',moveTargetLabel:'Tomorrow',onToggle:vi.fn(),onDelete:vi.fn(),onPush:vi.fn(),onTextChange:onChange})))));
+ expect(received.readOnly).toBe(true); act(()=>received.onChange('overwrite')); expect(onChange).not.toHaveBeenCalled();
+ expect(host.querySelector('[data-session-task]')).toBeNull();
+});

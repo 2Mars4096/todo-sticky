@@ -1,4 +1,5 @@
-import { DeleteAction } from './DeleteAction'
+import { ui } from '../interfaceLocale'
+import { TaskEditorBridge, useTaskEditor } from '../TaskEditor'
 import { useTodoPort } from '../TodoPortContext'
 import { TaskDianeAction } from '../TaskDianeAction'
 import { TaskStepProposal } from '../TaskStepProposal'
@@ -26,6 +27,13 @@ function AddStepIcon() {
   return <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
 }
 
+function DeleteIcon() {
+  return (
+    <svg className="task-action-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M3 4.5h10M6 2h4l.75 2.5M4.5 4.5l.6 9h5.8l.6-9M6.5 7v4M9.5 7v4" />
+    </svg>
+  )
+}
 
 function PushIcon() {
   return (
@@ -104,7 +112,12 @@ export function TaskItem({
   sortable, getSubtaskSortable, finish, onUpdateFinish, onReview,
 }: Props) {
   const port = useTodoPort()
+  const taskEditor = useTaskEditor()
   const [selected, setSelected] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [dianeControls, setDianeControls] = useState<HTMLDivElement | null>(null)
+  const moreRef = useRef<HTMLButtonElement>(null)
+  const detailsId = useId()
   const [dateOpen, setDateOpen] = useState(false)
   const [stepsOpen, setStepsOpen] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
@@ -112,6 +125,7 @@ export function TaskItem({
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(text)
   const [subInput, setSubInput] = useState('')
+  const [composingStep, setComposingStep] = useState(false)
   const groupRef = useRef<HTMLDivElement>(null)
   const rowRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLSpanElement>(null)
@@ -126,7 +140,7 @@ export function TaskItem({
   const steps = todaySubtasks ?? []
   const history = otherSubtasks ?? []
   const doneSteps = steps.filter(step => step.status === 'done').length
-  const nextStep = steps.find(step => step.status !== 'done' && step.status !== 'stopped')
+
 
   const revealId = port?.selection?.recordId
   const containsReveal = (items: Task[]): boolean => items.some(task => task.id === revealId || containsReveal(task.subtasks || []))
@@ -165,10 +179,10 @@ export function TaskItem({
       // A clicked control can unmount after its action (for example Use suggestion).
       // Its original event path still identifies the row that received the click.
       const belongsTo = (element: HTMLElement | null) => Boolean(element && (path.includes(element) || element.contains(target)))
-      // Shiprite details render in a portal; their controls still belong to this task.
+      // Diane details render in a portal; their controls still belong to this task.
       if (target?.closest('.diane-details') || path.some(node => node instanceof Element && node.matches('.diane-details'))) return
       if (!belongsTo(groupRef.current)) {
-        setSelected(false); setDateOpen(false); setAddingStep(false)
+        setSelected(false); setDetailsOpen(false); setAddingStep(false)
       }
     }
     document.addEventListener('pointerdown', startPointer, true)
@@ -191,6 +205,16 @@ export function TaskItem({
   }, [editing])
   useEffect(() => { if (addingStep) stepInputRef.current?.focus() }, [addingStep])
 
+  useEffect(() => {
+    const closeOther = (event: Event) => { if ((event as CustomEvent).detail !== detailsId) setDetailsOpen(false) }
+    window.addEventListener('todo:task-details', closeOther)
+    return () => window.removeEventListener('todo:task-details', closeOther)
+  }, [detailsId])
+  const toggleDetails = () => {
+    if (!detailsOpen) window.dispatchEvent(new CustomEvent('todo:task-details', {detail: detailsId}))
+    setDetailsOpen(value => !value)
+    moreRef.current?.focus()
+  }
   const returnToTitle = () => requestAnimationFrame(() => titleRef.current?.focus())
   const commitEdit = (restoreFocus = false) => {
     if (!titleEditActive.current) return
@@ -239,7 +263,11 @@ export function TaskItem({
   }
   const handleSubAdd = () => {
     const trimmed = subInput.trim()
-    if (trimmed && onAddSubtask) { onAddSubtask(trimmed); setSubInput(''); setStepsOpen(true) }
+    if (!trimmed || composingStep || !onAddSubtask) return
+    onAddSubtask(trimmed)
+    setSubInput('')
+    setStepsOpen(true)
+    stepInputRef.current?.focus({preventScroll: true})
   }
   const breakdown = async () => {
     if (!onAIBreakdown || breakingDown || closed) return
@@ -249,10 +277,10 @@ export function TaskItem({
   }
   const dateLabel = sourceDate
     ? (isOtherDate ? format(new Date(sourceDate + 'T00:00:00'), 'MMMd')
-      : `From ${sourceDate === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'yesterday' : sourceDate}`)
+      : ui("Carried from {0}", [sourceDate === format(subDays(new Date(), 1), 'yyyy-MM-dd') ? 'yesterday' : format(new Date(sourceDate + 'T00:00:00'), 'MMM d, yyyy')]))
     : undefined
-  const statusLabel = status === 'done' ? 'Complete' : status === 'stopped' ? 'Stopped'
-    : finish?.reviewReady ? '' : status === 'partial' ? 'In progress' : status === 'question' ? 'Needs a decision' : ''
+  const statusLabel = status === 'done' ? ui("Complete") : status === 'stopped' ? ui("Stopped")
+    : finish?.reviewReady ? '' : status === 'partial' ? ui("In progress") : status === 'question' ? ui("Needs a decision") : ''
   const cls = [
     'task-item', isSubtask ? 'subtask' : 'main-task', isOtherDate ? 'other-date' : '',
     selected ? 'task-selected' : '', sortable?.state ?? '',
@@ -268,7 +296,7 @@ export function TaskItem({
       const target = event.relatedTarget as HTMLElement | null
       if (target?.closest('.diane-details')) return
       if (target && !event.currentTarget.contains(target)) {
-        settleLayout(() => { setSelected(false); setDateOpen(false); setAddingStep(false) })
+        settleLayout(() => { setSelected(false); setDetailsOpen(false); setAddingStep(false) })
       }
     }}>
     <div ref={rowRef} onClick={() => setSelected(true)} onFocusCapture={() => settleLayout(() => setSelected(true))}
@@ -276,18 +304,19 @@ export function TaskItem({
       {sortable && <button type="button" className="task-drag-handle"
         onPointerDown={sortable.onPointerDown} onPointerMove={sortable.onPointerMove} onPointerUp={sortable.onPointerUp}
         onPointerCancel={sortable.onCancel} onLostPointerCapture={sortable.onCancel} onDragStart={event => event.preventDefault()}
-        onKeyDown={handleReorderKeyDown} title="Drag to reorder. Use Arrow Up or Arrow Down from this handle." aria-label={sortable.label}>
+        onKeyDown={handleReorderKeyDown} title={ui("Drag to reorder. Use Arrow Up or Arrow Down from this handle.")} aria-label={sortable.label}>
         <DragHandleIcon />
       </button>}
       <button type="button" className={`task-checkbox ${status === 'done' ? 'done' : ''} ${status === 'partial' ? 'partial' : ''} ${status === 'stopped' ? 'stopped' : ''}`}
         onClick={onToggle} disabled={isOtherDate}
-        title={isOtherDate ? 'Historical step · read only' : closed ? 'Reopen task' : finish?.doneWhen ? 'Review outcome' : 'Complete task'}
-        aria-label={`${text}. Status ${status}. Change status`} />
+        title={isOtherDate ? ui("Historical step · read only") : closed ? ui("Reopen task") : finish?.doneWhen ? ui("Review outcome") : ui("Complete task")}
+        aria-label={ui("{0}. Status {1}. Change status", [text, status])} />
       <div className={`task-content-flow${isOtherDate ? '' : ' editable'}${editing ? ' editing' : ''}`}>
         <div className="task-title-line" onBlur={event => {
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) commitEdit()
         }}>
-          {editing ? <ParagraphInput ref={inputRef} aria-label={`Edit title: ${text}`} className="task-text-input task-inline-edit"
+          {taskEditor && port ? <TaskEditorBridge key={JSON.stringify([port.scope, recordId ?? id])} editor={taskEditor}
+            scope={port.scope} taskId={recordId ?? id} content={text} readOnly={Boolean(isOtherDate || !port.enabled)} onChange={onTextChange} /> : editing ? <ParagraphInput ref={inputRef} aria-label={ui("Edit title: {0}", [text])} className="task-text-input task-inline-edit"
             value={editText} onChange={event => setEditText(event.target.value)}
             onKeyDown={event => {
               if (event.nativeEvent.isComposing) return
@@ -296,44 +325,51 @@ export function TaskItem({
             }} /> : <span ref={titleRef} className={`task-text ${status === 'done' ? 'done' : ''}`}
               role={isOtherDate ? undefined : 'button'} tabIndex={isOtherDate ? undefined : 0}
               onClick={beginEditing} onKeyDown={isOtherDate ? undefined : handleTaskTextKeyDown}
-              title={isOtherDate ? undefined : 'Edit task'}>{text || 'Untitled task'}</span>}
+              title={isOtherDate ? undefined : ui("Edit task")}>{text || ui("Untitled task")}</span>}
           {editing && <div className="task-edit-actions">
-            <button type="button" className="task-text-action primary" disabled={!editText.trim()} onClick={() => commitEdit(true)}>Save</button>
-            <button type="button" className="task-text-action" onClick={cancelEdit}>Cancel</button>
+            <button type="button" className="task-text-action primary" disabled={!editText.trim()} onClick={() => commitEdit(true)}>{ui("Save")}</button>
+            <button type="button" className="task-text-action" onClick={cancelEdit}>{ui("Cancel")}</button>
           </div>}
         </div>
         {(statusLabel || dateLabel) && <div className="task-state-line">
           {statusLabel && <span className={`task-state-label state-${status}`}>{statusLabel}</span>}
           {dateLabel && <span className="task-source-label">{dateLabel}</span>}
         </div>}
-        {!isOtherDate && <TaskWorkflowStatus taskId={recordId ?? id} />}
-        {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
-          selected={selected} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
-        {!isOtherDate && projects.length>0 && selected && <div className="task-project">
-          {selected && onAssignProject ? <select aria-label={`Task project for ${text}`} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
-            <option value="" disabled={Boolean(goalId)}>No project</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
-          </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title="Open project">{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??'Project'}</button>}
+        {!isOtherDate && <div className="task-context-bar">
+          {selected ? <TaskDianeAction id={recordId ?? id} compact controlsTarget={dianeControls} onConfigure={()=>{window.dispatchEvent(new CustomEvent('todo:task-details', {detail:detailsId}));setDetailsOpen(true)}} /> : <><button type="button" className="task-diane-connect" onClick={()=>setSelected(true)}>{ui("Diane")}</button><TaskWorkflowStatus taskId={recordId ?? id}/></>}
+          <button ref={moreRef} type="button" className="task-more-button" aria-label={ui("Task details: {0}", [text])} title={ui("Task details")} onPointerDown={event=>{if(event.button===0)event.preventDefault()}} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={toggleDetails}>…</button>
         </div>}
+        <div id={detailsId} className="task-details-panel" hidden={!detailsOpen || isOtherDate} onKeyDown={event=>{
+          if(event.key==='Escape' && !event.defaultPrevented){event.preventDefault();event.stopPropagation();setDetailsOpen(false);moreRef.current?.focus()}
+        }}>
+        {!isSubtask && !isOtherDate && onUpdateFinish && onReview && <TaskFinish taskText={text} finish={finish}
+          selected={detailsOpen} dateOpen={dateOpen} setDateOpen={setDateOpen} status={status} onUpdate={onUpdateFinish} onReview={onReview} settleLayout={settleLayout} />}
+        {!isOtherDate && projects.length>0 && detailsOpen && <div className="task-project">
+          {onAssignProject ? <select aria-label={ui("Task project for {0}", [text])} value={goalId??''} onChange={event=>onAssignProject(event.target.value)}>
+            <option value="" disabled={Boolean(goalId)}>{ui("No project")}</option>{projects.filter(project=>!project.done||project.id===goalId).map(project=><option key={project.id} value={project.id}>{project.text.split('\n')[0]}</option>)}
+          </select> : goalId && <button onClick={()=>onOpenProject?.(goalId)} title={ui("Open project")}>{projects.find(project=>project.id===goalId)?.text.split('\n')[0]??ui("Project")}</button>}
+        </div>}
+        {(!isOtherDate) && <div className="task-primary-actions">
+          {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title={ui("Add step")} aria-label={ui("Add step")} onClick={openStepEntry}><AddStepIcon /></button>}
+          {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? ui("Preparing suggested steps…") : ui("Suggest steps with AI")} disabled={breakingDown}
+            onClick={() => void breakdown()} aria-label={ui("Break {0} into steps with AI", [text])}><BreakdownIcon /></button>}
+          {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={ui("Move to {0} · due date stays unchanged", [moveTargetLabel])}
+            onClick={() => { onPush() }} aria-label={ui("Move {0} to {1}", [text, moveTargetLabel])}><PushIcon /></button>}
+          {!isOtherDate && <button type="button" className="task-text-action task-icon-action task-delete-action" title={ui("Delete")}
+            onClick={onDelete} aria-label={ui("Delete {0}", [text])}><DeleteIcon /></button>}
+        </div>}
+          <div className="task-diane-settings" ref={setDianeControls}/>
+        </div>
         {!isSubtask && steps.length > 0 && <div className="task-steps-summary">
           <button type="button" className="task-steps-toggle" aria-expanded={stepsOpen} aria-controls={stepsId}
-            aria-label={`${stepsOpen ? 'Hide' : 'Show'} steps for ${text}. ${doneSteps} of ${steps.length} done`}
+            aria-label={ui("{0} steps for {1}. {2} of {3} done", [stepsOpen ? 'Hide' : 'Show', text, doneSteps, steps.length])}
             onClick={() => setStepsOpen(value => !value)}>
             <span aria-hidden="true">{stepsOpen ? '▾' : '▸'}</span>
-            {`${doneSteps}/${steps.length} steps done`}
+            {ui("{0}/{1} steps done", [doneSteps, steps.length])}
           </button>
-          {selected && !stepsOpen && nextStep && <p className="task-next-step"><span>Next</span> {nextStep.text}</p>}
         </div>}
-        {(selected && !isOtherDate) && <div className="task-primary-actions">
-          {!isSubtask && !isOtherDate && !closed && onAddSubtask && <button type="button" className="task-text-action task-icon-action" title="Add step" aria-label="Add step" onClick={openStepEntry}><AddStepIcon /></button>}
-          {!isSubtask && !isOtherDate && !closed && onAIBreakdown && <button type="button" className="task-text-action task-icon-action task-ai-action" title={breakingDown ? 'Preparing suggested steps…' : 'Suggest steps with AI'} disabled={breakingDown}
-            onClick={() => void breakdown()} aria-label={`Break ${text} into steps with AI`}><BreakdownIcon /></button>}
-          {!isOtherDate && <button type="button" className="task-text-action task-icon-action" title={`Move to ${moveTargetLabel} · due date stays unchanged`}
-            onClick={() => { onPush() }} aria-label={`Move ${text} to ${moveTargetLabel}`}><PushIcon /></button>}
-          {!isOtherDate && <DeleteAction label={`Delete ${text}`} onClick={onDelete} />}
-        </div>}
-        {selected && !isOtherDate && <TaskDianeAction id={recordId ?? id} />}
         {!isOtherDate && <TaskStepProposal taskId={id} />}
-        {breakingDown && <span className="task-inline-status" role="status">Preparing suggested steps…</span>}
+        {breakingDown && <span className="task-inline-status" role="status">{ui("Preparing suggested steps…")}</span>}
       </div>
     </div>
     {!isSubtask && stepsOpen && <div id={stepsId} className="task-steps-body">
@@ -344,21 +380,23 @@ export function TaskItem({
         sortable={getSubtaskSortable?.(sub.id, sub.text)} />)}
     </div>}
     {!isSubtask && history.length > 0 && <details className="task-earlier-steps">
-      <summary>Earlier steps ({history.length})</summary>
+      <summary>{ui("Earlier steps (")}{history.length})</summary>
       {history.map(sub => <TaskItem key={`${sub.sourceDate}-${sub.id}`} id={sub.id} text={sub.text} status={sub.status}
         isSubtask isOtherDate sourceDate={sub.sourceDate} moveTargetLabel={moveTargetLabel}
         onToggle={() => {}} onDelete={() => {}} onPush={() => {}} onTextChange={() => {}} parentText={text} />)}
     </details>}
-    {!isSubtask && !isOtherDate && !closed && onAddSubtask && (selected || addingStep || subInput) && <div className="task-step-composer">
-      <ParagraphInput ref={stepInputRef} className="task-text-input task-step-add-input" placeholder="Add a step…" aria-label={`New step for ${text}`}
+    {!isSubtask && !isOtherDate && !closed && onAddSubtask && (addingStep || subInput) && <div className="task-step-composer">
+      <ParagraphInput ref={stepInputRef} className="task-text-input task-step-add-input" placeholder={ui("Add a step…")} aria-label={ui("New step for {0}", [text])}
         value={subInput} onChange={event => setSubInput(event.target.value)}
+        onCompositionStart={() => setComposingStep(true)} onCompositionEnd={() => setComposingStep(false)}
+        onBlur={() => setComposingStep(false)}
         onFocus={() => { setSelected(true); setAddingStep(true) }}
         onKeyDown={event => {
-          if (event.nativeEvent.isComposing) return
+          if (composingStep || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return
           if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); handleSubAdd() }
           if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setSubInput(''); setAddingStep(false); returnToTitle() }
         }} />
-      {subInput.trim() && <button type="button" className="task-text-action" onClick={handleSubAdd} aria-label="Add step">Add</button>}
+      {subInput.trim() && <button type="button" className="task-text-action" onClick={handleSubAdd} disabled={composingStep} aria-label={ui("Add step")}>{ui("Add")}</button>}
     </div>}
   </div>
 }

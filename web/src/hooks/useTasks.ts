@@ -1,3 +1,4 @@
+import { ui } from '../interfaceLocale'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { AggregatedTask, ExtractedTaskDate, Task, FinishPromise } from '../types'
 import { api, waitForPendingWrites } from '../api'
@@ -11,7 +12,7 @@ import { planningTaskKey, type PlannedBlock } from '../taskPlanning'
 // A stalled archive must not leave the entire task surface waiting forever.
 function readWithTimeout<T>(request: Promise<T>, milliseconds = 8000): Promise<T> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('TASK_LOAD_TIMEOUT')), milliseconds)
+    const timer = setTimeout(() => reject(new Error(ui("TASK_LOAD_TIMEOUT"))), milliseconds)
     request.then(value => { clearTimeout(timer); resolve(value) }, error => { clearTimeout(timer); reject(error) })
   })
 }
@@ -183,7 +184,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
           await write()
         } catch (error) {
           if (pendingSave.current === save) {
-            setSaveError({ date: snapshotDate, message: error instanceof Error && error.message.startsWith('This day changed') ? error.message : 'Changes are still in this window. Retry when the task folder is available.' })
+            setSaveError({ date: snapshotDate, message: error instanceof Error && error.message.startsWith('This day changed') ? error.message : ui("Changes are still in this window. Retry when the task folder is available.") })
             setSaving(false)
           }
           throw error
@@ -482,7 +483,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
         ? current?.todaySubtasks.find(step => step.id === subtaskId)
         : current && flattenTasks([current])[0]
       if (currentSnapshot && JSON.stringify(currentSnapshot) !== fingerprint) {
-        throw new Error(`The task changed while it was moving. Your edited task stays here; the earlier version was copied to ${target.actionLabel}. Review both before moving it again.`)
+        throw new Error(ui("The task changed while it was moving. Your edited task stays here; the earlier version was copied to {0}. Review both before moving it again.", [target.actionLabel]))
       }
       setUndo(null)
       setTasks(latest => {
@@ -494,7 +495,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
       })
       try { await flushPendingWrites() }
       catch {
-        throw new Error(`The task reached ${target.actionLabel}, but its original could not be removed from storage. Use Retry save to finish the move.`)
+        throw new Error(ui("The task reached {0}, but its original could not be removed from storage. Use Retry save to finish the move.", [target.actionLabel]))
       }
       return target
     })()

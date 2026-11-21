@@ -1,3 +1,5 @@
+import '../interface_locale.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -99,7 +101,7 @@ class _PlanScreenState extends State<PlanScreen> {
               )
               .toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('Plan the day')),
+      appBar: AppBar(title: Text(tr(context, "Plan the day"))),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(24),
@@ -110,7 +112,7 @@ class _PlanScreenState extends State<PlanScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Unfinished: ${tasks.length}',
+              tr(context, "Unfinished: {0}", [tasks.length]),
               style: const TextStyle(color: mutedInk),
             ),
             const SizedBox(height: 24),
@@ -133,7 +135,7 @@ class _PlanScreenState extends State<PlanScreen> {
                             }
                           },
                     icon: const Icon(Icons.schedule, size: 18),
-                    label: Text('From ${time(start)}'),
+                    label: Text(tr(context, "From {0}", [time(start)])),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -154,14 +156,14 @@ class _PlanScreenState extends State<PlanScreen> {
                             }
                           },
                     icon: const Icon(Icons.schedule, size: 18),
-                    label: Text('Until ${time(end)}'),
+                    label: Text(tr(context, "Until {0}", [time(end)])),
                   ),
                 ),
               ],
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Adjust task time & breaks'),
+              title: Text(tr(context, "Adjust task time & breaks")),
               trailing: Icon(
                 adjustmentsOpen ? Icons.expand_less : Icons.expand_more,
               ),
@@ -170,12 +172,15 @@ class _PlanScreenState extends State<PlanScreen> {
                   : () => setState(() => adjustmentsOpen = !adjustmentsOpen),
             ),
             if (adjustmentsOpen) ...[
-              const Text(
-                'Time budget per task',
+              Text(
+                tr(context, "Time budget per task"),
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
-              const Text(
-                'Auto lets AI estimate. List order guides priority.',
+              Text(
+                tr(
+                  context,
+                  "Auto lets AI estimate. List order guides priority.",
+                ),
                 style: TextStyle(color: mutedInk, fontSize: 12),
               ),
               for (final task in tasks)
@@ -188,9 +193,15 @@ class _PlanScreenState extends State<PlanScreen> {
                       DropdownButton<int>(
                         value: estimates['${task.date}/${task.task.id}'] ?? 0,
                         items: [
-                          const DropdownMenuItem(value: 0, child: Text('Auto')),
+                          DropdownMenuItem(
+                            value: 0,
+                            child: Text(tr(context, "Auto")),
+                          ),
                           for (final n in [15, 30, 45, 60, 90, 120, 180, 240])
-                            DropdownMenuItem(value: n, child: Text('$n min')),
+                            DropdownMenuItem(
+                              value: n,
+                              child: Text(tr(context, "{0} min", [n])),
+                            ),
                         ],
                         onChanged: busy
                             ? null
@@ -208,8 +219,8 @@ class _PlanScreenState extends State<PlanScreen> {
                   ),
                 ),
               const SizedBox(height: 12),
-              const Text(
-                'Unavailable time',
+              Text(
+                tr(context, "Unavailable time"),
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               for (var i = 0; i < unavailable.length; i++)
@@ -244,7 +255,7 @@ class _PlanScreenState extends State<PlanScreen> {
                         ),
                       ),
                     IconButton(
-                      tooltip: 'Remove break ${i + 1}',
+                      tooltip: tr(context, "Remove break {0}", [i + 1]),
                       onPressed: busy
                           ? null
                           : () => setState(() {
@@ -265,14 +276,14 @@ class _PlanScreenState extends State<PlanScreen> {
                           plan = null;
                         }),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add break'),
+                  label: Text(tr(context, "Add break")),
                 ),
               ),
             ],
             if (store.preferences.machines.isNotEmpty) ...[
               const SizedBox(height: 16),
-              const Text(
-                'Available machines',
+              Text(
+                tr(context, "Available machines"),
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               Wrap(
@@ -308,10 +319,10 @@ class _PlanScreenState extends State<PlanScreen> {
                   : const Icon(Icons.auto_awesome),
               label: Text(
                 busy
-                    ? 'Generating…'
+                    ? tr(context, "Generating…")
                     : proposal == null
-                    ? 'Generate plan'
-                    : 'Generate another plan',
+                    ? tr(context, "Generate plan")
+                    : tr(context, "Generate another plan"),
               ),
             ),
             if (error != null)
@@ -325,7 +336,7 @@ class _PlanScreenState extends State<PlanScreen> {
             if (proposal != null) ...[
               const SizedBox(height: 28),
               Text(
-                'PROPOSED PLAN',
+                tr(context, "PROPOSED PLAN"),
                 key: proposalKey,
                 style: TextStyle(
                   letterSpacing: 1.5,
@@ -393,8 +404,8 @@ class _PlanScreenState extends State<PlanScreen> {
                 ),
               if (unscheduled.isNotEmpty) ...[
                 const Divider(height: 28),
-                const Text(
-                  'Unscheduled',
+                Text(
+                  tr(context, "Unscheduled"),
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 for (final task in unscheduled)
@@ -414,7 +425,7 @@ class _PlanScreenState extends State<PlanScreen> {
                 children: [
                   TextButton(
                     onPressed: () => setState(() => plan = null),
-                    child: const Text('Discard'),
+                    child: Text(tr(context, "Discard")),
                   ),
                   FilledButton(
                     onPressed: () {
@@ -425,13 +436,16 @@ class _PlanScreenState extends State<PlanScreen> {
                         setState(() => error = e.toString());
                       }
                     },
-                    child: const Text('Apply plan'),
+                    child: Text(tr(context, "Apply plan")),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Replaces untouched suggestions. Edited, started and older untracked steps stay. You can undo.',
+              Text(
+                tr(
+                  context,
+                  "Replaces untouched suggestions. Edited, started and older untracked steps stay. You can undo.",
+                ),
                 style: TextStyle(fontSize: 12, color: mutedInk),
               ),
             ],

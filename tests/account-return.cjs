@@ -10,6 +10,7 @@ async function setup({ target = 'app', failed = false, failureStatus = 500, clea
   const params = new URLSearchParams({ sessionId: 's'.repeat(43), challenge: 'c'.repeat(43) })
   if (target !== null) params.set('returnTo', target)
   const environment = {
+    signInInterface: () => key => key,
     URLSearchParams, location: { hash: '#' + params }, history: { replaceState() { environment.location.hash = '' } },
     document: { getElementById: id => nodes[id] },
     window: { addEventListener(name, handler) { state.events[name] = handler }, location: { reload() { state.reloads++ }, assign(url) { if (blocked) throw Error('User gesture required'); jumps.push(url) } } },

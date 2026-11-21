@@ -1,13 +1,19 @@
+import '../interface_locale.dart';
+
 import 'dart:async';
+import 'dart:convert';
+
+import 'mynit_citation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../models/models.dart';
 
-typedef MeetingRequest =
-    Future<Map<String, dynamic>> Function(
-      String path, [
-      Map<String, dynamic>? body,
-    ]);
+typedef MeetingRequest = Future<Map<String, dynamic>> Function(
+  String path, [
+  Map<String, dynamic>? body,
+]);
 
 class MeetingFollowups extends StatefulWidget {
   final MeetingRequest request;
@@ -35,8 +41,9 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
     WidgetsBinding.instance.addObserver(this);
     load();
     timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed)
+      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
         load();
+      }
     });
   }
 
@@ -73,8 +80,9 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
         final seen = rows.map((r) => r['meeting_id']).toSet();
         for (final value in packet['reviews'] as List) {
           final row = object(value);
-          if (row['cleared'] != true && seen.add(row['meeting_id']))
+          if (row['cleared'] != true && seen.add(row['meeting_id'])) {
             rows.add(row);
+          }
         }
         cursor = packet['before'] as int?;
         pages++;
@@ -100,18 +108,18 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
       final ok = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Clear all suggestions?'),
-          content: const Text(
-            'Your meetings and tasks already added will stay.',
+          title: Text(tr(context, "Clear all suggestions?")),
+          content: Text(
+            tr(context, "Your meetings and tasks already added will stay."),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel'),
+              child: Text(tr(context, "Cancel")),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Clear suggestions'),
+              child: Text(tr(context, "Clear suggestions")),
             ),
           ],
         ),
@@ -148,8 +156,8 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
     return Column(
       children: [
         ListTile(
-          title: const Text('Meeting follow-ups'),
-          trailing: Text('$total suggested'),
+          title: Text(tr(context, "Meeting follow-ups")),
+          trailing: Text(tr(context, "{0} suggested", [total])),
           leading: Icon(open ? Icons.expand_less : Icons.expand_more),
           onTap: () => setState(() => open = !open),
         ),
@@ -162,18 +170,18 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
                   title: Text(error!),
                   trailing: TextButton(
                     onPressed: () => load(),
-                    child: const Text('Retry'),
+                    child: Text(tr(context, "Retry")),
                   ),
                 ),
               if (loading && reviews.isEmpty) const LinearProgressIndicator(),
               if (!loading && error == null && reviews.isEmpty)
-                const ListTile(title: Text('No meeting reviews yet')),
+                ListTile(title: Text(tr(context, "No meeting reviews yet"))),
               if (head != null && (total > 0 || before != null))
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: loading ? null : () => clear(null),
-                    child: const Text('Clear all suggestions'),
+                    child: Text(tr(context, "Clear all suggestions")),
                   ),
                 ),
               for (final r in reviews)
@@ -189,7 +197,11 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
               if (before != null)
                 TextButton(
                   onPressed: loading ? null : () => load(older: true),
-                  child: Text(loading ? 'Loading…' : 'Older reviews'),
+                  child: Text(
+                    loading
+                        ? tr(context, "Loading…")
+                        : tr(context, "Older reviews"),
+                  ),
                 ),
             ],
           ),
@@ -218,6 +230,7 @@ class _Review extends StatefulWidget {
 class _ReviewState extends State<_Review> {
   Map<String, dynamic>? preview;
   final selected = <int>{};
+  final requestIds = <String, String>{};
   bool open = false, busy = false;
   String? error;
   String get path =>
@@ -230,13 +243,15 @@ class _ReviewState extends State<_Review> {
     });
     try {
       final value = await widget.request(path);
-      if (value['analysis_id'] != widget.row['analysis_id'])
-        throw StateError('The meeting analysis changed. Refresh the list.');
-      if (mounted)
+      if (value['analysis_id'] != widget.row['analysis_id']) {
+        throw StateError(ui("The meeting analysis changed. Refresh the list."));
+      }
+      if (mounted) {
         setState(() {
           preview = value;
           selected.clear();
         });
+      }
     } catch (e) {
       if (mounted) setState(() => error = e.toString());
     } finally {
@@ -253,8 +268,7 @@ class _ReviewState extends State<_Review> {
     });
     try {
       final actions = data['actions'] as List;
-      await widget.request(path, {
-        'request_id': newId(),
+      final body = {
         'kind': 'tasks',
         'task_date': dateKey(DateTime.now()),
         'transcript_revision': data['transcript_revision'],
@@ -265,14 +279,32 @@ class _ReviewState extends State<_Review> {
               'index': i,
               'text': actions[i]['todo_text'] ?? actions[i]['text'],
               'due_date':
-                  RegExp(
-                    r'^\d{4}-\d{2}-\d{2}$',
-                  ).hasMatch(actions[i]['due_date']?.toString() ?? '')
+                  RegExp(r'^\d{4}-\d{2}-\d{2}$')
+                      .hasMatch(actions[i]['due_date']?.toString() ?? '')
                   ? actions[i]['due_date']
                   : null,
             },
         ],
+      };
+      final requestId = requestIds.putIfAbsent(jsonEncode(body), newId);
+      final receipt = await widget.request(path, {
+        ...body,
+        'request_id': requestId,
       });
+      final records = receipt['records'];
+      if (receipt['source_revision'] != data['transcript_revision'] ||
+          records is! List ||
+          !records.whereType<Map>().any(
+            (row) =>
+                row['record_type'] == 'task' &&
+                row['record_id'] is String &&
+                RegExp(r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$')
+                    .hasMatch(row['record_id']),
+          )) {
+        throw StateError(
+          ui("Dockit did not confirm these tasks. Reload or retry."),
+        );
+      }
       if (!mounted) return;
       setState(() {
         for (final i in indices) {
@@ -308,13 +340,17 @@ class _ReviewState extends State<_Review> {
           title: Text(r['title'] as String),
           subtitle: stamp == null
               ? null
-              : Text('Reviewed ${DateFormat.yMMMd().format(stamp.toLocal())}'),
+              : Text(
+                  tr(context, "Reviewed {0}", [
+                    DateFormat.yMMMd().format(stamp.toLocal()),
+                  ]),
+                ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('${r['count']}'),
               IconButton(
-                tooltip: 'Dismiss follow-ups: ${r['title']}',
+                tooltip: tr(context, "Dismiss follow-ups: {0}", [r['title']]),
                 onPressed: busy ? null : widget.onClear,
                 icon: const Icon(Icons.delete_outline),
               ),
@@ -338,7 +374,7 @@ class _ReviewState extends State<_Review> {
                     title: Text(error!),
                     trailing: TextButton(
                       onPressed: busy ? null : fetch,
-                      child: const Text('Reload'),
+                      child: Text(tr(context, "Reload")),
                     ),
                   ),
                 for (final i in indices.where(
@@ -350,7 +386,7 @@ class _ReviewState extends State<_Review> {
                         actions[i]['todo_text'] ?? actions[i]['text'],
                       ),
                       subtitle: actions[i]['pushed'] == true
-                          ? const Text('Added to Todo')
+                          ? Text(tr(context, "Added to your Dockit notebook"))
                           : null,
                     )
                   else
@@ -385,15 +421,24 @@ class _ReviewState extends State<_Review> {
                   ExpansionTile(
                     key: PageStorageKey('$path/$i'),
                     dense: true,
-                    title: const Text('Transcript'),
+                    title: Text(tr(context, "Transcript")),
                     children: [
                       for (final e in actions[i]['evidence'])
-                        ListTile(title: Text(e['quote'] as String)),
+                        MynitPassage(
+                          meeting: r['meeting_id'],
+                          revision: preview?['transcript_revision'],
+                          evidence: e,
+                        ),
                     ],
                   ),
                 ],
                 if (picks.length > 40)
-                  const Text('Choose up to 40 suggestions at a time.'),
+                  Text(tr(context, "Choose up to 40 suggestions at a time.")),
+                if (picks.isNotEmpty)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(tr(context, "Your Dockit notebook · Today")),
+                  ),
                 if (picks.isNotEmpty)
                   Align(
                     alignment: Alignment.centerRight,
@@ -403,8 +448,8 @@ class _ReviewState extends State<_Review> {
                           : () => add(picks),
                       child: Text(
                         available.length == 1
-                            ? 'Add to today'
-                            : 'Add ${picks.length} to today',
+                            ? tr(context, "Add to today")
+                            : tr(context, "Add {0} to today", [picks.length]),
                       ),
                     ),
                   ),

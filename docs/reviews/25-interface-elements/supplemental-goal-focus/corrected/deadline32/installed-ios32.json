@@ -1,0 +1,43 @@
+{
+  "simulator": "BD097AB1-102D-43D1-BFCA-F21717626DD6",
+  "exportPath": "/Volumes/data/Dropbox/Projects/todo-sticky/output/clients/ios-simulator/Dockit.app",
+  "installedPath": "/Users/lizhi/Library/Developer/CoreSimulator/Devices/BD097AB1-102D-43D1-BFCA-F21717626DD6/data/Containers/Bundle/Application/106CE970-8E97-4A70-BC62-B110D8DB29E3/Dockit.app",
+  "bundleId": "work.pipedreams.dockit",
+  "version": "2.1.19",
+  "build": 32,
+  "installedTreeSHA256": "2c39394778b5d418d2bd0a0e150527ea3abc0de9fb3ceaa6b69e699b82b34c6b",
+  "exportTreeSHA256": "2c39394778b5d418d2bd0a0e150527ea3abc0de9fb3ceaa6b69e699b82b34c6b",
+  "nativeRuntime": "iOS 26.4",
+  "fixture": "One synthetic notebook task with a saved December 12, 2026 deadline. The simulator notebook was restored after testing.",
+  "test": "DockitElements.testDeadline32",
+  "nativeResult": "/Volumes/data/codex-tmp/dockit-build32-installed/exact32.xcresult",
+  "languages": [
+    "en",
+    "zh-Hans",
+    "zh-Hant",
+    "yue",
+    "ja",
+    "ko",
+    "fr",
+    "de",
+    "es",
+    "pt"
+  ],
+  "cyclesPerLanguage": 5,
+  "languageSwitchAndRelaunches": 50,
+  "visibleDeadlineChecks": 50,
+  "accessibleTextObservations": 1150,
+  "actualLabels": {
+    "en": "Due Dec 12",
+    "zh-Hans": "截止日期：12月12日",
+    "zh-Hant": "期限：12月12日",
+    "yue": "到期日：12月12日",
+    "ja": "期限：12月12日",
+    "ko": "기한: 12월 12일",
+    "fr": "Échéance : 12 déc.",
+    "de": "Fällig am 12. Dez.",
+    "es": "Fecha límite: 12 dic",
+    "pt": "Prazo: 12 de dez."
+  },
+  "scope": "Saved deadline label after changing language and relaunching the exact exported Simulator app. Accounts and physical-device installs require separate acceptance."
+}

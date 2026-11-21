@@ -1,0 +1,67 @@
+{
+  "udid": "BD097AB1-102D-43D1-BFCA-F21717626DD6",
+  "bundleId": "work.pipedreams.dockit",
+  "version": "2.1.18",
+  "build": "31",
+  "export": "/Volumes/data/Dropbox/Projects/todo-sticky/output/clients/ios-simulator/Dockit.app",
+  "installed": "/Users/lizhi/Library/Developer/CoreSimulator/Devices/BD097AB1-102D-43D1-BFCA-F21717626DD6/data/Containers/Bundle/Application/FF6BF1A0-361B-496B-B23C-5EBD923F3C5D/Dockit.app",
+  "exportTreeSHA256": "e67f44c5732782cb4d7571128768a0f9766bb916306a8bdfe64b42ff28ffefa9",
+  "installedTreeSHA256": "e67f44c5732782cb4d7571128768a0f9766bb916306a8bdfe64b42ff28ffefa9",
+  "RunnerSHA256": "81f91a5a15e5fb2b60ae4fe0fc7fc13ddc5dc96ef8ea1071e669c180fb10b1d4",
+  "fixture": "Two synthetic tasks in the disposable simulator notebook; one saved 2026-12-12 deadline",
+  "installedAfterXCTest": "/Users/lizhi/Library/Developer/CoreSimulator/Devices/BD097AB1-102D-43D1-BFCA-F21717626DD6/data/Containers/Bundle/Application/4BE66350-D9CA-4027-B8F5-F7B4779D6FDD/Dockit.app",
+  "afterTestTreeSHA256": "e67f44c5732782cb4d7571128768a0f9766bb916306a8bdfe64b42ff28ffefa9",
+  "unchangedAgainstExportAfterXCTest": true,
+  "resultBundle": "/Volumes/data/codex-tmp/dockit-build31-installed/scoped31.xcresult",
+  "passedXCTest": true,
+  "nativeRuntime": "iOS 26.4 (23E244)",
+  "testClass": "DockitElements.testExact_*",
+  "locales": [
+    "en",
+    "zh-Hans",
+    "zh-Hant",
+    "yue",
+    "ja",
+    "ko",
+    "fr",
+    "de",
+    "es",
+    "pt"
+  ],
+  "cyclesPerLanguage": 5,
+  "states": [
+    "notebook-saved-deadline",
+    "language-menu",
+    "search-two-matches",
+    "search-one-match",
+    "progress-two-tasks",
+    "settings"
+  ],
+  "stateRenders": 300,
+  "elementObservations": 9056,
+  "elementIdentities": 1835,
+  "seenAllFive": 1787,
+  "partiallyObservedIdentities": 48,
+  "explicitTextComparisons": 250,
+  "languageSwitchRelaunches": 50,
+  "missingStates": [],
+  "missingExpectedText": [],
+  "limits": "The mobile Focus workflow has no desktop phase strip. The phone goal panel has no desktop unfinished-goals or active-routines count. Mobile archive search and progress counters were exercised directly. Synthetic simulator storage; no cloud accounts.",
+  "deadlineWordingReview": {
+    "comparison": "The machine assertions match the released catalog and date formatter. This separate reading records what those strings communicate.",
+    "causalInsteadOfDeadline": {
+      "fr": "À cause de 12 déc.",
+      "es": "Debido a 12 dic",
+      "pt": "Devido ao 12 dez."
+    },
+    "fixedEuropeanDayMonthOrder": {
+      "zh-Hans": "截止日期：12 12月",
+      "zh-Hant": "期限：12 12月",
+      "yue": "到期日：12 12月",
+      "ja": "期限：12 12月",
+      "ko": "기한 12 12월까지"
+    },
+    "normalLocalFormatExample": "A December 12 date is conventionally 12月12日 in Chinese and Japanese and 12월 12일 in Korean.",
+    "scope": "Observed text only during this exact-build review. No application changes."
+  }
+}

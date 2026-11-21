@@ -1,3 +1,4 @@
+const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
 const assert = require('node:assert/strict')
 const fs = require('node:fs'), vm = require('node:vm'), ts = require('typescript')
 const load = require('./helpers/load-typescript.cjs')
@@ -61,7 +62,7 @@ async function fixture(options = {}) {
   const exported = {}
   const source = fs.readFileSync('src/hooks/useCloudSync.ts', 'utf8').replace('import.meta.env.VITE_SYNC_SERVER_URL', "''")
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText, {
-    exports: exported, require: name => mocks[name], URLSearchParams, crypto: require('node:crypto').webcrypto, document,
+    exports: exported, require: name => name.endsWith('/interfaceLocale') ? testedInterface : mocks[name], URLSearchParams, crypto: require('node:crypto').webcrypto, document,
     localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v), key: i => [...storage.keys()][i] ?? null, get length() { return storage.size } },
     setTimeout: (fn, delay) => schedule(fn, delay), clearTimeout: id => timers.delete(id),
     setInterval: (fn, delay) => schedule(fn, delay, true), clearInterval: id => timers.delete(id),

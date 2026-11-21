@@ -1,0 +1,32 @@
+{
+  "device": "Dockit Element Audit",
+  "runtime": "iOS 26.4 (23E244)",
+  "id": "52EBFADB-372C-44E3-B91D-8584FDCD05D9",
+  "bundle": "work.pipedreams.dockit.matrixfixture",
+  "nativeExecutableSHA256": "e75226bdc1ff9e9e25791d7cc31282290881fcafc3a33c22165ee201cbd89eab",
+  "stateRenders": 950,
+  "elementObservations": 28267,
+  "states": [
+    "account-fixture-editor",
+    "account-signed-out",
+    "albums",
+    "checklist-import",
+    "expanded-task",
+    "focus",
+    "focus/end",
+    "goals",
+    "language-menu",
+    "machines",
+    "notebook",
+    "plan",
+    "progress",
+    "project",
+    "project-schedule",
+    "provider",
+    "search",
+    "settings",
+    "settings/end"
+  ],
+  "externalRawBytes": 6429778,
+  "nativeXCTestAdditional": 150
+}
