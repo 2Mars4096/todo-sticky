@@ -6,6 +6,12 @@ if [[ $# -ne 2 ]]; then
 fi
 sticky_project="$1"
 sticky_region="$2"
+case "$sticky_project" in
+  sticky-todo-20261028|507920948662)
+    printf '%s\n' 'This standalone project was retired. See docs/backend-operations.md for the shared service.' >&2
+    exit 2
+    ;;
+esac
 sticky_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ ! -f "$sticky_dir/env.yaml" ]]; then
   printf 'Create backend/env.yaml from backend/env.example.yaml first. See docs/account-sync.md.\n' >&2

@@ -1,14 +1,16 @@
 # Google accounts and cross-platform sync
 
-The current `main` source includes optional Google accounts and synchronization for the Tauri desktop app and the Flutter Android app under `phone/`. Both clients keep working locally without an account. The deployed personal service uses project `sticky-todo-20261028`.
+The current `main` source includes optional Google accounts and synchronization for the Tauri desktop app and the Flutter Android app under `phone/`. Both clients keep working locally without an account. Connected builds use the shared host. See [backend operations](backend-operations.md) for current inspection, release and rollback procedures.
 
 ## Personal deployment
+
+Historical configuration from 2026. The former project is pending deletion. The service origin and setup steps in this section describe those earlier builds.
 
 Service origin: `https://sticky-todo-sync-507920948662.asia-southeast1.run.app`.
 
 On 2026-11-01 the compatible backend was deployed as `sticky-todo-sync-00012-z9w`, advertising payload schemas `[1,2]` and `goalPlanning:true`. The Mac app was rebuilt/reinstalled and original-key Android 2.1.15+9 delivered with this origin prefilled. Existing configuration and consent are preserved. See [deployment and installation verification](plans/13-goal-planning-and-mobile-drag.md#13-1-production-deployment).
 
-Use this exact origin in desktop **Settings → Account** or Android **Settings → Account & sync**, choose **Connect service**, then **Continue with Google**. The deployed service is restricted to the project owner’s Google account through the ignored `backend/env.yaml` allowlist. After confirming the account in your browser, explicitly enable **Sync this task folder** / **Sync this notebook**. Existing local files are not uploaded just by deploying the backend or signing in.
+These builds used this origin in desktop **Settings → Account** or Android **Settings → Account & sync**, choose **Connect service**, then **Continue with Google**. The deployed service is restricted to the project owner’s Google account through the ignored `backend/env.yaml` allowlist. After confirming the account in your browser, explicitly enable **Sync this task folder** / **Sync this notebook**. Existing local files are not uploaded just by deploying the backend or signing in.
 
 The new dedicated billing account is linked to `sticky-todo-20261028`; Cloud Run and Firestore are in Singapore. `sticky-sync` is the runtime identity, with Firestore access, Firebase account-read permission and self-signing permission for the one-time handoff. The service scales to zero, with a three-instance revision maximum. Login handoff TTL is active. Direct Firestore clients remain denied.
 

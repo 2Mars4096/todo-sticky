@@ -80,3 +80,7 @@
 - [x] Verify every recovery copy by SHA-256 and preserve symlinks before removing project copies. Verify current Android build 2029 retains SHA-256 a6d4a541a604df85751ca324303f5498a328267e5179b2959f19eb54e7c561fc.
 - Recovery folder: /Users/lizhi/.Trash/todo-sticky-obsolete-packages-2026-11-20. Its manifest records original relative paths and hashes. Historical delivery receipts reference the original locations.
 - Retain the current root APK, native build bundle and public cross-platform downloads. Installed dependencies and application installations are outside this cleanup.
+
+## November 22 backend and scaffold review
+
+- [x] Inventory 786 tracked files, preserve independently released frontend and backend packages, and remove six ignored bytecode files with their source present. Retain historical synthetic review evidence and checksums, the linked worktree, original notebook data, signing configuration and local deliverables. [Operations](../backend-operations.md)

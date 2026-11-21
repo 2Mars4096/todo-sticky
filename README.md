@@ -309,7 +309,7 @@ Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stab
 
 ## Optional Google account and cross-platform sync
 
-The current `main` source includes **Settings → Account**, Google sign-in and optional desktop/Android sync through Firebase Authentication and a Google Cloud Run/Firestore service. Tasks remain usable offline. Account shows sync progress and a dedicated Conflicts & recovery view. Same-day conflicts are compared as readable versions, with both copies retained locally and stale choices blocked; AI keys and active timers remain on the device. See [account setup, deployment and protocol](docs/account-sync.md). A real Firebase project and deployed service origin are required for live sign-in. The account-enabled macOS build is installed locally and the matching optimized Android release APK is available; The personal Cloud Run service is deployed; see [connection steps](docs/account-sync.md#personal-deployment). Updated macOS/Android builds return from browser confirmation to the app, with a **Return to Sticky Todo** fallback button.
+Desktop and phone clients can use the shared account for optional sync. Tasks remain usable offline. **Settings → Account** shows sync progress and **Conflicts & recovery** keeps both versions of conflicting local changes available for review. AI keys and active timers stay on the device. [Backend operations](docs/backend-operations.md) · [Account setup and sync protocol](docs/account-sync.md)
 
 ## Android app (Flutter)
 

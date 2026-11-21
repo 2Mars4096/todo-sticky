@@ -1,5 +1,7 @@
 # Architecture
 
+The [backend operations guide](backend-operations.md) lists the active shared host, independent sync source, inspection commands and retirement status.
+
 ## Interface languages
 
 The source English keys and nine translated catalogs live under `phone/assets/interface/`. React reads them at build time. `scripts/sync-interface.py` generates synchronous Flutter, embedded-plugin and standalone sign-in lookups. `node scripts/audit-interface.cjs` checks the source inventory, language parity and numbered placeholders. Interpolation arguments are inserted after translation. The runtime never submits notebook data for translation.
@@ -48,7 +50,7 @@ Routine CI builds and tests do not upload retained build artifacts. A default-br
 - Product-owned Python source is `plugin/backend/src/diane/plugins/`. `todo_sync.py` projects the original standalone sync envelope from the same canonical records used by the embedded plugin; `todo_sync_protocol.py` preserves original validation and schema-1 metadata protection.
 - Revision/hash/container-shape metadata and hash-only mutation receipts live in the existing owner-scoped settings/receipt namespaces. No duplicate live day payload database is introduced. Canonical plugin edits are reflected in legacy sync revisions.
 - Offline/admin `CanonicalTodoSync.seed_records` seeds immutable original envelopes/revisions with a stable source namespace; divergent existing data refuses. Central identity, quota, migration execution and deployment belong to Diane.
-- `backend/` is the old deployment retained for rollback until verified cutover; standalone UI/source paths remain as documented in `folder-guide.md`.
+- `backend/` retains the self-hosted sync implementation and legacy protocol tests. The original personal cloud project is pending deletion. See [backend operations](backend-operations.md).
 
 - Product release layout: `desktop/`, `web/`, `phone/` (Flutter), `plugin/`. Legacy paths are compatibility symlinks for existing scripts. `plugin/` owns embedded UI and backend adapter releases; standalone interfaces remain unchanged.
 

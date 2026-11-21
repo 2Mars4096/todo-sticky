@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Verify backend ownership, retired project state and local scaffold cleanup. [Operations](backend-operations.md)
+
 - [x] Review adjacent controls, repair archive filter overflow and reset, simplify Settings, and verify build 34 on both phone emulators. [Evidence and local builds](plans/25-interface-element-review.md#archive-filters-and-adjacent-controls)
 
 - [x] Preserve focus and composition across repeated nested steps. Verify the signed Android and iPhone Simulator builds and the shared Mac and browser controls. [Step capture](plans/23-dockit-transfer.md#repeated-step-capture)
