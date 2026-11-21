@@ -5,7 +5,7 @@ export function TodoSettings({machines,backups}:{machines:ReactNode;backups:Reac
  const [section,setSection]=useState<'machines'|'backups'>('machines'),id=useId();
  return <details className="todo-settings-panel"><summary><Settings2 size={16} aria-hidden="true"/>{ui("Settings")}</summary>
   <div className="todo-settings-content">
-   <nav aria-label={ui("Todo settings")} className="todo-settings-nav">
+   <nav aria-label={ui("Dockit settings")} className="todo-settings-nav">
     <button type="button" aria-pressed={section==='machines'} aria-controls={id+'-machines'} onClick={()=>setSection('machines')}>{ui("Machines")}</button>
     <button type="button" aria-pressed={section==='backups'} aria-controls={id+'-backups'} onClick={()=>setSection('backups')}>{ui("Backups")}</button>
     <button type="button" className="todo-settings-ai" onClick={()=>window.dispatchEvent(new CustomEvent('diane:plugin-settings',{detail:{section:'ai'}}))}>{ui("AI settings")}<ArrowUpRight size={14} aria-hidden="true"/></button>

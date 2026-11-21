@@ -32,7 +32,7 @@ struct Message {
 
 const DEFAULT_OPENAI_COMPATIBLE_TEMPERATURE: f32 = 0.4;
 const KIMI_TEMPERATURE: f32 = 1.0;
-const OPENROUTER_APP_URL: &str = "https://dockit.pipedreams.work";
+const OPENROUTER_APP_URL: &str = "https://dockit.pipedreams.work/";
 const OPENROUTER_APP_TITLE: &str = "Dockit";
 const CODEX_TIMEOUT: Duration = Duration::from_secs(180);
 
@@ -377,7 +377,7 @@ async fn codex_login_status(config: &LLMConfig) -> Result<String, String> {
 }
 
 async fn chat_completion(config: &LLMConfig, messages: &[Message]) -> Result<String, String> {
-    if is_openrouter(config) || config.provider.eq_ignore_ascii_case("diane") { return Err("Pipe Dreams requests must use the signed-in app bridge; no direct provider fallback is allowed.".into()); }
+    if is_openrouter(config) || config.provider.eq_ignore_ascii_case("diane") { return Err("pipedreams requests must use the signed-in app bridge; no direct provider fallback is allowed.".into()); }
     if config.provider.eq_ignore_ascii_case("codex") {
         return codex_completion(config, messages).await;
     }

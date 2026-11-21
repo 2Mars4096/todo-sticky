@@ -24,7 +24,7 @@ it('loads reviews without opening Meeting and adds a cited draft once', async ()
     expect(host.textContent).toContain('I will send notes.');
     await act(async () => button('Add to today').click());
     expect(request.mock.calls.at(-1)?.[1]).toMatchObject({transcript_revision:2,actions:[{index:0,text:'Send notes'}]});
-    expect(host.textContent).toContain('Added to Todo');
+    expect(host.textContent).toContain('Added to Dockit');
     expect(button('Add to today')).toBeUndefined();
     expect(added).toHaveBeenCalledOnce();
   } finally {act(() => root.unmount());}

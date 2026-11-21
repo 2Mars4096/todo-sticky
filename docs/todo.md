@@ -30,6 +30,9 @@
 - [x] Build and verify the Dockit web client, Mac release bundle and Android preview APK. Exercise both phone layouts and the web assignment form with fixtures. See [client verification](plans/23-dockit-transfer.md).
 - [ ] Verify a signed iPhone install, the isolated native Mac window and authenticated service delivery on each client. See [remaining acceptance](plans/23-dockit-transfer.md).
 
+- [x] Review Dockit transfer labels and destinations. Web and Mac builds verified — [transfer review](plans/23-dockit-transfer-review.md).
+- [ ] Verify the Android build and workflows with the pinned Flutter SDK, and verify iPhone when its runner is available — [phone verification](plans/23-dockit-transfer-review.md#verification).
+
 - [x] Remove obsolete local installers and plugin packages with verified Trash recovery copies — [Plan 9](plans/9-folder-cleanup.md).
 
 - [x] Install Sticky Todo with a persistent local signing identity and configure subsequent native builds — [capture integration](plans/22-screenshot-task.md).

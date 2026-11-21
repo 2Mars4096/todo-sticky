@@ -21,7 +21,7 @@ export const PROVIDER_ORDER: Provider[] = [
 ]
 
 export const PROVIDER_PRESETS: Record<Provider, ProviderPreset> = {
-  diane: {get label(){ return ui("Pipe Dreams account") },get shortLabel(){ return ui("Pipe Dreams") },apiBase:'https://dear-diane-202610-api.web.app',model:'',models:[]},
+  diane: {get label(){ return ui("pipedreams account") },get shortLabel(){ return ui("pipedreams") },apiBase:'https://dear-diane-202610-api.web.app',model:'',models:[]},
   codex: {
     get label(){ return ui("Codex (ChatGPT login)") },
     shortLabel: 'Codex',

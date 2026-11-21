@@ -24,7 +24,7 @@ export async function editorWorkspaces(get: (path: string) => Promise<any>) {
 const selectionKey = (uid: string) => 'dockit-workspace-v1:dear-diane-202610:' + uid
 export function selectedWorkspace(uid: string) {
   const id = localStorage.getItem(selectionKey(uid))
-  if (id && !idPattern.test(id)) throw Error(ui("Choose a valid Pipe Dreams workspace in Account."))
+  if (id && !idPattern.test(id)) throw Error(ui("Choose a valid pipedreams workspace in Account."))
   return id || ''
 }
 export function chooseWorkspace(uid: string, id: string) {

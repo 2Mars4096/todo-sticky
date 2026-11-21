@@ -14,13 +14,13 @@ function persist<T>(request:Promise<T>) { pendingWrites.add(request); void reque
 export async function waitForPendingWrites(){while(pendingWrites.size)await Promise.all([...pendingWrites]);}
 export async function compat<T>(command:string,payload:unknown={},scope=pluginScope()):Promise<T>{
   const actual=await connectionScope();
-  if(scope && actual!==scope)throw Error(ui("The Diane account changed. Reopen Todo before continuing."));
+  if(scope && actual!==scope)throw Error(ui("The pipedreams account changed. Reopen Dockit before continuing."));
   const now=new Date(),local_today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const scopedPayload={...(payload as Record<string,unknown>),local_today};
   const signature=JSON.stringify([actual,command,scopedPayload]);
   const requestId=attempts.get(signature)??crypto.randomUUID(); attempts.set(signature,requestId);
   const value=await requestJson<T>(`/api/plugins/todo/compat/${command}`,{method:'POST',headers:{'X-Diane-Plugin-Scope':actual},body:JSON.stringify({request_id:requestId,payload:scopedPayload}),timeoutMs:command==='ai'?390000:120000});
-  if(pluginScope()!==actual)throw Error(ui("The Diane account changed. Reopen Todo before continuing."));
+  if(pluginScope()!==actual)throw Error(ui("The pipedreams account changed. Reopen Dockit before continuing."));
   attempts.delete(signature);return value;
 }
 export function createTodoApi(scope: string) {
@@ -86,13 +86,13 @@ return {
  },
  async workflowStatuses(ids:string[],signal?:AbortSignal){
   const actual=await connectionScope();
-  if(actual!==scope)throw Error(ui("The Diane account changed. Reopen Todo before continuing."));
+  if(actual!==scope)throw Error(ui("The pipedreams account changed. Reopen Dockit before continuing."));
   const query=new URLSearchParams({task_ids:ids.join(',')});
   const result=await requestJson<{workflows:Record<string,Workflow|null>}>(`/api/plugins/todo/workflows?${query}`,{headers:{'X-Diane-Plugin-Scope':scope},signal,timeoutMs:20000});
-  if(pluginScope()!==scope)throw Error(ui("The Diane account changed. Reopen Todo before continuing."));
-  if(!result||typeof result.workflows!=='object'||result.workflows===null)throw Error(ui("Diane status is unavailable."));
-  if(ids.some(id=>!Object.prototype.hasOwnProperty.call(result.workflows,id)))throw Error(ui("Diane returned incomplete task status."));
-  for(const [id,workflow] of Object.entries(result.workflows))if(!ids.includes(id)||workflow&&(workflow.task_id!==id||typeof workflow.state!=='string'))throw Error(ui("Diane returned mismatched task status."));
+  if(pluginScope()!==scope)throw Error(ui("The pipedreams account changed. Reopen Dockit before continuing."));
+  if(!result||typeof result.workflows!=='object'||result.workflows===null)throw Error(ui("Shiprite status is unavailable."));
+  if(ids.some(id=>!Object.prototype.hasOwnProperty.call(result.workflows,id)))throw Error(ui("Shiprite returned incomplete task status."));
+  for(const [id,workflow] of Object.entries(result.workflows))if(!ids.includes(id)||workflow&&(workflow.task_id!==id||typeof workflow.state!=='string'))throw Error(ui("Shiprite returned mismatched task status."));
   return result.workflows;
  },
  llmRecommendAlbums:(input:{tasks:unknown[]})=>compat<AlbumRecommendationResult>('ai',{action:'albums',input,intent_id:crypto.randomUUID()},scope),

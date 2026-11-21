@@ -151,9 +151,9 @@ export function assertSharedNotebookOwner(auth: Auth, user: User) {
 /** Explicit shared-account inference; existing direct provider choices never fall through here. */
 export async function runSharedTodoAgent<T>(action: string, input: unknown, kbPath?: string): Promise<T> {
   const origin=localStorage.getItem('todo-sticky-cloud-server-v1')||DIANE_SHARED_ORIGIN
-  if(origin!==DIANE_SHARED_ORIGIN)throw new Error('Connect the Pipe Dreams service in Settings → Account before using this provider.')
+  if(origin!==DIANE_SHARED_ORIGIN)throw new Error('Connect the pipedreams service in Settings → Account before using this provider.')
   const auth=await connectAccount(origin,kbPath),user=auth.currentUser
-  if(!user)throw new Error('Sign in to your Pipe Dreams account in Settings → Account.')
+  if(!user)throw new Error('Sign in to your pipedreams account in Settings → Account.')
   assertSharedNotebookOwner(auth, user)
   const token=await user.getIdToken(),requestId=crypto.randomUUID()
   assertSharedNotebookOwner(auth, user)
@@ -178,7 +178,7 @@ export function parseTodoTaskLink(value:string):string|null {
 export async function readSharedTodoTask(recordId:string,kbPath?:string):Promise<{date:string;taskId:string;recordId:string;source?:MynitSource}> {
   if(!/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(recordId))throw new Error('Invalid shared task link.')
   const auth=await connectAccount(DIANE_SHARED_ORIGIN,kbPath),user=auth.currentUser
-  if(!user)throw new Error('Sign in to the Pipe Dreams account to open this task.')
+  if(!user)throw new Error('Sign in to the pipedreams account to open this task.')
   const token=await user.getIdToken()
   const record=await requestJson(DIANE_SHARED_ORIGIN,'/api/plugins/todo/records/task/'+encodeURIComponent(recordId),{},token)
   if(auth.currentUser?.uid!==user.uid)throw new Error('Account changed before the task opened.')

@@ -46,7 +46,10 @@ void main() {
       expect(globe, findsOneWidget);
       await tester.tap(globe);
       await tester.pumpAndSettle();
-      final option = find.byWidgetPredicate((widget) => widget is CheckedPopupMenuItem<String> && widget.value == tag);
+      final option = find.byWidgetPredicate(
+        (widget) =>
+            widget is CheckedPopupMenuItem<String> && widget.value == tag,
+      );
       await tester.ensureVisible(option);
       await tester.tap(option);
       await tester.pumpAndSettle();

@@ -1250,7 +1250,7 @@ class CloudSyncController extends ChangeNotifier {
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
       throw StateError(
-        ui("Sign in to the Pipe Dreams account to open this task."),
+        ui("Sign in to the pipedreams account to open this task."),
       );
     }
     final local = datedNotebookTask(id);
@@ -1350,14 +1350,14 @@ class CloudSyncController extends ChangeNotifier {
     final value = store.syncMetadata['dockit-workspace:${session?.owner}'];
     if (value == null) return '';
     if (value is! String || !workspaceSlug.hasMatch(value)) {
-      throw StateError(ui("Choose a valid Pipe Dreams workspace in Account."));
+      throw StateError(ui("Choose a valid pipedreams workspace in Account."));
     }
     return value;
   }
 
   Future<void> chooseWorkspace(String id) async {
     if (session?.origin != dianeSharedOrigin) {
-      throw StateError(ui("Sign in to Pipe Dreams."));
+      throw StateError(ui("Sign in to pipedreams."));
     }
     final key = 'dockit-workspace:${session!.owner}';
     if (id.isEmpty) {
@@ -1387,7 +1387,7 @@ class CloudSyncController extends ChangeNotifier {
           current.projectId != 'dear-diane-202610' ||
           (store.syncMetadata['owner'] != null &&
               store.syncMetadata['owner'] != current.owner)) {
-        throw StateError(ui("Sign in to Pipe Dreams."));
+        throw StateError(ui("Sign in to pipedreams."));
       }
     }
 
@@ -1481,7 +1481,7 @@ class CloudSyncController extends ChangeNotifier {
     final current = session, epoch = _epoch;
     if (current == null || current.origin != dianeSharedOrigin) {
       throw StateError(
-        ui("Sign in to the Pipe Dreams account in Settings → Account."),
+        ui("Sign in to the pipedreams account in Settings → Account."),
       );
     }
     final bound = store.syncMetadata['owner'];

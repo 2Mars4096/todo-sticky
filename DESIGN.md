@@ -1,5 +1,5 @@
 ---
-name: Sticky Todo
+name: Dockit
 description: A calm working note with progressive goal and focus tools.
 colors:
   note: "#FFF8DC"
@@ -62,13 +62,13 @@ components:
     padding: "7px 12px"
 ---
 
-# Design System: Sticky Todo
+# Design System: Dockit
 
 ## 1. Overview
 
 **Creative North Star: "The Working Note"**
 
-Sticky Todo should feel like the one note already open beside the work: warm, compact, and immediately writable. The note surface carries daily work; goal and mission surfaces are distinct tools revealed progressively. Density is welcome when it keeps actions close, but the center task column must never be squeezed into an unusable strip.
+Dockit should feel like the one note already open beside the work: warm, compact, and immediately writable. The note surface carries daily work; goal and mission surfaces are distinct tools revealed progressively. Density is welcome when it keeps actions close, but the center task column must never be squeezed into an unusable strip.
 
 The product rejects dashboard sprawl, space-game decoration that overpowers the task list, hidden hover-only actions, and routine modal flows.
 

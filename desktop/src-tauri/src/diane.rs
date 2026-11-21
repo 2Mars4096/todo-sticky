@@ -1,4 +1,4 @@
-//! Narrow local bridge. Todo never receives Shiprite credentials or launches agents.
+//! Narrow local bridge. Todo never receives Diane credentials or launches agents.
 use serde_json::Value;
 use std::time::Duration;
 
@@ -25,7 +25,7 @@ pub async fn diane_request(action: String, request_id: Option<String>, body: Opt
     let request = if action == "projects" || action == "status" { client.get(url) } else { client.post(url).json(&body.unwrap_or(serde_json::json!({}))) };
     let response = request.send().await.map_err(|_| "Cannot reach Shiprite. Open Shiprite and retry; an existing run may still be working.".to_string())?;
     let status = response.status();
-    let value: Value = response.json().await.map_err(|_| "Shiprite needs the Todo handoff update.".to_string())?;
+    let value: Value = response.json().await.map_err(|_| "Shiprite needs the Dockit handoff update.".to_string())?;
     if !status.is_success() {
         return Err(value.get("detail").and_then(Value::as_str).unwrap_or("Shiprite request failed. Open Shiprite to inspect the session.").to_string());
     }
@@ -64,7 +64,7 @@ async fn preparation_request(action: &str, request_id: Option<String>, body: Opt
     }
     let response = request.send().await.map_err(|_| "Shiprite preparation did not respond. Check its receipt before retrying.".to_string())?;
     let status = response.status();
-    let value: Value = response.json().await.map_err(|_| "Shiprite needs the Todo preparation update.".to_string())?;
+    let value: Value = response.json().await.map_err(|_| "Shiprite needs the Dockit preparation update.".to_string())?;
     if !status.is_success() { return Err(value.get("detail").and_then(Value::as_str).unwrap_or("Shiprite preparation unavailable").to_string()); }
     Ok(value)
 }

@@ -40,6 +40,10 @@ Existing task capture tests tapped Add in the same test frame as typing. Once Ad
 
 The child shell cannot bind the Gradle or adb listener sockets. The locally built preview APK, emulator activity and matching source tree provide separate Android evidence. The ordinary Flutter test runner also needs loopback. Running its widget cases with the matching host engine and compiled test assets allowed visual and interaction checks. The iPhone device engine is absent from the Flutter 3.47.8 cache, and CoreSimulator is unavailable. Keep these limits separate from failures in product code. See [client verification](plans/23-dockit-transfer.md).
 
+## 2026-11-20 — Transfer verification environment
+
+The available Flutter 3.41.9 bundles Dart 3.11.5 and cannot resolve the locked Android client. The project requires Flutter 3.47 or newer with Dart 3.13 or newer. This checkout has no iOS runner. The review sandbox also denied loopback server binding and Chromium startup. Production-module tests and an offline DOM fixture covered the web build. [Transfer verification](plans/23-dockit-transfer-review.md)
+
 ## 2026-11-17 — Local signing identity discovery
 
 A self-signed code-signing identity needed user-domain code-signing trust. On this host codesign also needed the dedicated unlocked keychain in the user search list. The login keychain remains first.

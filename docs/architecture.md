@@ -28,7 +28,7 @@ The dashboard push transaction maintains an owner-scoped group receipt for the p
 
 ## Meeting follow-ups
 
-The shared Meeting analysis save records the analysis ID, transcript revision, review time, eligible action indices and count in the same owner transaction. An account-scoped cursor reconciles earlier or separately saved analyses. Todo polls in the foreground and fetches quotes on expansion. Generation checks cited claims against source segments and scans for uncovered explicit commitments. Review metadata contains no transcript text. The existing Meeting push writes the canonical Todo task and its receipt.
+Saving a shared meeting analysis records the analysis ID, transcript revision, review time, eligible action indices and count in the same owner transaction. An account-scoped cursor reconciles earlier or separately saved analyses. Dockit polls in the foreground and fetches quotes on expansion. Generation checks cited claims against source segments and scans for uncovered explicit commitments. Review metadata contains no transcript text. Accepting a meeting follow-up writes the canonical Dockit task and its receipt.
 
 ## Actions artifact storage
 
@@ -36,13 +36,13 @@ Routine CI builds and tests do not upload retained build artifacts. A default-br
 
 ## Local application task access
 
-`desktop/src-tauri/src/mcp.rs` serves initialize-based MCP 2025-11-25 over bounded newline-delimited stdio through `sticky-todo-api mcp`. It wraps `task_api` directly, validates narrow tool schemas and serializes requests per process. Read-only mode advertises and permits only listing. There is no listener, alternate store or Diane dependency. MCP requires weekly revisions for edits/deletes and creates into existing archives; existing native persistence is optimistic, not cross-process atomic. See [agent contract](llm-api-guide.md#mcp-for-other-applications).
+`desktop/src-tauri/src/mcp.rs` serves initialize-based MCP 2025-11-25 over bounded newline-delimited stdio through `sticky-todo-api mcp`. It wraps `task_api` directly, validates narrow tool schemas and serializes requests per process. Read-only mode advertises and permits only listing. There is no listener, alternate store or Shiprite dependency. MCP requires weekly revisions for edits/deletes and creates into existing archives; existing native persistence is optimistic, not cross-process atomic. See [agent contract](llm-api-guide.md#mcp-for-other-applications).
 
 
-## Shared Diane backend (staged cutover)
-- `todo_context.py` specializes shared AI material without owning an agent loop. Optional canonical source references bind selected task/project revisions; bounded trees and frozen Meeting excerpts become untrusted `context_sources` for Diane's shared Universal Cell profiles. Admission and delivery recheck relevant source revisions and task-tree membership; failed delivery retains provider usage.
+## Shared pipedreams backend (staged cutover)
+- `todo_context.py` specializes shared AI material without owning an agent loop. Optional canonical source references bind selected task/project revisions; bounded trees and frozen meeting excerpts become untrusted `context_sources` for Shiprite's shared Universal Cell profiles. Admission and delivery recheck relevant source revisions and task-tree membership; failed delivery retains provider usage.
 - Hosted breakdown uses `StepProposalContext` and `stepProposal.ts` for editable proposals, guarded application and operation-specific Undo. `useTaskWorkflowStatuses.ts` owns one active-surface batch-polling lifetime, supplying quiet row badges and explicit unavailable state. Selected-task execution controls retain their existing session/review authority.
-- Embedded Todo preparation uses `hooks/useTaskPreparation.ts`: active/enabled saved task changes debounce to a scoped preparation-only refresh, then quiet60s repeats. Account/unmount cancellation prevents stale requests; backend owns canonical unfinished-task selection, deduplication and Universal Cell preparation.
+- Embedded Dockit preparation uses `hooks/useTaskPreparation.ts`: active/enabled saved task changes debounce to a scoped preparation-only refresh, then quiet60s repeats. Account/unmount cancellation prevents stale requests; backend owns canonical unfinished-task selection, deduplication and Universal Cell preparation.
 - Standalone clients negotiate central broker configuration, sign in with app-scoped custom Firebase tokens, and copy pending/baseline state only from a server-verified original issuer+UID. Shared AI uses the compatibility endpoint; explicit direct provider mode is retained.
 - Optional sync generations permit quiet polling through five point reads. A complete immutable client snapshot remains necessary for offline three-way merge; upload/account/error invalidates the cache.
 - Android native links and macOS URL events retain canonical task IDs until authenticated lookup/sync can reveal their exact dated original task. Links never execute tasks.
@@ -64,7 +64,7 @@ Routine CI builds and tests do not upload retained build artifacts. A default-br
 - Android Kotlin handles user-chosen file imports/exports through the Storage Access Framework and validated task deep-link delivery. No broad external storage permission or local desktop bridge is introduced. The native Focus painter is a mobile visual adaptation, retaining lifecycle/history behavior.
 - `StickyStore.syncRecords()`, `applySyncRecord()`, per-account `syncMetadata`, and `StickyApp.accountBuilder` are the integration seam for the separate Google account/sync branch. Active timers, provider keys and device settings remain local.
 - `.github/workflows/flutter-android.yml` runs format/analyze/tests and builds an ARM64 debug review APK; release signing requires a locally supplied keystore.
-- Remote Diane handoff is not part of the phone implementation: Dear Diane's companion router enforces `local_only` even behind remote bearer authentication. Its generic run API does not provide the companion defaults/receipt contract. See [7-1](plans/7-1-diane-remote-feasibility.md); no agent links or bearer tokens enter notebook/sync records.
+- Remote Shiprite handoff is not part of the phone implementation: Shiprite's companion router enforces `local_only` even behind remote bearer authentication. Its generic run API does not provide the companion defaults/receipt contract. See [7-1](plans/7-1-diane-remote-feasibility.md); no agent links or bearer tokens enter notebook/sync records.
 
 ## Linked goal plans
 
@@ -75,26 +75,26 @@ Routine CI builds and tests do not upload retained build artifacts. A default-br
 - The backend advertises `goalPlanning:true` and payload schemas `[1,2]` under protocol 1. Updated clients request/write schema 2; legacy readers receive a projection, and matching legacy edits retain stored metadata. Same-revision v1 baselines recover hidden metadata before acknowledging the upgrade. Clients with linked data stop sync safely against an old service. See [account-sync.md](account-sync.md).
 - An explicit Gradle `stickyReviewBuild=true` creates a separate optimized preview application ID and debug signature. `STICKY_PREVIEW=true` uses manual browser return. Default release builds still require the original production keystore; preview data is isolated from the installed production application.
 
-## Hosted Todo plugin
+## Hosted Dockit plugin
 
-- `plugin/` is the product-owned React 19 UI package consumed by Dear Diane. It has an independent lockfile, strict TypeScript/Vitest checks, an external-SDK production build, package audit and generated-module render smoke. The standalone React 18/Tauri and Flutter trees retain their own builds and storage paths.
+- `plugin/` is the product-owned React 19 UI package consumed by Shiprite. It has an independent lockfile, strict TypeScript/Vitest checks, an external-SDK production build, package audit and generated-module render smoke. The standalone React 18/Tauri and Flutter trees retain their own builds and storage paths.
 - The initial source was recovered from the checksum-verified UI 0.1.6 archive and backend 0.1.4 wheel already shipped by Diane; the recorded producer commits were unavailable on GitHub. `plugin/RECOVERY.json` records that historical baseline. UI 0.1.8 adds result recovery; candidate UI 0.1.9 and backend 0.1.5 add contextual proposals, visible workflow progress and the bounded context adapter.
 - `plugin/src/TaskDianeAction.tsx` flushes canonical task saves before enabling execution. Identity is account/task scoped, so record revision refreshes preserve the open review input; pending or failed saves disable mutation and expose local Retry. Ordinary task/step editing keeps its existing handlers.
 - `TaskExecution.tsx` owns one compact state-dependent Run/Open/Review row over the existing host APIs. Preparation is quiet, revision/account checked and separate from dispatch. Manual project selection takes precedence over late preparation. Task/account changes fence late reads and actions; in-flight mutation locks prevent duplicate clicks. Status polling coalesces focus/visibility events and pauses when the pane is inactive or the document hidden.
 - `taskExecutionState.ts` retains account/task-scoped project corrections and dispatch request identities locally, including interrupted retry identity. Workflow/session truth comes from the host. Existing inline history contains at most five prior attempts on the current workflow; only validated session/dispatch references become read-only Open links. The current host does not expose a complete historical workflow listing or shared task-to-project binding.
 - Review pins the displayed result version until the user chooses Review latest. Accept & complete, Request changes and Discard result send that exact version; requested-change drafts survive task revision refreshes. The optional host `review_conflict` explains changed task/step scope and blocks acceptance/revision, including an open feedback form. Discard result is exposed only with the host `can_discard_result: true` capability and sends review `stop`; the paired host ends only the workflow and preserves the task. Older hosts show an update explanation. Stop run calls the active execution-stop endpoint. Failed/stopped workflows show Run again in the primary row for unfinished tasks. Ordinary completion, runtime approvals and Git integration remain separate responsibilities.
-- `plugin/src/paneLayout.css` owns shared page/disclosure alignment, while `styles/task-execution.css` keeps selected-task controls compact. Diane supplies palette and toolbar-height tokens. The package exposes no branch/worktree, diff/checks or Merge capability.
+- `plugin/src/paneLayout.css` owns shared page/disclosure alignment, while `styles/task-execution.css` keeps selected-task controls compact. Shiprite supplies palette and toolbar-height tokens. The package exposes no branch/worktree, diff/checks or Merge capability.
 
-## Standalone Diane Handoff
+## Standalone Shiprite Handoff
 
-- `connectDiane` is a native-persisted, default-off handoff preference. The provider mounts only when enabled; disabling retains stored receipts and hides controls. Settings identifies local Dear Diane and its selected project/folder. File-backed credential preference is separate.
+- `connectDiane` is a native-persisted, default-off handoff preference. The provider mounts only when enabled; disabling retains stored receipts and hides controls. Settings identifies local Shiprite and its selected project/folder. File-backed credential preference is separate.
 
-- Standalone operation is invariant: core task/UI/storage paths do not await Diane readiness. Missing credentials affect only the AI operation that needs them. Response validation and receipt parsing contain malformed integration data; failed parsing preserves the original localStorage value and suspends integration polling.
+- Standalone operation is invariant: core task/UI/storage paths do not await Shiprite readiness. Missing credentials affect only the AI operation that needs them. Response validation and receipt parsing contain malformed integration data; failed parsing preserves the original localStorage value and suspends integration polling.
 
 - `src/diane.ts` defines the companion protocol; `src/components/DianeAction.tsx` owns one app-level receipt store, polling, icon controls and portalled details. WebView-local receipts retain immutable request UUIDs keyed by knowledge-base/date/task identity before network writes.
-- `src-tauri/src/diane.rs` exposes projects/dispatch/status/stop/open and the narrow account-scoped Todo preparation routes through fixed loopback endpoints, with no arbitrary URLs, redirects or credentials. Only `prepare` allows 390 seconds for staged inference; connection, record and receipt reads retain a 20-second bound. `dianePreparation.ts` stores preparation identity before sending and retrieves the same receipt after an uncertain result.
+- `src-tauri/src/diane.rs` exposes projects/dispatch/status/stop/open and the narrow account-scoped Dockit preparation routes through fixed loopback endpoints, with no arbitrary URLs, redirects or credentials. Only `prepare` allows 390 seconds for staged inference; connection, record and receipt reads retain a 20-second bound. `dianePreparation.ts` stores preparation identity before sending and retrieves the same receipt after an uncertain result.
 - `dianeWorkspace.ts` conservatively suggests a unique known name/path from task context. The native directory chooser registers an explicit folder through local-only POST /api/sticky-todo/projects; canonical selected_project_id handles symlinks. Registration never executes work.
-- Diane owns durable sessions, project roots, execution profiles and runtime state; the companion API and desktop open route are required. The task handoff transfers no credentials. Separately, the optional native credential fallback below can read matching Diane file-backed keys without requiring its process.
+- Shiprite owns durable sessions, project roots, execution profiles and runtime state; the companion API and desktop open route are required. The task handoff transfers no credentials. Separately, the optional native credential fallback below can read matching Shiprite file-backed keys without requiring its process.
 - Debug-only `STICKY_TODO_DEV_DATA_DIR` bypasses legacy settings and forces task/state storage below an absolute test root. Pair with `src-tauri/tauri.diane-dev.conf.json` to isolate WebView storage too.
 
 ## Tech Stack
@@ -110,7 +110,7 @@ See [folder guide](folder-guide.md) for hidden directories, script purposes and 
 
 - [ ] `web/src/` (`src/` compatibility alias): React application shell, task UI components, hooks, API bridge, and global sticky-note styling.
 - [ ] `desktop/src-tauri/` (`src-tauri/` compatibility alias): Rust commands, config, markdown/file-sync logic, tray/window behavior, and native app packaging.
-- [ ] `plugin/`: separately packaged Dear Diane UI and compatibility backend; see the hosted plugin architecture above.
+- [ ] `plugin/`: separately packaged Dockit UI and compatibility backend for Shiprite; see the hosted plugin architecture above.
 - [ ] `docs/`: live project tracking, roadmap, plans, changelog, bugs, and architecture notes.
 - [ ] `content/`: markdown-backed task data under `content/to-do/`.
 - [ ] Other top-level directories: `demo/` for assets, `scripts/` for build/demo utilities, `dist/` for built frontend assets.
@@ -125,7 +125,7 @@ See [folder guide](folder-guide.md) for hidden directories, script purposes and 
 - `src/taskRollover.ts` completes task trees and projects unfinished archived roots into Today with composite UI IDs and original date/ID metadata. Markdown remains authoritative; no daily copies or migration are created.
 - `useTasks` renders the selected date first, then loads earlier sections in the background only for Today, preserving edits during the scan. Reads time out after eight seconds; archive retries share a pending native request. Saves merge visible carried rows into their original sections while preserving hidden completed tasks; today-only rows remain in the selected date. Saves are serialized and flushed before reload, and stale load results are discarded.
 - Native range extraction accepts optional `skipUnavailable` and reports `unavailableFiles`; optional `canonicalDates` retains only the first date section from the file selected by calendar navigation (newest existing week on/before the date, or earliest existing week). Unreadable owners do not revive stale copies from other files. Default agent/CLI extraction remains raw and strict. The UI surfaces a retry notice while showing readable tasks.
-- TaskList uses one flat horizontal disclosure bar, with ordinary TaskItem rows at identical indentation. It initially renders 40 carried roots and offers Show more in batches of 40. Reordering stays within each original date, with an explicit earlier-root-to-Today drop across the disclosure boundary; Diane receipt keys retain the original date and task ID.
+- TaskList uses one flat horizontal disclosure bar, with ordinary TaskItem rows at identical indentation. It initially renders 40 carried roots and offers Show more in batches of 40. Reordering stays within each original date, with an explicit earlier-root-to-Today drop across the disclosure boundary; Shiprite receipt keys retain the original date and task ID.
 - The calendar follows midnight/resume when viewing Today, preserving an explicitly browsed historical/future date.
 
 ## Ready Shell Modules
@@ -305,11 +305,11 @@ See [folder guide](folder-guide.md) for hidden directories, script purposes and 
 - Official Tauri updater/process plugins verify signed packages from the public GitHub release `latest.json`. The app carries the public key only; the private key lives outside the repo and in an approved Actions secret.
 - Tagged releases build platform artifacts independently, then `scripts/prepare-update-release.cjs` creates one complete manifest. `scripts/validate-release-assets.cjs` checks uploaded names while the release is a draft (temporary URLs), and exact public URLs after publication. Upload names are normalized before manifest generation; publication follows `scripts/validate-update-manifest.cjs` checks and exact URL matching against GitHub’s uploaded assets. Universal macOS archives serve both Mac architectures.
 
-## Linked Diane credentials
+## Linked Shiprite credentials
 
-- `src-tauri/src/diane_credentials.rs` reads `~/.dan/linked-credentials.json` (absolute saved-key/.env paths only), or the existing `~/.dan/graphs_dir` marker for older Diane installs. No writes or Keychain APIs. Reads are bounded and re-evaluated per request.
-- `preferDianeCredentials` defaults to true in existing/new settings; only matching standard provider endpoints may use Diane keys. Todo’s stored keys remain the fallback. Keys never enter the new status command; it returns only availability. Process-only Diane environment credentials are not shared.
-- `dotenvy` parses file-backed credentials without modifying Todo’s environment. `tempfile` is test-only.
+- `src-tauri/src/diane_credentials.rs` reads `~/.dan/linked-credentials.json` (absolute saved-key/.env paths only), or the existing `~/.dan/graphs_dir` marker for older Shiprite installs. No writes or Keychain APIs. Reads are bounded and re-evaluated per request.
+- `preferDianeCredentials` defaults to true in existing/new settings; only matching standard provider endpoints may use Shiprite keys. Dockit’s stored keys remain the fallback. Keys never enter the new status command; it returns only availability. Process-only Shiprite environment credentials are not shared.
+- `dotenvy` parses file-backed credentials without modifying Dockit’s environment. `tempfile` is test-only.
 
 - Three.js development types track the installed 0.184 renderer; full `npx tsc --noEmit` passes after the 4-40 reliability fixes.
 
@@ -331,7 +331,7 @@ See [folder guide](folder-guide.md) for hidden directories, script purposes and 
 ## Initial window visibility
 
 - `frontend_ready` is an internal no-argument launch signal after React shell commit (two animation frames, or a 120ms hidden-WebKit frame fallback). An atomic native guard positions/reveals the window once on the UI thread; repeated signals never reopen or reposition it.
-- Native readiness starts a 1.5-second fallback reveal for frontend failures. This never waits for task archives, AI settings, Star Focus or Diane. Existing startup error/reload UI remains available.
+- Native readiness starts a 1.5-second fallback reveal for frontend failures. This never waits for task archives, AI settings, Star Focus or Shiprite. Existing startup error/reload UI remains available.
 
 Settings uses one navigation row (Storage, Style, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.
 
@@ -460,16 +460,16 @@ Showcase recording uses scripts/record-demos.cjs with isolated browser fixtures.
 
 - AccountPanel exposes one Sync action. A manual request first enables the existing owner-bound folder metadata if paused; a failed binding/storage check blocks synchronization. Background sync still requires enabled metadata.
 
-## Original-app Diane setup
+## Original-app Shiprite setup
 The local bridge exposes only connection, scoped task records, preparation and receipt endpoints in addition to the existing handoff operations. `dianePreparation.ts` matches canonical source IDs/date to local tasks, verifies synced text and the server execution-contract hash, and persists model request identities before sending. Universal Cell suggestions never execute work. `DianeAction` provides editable setup and direct explicit immutable session dispatch, fences late suggestions against task/user edits, and disables outbound controls on local disconnect.
 
-Diane setup placement measures the rendered panel in a layout effect and observes resizing, scrolling and visual-viewport changes. The panel flips/clamps within12px edges, scrolls excess content, and keeps its action row sticky.
+Shiprite setup placement measures the rendered panel in a layout effect and observes resizing, scrolling and visual-viewport changes. The panel flips/clamps within12px edges, scrolls excess content, and keeps its action row sticky.
 
 `dianeReceiptKey` resolves carried display IDs and legacy prefixed receipt keys within one notebook. Same-date matches take priority; unique cross-date matches survive moves. Original receipt/request keys remain immutable for status/open/retry. Ambiguous cross-date matches are not guessed.
 
-Diane setup and linked-session details share one compact flex header for heading/close, with28px controls and the existing4px radius/field spacing. Heading/close remain in normal flow rather than absolute offsets.
+Shiprite setup and linked-session details share one compact flex header for heading/close, with28px controls and the existing4px radius/field spacing. Heading/close remain in normal flow rather than absolute offsets.
 
-- Product-owned paneLayout CSS consumes optional host geometry tokens with standalone fallbacks; the host does not patch the published bundle. Source review can alias this plugin into Diane without releasing it.
+- Product-owned paneLayout CSS consumes optional host geometry tokens with standalone fallbacks; the host does not patch the published bundle. Source review can alias this plugin into Shiprite without releasing it.
 
 Review dismissal stores monotonic per-account and per-meeting sequence cutoffs in the review index. Source meetings and canonical tasks keep their independent lifecycle.
 

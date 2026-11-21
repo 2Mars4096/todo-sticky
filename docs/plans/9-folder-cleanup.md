@@ -84,3 +84,5 @@
 ## November 22 backend and scaffold review
 
 - [x] Inventory 786 tracked files, preserve independently released frontend and backend packages, and remove six ignored bytecode files with their source present. Retain historical synthetic review evidence and checksums, the linked worktree, original notebook data, signing configuration and local deliverables. [Operations](../backend-operations.md)
+
+The merged source passed 33 Node suites, 19 standalone backend tests, 26 shared backend tests and 75 plugin tests, including production packaging. Flutter 3.47.8 formatted and analyzed cleanly. Its widget suite passed 161 tests with one existing skip. The web production build and TypeScript check passed. Both legacy project identifiers were rejected before deployment.

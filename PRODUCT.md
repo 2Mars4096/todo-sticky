@@ -6,11 +6,11 @@ product
 
 ## Users
 
-Individuals who keep Sticky Todo visible beside their work and return to it repeatedly for fast capture, daily triage, planning, and focused execution. They may use a very small always-on-top window, so the core task list must remain usable without first arranging the interface.
+Individuals who keep Dockit visible beside their work and return to it repeatedly for fast capture, daily triage, planning, and focused execution. They may use a very small always-on-top window, so the core task list must remain usable without first arranging the interface.
 
 ## Product Purpose
 
-Sticky Todo helps a person capture work, define what would be enough, take the next step, and make an explicit completion decision. Tasks are Markdown-backed. Optional AI, long-term goals, Routines with manual reset by default and optional device-local schedules, and timed Star Focus sessions support that daily workflow.
+Dockit helps a person capture work, define what would be enough, take the next step, and make an explicit completion decision. Tasks are Markdown-backed. Optional AI, long-term goals, Routines with manual reset by default and optional device-local schedules, and timed Star Focus sessions support that daily workflow.
 
 ## Core Interaction
 

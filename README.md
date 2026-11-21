@@ -1,5 +1,7 @@
 # Dockit
 
+Dockit is part of pipedreams by Liberate AI.
+
 Dockit organizes proposals into dated tasks and nested steps on the web, Mac, Android and iPhone. Add a task, open its actions and choose **Add step**. In **Account → Workspace assignments**, choose an editor workspace, task and optional assignee UID, then select **Assign in Shiprite**. The web stores tasks in this browser, the Mac uses Markdown, and the phones use their app-private notebooks.
 
 Run the browser client with `npm run dev:vite`. For a production preview, run `npm run build:frontend` followed by `npm run preview`. See [phone build instructions](phone/README.md) and [per-client build, install and workflow evidence](docs/plans/23-dockit-transfer.md).
@@ -14,7 +16,7 @@ The installed standalone Mac app’s Today view shows **Meeting follow-ups** for
 
 Expand multiple meetings to compare suggestions. Select the suggestions you want and add them together as project steps. Tap a meeting’s trash icon to remove it from follow-ups immediately. **Clear all suggestions** asks for confirmation. Your source meetings and tasks already added are preserved.
 
-Product release sources live in `desktop/`, `web/`, `phone/` and `plugin/`. Existing build commands remain available through compatibility paths. Shared Diane backend/sign-in cutover is tracked separately and is not enabled by this reorganization.
+Product release sources live in `desktop/`, `web/`, `phone/` and `plugin/`. Existing build commands remain available through compatibility paths. Shared pipedreams backend/sign-in cutover is tracked separately and is not enabled by this reorganization.
 
 The hosted Todo 0.1.9 candidate adds editable AI step proposals, guarded Add steps/Undo, and execution status directly in the task list. Its 0.1.5 backend supplies saved task/project/Meeting context to Diane's shared Universal Cell profiles. Matching host integration and installed-app acceptance are tracked in [contextual refinement](docs/plans/19-contextual-task-refinement.md).
 
@@ -54,7 +56,7 @@ Open **Settings** to configure tools by purpose:
 |---------|------------------|
 | **Storage** | Current task folder and **Change task folder**. The default is `~/Documents/Sticky Todo`; task files live in `content/to-do/` inside it. |
 | **AI** | Provider and key, with **Model and connection options** and **Scheduling machines (optional)** available on demand. |
-| **Integrations** | Optional Dear Diane task handoff and reuse of matching local Diane credentials. |
+| **Integrations** | Optional Shiprite task handoff and reuse of matching local Shiprite credentials. |
 | **Account** | Optional Google sign-in and task sync in the current source/local build; requires a deployed sync service. |
 | **Updates** | Check for, download, and install app updates. |
 
@@ -64,11 +66,11 @@ For AI assistance, choose Moonshot, OpenRouter, OpenAI, Anthropic, Gemini, a cus
 
 The window appears after the app shell is ready; a short fallback keeps startup errors visible if frontend loading fails.
 
-On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Sticky Todo from an installer or automation tool cannot silently open a separate empty data store.
+On macOS, the default task folder and local app-state folder stay anchored to the signed-in account, so launching Dockit from an installer or automation tool cannot silently open a separate empty data store.
 
-If macOS or Dropbox has offloaded the Markdown archive, Sticky Todo reports **Tasks are waiting in Dropbox** instead of treating the archive as empty or waiting forever. Reveal the configured `content/to-do/.../index.md` file in Finder, choose **Make available offline** or **Download now**, then use **Retry** after the file becomes local.
+If macOS or Dropbox has offloaded the Markdown archive, Dockit reports **Tasks are waiting in Dropbox** instead of treating the archive as empty or waiting forever. Reveal the configured `content/to-do/.../index.md` file in Finder, choose **Make available offline** or **Download now**, then use **Retry** after the file becomes local.
 
-OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request. Other explicitly selected providers retain their own settings.
+OpenRouter requests use the signed-in Shiprite account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request. Other explicitly selected providers retain their own settings.
 
 Each provider keeps its own API URL, key, and last-used model. Switch providers in **Settings → AI**; wider windows also show a quick selector beside Settings. Choosing an unconfigured provider opens its setup.
 
@@ -279,23 +281,25 @@ The workflow builds for **macOS** (universal binary), **Windows**, and **Linux**
 | **Drag any window edge or corner** | Resize the frameless window; the bottom-right grip is always visible |
 | **Double-click** | Edit task text |
 
-## Todo inside Diane
+## Dockit inside Shiprite
 
-The product-owned [`plugin/`](plugin/README.md) package provides the embedded Todo pane in Dear Diane. Its selected task shows a compact project selector and **Run**. Automatic preparation can bind a known project; a manual correction takes precedence. Run starts work without leaving Todo. **Open** returns to the saved Diane session, and **Review** opens its result with **Accept & complete**, **Request changes**, and **Discard result**. Discard keeps the task and its edits unchanged. **Run again** is directly visible after failed or stopped work. A result for an older task or step scope explains what changed and remains discardable.
+The product-owned [`plugin/`](plugin/README.md) package provides the embedded Dockit pane in Shiprite. Its selected task shows a compact project selector and **Run**. Automatic preparation can bind a known project; a manual correction takes precedence. Run starts work without leaving Dockit. **Open** returns to the saved Shiprite session, and **Review** opens its result with **Accept & complete**, **Request changes**, and **Discard result**. Discard keeps the task and its edits unchanged. **Run again** is directly visible after failed or stopped work. A result for an older task or step scope explains what changed and remains discardable.
 
-The host supplies the current session and up to five prior attempts on that workflow. **Previous runs** reopens those returned sessions; it is not a complete execution archive. Manual project choices are saved on this device. Ordinary Todo completion remains separate from result acceptance, and accepting a result does not merge code. Branch/worktree isolation, Git diff/checks/merge and shared project binding still require host support.
+The host supplies the current session and up to five prior attempts on that workflow. **Previous runs** reopens those returned sessions; it is not a complete execution archive. Manual project choices are saved on this device. Ordinary Dockit completion remains separate from result acceptance, and accepting a result does not merge code. Branch/worktree isolation, Git diff/checks/merge and shared project binding still require host support.
 
 The plugin has a separate Node 22/React 19 build: `npm --prefix plugin ci` followed by `npm --prefix plugin run check`. The source recovery record and package/host integration instructions are in [plugin/README.md](plugin/README.md). These commands do not build or install the standalone apps.
 
-## Standalone Run in Diane (companion update required)
+<a id="run-in-diane-companion-update-required"></a>
 
-Diane is optional. Todo opens, saves, and manages your tasks, dates, goals and focus without it. If Diane is disconnected or unavailable, only its dispatch/status controls are affected. Independently configured AI providers continue to use their own configuration.
+## Standalone Run in Shiprite (companion update required)
 
-In **Settings → Integrations**, enable **Connect to Dear Diane on this computer** and Save. Selected tasks show **Push to Diane**. The button stays grey while the connection is off, unavailable, or incompatible; no connection attempts run when the setting is off.
+Shiprite is optional. Dockit opens, saves, and manages your tasks, dates, goals and focus without it. If Shiprite is disconnected or unavailable, only its dispatch/status controls are affected. Independently configured AI providers continue to use their own configuration.
 
-Push opens editable workspace/context setup. For a synced task, local Diane routes a bounded setup suggestion through its Universal Cell API using the known workspace names/paths and task context. You can revise either field or choose a folder. **Start** dispatches the workspace/context you edited into a normal local Diane agent session. The panel stays within the visible window and scrolls when needed. Todo stays open. **Open in Diane** returns to that session for follow-up and approvals. Preparation errors leave manual setup available, and uncertain model requests retain their receipt instead of silently charging again.
+In **Settings → Integrations**, enable **Connect to Shiprite on this computer** and Save. Selected tasks show **Push to Shiprite**. The button stays grey while the connection is off, unavailable, or incompatible; no connection attempts run when the setting is off.
 
-Closing Todo leaves Diane working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. Todo 2.1.7 includes the Todo side of this integration; running tasks requires the separate Diane companion update.
+Push opens editable workspace/context setup. For a synced task, local Shiprite routes a bounded setup suggestion through its Universal Cell API using the known workspace names/paths and task context. You can revise either field or choose a folder. **Start** dispatches the workspace/context you edited into a normal local Shiprite agent session. The panel stays within the visible window and scrolls when needed. Dockit stays open. **Open in Shiprite** returns to that session for follow-up and approvals. Preparation errors leave manual setup available, and uncertain model requests retain their receipt instead of silently charging again.
+
+Closing Dockit leaves Shiprite working. Reopening reconnects; a disconnected indicator does not mean the run failed. Reconnect reuses the original dispatch and does not submit edits made afterward. Todo 2.1.7 includes the Todo side of this integration; running tasks requires the separate Diane companion update.
 
 For an isolated native development launch:
 
@@ -315,7 +319,7 @@ Desktop and phone clients can use the shared account for optional sync. Tasks re
 
 The native phone app lives in [`phone/`](phone/README.md). Daily tasks have visible drag grips for reordering and icon-only actions with a horizontal dots menu. It carries task capture, nested steps, outcomes/deadlines, goals/routines, AI planning, music suggestions and Focus into a phone layout, with offline persistence and secure provider keys. See the mobile README for build instructions, feature parity, account integration and platform-specific boundaries. The Flutter Android workflow produces an installable review APK; production distribution requires your release signing key.
 
-Live Diane companion handoff remains a known phone gap: Dear Diane's `/api/sticky-todo` protocol explicitly enforces local-only access independently of its remote bearer authentication. Android retains Copy agent prompt. The [protocol review](phone/README.md#dear-diane-companion-protocol-review) identifies the backend work required for remote support.
+Live Shiprite companion handoff remains a known phone gap: Shiprite's `/api/sticky-todo` protocol explicitly enforces local-only access independently of its remote bearer authentication. Android retains Copy agent prompt. The [protocol review](phone/README.md#shiprite-companion-protocol-review) identifies the backend work required for remote support.
 
 
 ### Project tasks and planning across days
@@ -341,11 +345,11 @@ The app checks for remote edits every **15 seconds** while Mac is visible or And
 
 Open a long-term title in Goals. Use the pencil to edit its description or a step; **Save / Cancel** work consistently, with Cmd/Ctrl+Enter to save and Escape to cancel. A scheduled step’s date row has its own pencil for task text and **Work date**. Changing its work date keeps the deadline, status and nested work. Use **Open task** for status/deadline details or nested-step moves, then **‹ Project** to return. AI proposal text, dates and minutes remain editable before **Add steps / Add to daily tasks**; **Discard** leaves saved work unchanged.
 
-### Shared Diane candidate
+### Shared pipedreams candidate
 
-The staged shared build retains the Todo interface and local notes, and signs in through the shared Diane account for synchronized tasks/goals and AI quota. Existing direct AI provider choices remain available. Meeting task links open the exact Todo task after sign-in and sync; they never run it automatically. Release-time flags `STICKY_SHARED_CUTOVER=1` (desktop) and `DIANE_SHARED_CUTOVER=true` (Flutter) opt into the verified shared service; ordinary source defaults remain unchanged. Deployment and account migration must pass the release gate before distributing these candidates. See [shared sync plan](docs/plans/17-1-canonical-sync.md).
+The staged shared build retains the Dockit interface and local notes, and signs in through the pipedreams account for synchronized tasks/goals and AI quota. Existing direct AI provider choices remain available. Links from reviewed meetings open the exact Dockit task after sign-in and sync; they never run it automatically. Release-time flags `STICKY_SHARED_CUTOVER=1` (desktop) and `DIANE_SHARED_CUTOVER=true` (Flutter) opt into the verified shared service; ordinary source defaults remain unchanged. Deployment and account migration must pass the release gate before distributing these candidates. See [shared sync plan](docs/plans/17-1-canonical-sync.md).
 
-Task handoff: select a task, choose its Diane icon, confirm the suggested workspace or use **Choose folder…**, then **Run in Diane**. Uncertain matches stay blank; choosing a folder alone never starts work.
+Task handoff: select a task, choose its Shiprite icon, confirm the suggested workspace or use **Choose folder…**, then **Start**. Uncertain matches stay blank; choosing a folder alone never starts work.
 
 
 Repository maintenance: run npm commands from the root; canonical sources are web/src, desktop/src-tauri, phone and plugin. See the [folder guide](docs/folder-guide.md) for retained compatibility paths, generated artifacts and consolidated implementation history. Build the embedded package with `npm --prefix plugin run build`.

@@ -336,7 +336,7 @@ export function TaskItem({
           {dateLabel && <span className="task-source-label">{dateLabel}</span>}
         </div>}
         {!isOtherDate && <div className="task-context-bar">
-          {selected ? <TaskDianeAction id={recordId ?? id} compact controlsTarget={dianeControls} onConfigure={()=>{window.dispatchEvent(new CustomEvent('todo:task-details', {detail:detailsId}));setDetailsOpen(true)}} /> : <><button type="button" className="task-diane-connect" onClick={()=>setSelected(true)}>{ui("Diane")}</button><TaskWorkflowStatus taskId={recordId ?? id}/></>}
+          {selected ? <TaskDianeAction id={recordId ?? id} compact controlsTarget={dianeControls} onConfigure={()=>{window.dispatchEvent(new CustomEvent('todo:task-details', {detail:detailsId}));setDetailsOpen(true)}} /> : <><button type="button" className="task-diane-connect" onClick={()=>setSelected(true)}>{ui("Shiprite")}</button><TaskWorkflowStatus taskId={recordId ?? id}/></>}
           <button ref={moreRef} type="button" className="task-more-button" aria-label={ui("Task details: {0}", [text])} title={ui("Task details")} onPointerDown={event=>{if(event.button===0)event.preventDefault()}} aria-expanded={detailsOpen} aria-controls={detailsId} onClick={toggleDetails}>…</button>
         </div>}
         <div id={detailsId} className="task-details-panel" hidden={!detailsOpen || isOtherDate} onKeyDown={event=>{

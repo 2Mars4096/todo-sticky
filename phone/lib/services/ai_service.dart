@@ -204,7 +204,7 @@ class AiService {
     if (usesShared(prefs)) {
       if (sharedRequest == null || sharedAction == null) {
         throw const AiException(
-          'Sign in to the Pipe Dreams account before requesting this action.',
+          'Sign in to the pipedreams account before requesting this action.',
         );
       }
       return sharedRequest!(sharedAction, sharedInput ?? object(data));
@@ -235,7 +235,7 @@ class AiService {
     if (usesShared(prefs)) {
       if (sharedRequest == null) {
         throw const AiException(
-          'Sign in to the Pipe Dreams account in Settings → Account.',
+          'Sign in to the pipedreams account in Settings → Account.',
         );
       }
       await sharedRequest!('breakdown', {

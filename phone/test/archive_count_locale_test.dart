@@ -26,29 +26,23 @@ void main() {
           final box = tester.getRect(item);
           final role = tester.widget(item).runtimeType.toString();
           out.writeStringSync(
-            jsonEncode([
-                  platform.name,
-                  tag,
-                  cycle,
-                  state,
-                  [
-                    {
-                      'locator': state + '/result-count',
-                      'kind': 'text',
-                      'text': expected,
-                      'widgetType': role,
-                      'bounds': [
-                        box.left.round(),
-                        box.top.round(),
-                        box.width.round(),
-                        box.height.round(),
-                      ],
-                      'inView': true,
-                      'emptyBox': box.isEmpty,
-                    },
-                  ],
-                ]) +
-                '\n',
+            '${jsonEncode([
+              platform.name,
+              tag,
+              cycle,
+              state,
+              [
+                {
+                  'locator': '$state/result-count',
+                  'kind': 'text',
+                  'text': expected,
+                  'widgetType': role,
+                  'bounds': [box.left.round(), box.top.round(), box.width.round(), box.height.round()],
+                  'inView': true,
+                  'emptyBox': box.isEmpty,
+                },
+              ],
+            ])}\n',
           );
         }
 

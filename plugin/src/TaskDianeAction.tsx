@@ -17,8 +17,8 @@ export function TaskDianeAction({id,compact=false,controlsTarget,onConfigure}:{i
  if(!port)return null;
  const saving=!saved||saved.taskKey!==port.taskKey||saved.flush!==port.flush;
  const current=record?.record_id===id&&record._scope===port.scope?record:undefined;
- return <section className="todo-diane-handoff" aria-label={ui("Diane task handoff")}>
-  {current?<><TaskExecution compact={compact} controlsTarget={controlsTarget} onConfigure={onConfigure} key={`${current._scope}:${current.record_id}`} task={current} active={port.active} saving={saving} enabled={port.enabled && Boolean(current.text.trim())}/>{!saving&&(!compact||controlsTarget)&&(compact ? createPortal(<UseInDiane record={current} text={[current.text,current.extensions.outcome?`Outcome: ${current.extensions.outcome}`:''].filter(Boolean).join('\n\n')} label={ui("Discuss in Diane")}/>,controlsTarget!) : <UseInDiane record={current} text={[current.text,current.extensions.outcome?`Outcome: ${current.extensions.outcome}`:''].filter(Boolean).join('\n\n')} label={ui("Discuss in Diane")} iconOnly/>)}</>:!error&&<span role="status">{ui("Saving task…")}</span>}
+ return <section className="todo-diane-handoff" aria-label={ui("Shiprite task handoff")}>
+  {current?<><TaskExecution compact={compact} controlsTarget={controlsTarget} onConfigure={onConfigure} key={`${current._scope}:${current.record_id}`} task={current} active={port.active} saving={saving} enabled={port.enabled && Boolean(current.text.trim())}/>{!saving&&(!compact||controlsTarget)&&(compact ? createPortal(<UseInDiane record={current} text={[current.text,current.extensions.outcome?`Outcome: ${current.extensions.outcome}`:''].filter(Boolean).join('\n\n')} label={ui("Discuss in Shiprite")}/>,controlsTarget!) : <UseInDiane record={current} text={[current.text,current.extensions.outcome?`Outcome: ${current.extensions.outcome}`:''].filter(Boolean).join('\n\n')} label={ui("Discuss in Shiprite")} iconOnly/>)}</>:!error&&<span role="status">{ui("Saving task…")}</span>}
   {error&&<p role="alert">{error}<button onClick={()=>setRetry(x=>x+1)}>{ui("Retry")}</button></p>}
  </section>;
 }

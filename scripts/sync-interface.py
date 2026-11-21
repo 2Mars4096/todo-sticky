@@ -17,7 +17,7 @@ for tag,column in zip(tags,columns):
 
 def dart(value):
     return json.dumps(value, ensure_ascii=False).replace('$', r'\$')
-lines = ['// Generated from phone/assets/interface by scripts/sync-interface.py.',
+lines = ['// Generated from phone/assets/interface by scripts/sync-interface.py.', '// dart format off',
          'const interfaceTags = <String>[' + ', '.join(map(dart, tags)) + '];',
          'const interfaceRows = <String, List<String>>{']
 for key in keys:

@@ -1,8 +1,8 @@
-# Sticky Todo Repository Guide
+# Dockit Repository Guide
 
-## Pipe Dreams platform requirements
+## pipedreams platform requirements
 
-Build and maintain three clients for Dockit: a working web app, an installable iOS phone app for iPhone, and an installable Android phone app. Users must be able to organize proposals into to-dos and assign work on each platform. Record build and workflow verification separately for each client.
+Maintain the Dockit web, iPhone, Android and Mac clients. Preserve each platform’s existing workflows when transferring it. Users organize proposals into to-dos and assign work. Record build and workflow verification separately for each client.
 
 This file is the central Codex instruction file for this repository.
 
@@ -124,5 +124,5 @@ Top-level plans omit a parent link. Sub-plans link back to their parent. Create 
 - The active recovery plan is `docs/plans/4-9-data-history-recovery-and-merge.md`; remaining follow-up questions live in `docs/todo.md` backlog.
 - The Star Focus design lock lives in `docs/plans/1-star-focus-integration-design.md`; implementation should stay consistent with those v1 decisions unless that plan is explicitly revised.
 
-- The Diane integration implementation and pending paired deployment are tracked in `docs/plans/6-diane-handoff.md`. Keep dispatch/status in Todo and all follow-up/approvals in the linked Diane session.
-- Todo must remain independently usable when Diane is missing, disconnected, unresponsive, or incompatible. Core startup, task CRUD/storage, dates, goals and focus must never await or require the integration. Keep integration errors local to its controls; independently configured AI providers remain usable.
+- The Shiprite integration implementation and pending paired deployment are tracked in `docs/plans/6-diane-handoff.md`. Keep dispatch/status in Dockit and all follow-up/approvals in the linked Shiprite session.
+- Dockit must remain independently usable when Shiprite is missing, disconnected, unresponsive, or incompatible. Core startup, task CRUD/storage, dates, goals and focus must never await or require the integration. Keep integration errors local to its controls; independently configured AI providers remain usable.

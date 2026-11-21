@@ -5,101 +5,89 @@ import 'package:sticky_todo/services/ai_service.dart';
 import 'package:sticky_todo/services/persistence.dart';
 
 void main() {
-  test(
-    'shared provider uses the account callback, not a direct provider or API key',
-    () async {
-      final calls = <String>[];
-      final ai = AiService(
-        MemoryCredentials(),
-        client: MockClient((_) async {
-          fail('Direct HTTP must not run');
-        }),
-        sharedRequest: (action, input) async {
-          calls.add(action);
-          if (action == 'breakdown') {
-            return {
-              'finishSuggestion': 'Reviewed',
-              'subtasks': [
-                {'text': 'Read the source'},
-              ],
-            };
-          }
-          if (action == 'project') {
-            return {
-              'steps': ['Read evidence', 'Write findings'],
-            };
-          }
-          if (action == 'albums') {
-            return {
-              'summary': 'Quiet',
-              'albums': [
-                {
-                  'title': 'Album',
-                  'artist': 'Artist',
-                  'fit': 'Sparse',
-                  'bestFor': 'Reading',
-                },
-              ],
-            };
-          }
-          throw StateError('Unexpected action');
-        },
-      );
-      final prefs = Preferences(provider: 'diane');
-      final result = await ai.breakdown(
-        prefs,
-        Task(id: 'task', text: 'Write a note'),
-      );
-      expect(result.steps, ['Read the source']);
-      final goal = await ai.planGoal(
-        prefs,
-        GoalItem(id: 'goal', text: 'Finish research'),
-      );
-      expect(goal, ['Read evidence', 'Write findings']);
-      final albums = await ai.albums(prefs, [
-        DatedTask('2026-11-10', Task(id: 'task', text: 'Read')),
-      ]);
-      expect(albums.single['title'], 'Album');
-      expect(calls, ['breakdown', 'project', 'albums']);
-      ai.dispose();
-    },
-  );
-  test(
-    'a disconnected OpenRouter profile uses the account callback even with an old device key',
-    () async {
-      final ai = AiService(
-        MemoryCredentials()..values['openrouter'] = 'fixture-old',
-        client: MockClient(
-          (_) async => fail('Device credential must not be used'),
-        ),
-        sharedRequest: (action, input) async => {
-          'subtasks': [
-            {'text': 'Account result'},
-          ],
-        },
-      );
-      final result = await ai.breakdown(
-        Preferences(provider: 'openrouter'),
-        Task(id: 'one', text: 'Synthetic task'),
-      );
-      expect(result.steps, ['Account result']);
-      ai.dispose();
-    },
-  );
-  test(
-    'legacy provider preferences remain explicit; fresh profiles can choose shared default',
-    () {
-      expect(
-        Preferences.fromJson({'provider': 'openrouter'}).providerChosen,
-        true,
-      );
-      expect(Preferences().providerChosen, false);
-      expect(
-        Preferences.fromJson(Preferences().toJson()).providerChosen,
-        false,
-      );
-    },
-  );
+  test('shared provider uses the account callback, not a direct provider or API key', () async {
+    final calls = <String>[];
+    final ai = AiService(
+      MemoryCredentials(),
+      client: MockClient((_) async {
+        fail('Direct HTTP must not run');
+      }),
+      sharedRequest: (action, input) async {
+        calls.add(action);
+        if (action == 'breakdown') {
+          return {
+            'finishSuggestion': 'Reviewed',
+            'subtasks': [
+              {'text': 'Read the source'},
+            ],
+          };
+        }
+        if (action == 'project') {
+          return {
+            'steps': ['Read evidence', 'Write findings'],
+          };
+        }
+        if (action == 'albums') {
+          return {
+            'summary': 'Quiet',
+            'albums': [
+              {
+                'title': 'Album',
+                'artist': 'Artist',
+                'fit': 'Sparse',
+                'bestFor': 'Reading',
+              },
+            ],
+          };
+        }
+        throw StateError('Unexpected action');
+      },
+    );
+    final prefs = Preferences(provider: 'diane');
+    final result = await ai.breakdown(
+      prefs,
+      Task(id: 'task', text: 'Write a note'),
+    );
+    expect(result.steps, ['Read the source']);
+    final goal = await ai.planGoal(
+      prefs,
+      GoalItem(id: 'goal', text: 'Finish research'),
+    );
+    expect(goal, ['Read evidence', 'Write findings']);
+    final albums = await ai.albums(prefs, [
+      DatedTask('2026-11-10', Task(id: 'task', text: 'Read')),
+    ]);
+    expect(albums.single['title'], 'Album');
+    expect(calls, ['breakdown', 'project', 'albums']);
+    ai.dispose();
+  });
+  test('a disconnected OpenRouter profile uses the account callback even with an old device key', () async {
+    final ai = AiService(
+      MemoryCredentials()..values['openrouter'] = 'fixture-old',
+      client: MockClient(
+        (_) async => fail('Device credential must not be used'),
+      ),
+      sharedRequest: (action, input) async => {
+        'subtasks': [
+          {'text': 'Account result'},
+        ],
+      },
+    );
+    final result = await ai.breakdown(
+      Preferences(provider: 'openrouter'),
+      Task(id: 'one', text: 'Synthetic task'),
+    );
+    expect(result.steps, ['Account result']);
+    ai.dispose();
+  });
+  test('legacy provider preferences remain explicit; fresh profiles can choose shared default', () {
+    expect(
+      Preferences.fromJson({'provider': 'openrouter'}).providerChosen,
+      true,
+    );
+    expect(Preferences().providerChosen, false);
+    expect(Preferences.fromJson(Preferences().toJson()).providerChosen, false);
+  });
   test(
     'shared mode never silently falls back when account bridge is absent',
     () async {

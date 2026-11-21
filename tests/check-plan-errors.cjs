@@ -5,7 +5,9 @@ const { seedBridge, launch, testUrl } = require('./helpers/browser-fixture.cjs')
   const browser = await launch()
   try {
     const context = await browser.newContext({ viewport: { width: 460, height: 720 } })
-    await context.addInitScript(seedBridge)
+    // Exercise the native provider and its editable key in this fixture.
+    await context.addInitScript({ content: `(${seedBridge.toString()})();
+      Object.assign(window.__review.settings, { provider: 'openai', apiBase: 'https://api.openai.com/v1' });` })
     const page = await context.newPage()
     const errors = []
     page.on('pageerror', error => errors.push(String(error)))
@@ -26,7 +28,7 @@ const { seedBridge, launch, testUrl } = require('./helpers/browser-fixture.cjs')
     await page.getByRole('button', { name: 'Close day plan', exact: true }).click()
     await page.getByRole('button', { name: 'Settings', exact: true }).click()
     await page.getByRole('button', { name: 'AI', exact: true }).click()
-    await page.getByLabel('Todo API key', { exact: true }).fill('synthetic-new-key')
+    await page.getByLabel('Dockit API key', { exact: true }).fill('synthetic-new-key')
     await page.getByRole('button', { name: 'Test connection', exact: true }).click()
     await page.getByText('Connected. Save to use these settings.', { exact: true }).waitFor()
     assert.deepEqual(errors, [])

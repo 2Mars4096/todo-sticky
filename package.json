@@ -1,7 +1,7 @@
 {
   "name": "dockit",
   "version": "2.1.16",
-  "description": "Dockit, the Pipe Dreams proposal and task planner",
+  "description": "Dockit, the pipedreams proposal and task planner",
   "scripts": {
     "dev": "npx tauri dev",
     "dev:vite": "vite --port 5173 --strictPort",
