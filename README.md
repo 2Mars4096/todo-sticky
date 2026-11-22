@@ -2,7 +2,7 @@
 
 Dockit is part of pipedreams by Liberate AI.
 
-Dockit organizes proposals into dated tasks and nested steps on the web, Mac, Android and iPhone. Add a task, open its actions and choose **Add step**. In **Account → Workspace assignments**, choose an editor workspace, task and optional assignee UID, then select **Assign in Shiprite**. The web stores tasks in this browser, the Mac uses Markdown, and the phones use their app-private notebooks.
+Dockit organizes proposals into dated tasks and nested steps on the web, Mac, Android and iPhone. [Open the live Dockit notebook](https://dockit.pipedreams.work/app/). Add a task, open its actions and choose **Add step**. In **Account → Workspace assignments**, choose an editor workspace, task and optional assignee UID, then select **Assign in Shiprite**. The web stores tasks in this browser, the Mac uses Markdown, and the phones use their app-private notebooks.
 
 On phones, tap the Dockit icon beside the bottom tabs to open **Account & sync** and sign in, or choose **Settings** for account status, language, notebook material, planning tools and backups. The shared account opens pipedreams.work. After Google approval, return to Dockit to finish. Notes, Goals and Focus remain available offline.
 

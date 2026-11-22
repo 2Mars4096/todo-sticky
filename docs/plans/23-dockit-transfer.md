@@ -136,3 +136,12 @@ A dedicated iPhone 17 Pro simulator running iOS 26.4 opened the installed app th
 43 focused Flutter tests passed, including all ten language choices, 320 px at 1.4×, 360 px at 1.5× with a keyboard, nested edits, account fixtures and cloud synchronization. The installed Android app retained a task created on the previous build and returned to it from Account & sync.
 
 The ARM64 release binary contains the production broker and branded approval origin. Public HTTPS discovery for `todo` returned project `dear-diane-202610`, API prefix `/api/plugins/todo` and the branded sign-in path. The public Dockit website and approval route each returned HTTP 200. The notebook opens its real app-private file store and the account controller selects the production shared service. An empty notebook has no sample records.
+
+## Production web notebook
+
+- [x] Preserve the product landing and desktop release link. The new Open Dockit control goes to the React notebook at `/app/`. Recognized `/tasks/<id>` paths load the same client. The custom domain retains its other routes and Firebase initialization files.
+- [x] Run all 33 Node suites and build with the production shared account service and `/app/` assets. Compare every deployed public app file with the build. Firebase Hosting release `b1fabf00a2379815` succeeds `29bbc94392dee8f5`. [Release receipt](../reviews/production-web/firebase-release.json)
+- [x] Verify the public landing, initially empty notebook, Settings and account entry at 390 and 1100 px in fresh Chrome profiles. Each browser reopened its saved synthetic task after reload. The tested Google button opened the production branded approval route with app ID `todo` and a browser return; the check cancelled before Google identity selection. The phone-size web date row contains only notebook navigation, the app chooser and language.
+- [x] Confirm both `/app` and `/app/` serve the compiled notebook and that the shared-task route returns identical application HTML. User notebooks and backend deployments were outside this release.
+
+[Live notebook](https://dockit.pipedreams.work/app/) · [Phone browser](../reviews/production-web/phone-notebook.png) · [Desktop browser](../reviews/production-web/desktop-notebook.png) · [Phone account](../reviews/production-web/phone-account.png)

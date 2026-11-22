@@ -22,6 +22,8 @@ Flutter’s top-level and nested capture fields share `NotebookCaptureField`. Th
 
 The daily React header anchors the calendar to its complete date navigation row. The Flutter Notes and Progress views share `showNotebookDatePicker` so archived notebook years stay selectable in both places.
 
+The live React notebook is served from `https://dockit.pipedreams.work/app/`. A shared task URL under `/tasks/` loads the same app while preserving its original identifier. The product landing and public Firebase initialization assets share this Hosting site.
+
 Web and macOS share the React task and account UI. The browser adapter stores each dated tree in IndexedDB and compares the caller’s observed revision inside a write transaction. macOS uses the Tauri Markdown store. Android and iPhone use the same Flutter app-private notebook with platform document channels. Assignment sends one selected tree after checking shared-account ownership. The workspace selector lists editor memberships and also scopes shared AI usage. Confirmation requires the assignment ID and workspace ID in the service receipt. See [client verification](plans/23-dockit-transfer.md).
 
 On the configured Mac, scripts/tauri-build.js unlocks the dedicated signing keychain using its login-Keychain item, signs a staged capture helper and passes the certificate fingerprint to Tauri. CI and explicitly configured distribution identities use their own signing path.

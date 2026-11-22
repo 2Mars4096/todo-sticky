@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-22 — Production web notebook
+
+Open Dockit from the product landing to create and reopen dated tasks in the browser. The signed-out notebook, Google approval handoff and task-link route passed checks on the live site. [Deployment and evidence](plans/23-dockit-transfer.md#production-web-notebook)
+
 ## 2026-11-22 — Connected phone release verification
 
 Verified the compiled production origins, public discovery and hosted entry. 43 focused Flutter checks passed. [Phone release record](plans/23-dockit-transfer.md#phone-settings-and-navigation)

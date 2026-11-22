@@ -1,0 +1,13 @@
+{
+  "old": "sites/pipedreams-dockit/versions/29bbc94392dee8f5",
+  "version": "sites/pipedreams-dockit/versions/b1fabf00a2379815",
+  "release": "sites/pipedreams-dockit/releases/1795334352062000",
+  "files": 16,
+  "assetCount": 13,
+  "existingFilesPreserved": [
+    "/__/firebase/init.js",
+    "/__/firebase/init.json"
+  ],
+  "app": "/app/",
+  "sharedTaskRoute": "/tasks/**"
+}
