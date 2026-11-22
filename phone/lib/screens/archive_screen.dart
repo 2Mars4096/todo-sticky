@@ -1,4 +1,5 @@
 import '../interface_locale.dart';
+import '../widgets/notebook_refresh.dart';
 import '../widgets/notebook_date_picker.dart';
 
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class ArchiveScreen extends StatefulWidget {
   final bool progress;
   final String initialQuery;
   final String? initialGoalId;
+  static const searchGroup = 'dockit-archive-query';
   const ArchiveScreen({
     super.key,
     required this.store,
@@ -37,6 +39,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   final dateFocus = FocusNode();
   late String selected = widget.store.selectedDate;
   String status = 'all';
+  String ordering = 'newest';
   late String? goalId = widget.initialGoalId;
   bool week = false;
   int limit = 40;
@@ -113,16 +116,24 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
         widget.progress ? '' : query.text,
         status,
       );
+      if (ordering != 'newest') {
+        final originalOrder = {
+          for (var i = 0; i < results.length; i++) results[i]: i,
+        };
+        results.sort((a, b) {
+          final order = ordering == 'oldest'
+              ? a.date.compareTo(b.date)
+              : a.task.text.toLowerCase().compareTo(b.task.text.toLowerCase());
+          return order != 0
+              ? order
+              : originalOrder[a]!.compareTo(originalOrder[b]!);
+        });
+      }
       final hasFilters =
           goalId != null ||
           status != 'all' ||
           (!widget.progress && query.text.trim().isNotEmpty);
       return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.progress ? tr(context, "Progress") : tr(context, "Search"),
-          ),
-        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -131,15 +142,24 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 child: Column(
                   children: [
                     if (!widget.progress)
-                      TextField(
-                        controller: query,
-                        focusNode: searchFocus,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: tr(context, "Search tasks and steps"),
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: (_) => setState(() => limit = 40),
+                      Row(
+                        children: [
+                          const BackButton(),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: TextField(
+                              groupId: ArchiveScreen.searchGroup,
+                              controller: query,
+                              focusNode: searchFocus,
+                              autofocus: true,
+                              decoration: InputDecoration(
+                                hintText: tr(context, "Search tasks and steps"),
+                                prefixIcon: Icon(Icons.search),
+                              ),
+                              onChanged: (_) => setState(() => limit = 40),
+                            ),
+                          ),
+                        ],
                       )
                     else
                       Wrap(
@@ -147,6 +167,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                         runSpacing: 8,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
+                          const BackButton(),
                           OutlinedButton.icon(
                             focusNode: dateFocus,
                             icon: const Icon(
@@ -199,93 +220,85 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        if (widget.store.goals.targets.isNotEmpty ||
-                            goalId != null) ...[
-                          Expanded(
-                            flex: 3,
-                            child: Semantics(
-                              label: tr(context, "Filter by goal"),
-                              child: DropdownButton<String>(
-                                key: const ValueKey('goal-filter'),
-                                isExpanded: true,
-                                value: goalId ?? '',
-                                items: [
-                                  DropdownMenuItem(
-                                    value: '',
-                                    child: Text(
-                                      tr(context, "All goals"),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              spacing: 8,
+                              children: [
+                                for (final entry in {
+                                  'all': 'All states',
+                                  'open': 'Unfinished',
+                                  'done': 'Completed',
+                                  'stopped': 'Stopped',
+                                }.entries)
+                                  ChoiceChip(
+                                    key: ValueKey('status-${entry.key}'),
+                                    label: Text(tr(context, entry.value)),
+                                    selected: status == entry.key,
+                                    onSelected: (_) => setState(() {
+                                      status = entry.key;
+                                      limit = 40;
+                                    }),
                                   ),
-                                  for (final item in widget.store.goals.targets)
-                                    DropdownMenuItem(
-                                      value: item.id,
-                                      child: Text(
-                                        item.text,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  if (goalId != null && goal == null)
-                                    DropdownMenuItem(
-                                      value: goalId,
-                                      child: Text(
-                                        tr(context, "Removed goal"),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                ],
-                                onChanged: (value) => setState(() {
-                                  goalId = value?.isEmpty == true
-                                      ? null
-                                      : value;
-                                  limit = 40;
-                                }),
-                              ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 16),
-                        ],
-                        Expanded(
-                          flex: 2,
-                          child: DropdownButton<String>(
-                            isExpanded: true,
-                            value: status,
-                            items: [
-                              DropdownMenuItem(
-                                value: 'all',
-                                child: Text(
-                                  tr(context, "All states"),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DropdownMenuItem(
-                                value: 'open',
-                                child: Text(
-                                  tr(context, "Unfinished"),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DropdownMenuItem(
-                                value: 'done',
-                                child: Text(
-                                  tr(context, "Completed"),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              DropdownMenuItem(
-                                value: 'stopped',
-                                child: Text(
-                                  tr(context, "Stopped"),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                            onChanged: (value) => setState(() {
-                              status = value!;
+                        ),
+                        if (widget.store.goals.targets.isNotEmpty ||
+                            goalId != null)
+                          PopupMenuButton<String>(
+                            key: const ValueKey('goal-filter'),
+                            tooltip: tr(context, 'Filter by goal'),
+                            icon: Icon(
+                              goalId == null
+                                  ? Icons.filter_alt_outlined
+                                  : Icons.filter_alt,
+                            ),
+                            onSelected: (value) => setState(() {
+                              goalId = value.isEmpty ? null : value;
                               limit = 40;
                             }),
+                            itemBuilder: (_) => [
+                              CheckedPopupMenuItem(
+                                value: '',
+                                checked: goalId == null,
+                                child: Text(tr(context, 'All goals')),
+                              ),
+                              for (final item in widget.store.goals.targets)
+                                CheckedPopupMenuItem(
+                                  value: item.id,
+                                  checked: goalId == item.id,
+                                  child: Text(item.text),
+                                ),
+                              if (goalId != null && goal == null)
+                                CheckedPopupMenuItem(
+                                  value: goalId,
+                                  checked: true,
+                                  child: Text(tr(context, 'Removed goal')),
+                                ),
+                            ],
                           ),
+                        PopupMenuButton<String>(
+                          key: const Key('archive-sort'),
+                          tooltip: tr(context, 'Sort by'),
+                          icon: const Icon(Icons.sort),
+                          onSelected: (value) => setState(() {
+                            ordering = value;
+                            limit = 40;
+                          }),
+                          itemBuilder: (_) => [
+                            for (final entry in {
+                              'newest': 'Newest first',
+                              'oldest': 'Oldest first',
+                              'title': 'Task title',
+                            }.entries)
+                              CheckedPopupMenuItem(
+                                value: entry.key,
+                                checked: ordering == entry.key,
+                                child: Text(tr(context, entry.value)),
+                              ),
+                          ],
                         ),
                       ],
                     ),
@@ -293,158 +306,165 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 ),
               ),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                  children: [
-                    if (widget.progress) ...[
-                      if (goalProgress != null && goalProgress.total > 0) ...[
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                tr(context, "Goal plan · {0}/{1} completed", [
-                                  goalProgress.completed,
-                                  goalProgress.total,
-                                ]),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
+                child: NotebookRefresh(
+                  store: widget.store,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    children: [
+                      if (widget.progress) ...[
+                        if (goalProgress != null && goalProgress.total > 0) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  tr(context, "Goal plan · {0}/{1} completed", [
+                                    goalProgress.completed,
+                                    goalProgress.total,
+                                  ]),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
-                            _ProgressInfo(
-                              message: tr(
-                                context,
-                                "Plan progress includes linked tasks across all dates. A stopped task is not completed.",
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        LinearProgressIndicator(value: goalProgress.fraction),
-                        const SizedBox(height: 24),
-                      ],
-                      if (roots.isNotEmpty) ...[
-                        Text(
-                          tr(
-                            context,
-                            "{0} completed · {1} unfinished · {2} stopped",
-                            [done, roots.length - done - stopped, stopped],
-                          ),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 12),
-                        LinearProgressIndicator(
-                          value: roots.isEmpty ? 0 : done / roots.length,
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (steps.isNotEmpty)
-                        Text(
-                          tr(context, "{0}/{1} steps completed", [
-                            steps
-                                .where(
-                                  (row) => row.task.status == TaskStatus.done,
-                                )
-                                .length,
-                            steps.length,
-                          ]),
-                        ),
-                      if (goalId == null && sessions.isNotEmpty)
-                        Text(
-                          tr(
-                            context,
-                            "{0} focus sessions · {1} planned minutes",
-                            [
-                              sessions.length,
-                              sessions.fold<int>(
-                                0,
-                                (sum, session) => sum + session.durationMinutes,
+                              _ProgressInfo(
+                                message: tr(
+                                  context,
+                                  "Plan progress includes linked tasks across all dates. A stopped task is not completed.",
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      if (roots.isNotEmpty ||
-                          steps.isNotEmpty ||
-                          (goalId == null && sessions.isNotEmpty))
-                        const SizedBox(height: 20),
-                    ],
-                    if (results.isEmpty)
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            widget.progress && !hasFilters
-                                ? tr(context, "No tasks on these dates.")
-                                : tr(context, "No matching tasks."),
-                            style: const TextStyle(color: mutedInk),
-                          ),
-                          if (hasFilters)
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  query.clear();
-                                  status = 'all';
-                                  goalId = null;
-                                  limit = 40;
-                                });
-                                (widget.progress ? dateFocus : searchFocus)
-                                    .requestFocus();
-                              },
-                              child: Text(tr(context, "Reset filters")),
-                            ),
+                          const SizedBox(height: 12),
+                          LinearProgressIndicator(value: goalProgress.fraction),
+                          const SizedBox(height: 24),
                         ],
-                      )
-                    else
-                      Text(
-                        widget.progress
-                            ? (results.length == 1
-                                  ? tr(context, "{0} task", [1])
-                                  : tr(context, "{0} tasks", [results.length]))
-                            : (results.length == 1
-                                  ? tr(context, "{0} match", [1])
-                                  : tr(context, "{0} matches", [
-                                      results.length,
-                                    ])),
-                        style: const TextStyle(color: mutedInk),
-                      ),
-                    for (final row in results.take(limit)) ...[
-                      const SizedBox(height: 8),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          row.task.text.isEmpty
-                              ? tr(context, "Untitled task")
-                              : row.task.text,
+                        if (roots.isNotEmpty) ...[
+                          Text(
+                            tr(
+                              context,
+                              "{0} completed · {1} unfinished · {2} stopped",
+                              [done, roots.length - done - stopped, stopped],
+                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 12),
+                          LinearProgressIndicator(
+                            value: roots.isEmpty ? 0 : done / roots.length,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (steps.isNotEmpty)
+                          Text(
+                            tr(context, "{0}/{1} steps completed", [
+                              steps
+                                  .where(
+                                    (row) => row.task.status == TaskStatus.done,
+                                  )
+                                  .length,
+                              steps.length,
+                            ]),
+                          ),
+                        if (goalId == null && sessions.isNotEmpty)
+                          Text(
+                            tr(
+                              context,
+                              "{0} focus sessions · {1} planned minutes",
+                              [
+                                sessions.length,
+                                sessions.fold<int>(
+                                  0,
+                                  (sum, session) =>
+                                      sum + session.durationMinutes,
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (roots.isNotEmpty ||
+                            steps.isNotEmpty ||
+                            (goalId == null && sessions.isNotEmpty))
+                          const SizedBox(height: 20),
+                      ],
+                      if (results.isEmpty)
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              widget.progress && !hasFilters
+                                  ? tr(context, "No tasks on these dates.")
+                                  : tr(context, "No matching tasks."),
+                              style: const TextStyle(color: mutedInk),
+                            ),
+                            if (hasFilters)
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    query.clear();
+                                    status = 'all';
+                                    goalId = null;
+                                    limit = 40;
+                                  });
+                                  (widget.progress ? dateFocus : searchFocus)
+                                      .requestFocus();
+                                },
+                                child: Text(tr(context, "Reset filters")),
+                              ),
+                          ],
+                        )
+                      else
+                        Text(
+                          widget.progress
+                              ? (results.length == 1
+                                    ? tr(context, "{0} task", [1])
+                                    : tr(context, "{0} tasks", [
+                                        results.length,
+                                      ]))
+                              : (results.length == 1
+                                    ? tr(context, "{0} match", [1])
+                                    : tr(context, "{0} matches", [
+                                        results.length,
+                                      ])),
+                          style: const TextStyle(color: mutedInk),
                         ),
-                        subtitle: Text(
-                          '${row.parents.isEmpty ? '' : '${row.parents.join(' › ')}\n'}${row.date} · ${tr(context, statusText(row.task.status))}${row.task.finish?.by == null ? '' : ' · ${tr(context, "Due {0}", [row.task.finish!.by])}'}',
-                        ),
-                        trailing: const Icon(Icons.chevron_right, size: 18),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => TaskReviewScreen(
-                              store: widget.store,
-                              ai: widget.ai,
-                              row: row,
-                              openFocus: widget.openFocus,
+                      for (final row in results.take(limit)) ...[
+                        const SizedBox(height: 8),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            row.task.text.isEmpty
+                                ? tr(context, "Untitled task")
+                                : row.task.text,
+                          ),
+                          subtitle: Text(
+                            '${row.parents.isEmpty ? '' : '${row.parents.join(' › ')}\n'}${row.date} · ${tr(context, statusText(row.task.status))}${row.task.finish?.by == null ? '' : ' · ${tr(context, "Due {0}", [row.task.finish!.by])}'}',
+                          ),
+                          trailing: const Icon(Icons.chevron_right, size: 18),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => TaskReviewScreen(
+                                store: widget.store,
+                                ai: widget.ai,
+                                row: row,
+                                openFocus: widget.openFocus,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                    if (results.length > limit)
-                      TextButton(
-                        onPressed: () => setState(() => limit += 40),
-                        child: Text(
-                          tr(context, "Show more ({0})", [
-                            results.length - limit,
-                          ]),
+                      ],
+                      if (results.length > limit)
+                        TextButton(
+                          onPressed: () => setState(() => limit += 40),
+                          child: Text(
+                            tr(context, "Show more ({0})", [
+                              results.length - limit,
+                            ]),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -6,6 +6,8 @@ The production shared account opens `https://pipedreams.work/signin`. Discovery 
 
 ## Phone notebook navigation
 
+Notes and archive routes share an inherited refresh callback. Connected notebooks invoke the existing opt-in account synchronization. A device-only refresh flushes accepted edits, reads the original private file and discards the read if a newer edit advanced the revision. Search is excluded from the draft-editing gate. Other active text drafts retain its protection.
+
 The app mark beside the bottom destinations opens the Flutter drawer on all three notebook tabs. Settings and Account & sync push routes above the notebook. The existing account controller supplies Settings with the active email or signed-out state and the signed-in sync action. Display language and material use the existing notebook preferences.
 
 The [backend operations guide](backend-operations.md) lists the active shared host, independent sync source, inspection commands and retirement status.

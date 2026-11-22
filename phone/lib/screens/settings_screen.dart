@@ -241,7 +241,7 @@ class SettingsScreen extends StatelessWidget {
               excludeFromSemantics: true,
             ),
             title: Text('Dockit'),
-            subtitle: Text('2.1.22'),
+            subtitle: Text('2.1.23'),
           ),
         ],
       ),

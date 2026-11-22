@@ -1,5 +1,6 @@
 import '../interface_locale.dart';
 import '../widgets/notebook_date_picker.dart';
+import '../widgets/notebook_refresh.dart';
 
 import 'dart:async';
 
@@ -256,13 +257,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: ink,
                           ),
                         ),
-                        if (!keyboardOpen) Text(
-                          (currentLanguage == 'en'
-                                  ? DateFormat('d MMMM y')
-                                  : DateFormat.yMMMMd())
-                              .format(date),
-                          style: const TextStyle(color: mutedInk),
-                        ),
+                        if (!keyboardOpen)
+                          Text(
+                            (currentLanguage == 'en'
+                                    ? DateFormat('d MMMM y')
+                                    : DateFormat.yMMMMd())
+                                .format(date),
+                            style: const TextStyle(color: mutedInk),
+                          ),
                       ],
                     ),
                   ),
@@ -370,160 +372,166 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: SizedBox.expand(
             key: _viewport,
-            child: CustomScrollView(
-              key: PageStorageKey(store.selectedDate),
-              controller: _scroll,
-              slivers: [
-                if (store.selectedDate == store.today &&
-                    widget.meetingBuilder != null)
-                  SliverToBoxAdapter(child: widget.meetingBuilder!(context)),
-                if (tasks.isEmpty)
-                  SliverToBoxAdapter(
-                    child: _EarlierTaskDropTarget(
-                      key: const ValueKey('today-drop-empty'),
-                      canAccept: _canMoveEarlier,
-                      onAccept: (data, _) => _moveEarlier(data),
+            child: NotebookRefresh(
+              store: store,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                key: PageStorageKey(store.selectedDate),
+                controller: _scroll,
+                slivers: [
+                  if (store.selectedDate == store.today &&
+                      widget.meetingBuilder != null)
+                    SliverToBoxAdapter(child: widget.meetingBuilder!(context)),
+                  if (tasks.isEmpty)
+                    SliverToBoxAdapter(
+                      child: _EarlierTaskDropTarget(
+                        key: const ValueKey('today-drop-empty'),
+                        canAccept: _canMoveEarlier,
+                        onAccept: (data, _) => _moveEarlier(data),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 36,
+                            vertical: 48,
+                          ),
+                          child: Column(
+                            children: [
+                              Image(
+                                image: AssetImage('assets/brand/dockit.png'),
+                                width: 52,
+                                height: 52,
+                                excludeFromSemantics: true,
+                              ),
+                              SizedBox(height: 12),
+                              Text(
+                                tr(context, "No tasks yet"),
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (tasks.isNotEmpty && visibleTasks.isEmpty)
+                    SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 36,
-                          vertical: 48,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 24,
+                          horizontal: 16,
                         ),
                         child: Column(
                           children: [
-                            Image(
-                              image: AssetImage('assets/brand/dockit.png'),
-                              width: 52,
-                              height: 52,
-                              excludeFromSemantics: true,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              tr(context, "No tasks yet"),
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            Text(tr(context, "No open tasks on this day")),
+                            TextButton(
+                              onPressed: () {
+                                store.preferences.showCompleted = true;
+                                store.changed();
+                              },
+                              child: Text(tr(context, "Show finished tasks")),
                             ),
                           ],
                         ),
                       ),
                     ),
+                  SliverReorderableList(
+                    itemCount: visibleTasks.length,
+                    onReorderItem: (oldIndex, newIndex) {
+                      final from = tasks.indexOf(visibleTasks[oldIndex]);
+                      final to = tasks.indexOf(visibleTasks[newIndex]);
+                      store.reorder(
+                        store.selectedDate,
+                        null,
+                        from,
+                        to > from ? to + 1 : to,
+                      );
+                    },
+                    itemBuilder: (context, index) {
+                      final row = visibleTasks[index];
+                      return _EarlierTaskDropTarget(
+                        key: ValueKey('${row.date}/${row.task.id}'),
+                        split: true,
+                        canAccept: _canMoveEarlier,
+                        onAccept: (data, after) => _moveEarlier(
+                          data,
+                          beforeId: after
+                              ? _afterTask(row.task.id)
+                              : row.task.id,
+                        ),
+                        child: TaskTile(
+                          reorderIndex: index,
+                          store: store,
+                          ai: widget.ai,
+                          date: row.date,
+                          task: row.task,
+                          openFocus: widget.openFocus,
+                        ),
+                      );
+                    },
                   ),
-                if (tasks.isNotEmpty && visibleTasks.isEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 24,
-                        horizontal: 16,
-                      ),
+                  if (earlier.isNotEmpty)
+                    SliverToBoxAdapter(
                       child: Column(
                         children: [
-                          Text(tr(context, "No open tasks on this day")),
-                          TextButton(
-                            onPressed: () {
-                              store.preferences.showCompleted = true;
+                          _EarlierTaskDropTarget(
+                            key: const ValueKey('today-drop-end'),
+                            canAccept: _canMoveEarlier,
+                            onAccept: (data, _) => _moveEarlier(data),
+                            child: const SizedBox(
+                              height: 16,
+                              width: double.infinity,
+                            ),
+                          ),
+                          const Divider(),
+                          ListTile(
+                            leading: Badge(
+                              isLabelVisible: !store.preferences.showEarlier,
+                              child: const Icon(Icons.history_rounded),
+                            ),
+                            title: Text(
+                              tr(context, "Earlier tasks ({0})", [
+                                earlier.length,
+                              ]),
+                            ),
+                            trailing: Icon(
+                              store.preferences.showEarlier
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                            ),
+                            onTap: () {
+                              store.preferences.showEarlier =
+                                  !store.preferences.showEarlier;
                               store.changed();
                             },
-                            child: Text(tr(context, "Show finished tasks")),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                SliverReorderableList(
-                  itemCount: visibleTasks.length,
-                  onReorderItem: (oldIndex, newIndex) {
-                    final from = tasks.indexOf(visibleTasks[oldIndex]);
-                    final to = tasks.indexOf(visibleTasks[newIndex]);
-                    store.reorder(
-                      store.selectedDate,
-                      null,
-                      from,
-                      to > from ? to + 1 : to,
-                    );
-                  },
-                  itemBuilder: (context, index) {
-                    final row = visibleTasks[index];
-                    return _EarlierTaskDropTarget(
-                      key: ValueKey('${row.date}/${row.task.id}'),
-                      split: true,
-                      canAccept: _canMoveEarlier,
-                      onAccept: (data, after) => _moveEarlier(
-                        data,
-                        beforeId: after ? _afterTask(row.task.id) : row.task.id,
-                      ),
-                      child: TaskTile(
-                        reorderIndex: index,
-                        store: store,
-                        ai: widget.ai,
-                        date: row.date,
-                        task: row.task,
-                        openFocus: widget.openFocus,
-                      ),
-                    );
-                  },
-                ),
-                if (earlier.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        _EarlierTaskDropTarget(
-                          key: const ValueKey('today-drop-end'),
-                          canAccept: _canMoveEarlier,
-                          onAccept: (data, _) => _moveEarlier(data),
-                          child: const SizedBox(
-                            height: 16,
-                            width: double.infinity,
-                          ),
+                  if (store.preferences.showEarlier)
+                    SliverList.builder(
+                      itemCount: earlier.length,
+                      itemBuilder: (context, index) => _KeepAliveDuringDrag(
+                        key: ValueKey(
+                          '${earlier[index].date}/${earlier[index].task.id}',
                         ),
-                        const Divider(),
-                        ListTile(
-                          leading: Badge(
-                            isLabelVisible: !store.preferences.showEarlier,
-                            child: const Icon(Icons.history_rounded),
-                          ),
-                          title: Text(
-                            tr(context, "Earlier tasks ({0})", [
-                              earlier.length,
-                            ]),
-                          ),
-                          trailing: Icon(
-                            store.preferences.showEarlier
-                                ? Icons.expand_less
-                                : Icons.expand_more,
-                          ),
-                          onTap: () {
-                            store.preferences.showEarlier =
-                                !store.preferences.showEarlier;
-                            store.changed();
-                          },
+                        active:
+                            _activeDrag?.date == earlier[index].date &&
+                            _activeDrag?.id == earlier[index].task.id,
+                        child: TaskTile(
+                          store: store,
+                          ai: widget.ai,
+                          date: earlier[index].date,
+                          task: earlier[index].task,
+                          openFocus: widget.openFocus,
+                          showDate: true,
+                          dragHandle: _earlierHandle(earlier[index]),
                         ),
-                      ],
-                    ),
-                  ),
-                if (store.preferences.showEarlier)
-                  SliverList.builder(
-                    itemCount: earlier.length,
-                    itemBuilder: (context, index) => _KeepAliveDuringDrag(
-                      key: ValueKey(
-                        '${earlier[index].date}/${earlier[index].task.id}',
-                      ),
-                      active:
-                          _activeDrag?.date == earlier[index].date &&
-                          _activeDrag?.id == earlier[index].task.id,
-                      child: TaskTile(
-                        store: store,
-                        ai: widget.ai,
-                        date: earlier[index].date,
-                        task: earlier[index].task,
-                        openFocus: widget.openFocus,
-                        showDate: true,
-                        dragHandle: _earlierHandle(earlier[index]),
                       ),
                     ),
-                  ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              ),
             ),
           ),
         ),

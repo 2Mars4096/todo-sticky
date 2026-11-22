@@ -1364,4 +1364,7 @@ const interfaceRows = <String, List<String>>{
   "‹ Steps": ["‹ 步骤", "‹ 步驟", "‹ 步驟", "‹ ステップ", "‹ 단계", "‹ Étapes", "‹ Schritte", "‹ Pasos", "‹ Passos"],
   "‹ Tasks": ["‹ 任务", "‹ 任務", "‹ 任務", "‹ タスク", "‹ 작업", "‹ Tâches", "‹ Aufgaben", "‹ Tareas", "‹ Tarefas"],
   "← Account": ["← 账户", "← 賬戶", "← 帳號", "← アカウント", "← 계정", "← Compte", "← Konto", "← Cuenta", "← Conta"],
+  "Sort by": ["排序方式", "排序方式", "排序方式", "並べ替え", "정렬 기준", "Trier par", "Sortieren nach", "Ordenar por", "Ordenar por"],
+  "Newest first": ["最新在前", "最新在前", "最新在先", "新しい順", "최신순", "Plus récents en premier", "Neueste zuerst", "Más recientes primero", "Mais recentes primeiro"],
+  "Oldest first": ["最早在前", "最舊在前", "最舊在先", "古い順", "오래된 순", "Plus anciens en premier", "Älteste zuerst", "Más antiguos primero", "Mais antigos primeiro"],
 };

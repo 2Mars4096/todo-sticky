@@ -1360,5 +1360,8 @@
   "Dockit is disabled. Saved work remains available.": "O Dockit está desativado. O trabalho salvo permanece disponível.",
   "Dockit plugin": "Dockits os plugins",
   "Dockit settings": "Dockit configurações",
-  "Update Shiprite to discard a result without closing its task.": "Atualize o Shiprite para descartar um resultado sem fechar a tarefa."
+  "Update Shiprite to discard a result without closing its task.": "Atualize o Shiprite para descartar um resultado sem fechar a tarefa.",
+  "Sort by": "Ordenar por",
+  "Newest first": "Mais recentes primeiro",
+  "Oldest first": "Mais antigos primeiro"
 }

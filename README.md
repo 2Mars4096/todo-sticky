@@ -6,6 +6,8 @@ Dockit organizes proposals into dated tasks and nested steps on the web, Mac, An
 
 On phones, tap the Dockit icon beside the bottom tabs to open **Account & sync** and sign in, or choose **Settings** for account status, language, notebook material, planning tools and backups. The shared account opens pipedreams.work. After Google approval, return to Dockit to finish. Notes, Goals and Focus remain available offline.
 
+In Search and Progress, swipe through task states. The goal filter and sort controls stay beside the strip. Sort the archive by newest date, oldest date or task title. Pull Notes, Search or Progress to refresh the device notebook or run its enabled account sync.
+
 Run the browser client with `npm run dev:vite`. For a production preview, run `npm run build:frontend` followed by `npm run preview`. See [phone build instructions](phone/README.md) and [per-client build, install and workflow evidence](docs/plans/23-dockit-transfer.md).
 
 On Mac, Sticky Todo’s bundled screenshot editor opens with **⌘⇧X** or the camera beside **Add**. If full-display access is unavailable, macOS lets you select a display for this capture. Crop or annotate, then use **Copy**, **Save** or **Todo** to review the recognized text as a task. The helper uses your existing Flameshot profile and has no separate menu-bar icon. Open **Settings → Integrations → Flameshot settings…** to edit that profile.

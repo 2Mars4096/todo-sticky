@@ -1360,5 +1360,8 @@
   "Dockit is disabled. Saved work remains available.": "Dockit 已禁用。保存的工作仍然可用。",
   "Dockit plugin": "Dockit 插件",
   "Dockit settings": "Dockit 設定",
-  "Update Shiprite to discard a result without closing its task.": "更新Shiprite以放棄結果，但不關閉任務。"
+  "Update Shiprite to discard a result without closing its task.": "更新Shiprite以放棄結果，但不關閉任務。",
+  "Sort by": "排序方式",
+  "Newest first": "最新在前",
+  "Oldest first": "最舊在前"
 }

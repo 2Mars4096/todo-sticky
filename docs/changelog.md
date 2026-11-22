@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-22 — Phone list retrieval
+
+In Search and Progress, swipe through task states. The goal filter and sort controls stay beside the strip. Sort the archive by newest date, oldest date or task title. Pull Notes, Search or Progress to refresh the device notebook or run its enabled account sync. [Release 2.1.23+38](plans/23-dockit-transfer.md#phone-list-retrieval)
+
 ## 2026-11-22 — Production web notebook
 
 Open Dockit from the product landing to create and reopen dated tasks in the browser. The signed-out notebook, Google approval handoff and task-link route passed checks on the live site. [Deployment and evidence](plans/23-dockit-transfer.md#production-web-notebook)

@@ -159,6 +159,20 @@ class StickyStore extends ChangeNotifier {
     if (saveError != null) throw StateError(saveError!);
   }
 
+  Future<void> refreshNotebook() async {
+    final before = revision;
+    await flush();
+    final snapshot = await persistence.load();
+    if (_disposed || revision != before || snapshot == null) return;
+    // Keep task objects and the local undo entry when disk already matches.
+    if (jsonEncode(snapshot) == jsonEncode(toJson())) return;
+    _load(snapshot);
+    _undo = null;
+    undoLabel = null;
+    revision++;
+    _notify();
+  }
+
   Future<void> retrySave() async {
     changed();
     await _writing;

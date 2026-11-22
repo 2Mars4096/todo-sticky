@@ -145,3 +145,13 @@ The ARM64 release binary contains the production broker and branded approval ori
 - [x] Confirm both `/app` and `/app/` serve the compiled notebook and that the shared-task route returns identical application HTML. User notebooks and backend deployments were outside this release.
 
 [Live notebook](https://dockit.pipedreams.work/app/) · [Phone browser](../reviews/production-web/phone-notebook.png) · [Desktop browser](../reviews/production-web/desktop-notebook.png) · [Phone account](../reviews/production-web/phone-account.png)
+
+## Phone list retrieval
+
+In Search and Progress, swipe through task states. The goal filter and sort controls stay beside the strip. Sort the archive by newest date, oldest date or task title. Pull Notes, Search or Progress to refresh the device notebook or run its enabled account sync.
+
+Sticky Todo at `5d6a8ff` searched nested task text and filtered the archive by status and goal. Sorting applies only to the search/progress results. Daily tasks keep their saved manual order, drag handles and capture draft. Closing the archive returns to the same day.
+
+43 focused Flutter tests and a 63-case store, account and sync run passed. The latter included an edit made while a slower disk refresh was pending. The archive regression separately verified alphabetical ordering on both phone targets. API 35 retained a task across the 2037 → 2038 signed upgrade and kept the sort control at identical coordinates during a horizontal swipe to Stopped. iOS 26.4 reopened the saved task and searched, filtered, sorted and pulled the installed archive.
+
+[Android](../reviews/phone-lists/android.png) · [iPhone](../reviews/phone-lists/iphone.png) · [Signed APK and unsigned IPA hashes](../reviews/phone-lists/release.json)

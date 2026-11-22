@@ -1360,5 +1360,8 @@
   "Dockit is disabled. Saved work remains available.": "Dockit이 비활성화되었습니다. 저장된 작업은 계속 사용할 수 있습니다.",
   "Dockit plugin": "Dockit 플러그인",
   "Dockit settings": "Dockit 설정",
-  "Update Shiprite to discard a result without closing its task.": "작업을 종료하지 않고 결과를 삭제하기 위해 Shiprite를 업데이트하세요."
+  "Update Shiprite to discard a result without closing its task.": "작업을 종료하지 않고 결과를 삭제하기 위해 Shiprite를 업데이트하세요.",
+  "Sort by": "정렬 기준",
+  "Newest first": "최신순",
+  "Oldest first": "오래된 순"
 }

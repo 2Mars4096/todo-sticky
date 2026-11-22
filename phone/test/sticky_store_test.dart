@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +17,17 @@ class FailingPersistence extends MemoryPersistence {
   }
 }
 
+class DelayedRead extends MemoryPersistence {
+  Completer<Map<String, dynamic>?>? result;
+  final started = Completer<void>();
+  @override
+  Future<Map<String, dynamic>?> load() {
+    if (result == null) return super.load();
+    started.complete();
+    return result!.future;
+  }
+}
+
 Future<StickyStore> notebook({StatePersistence? persistence}) async {
   final store = StickyStore(
     persistence: persistence ?? MemoryPersistence(),
@@ -26,6 +38,28 @@ Future<StickyStore> notebook({StatePersistence? persistence}) async {
 }
 
 void main() {
+  test(
+    'a slow pull never replaces an edit accepted after it started',
+    () async {
+      final disk = DelayedRead();
+      final store = await notebook(persistence: disk);
+      store.addTask('First');
+      await store.flush();
+      final old = await disk.load();
+      disk.result = Completer<Map<String, dynamic>?>();
+      final pending = store.refreshNotebook();
+      await disk.started.future;
+      store.addTask('While refreshing');
+      disk.result!.complete(old);
+      await pending;
+      await store.flush();
+      expect(
+        store.selectedTasks.map((row) => row.task.text),
+        contains('While refreshing'),
+      );
+    },
+  );
+
   test('nested tasks and finish metadata round trip with stable IDs', () async {
     final disk = MemoryPersistence();
     final store = await notebook(persistence: disk);

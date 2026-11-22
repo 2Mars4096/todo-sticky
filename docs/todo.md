@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Preserve the original phone list workflows and verify search, ordering and refresh on Android and iPhone. [Phone list retrieval](plans/23-dockit-transfer.md#phone-list-retrieval)
+
 - [x] Publish the real web notebook at `/app/`, retain the product landing and verify browser persistence and sign-in. [Production release](plans/23-dockit-transfer.md#production-web-notebook)
 
 - [x] Open the phone on the active task, manage account details from the menu and verify production routing. [Phone Settings](plans/23-dockit-transfer.md#phone-settings-and-navigation)

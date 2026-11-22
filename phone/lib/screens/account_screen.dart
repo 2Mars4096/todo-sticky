@@ -17,6 +17,7 @@ import '../widgets/assignment_entry.dart';
 import '../widgets/sync_progress.dart';
 import '../widgets/conflict_items.dart';
 import '../widgets/cloud_sync_button.dart';
+import '../widgets/notebook_refresh.dart';
 import '../services/cloud_sync.dart';
 import '../services/files.dart';
 import '../state/sticky_store.dart';
@@ -55,7 +56,9 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
         final editor = context?.widget is EditableText
             ? context!.widget as EditableText
             : context?.findAncestorWidgetOfExactType<EditableText>();
-        return editor != null && editor.controller.text.isNotEmpty;
+        return editor != null &&
+            editor.groupId != ArchiveScreen.searchGroup &&
+            editor.controller.text.isNotEmpty;
       },
     );
     linkAi = AiService(
@@ -228,44 +231,55 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
             AccountScreen(account: account, assignmentKey: '$date:$id'),
       ),
     ),
-    child: StickyApp(
-      store: widget.store,
-      navigatorKey: navigator,
-      externalFocusRequests: focusRequests,
-      sharedAgent: account.requestAgent,
-      meetingBuilder: (_) => ListenableBuilder(
-        listenable: account,
-        builder: (_, child) {
-          final session = account.session;
-          if (session == null || session.origin != dianeSharedOrigin) {
-            return const SizedBox.shrink();
-          }
-          return MeetingFollowups(
-            key: ValueKey(session.owner),
-            request: (path, [body]) =>
-                account.meetingRequest(session.owner, path, body),
-            onAdded: () {
-              if (account.enabled) {
-                unawaited(account.synchronize(background: true));
-              }
-            },
-          );
-        },
-      ),
-      accountBuilder: (_) => AccountScreen(account: account),
-      accountStatusBuilder: (context) => ListenableBuilder(
-        listenable: account,
-        builder: (_, _) => Text(
-          !account.ready
-              ? tr(context, 'Loading…')
-              : account.session?.email ?? tr(context, 'Signed out'),
+    child: NotebookSyncScope(
+      refresh: () async {
+        if (!account.enabled) {
+          await widget.store.refreshNotebook();
+          return;
+        }
+        await widget.store.flush();
+        await account.synchronize();
+        if (account.error != null) throw StateError(account.error!);
+      },
+      child: StickyApp(
+        store: widget.store,
+        navigatorKey: navigator,
+        externalFocusRequests: focusRequests,
+        sharedAgent: account.requestAgent,
+        meetingBuilder: (_) => ListenableBuilder(
+          listenable: account,
+          builder: (_, child) {
+            final session = account.session;
+            if (session == null || session.origin != dianeSharedOrigin) {
+              return const SizedBox.shrink();
+            }
+            return MeetingFollowups(
+              key: ValueKey(session.owner),
+              request: (path, [body]) =>
+                  account.meetingRequest(session.owner, path, body),
+              onAdded: () {
+                if (account.enabled) {
+                  unawaited(account.synchronize(background: true));
+                }
+              },
+            );
+          },
         ),
-      ),
-      syncIndicatorBuilder: (_) => ListenableBuilder(
-        listenable: account,
-        builder: (_, _) => account.session == null
-            ? const SizedBox.shrink()
-            : CloudSyncButton(account: account),
+        accountBuilder: (_) => AccountScreen(account: account),
+        accountStatusBuilder: (context) => ListenableBuilder(
+          listenable: account,
+          builder: (_, _) => Text(
+            !account.ready
+                ? tr(context, 'Loading…')
+                : account.session?.email ?? tr(context, 'Signed out'),
+          ),
+        ),
+        syncIndicatorBuilder: (_) => ListenableBuilder(
+          listenable: account,
+          builder: (_, _) => account.session == null
+              ? const SizedBox.shrink()
+              : CloudSyncButton(account: account),
+        ),
       ),
     ),
   );

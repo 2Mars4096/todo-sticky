@@ -1,0 +1,60 @@
+{
+  "device": "API 35 emulator-5576",
+  "package": "io.github.twomars4096.sticky_todo",
+  "firstInstallTimeRetained": true,
+  "pullGesture": true,
+  "observed": [
+    [
+      "Today",
+      "Today\n22 November 2026"
+    ],
+    [
+      "Add task",
+      "Add task"
+    ],
+    [
+      "Library upgrade review",
+      "Library upgrade review"
+    ],
+    [
+      "Search tasks",
+      "Search tasks"
+    ],
+    [
+      "Unfinished",
+      "Unfinished"
+    ],
+    [
+      "Library upgrade review",
+      "Library upgrade review\n2026-11-22 \u00b7 To do"
+    ],
+    [
+      "Sort by",
+      "Sort by"
+    ],
+    [
+      "Oldest first",
+      "Oldest first"
+    ],
+    [
+      "Library upgrade review",
+      "Library upgrade review\n2026-11-22 \u00b7 To do"
+    ],
+    [
+      "Library upgrade review",
+      "Library upgrade review\n2026-11-22 \u00b7 To do"
+    ]
+  ],
+  "horizontalCategories": {
+    "swipedTo": "Stopped",
+    "sortBoundsBeforeAndAfter": "[901,247][1028,373]"
+  },
+  "version": "2.1.23",
+  "androidCode": 2038,
+  "androidSha256": "e861dbcf60f9b98936656eddb198a75e0f7646a0d450db6bf34498adeda1a962",
+  "iosBuild": 38,
+  "iosPlatform": "iphonesimulator",
+  "unsignedIpaSha256": "fa7bf66c483975b879332b52a45a82527f5b38e85eff4efc38ce925c6237ab83",
+  "productionBrokerChecked": true,
+  "iosInstalledGestureTestPassed": true
+}
