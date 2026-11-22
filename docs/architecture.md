@@ -1,5 +1,9 @@
 # Architecture
 
+## Footer navigation
+
+One outer safe area positions the entire Flutter drawer-and-destinations row. The navigation bar hides its labels while retaining them for long presses and screen readers. On web and Mac, the bottom action buttons use accessible, localized names and tooltips. The active archive page and open panels expose their selected or expanded state; the timer and provider selector keep their existing content.
+
 ## Web and Mac language catalogs
 
 The shared React client starts with English strings embedded in the source. Vite emits one chunk per additional supported language. Only the selected language is loaded, and a completed request applies only if the preference still selects it. Existing drafts stay in the mounted notebook.

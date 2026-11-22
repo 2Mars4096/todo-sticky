@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-22 — Icon-only footers
+
+Notes, Goals, Focus and the drawer mark now share a centerline on both phones. The web and Mac action bar uses named icon buttons, selected-state feedback and tooltips. The Focus clock and provider selection remain available. [Verification and packages](plans/23-dockit-transfer.md#icon-only-footer-navigation)
+
 ## 2026-11-22 — Web and Mac language loading
 
 The notebook is editable while its selected language downloads. The production JavaScript entry shrank from 1,598,894 to 769,341 bytes. [Hosting and Mac release](plans/23-dockit-transfer.md#notebook-language-loading)

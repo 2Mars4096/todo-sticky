@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Align the phone logo and icon-only destinations and give web and Mac footer actions accessible icons. [Release verification](plans/23-dockit-transfer.md#icon-only-footer-navigation)
+
 - [x] Load only the active language in the web and Mac notebooks. [Loading and release checks](plans/23-dockit-transfer.md#notebook-language-loading)
 
 - [x] Preserve the original phone list workflows and verify search, ordering and refresh on Android and iPhone. [Phone list retrieval](plans/23-dockit-transfer.md#phone-list-retrieval)

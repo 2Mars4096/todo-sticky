@@ -842,28 +842,31 @@ export default function App() {
         <div className="action-bar">
           {isDevMode && (
             <button
-              className={`dev-toggle ${showDevTools ? 'active' : ''}`}
+              aria-label={ui("Dev")} title={ui("Dev")} aria-pressed={showDevTools}
+              className={`footer-icon dev-toggle ${showDevTools ? 'active' : ''}`}
               onClick={() => setShowDevTools(value => !value)}
-            >{ui("Dev")}</button>
+            ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-14-2 18"/></svg></button>
           )}
           {isCompactWindow && (
             <>
-              <button className="compact-goals-entry" aria-controls="goals-panel" aria-expanded={!goals.sidebarCollapsed}
-                onClick={event => { event.currentTarget.focus(); handleToggleGoalsSidebar() }}>{ui("Goals")}</button>
-              <button className={`compact-focus-entry${starFocus.activeSession ? ' active' : ''}`}
+              <button className="footer-icon compact-goals-entry" aria-label={ui("Goals")} title={ui("Goals")} aria-controls="goals-panel" aria-expanded={!goals.sidebarCollapsed}
+                onClick={event => { event.currentTarget.focus(); handleToggleGoalsSidebar() }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 0c5-4 9 4 15 0v10c-6 4-10-4-15 0"/></svg></button>
+              <button aria-label={ui("Focus")} aria-expanded={showTrackingStation}
+                className={`footer-icon compact-focus-entry${starFocus.activeSession ? ' active' : ''}`}
                 onClick={event => { event.currentTarget.focus(); goals.setSidebarCollapsed(true); setShowTrackingStation(true) }}
-                title={starFocus.activeSession?.pausedAt ? ui("Focus paused") : starFocus.activeSession ? ui("Focus session in progress") : ui("Open Focus Mode")}>{ui("Focus")}{starFocus.activeSnapshot && <span className="compact-focus-clock">
+                title={starFocus.activeSession?.pausedAt ? ui("Focus paused") : starFocus.activeSession ? ui("Focus session in progress") : ui("Open Focus Mode")}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>{starFocus.activeSnapshot && <span className="compact-focus-clock">
                   {starFocus.activeSession?.pausedAt ? 'Ⅱ ' : ''}{Math.floor(Math.ceil(starFocus.activeSnapshot.remainingMs / 1000) / 60)}:{String(Math.ceil(starFocus.activeSnapshot.remainingMs / 1000) % 60).padStart(2, '0')}
                 </span>}</button>
             </>
           )}
           <button
+            className="footer-icon" aria-label={ui("Plan")} aria-expanded={showPlanner}
             onClick={event => { event.currentTarget.focus(); setShowPlanner(true) }}
             disabled={!!aiLoading || !tasks.tasks.some(task => task.status !== 'done' && task.status !== 'stopped') || tasks.loading}
             title={ui("Preview an AI plan for the selected date")}
-          >{ui("Plan")}</button>
+          ><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 4h5m-5 3h8"/></svg></button>
           <button
-            className={showAlbumRecommendations ? 'active' : ''}
+            aria-label={ui("Albums")} className={showAlbumRecommendations ? 'footer-icon active' : 'footer-icon'}
             onClick={() => {
               if (showAlbumRecommendations) {
                 setShowAlbumRecommendations(false)
@@ -878,11 +881,11 @@ export default function App() {
             title={tasks.tasks.length
               ? ui("Recommend albums for the current tasks")
               : ui("Add a task before finding albums")}
-          >{ui("Albums")}</button>
-          <button className="workflow-entry" aria-label={ui("Search tasks")} title={ui("Search tasks")} onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setActiveProject(null); setArchivePage('search') }}>
+          ><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></button>
+          <button className="workflow-entry" aria-current={archivePage === 'search' ? 'page' : undefined} aria-label={ui("Search tasks")} title={ui("Search tasks")} onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setArchiveQuery(''); setActiveProject(null); setArchivePage('search') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg>
           </button>
-          <button className="workflow-entry" aria-label={ui("Progress")} title={ui("Progress")} onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setActiveProject(null); setArchivePage('progress') }}>
+          <button className="workflow-entry" aria-current={archivePage === 'progress' ? 'page' : undefined} aria-label={ui("Progress")} title={ui("Progress")} onClick={event => { if(!projectLeaveGuard.current())return; navigationRequest.current++; archiveOpener.current = event.currentTarget; goals.setSidebarCollapsed(true); calendar.setCalendarOpen(false); setShowAlbumRecommendations(false); setActiveProject(null); setArchivePage('progress') }}>
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3v14h14M7 14V9m4 5V5m4 9v-7"/></svg>
           </button>
           <div className="spacer" />
@@ -927,12 +930,12 @@ export default function App() {
             </select>
           </div>}
           <button
-            className="gear settings-update-button"
+            className="gear settings-update-button footer-icon"
             onClick={event => { event.currentTarget.focus(); openSettingsForProvider() }}
             title={appUpdates.needsAttention ? ui("Settings · Update ready") : ui("Settings")}
             aria-label={appUpdates.needsAttention ? ui("Settings, update ready") : ui("Settings")}
           >
-            ⚙
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.2 3-.6 2.2-2 .9-2.1-.6-2 3.4L4 10.5v2.9L2.5 15l2 3.4 2.1-.6 2 .9.6 2.3h4.4l.6-2.3 2-.9 2.1.6 2-3.4-1.5-1.6v-2.9l1.5-1.6-2-3.4-2.1.6-2-.9-.6-2.2z"/><circle cx="11.4" cy="12" r="3"/></svg>
             {appUpdates.needsAttention && <span className="update-dot settings-update-dot" aria-hidden="true" />}
           </button>
         </div>

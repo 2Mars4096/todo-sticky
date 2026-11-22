@@ -12,7 +12,7 @@ const { seedBridge, launch, testUrl } = require('./helpers/browser-fixture.cjs')
       window.__TAURI_INTERNALS__.invoke = async (command, args) => {
         if (command === 'frontend_ready') {
           const shell = document.querySelector('.app-shell')
-          window.__launchSignals.push({ shell: !!shell, compact: shell?.classList.contains('is-compact'), boot: !!document.querySelector('#boot-surface'), buttons: [...document.querySelectorAll('.action-bar > button')].map(button => button.textContent.trim()) })
+          window.__launchSignals.push({ shell: !!shell, compact: shell?.classList.contains('is-compact'), boot: !!document.querySelector('#boot-surface'), buttons: [...document.querySelectorAll('.action-bar > button')].map(button => button.getAttribute('aria-label') || button.textContent.trim()) })
           return
         }
         // Optional native services must not hold the window invisible.

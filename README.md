@@ -4,7 +4,7 @@ Dockit is part of pipedreams by Liberate AI.
 
 Dockit organizes proposals into dated tasks and nested steps on the web, Mac, Android and iPhone. [Open the live Dockit notebook](https://dockit.pipedreams.work/app/). Add a task, open its actions and choose **Add step**. In **Account → Workspace assignments**, choose an editor workspace, task and optional assignee UID, then select **Assign in Shiprite**. The web stores tasks in this browser, the Mac uses Markdown, and the phones use their app-private notebooks.
 
-On phones, tap the Dockit icon beside the bottom tabs to open **Account & sync** and sign in, or choose **Settings** for account status, language, notebook material, planning tools and backups. The shared account opens pipedreams.work. After Google approval, return to Dockit to finish. Notes, Goals and Focus remain available offline.
+On phones, tap the Dockit icon beside the bottom tabs to open **Account & sync** and sign in, or choose **Settings** for account status, language, notebook material, planning tools and backups. The shared account opens pipedreams.work. After Google approval, return to Dockit to finish. Notes, Goals and Focus remain available offline. Long-press a bottom icon to see its name.
 
 In Search and Progress, swipe through task states. The goal filter and sort controls stay beside the strip. Sort the archive by newest date, oldest date or task title. Pull Notes, Search or Progress to refresh the device notebook or run its enabled account sync.
 
@@ -30,7 +30,7 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-The [local Mac 2.1.17 app](output/clients/phased-loading/macOS/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. [Release checks](docs/plans/23-dockit-transfer.md#notebook-language-loading)
+The [local Mac 2.1.18 app](desktop/src-tauri/target/release/bundle/macos/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. Hover over a footer action to see its name. The phone release is 2.1.24+39. [Release checks](docs/plans/23-dockit-transfer.md#icon-only-footer-navigation)
 
 Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, rebuilt and reinstalled with the **Diane shared backend** and editable local setup/session handoff (2026-11-10). Your original Todo interface and local notes remain. Open **Settings → Account → Continue with Google** with the same account as Diane, then **Sync**. Local Diane connection is enabled on this installation; Push stays grey when Diane is unavailable.
 

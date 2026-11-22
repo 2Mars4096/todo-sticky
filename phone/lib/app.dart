@@ -152,7 +152,9 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
             ),
             navigationBarTheme: const NavigationBarThemeData(
               indicatorColor: Color(0xffeadba5),
-              height: 70,
+              height: 56,
+              backgroundColor: Colors.transparent,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
             ),
             dividerTheme: DividerThemeData(
               color: ink.withValues(alpha: .12),
@@ -367,6 +369,9 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                     Expanded(
                       child: MediaQuery.removePadding(
                         context: context,
+                        removeTop: true,
+                        removeLeft: true,
+                        removeRight: true,
                         removeBottom: true,
                         child: NavigationBar(
                           selectedIndex: tab,

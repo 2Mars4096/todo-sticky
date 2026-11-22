@@ -5,6 +5,44 @@ import 'package:sticky_todo/screens/account_screen.dart';
 import 'package:sticky_todo/services/persistence.dart';
 import 'package:sticky_todo/state/sticky_store.dart';
 
+void verifyFooter(WidgetTester tester, int selected) {
+  final bar = find.byType(NavigationBar);
+  final widget = tester.widget<NavigationBar>(bar);
+  final center = tester.getCenter(bar).dy;
+  final menu = find.byTooltip('Open navigation menu');
+  expect(
+    tester
+        .getCenter(find.descendant(of: menu, matching: find.byType(Image)))
+        .dy,
+    closeTo(center, 0.01),
+  );
+  expect(tester.getSize(menu).shortestSide, greaterThanOrEqualTo(48));
+  expect(widget.selectedIndex, selected);
+  for (final destination in widget.destinations.cast<NavigationDestination>()) {
+    final item = find.byWidget(destination);
+    final glyph = find.descendant(of: item, matching: find.byType(Icon)).first;
+    expect(tester.getCenter(glyph).dy, closeTo(center, 0.01));
+    expect(tester.getSize(item).shortestSide, greaterThanOrEqualTo(48));
+    expect(find.byTooltip(destination.label), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp(RegExp.escape(destination.label))),
+      findsWidgets,
+    );
+    final fade = tester.widget<FadeTransition>(
+      find
+          .ancestor(
+            of: find.descendant(
+              of: item,
+              matching: find.text(destination.label),
+            ),
+            matching: find.byType(FadeTransition),
+          )
+          .first,
+    );
+    expect(fade.opacity.value, 0);
+  }
+}
+
 void main() {
   for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
     testWidgets(
@@ -24,6 +62,7 @@ void main() {
         );
         await tester.pumpWidget(AccountEnabledApp(store: store));
         await tester.pumpAndSettle();
+        verifyFooter(tester, 0);
         final destinations = find.descendant(
           of: find.byType(NavigationBar),
           matching: find.byType(NavigationDestination),
@@ -36,7 +75,10 @@ void main() {
         );
         expect(find.byType(AppBar), findsNothing);
         expect(find.text('Sign in'), findsNothing);
-        await tester.enterText(find.byType(TextField).first, 'Meeting review draft');
+        await tester.enterText(
+          find.byType(TextField).first,
+          'Meeting review draft',
+        );
         await tester.tap(find.byTooltip('Open navigation menu'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Settings'));
@@ -53,6 +95,7 @@ void main() {
         expect(find.text('Meeting review draft'), findsOneWidget);
         await tester.tap(find.widgetWithText(NavigationDestination, 'Goals'));
         await tester.pumpAndSettle();
+        verifyFooter(tester, 1);
         await tester.tap(find.byTooltip('Open navigation menu'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Settings'));
@@ -68,6 +111,7 @@ void main() {
         );
         await tester.tap(find.widgetWithText(NavigationDestination, 'Focus'));
         await tester.pumpAndSettle();
+        verifyFooter(tester, 2);
         expect(
           tester
               .widget<NavigationBar>(find.byType(NavigationBar))

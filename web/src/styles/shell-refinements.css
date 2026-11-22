@@ -17,6 +17,12 @@
 .app-shell .provider-quick-control { flex: 0 1 108px; max-width: 108px; }
 .app-shell .provider-quick-control select { width: 100%; min-width: 0; max-width: 100%; height: 30px; color: #615333; }
 .app-shell .action-bar .compact-focus-entry.active { border-color: #96752d; background: #e9d99f; color: #514019; }
+.app-shell .action-bar .footer-icon,
+.app-shell .action-bar .workflow-entry { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; }
+.app-shell .action-bar .footer-icon svg { display: block; flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+.app-shell .action-bar > button[aria-current="page"],
+.app-shell .action-bar > button[aria-expanded="true"],
+.app-shell .action-bar > button[aria-pressed="true"] { color: #514019; background: #e9d99f; border-color: #96752d; }
 .compact-focus-clock { margin-left: 5px; font-variant-numeric: tabular-nums; }
 .app-shell button:focus-visible, .app-shell input:focus-visible, .app-shell select:focus-visible { outline: 2px solid #856519; outline-offset: 2px; }
 .first-use-note { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 10px 8px; padding: 7px 0; border-top: 1px solid var(--sticky-border); color: #65583a; font-size: 12px; }
