@@ -4,6 +4,8 @@ Dockit is part of pipedreams by Liberate AI.
 
 Dockit organizes proposals into dated tasks and nested steps on the web, Mac, Android and iPhone. Add a task, open its actions and choose **Add step**. In **Account → Workspace assignments**, choose an editor workspace, task and optional assignee UID, then select **Assign in Shiprite**. The web stores tasks in this browser, the Mac uses Markdown, and the phones use their app-private notebooks.
 
+On phones, the Dockit icon opens **Settings** and **Account & sync**. **Sign in** is visible on the notebook while signed out. Notes, Goals and Focus remain available offline.
+
 Run the browser client with `npm run dev:vite`. For a production preview, run `npm run build:frontend` followed by `npm run preview`. See [phone build instructions](phone/README.md) and [per-client build, install and workflow evidence](docs/plans/23-dockit-transfer.md).
 
 On Mac, Sticky Todo’s bundled screenshot editor opens with **⌘⇧X** or the camera beside **Add**. If full-display access is unavailable, macOS lets you select a display for this capture. Crop or annotate, then use **Copy**, **Save** or **Todo** to review the recognized text as a task. The helper uses your existing Flameshot profile and has no separate menu-bar icon. Open **Settings → Integrations → Flameshot settings…** to edit that profile.

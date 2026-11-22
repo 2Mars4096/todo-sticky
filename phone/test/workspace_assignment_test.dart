@@ -107,7 +107,8 @@ void main() {
       );
       await tester.pump();
       await tap(find.byTooltip('Add step'));
-      await tap(find.byTooltip('Settings'));
+      await tap(find.byTooltip('Open navigation menu'));
+      await tap(find.text('Settings'));
       await tap(find.text('Account & sync'));
       await tap(find.text('Workspace assignments'));
       await tap(find.text('Personal account'));

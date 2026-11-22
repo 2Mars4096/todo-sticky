@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Open Settings from the Dockit icon and expose sign-in directly from the phone notebook. [Phone navigation](plans/23-dockit-transfer.md#phone-navigation-and-sign-in)
+
 - [x] Verify backend ownership, retired project state and local scaffold cleanup. [Operations](backend-operations.md)
 
 - [x] Review adjacent controls, repair archive filter overflow and reset, simplify Settings, and verify build 34 on both phone emulators. [Evidence and local builds](plans/25-interface-element-review.md#archive-filters-and-adjacent-controls)

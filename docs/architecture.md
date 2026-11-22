@@ -1,5 +1,9 @@
 # Architecture
 
+## Phone notebook navigation
+
+The app mark opens a Flutter drawer on each of the three notebook tabs. Settings and Account & sync use the existing Navigator and store. The account controller supplies the signed-out Sign in action and the signed-in sync indicator. Opening the account leaves notebook sync under its existing opt-in control.
+
 The [backend operations guide](backend-operations.md) lists the active shared host, independent sync source, inspection commands and retirement status.
 
 ## Interface languages

@@ -137,7 +137,9 @@ Future<void> openAccount(
     ),
   );
   await tester.pumpAndSettle();
-  await tester.tap(find.byTooltip('Settings'));
+  await tester.tap(find.byTooltip('Open navigation menu'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Settings'));
   await tester.pumpAndSettle();
   await tester.tap(find.text('Account & sync'));
   await tester.pumpAndSettle();

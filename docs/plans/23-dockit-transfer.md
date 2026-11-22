@@ -105,3 +105,13 @@ The iOS 26.4 simulator run and current Android/iPhone exports are now recorded i
 [Compact browser](../../output/clients/step-capture/step-capture-browser-360.png) · [Wide browser](../../output/clients/step-capture/step-capture-browser-1100.png) · [Android screen](../../output/clients/step-capture/step-capture-android.png) · [iPhone screen](../../output/clients/step-capture/step-capture-iphone.png)
 
 The local phone exports retain version 2.1.19 and advance the build to 33. The three Android ABI splits match their prior package and certificate. The iPhone device IPA is unsigned. The [build manifest](../../output/clients/step-capture/builds.json) records identifiers and hashes for the [ARM64 APK](../../output/clients/step-capture/Dockit-arm64-v8a-release.apk), [device IPA](../../output/clients/step-capture/Dockit-unsigned.ipa), [Simulator app](../../output/clients/step-capture/iphonesimulator/Dockit.app), [Mac app](../../output/clients/step-capture/macOS/Dockit.app) and [embedded package 0.1.26](../../output/interface-five/diane-app-todo-plugin-0.1.26.tgz). Build 32 remains available at its previously recorded paths.
+
+## Phone navigation and sign-in
+
+- [x] Compare Notes, Goals and Focus with the pre-transfer Sticky Todo phone at `5d6a8ff`. The Flutter client retains all three bottom destinations and all 28 predecessor Dart source paths.
+- [x] Open Settings and Account & sync from the app mark on any tab. Signed-out notebooks show Sign in in the header. The existing account page owns Google authentication, notebook sync and assignment controls.
+- [x] Upgrade the API 35 emulator with the signed ARM64 APK, `io.github.twomars4096.sticky_todo` 2.1.20, Android version code 2035. With networking disabled, cold launch showed all three tabs, Sign in opened Continue with Google, and the app icon opened Settings from Goals. Back returned to the selected tab.
+- [x] Install the connected iPhone build on an iPhone 17 Pro simulator running iOS 26.4. XCTest exercised `work.pipedreams.dockit` through initial login, Goals, the drawer, Settings, Account & sync and return to Focus.
+- [x] Run 39 focused Flutter tests, including the ordinary account-enabled application entry, local notebook edits and steps, goals, archive filter recovery, conditional synchronization and Shiprite assignments. The catalog audit checked 1,362 keys per translation.
+
+The local signed APK has SHA-256 `0c17a555264316aa1eb81f3f16b8d9f696fc0e4267a65d506926566394357b7c`. Live Google authentication and a provisioned physical iPhone remain open.

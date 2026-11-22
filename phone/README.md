@@ -78,7 +78,7 @@ The separate `feature/google-account-sync` branch builds on this app. `StickySto
 
 ## Account and sync in this branch
 
-The main branch includes the optional account client. Open **Settings → Account & sync**, connect the deployed HTTPS service, sign in with Google in the system browser, then enable **Sync this notebook**. The app remains usable offline; signing in alone does not upload notes. Tasks, goals and completed focus sessions use the same protocol as desktop, with explicit conflict choices and recovery export. AI keys, Shiprite credentials, device preferences and active timers remain local.
+From the notebook, tap **Sign in** or the Dockit icon and **Account & sync**, connect the deployed HTTPS service, sign in with Google in the system browser, then enable **Sync this notebook**. The app remains usable offline; signing in alone does not upload notes. Tasks, goals and completed focus sessions use the same protocol as desktop, with explicit conflict choices and recovery export. AI keys, Shiprite credentials, device preferences and active timers remain local.
 
 Goal plans and linked tasks require the backend's `goalPlanning:true` / payload-schema-2 capability. If an older service is configured and the notebook contains this metadata, sync pauses with a visible message and preserves local data. The 2026-10-31 client/source delivery does not deploy the backend; deploy `backend/` from the authenticated Google Cloud environment before expecting new goal data to sync.
 

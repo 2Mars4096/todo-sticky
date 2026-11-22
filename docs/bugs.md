@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## Signed-out phone notebook
+
+The app mark was a noninteractive image and the disabled cloud indicator gave signed-out users no route into sign-in. The normal account-enabled entry now tests both the visible sign-in action and drawer routes on 320 px Android and iPhone layouts.
+
 ## 2026-11-22 — Archive project width and browser-storage translation
 
 Page-level width checks missed a project selector that overflowed its own filter region by 1,948px at 320px. The regression measures the filter region and checks focus and results after a reset. Catalog parity also missed a German storage sentence that displayed the update heading. A rendered check now confirms the intended storage text. [Evidence](plans/25-interface-element-review.md#archive-filters-and-adjacent-controls)

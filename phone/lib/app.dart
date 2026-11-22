@@ -166,32 +166,29 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
           home: Builder(
             builder: (context) => Scaffold(
               appBar: AppBar(
-                title: tab == 0
-                    ? const Row(
-                        children: [
-                          Image(
-                            image: AssetImage('assets/brand/dockit.png'),
-                            width: 24,
-                            height: 24,
-                            excludeFromSemantics: true,
-                          ),
-                          SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              'Dockit',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Text(
-                        tab == 1
-                            ? tr(context, "Goals & routines")
-                            : tr(context, "Focus"),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                leading: Builder(
+                  builder: (scaffold) => IconButton(
+                    tooltip: MaterialLocalizations.of(scaffold)
+                        .openAppDrawerTooltip,
+                    onPressed: () => Scaffold.of(scaffold).openDrawer(),
+                    icon: Image.asset(
+                      'assets/brand/dockit.png',
+                      width: 32,
+                      height: 32,
+                      excludeFromSemantics: true,
+                    ),
+                  ),
+                ),
+                titleSpacing: 0,
+                title: Text(
+                  tab == 0
+                      ? 'Dockit'
+                      : tab == 1
+                      ? tr(context, "Goals & routines")
+                      : tr(context, "Focus"),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 actions: [
                   InterfaceLanguageButton(
                     choice: store.preferences.interfaceLanguage,
@@ -241,21 +238,52 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                   ],
                   if (widget.syncIndicatorBuilder != null)
                     widget.syncIndicatorBuilder!(context),
-                  IconButton(
-                    tooltip: tr(context, "Settings"),
-                    icon: const Icon(Icons.tune_rounded),
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => SettingsScreen(
-                          store: store,
-                          ai: ai,
-                          accountBuilder: widget.accountBuilder,
+                ],
+              ),
+              drawer: Drawer(
+                child: SafeArea(
+                  child: ListView(
+                    children: [
+                      ListTile(
+                        title: Text(
+                          'Dockit',
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
-                    ),
+                      ListTile(
+                        leading: const Icon(Icons.settings_outlined),
+                        title: Text(tr(context, "Settings")),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => SettingsScreen(
+                                store: store,
+                                ai: ai,
+                                accountBuilder: widget.accountBuilder,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      if (widget.accountBuilder != null)
+                        ListTile(
+                          leading: const Icon(Icons.account_circle_outlined),
+                          title: Text(tr(context, "Account & sync")),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) => widget.accountBuilder!(store),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
                   ),
-                ],
+                ),
               ),
               body: SafeArea(
                 top: false,
