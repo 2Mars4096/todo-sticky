@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## Browser approval after process loss
+
+The previous phone build registered its return URL but kept the verifier only in memory. Returning to a restarted app could reopen its signed-out screen after Google approval. A fresh controller now continues the original exchange from an expiring device record. [Account return](plans/23-dockit-transfer.md#browser-sign-in-return)
+
 ## Signed-out phone notebook
 
 The app mark was a noninteractive image and the disabled cloud indicator gave signed-out users no route into sign-in. The normal account-enabled entry now tests both the visible sign-in action and drawer routes on 320 px Android and iPhone layouts.

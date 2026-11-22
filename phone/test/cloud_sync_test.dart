@@ -875,6 +875,34 @@ void main() {
     rig.store.dispose();
   });
 
+  test('cold launch finishes the pending request from secure storage', () async {
+    final secure = MemoryCredentials();
+    final opened = Completer<Uri>();
+    final before = await fixture(firebaseResponse, signedIn: false, owner: null,
+      credentials: secure, openBrowser: (uri) async { opened.complete(uri); return true; });
+    before.sync.setActive(false);
+    final abandoned = before.sync.signIn();
+    final approval = await opened.future;
+    before.dispose();
+    await abandoned;
+    final fragment = Uri.splitQueryString(approval.fragment);
+    var exchanges = 0;
+    final after = await fixture((request) {
+      if (request.url.path == '/v1/auth/exchange') {
+        final body = jsonDecode(request.body);
+        expect(body['sessionId'], fragment['sessionId']);
+        exchanges++;
+      }
+      return firebaseResponse(request);
+    }, signedIn: false, owner: null, credentials: secure,
+       openBrowser: (_) async => throw StateError('Reopened the browser'));
+    addTearDown(after.dispose);
+    while (after.sync.signingIn) { await Future<void>.delayed(const Duration(milliseconds: 1)); }
+    expect(exchanges, 1);
+    expect(after.sync.session?.uid, uid);
+    expect(await secure.read(CloudSyncController.pendingLoginKey), isEmpty);
+  });
+
   test('conflicts are saved once on detection and stale choices cannot replace notes', () async {
     var remote = record(dayKey, day('Cloud version'), revision: 2);
     final rig = await fixture(

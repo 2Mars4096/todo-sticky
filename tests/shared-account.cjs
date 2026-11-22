@@ -48,3 +48,45 @@ assert.throws(() => assertSharedNotebookOwner(auth,user), /another account/)
 storage.setItem('todo-sticky-cloud-owner-v1','dear-diane-202610:member')
 assert.doesNotThrow(() => assertSharedNotebookOwner(auth,user))
 assert.throws(() => assertSharedNotebookOwner({...auth,currentUser:null},user), /Account changed/)
+
+async function verifyApprovalPopup(native) {
+  const {webcrypto, createHash} = require('node:crypto')
+  let opened, openedInGesture = false, closed = false
+  const popup = {location:{replace(url) { opened = new URL(url) }}, close() { closed = true }}
+  const auth = {app:{options:{projectId:'dear-diane-202610'}},authStateReady:async()=>{}}
+  const globals = {
+    URL, URLSearchParams, AbortController, TextEncoder, crypto:webcrypto, btoa,
+    window:{open() { openedInGesture = true; return popup }},
+    fetch:async (url, options) => {
+      if (url.endsWith('/config?appId=todo')) return Response.json({schemaVersion:1,
+        firebase:{apiKey:'public',authDomain:'test',projectId:'dear-diane-202610',appId:'test'},
+        login:{exchangePath:'/api/connected-apps/auth/exchange'}})
+      assert.equal(url, DIANE_SHARED_ORIGIN+'/api/connected-apps/auth/exchange')
+      assert.equal(opened.origin + opened.pathname, 'https://pipedreams.work/signin')
+      const params = new URLSearchParams(opened.hash.slice(1)), exchange = JSON.parse(options.body)
+      assert.equal(params.get('returnTo'), native ? null : 'web')
+      assert.equal(params.get('appId'), 'todo')
+      assert.equal(params.get('sessionId'), exchange.sessionId)
+      assert.equal(params.get('challenge'), createHash('sha256').update(exchange.verifier).digest('base64url'))
+      assert.equal(opened.href.includes(exchange.verifier), false)
+      return Response.json({customToken:'fixture'})
+    },
+  }
+  const account = load('src/cloudAccount.ts',{
+    'firebase/app':{getApps:()=>[],initializeApp:()=>({})},
+    'firebase/auth':{getAuth:()=>auth,setPersistence:async()=>{},signInWithCustomToken:async()=>({user:{uid:'fixture'}})},
+    '@tauri-apps/api/core':{isTauri:()=>native,invoke:async(name,options)=>{
+      assert.equal(name,'open_account_sign_in'); opened = new URL(options.url)
+    }},
+    './cloudSync':sync,'./interfaceLocale':{displayLanguage:()=>'en'},
+  },globals)
+  await account.connectAccount(DIANE_SHARED_ORIGIN)
+  const signIn = account.googleSignIn(DIANE_SHARED_ORIGIN,auth,new AbortController().signal)
+  assert.equal(openedInGesture,!native)
+  assert.equal((await signIn).uid,'fixture')
+  assert.equal(closed,!native)
+}
+Promise.all([verifyApprovalPopup(false), verifyApprovalPopup(true)]).catch(error => {
+  console.error(error)
+  process.exitCode = 1
+})

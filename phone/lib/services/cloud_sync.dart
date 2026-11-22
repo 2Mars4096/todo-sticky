@@ -270,8 +270,9 @@ class SyncRecord {
   factory SyncRecord.fromJson(Map<String, dynamic> j) {
     final key = j['key'];
     if (key is! String ||
-        !RegExp(r'^(day:\d{4}-\d{2}-\d{2}|goals|focus:[A-Za-z0-9_-]{1,128})$')
-            .hasMatch(key) ||
+        !RegExp(
+          r'^(day:\d{4}-\d{2}-\d{2}|goals|focus:[A-Za-z0-9_-]{1,128})$',
+        ).hasMatch(key) ||
         j['revision'] is! int ||
         (j['revision'] as int) < 1 ||
         j['deleted'] is! bool ||
@@ -686,7 +687,8 @@ List<SyncAction> reconcileRecords(
       if (action.merge!.issues.isEmpty && valid(action.merge!.payload)) {
         action.kind = SyncKind.merge;
       } else if (action.merge!.issues.isEmpty) {
-        action.mergeProblem = 'Combined changes exceed sync limits. Shorten the affected list or plan before syncing.';
+        action.mergeProblem =
+            'Combined changes exceed sync limits. Shorten the affected list or plan before syncing.';
       }
     }
     actions.add(action);
@@ -793,6 +795,7 @@ bool preserveSyncConflict(List<dynamic> copies, SyncAction action) {
 
 class CloudSyncController extends ChangeNotifier {
   static const sessionKey = 'account-session-v1';
+  static const pendingLoginKey = 'pending-google-login-v1';
   final StickyStore store;
   final CloudTransport transport;
   final Future<bool> Function(Uri) openBrowser;
@@ -847,6 +850,16 @@ class CloudSyncController extends ChangeNotifier {
   int _localRaceRetries = 0;
   String _lastObserved = '';
   Future<void> _credentialWrites = Future<void>.value();
+  Future<void> _pendingWrites = Future<void>.value();
+
+  Future<void> _writePending(String value) {
+    final write = _pendingWrites.then(
+      (_) => store.credentials.write(pendingLoginKey, value),
+    );
+    _pendingWrites = write.catchError((_) {});
+    return write;
+  }
+
   CloudSyncController({
     required this.store,
     required this.openBrowser,
@@ -906,6 +919,7 @@ class CloudSyncController extends ChangeNotifier {
   }
 
   Future<void> initialize() async {
+    Map<String, dynamic>? pending;
     try {
       server =
           store.syncMetadata['serviceOrigin'] as String? ??
@@ -936,6 +950,23 @@ class CloudSyncController extends ChangeNotifier {
         final restored = AccountSession.fromJson(object(jsonDecode(raw)));
         if (restored.origin == server) session = restored;
       }
+      final saved = await store.credentials.read(pendingLoginKey);
+      if (saved != null && saved.isNotEmpty) {
+        final request = object(jsonDecode(saved));
+        final code = RegExp(r'^[A-Za-z0-9_-]{43}$');
+        if (session == null &&
+            request['origin'] == server &&
+            request['expires'] is int &&
+            request['expires'] > DateTime.now().millisecondsSinceEpoch &&
+            request['verifier'] is String &&
+            code.hasMatch(request['verifier']) &&
+            request['sessionId'] is String &&
+            code.hasMatch(request['sessionId'])) {
+          pending = request;
+        } else {
+          await _writePending('');
+        }
+      }
       if (session != null) {
         _meta;
         message = enabled ? ui("Sync ready.") : ui("Sync is off.");
@@ -953,6 +984,7 @@ class CloudSyncController extends ChangeNotifier {
       if (_active) unawaited(synchronize(background: true));
     });
     ready = true;
+    if (pending != null) unawaited(_signIn(pending));
     _schedule();
     _notify();
   }
@@ -1081,12 +1113,15 @@ class CloudSyncController extends ChangeNotifier {
   ).replaceAll('=', '');
   void cancelSignIn() {
     _epoch++;
+    unawaited(_writePending('').catchError((_) {}));
     signingIn = false;
     message = ui("Sign-in cancelled.");
     _notify();
   }
 
-  Future<void> signIn() async {
+  Future<void> signIn() => _signIn(null);
+
+  Future<void> _signIn(Map<String, dynamic>? pending) async {
     if (server.isEmpty || busy || signingIn) return;
     final epoch = ++_epoch;
     final origin = server;
@@ -1113,23 +1148,41 @@ class CloudSyncController extends ChangeNotifier {
           config['login'] is Map &&
           (config['login'] as Map)['exchangePath'] ==
               '/api/connected-apps/auth/exchange';
-      final verifier = _randomCode(), sessionId = _randomCode();
-      final challenge = base64UrlEncode(
-        sha256.convert(utf8.encode(verifier)).bytes,
-      ).replaceAll('=', '');
-      final fragment = Uri(
-        queryParameters: {
-          'sessionId': sessionId,
-          'challenge': challenge,
-          'language': currentLanguage,
-          if (shared) 'appId': 'todo',
-          if (!const bool.fromEnvironment('STICKY_PREVIEW')) 'returnTo': 'app',
-        },
-      ).query;
-      if (!await openBrowser(Uri.parse('$origin/signin#$fragment'))) {
-        throw StateError(ui("Could not open your browser. Try again."));
+      final verifier = pending?['verifier'] as String? ?? _randomCode();
+      final sessionId = pending?['sessionId'] as String? ?? _randomCode();
+      final until = pending == null
+          ? DateTime.now().add(const Duration(minutes: 5))
+          : DateTime.fromMillisecondsSinceEpoch(pending['expires'] as int);
+      if (pending == null) {
+        await _writePending(
+          jsonEncode({
+            'origin': origin,
+            'sessionId': sessionId,
+            'verifier': verifier,
+            'expires': until.millisecondsSinceEpoch,
+          }),
+        );
+        if (_disposed || epoch != _epoch) return;
+        final challenge = base64UrlEncode(
+          sha256.convert(utf8.encode(verifier)).bytes,
+        ).replaceAll('=', '');
+        final fragment = Uri(
+          queryParameters: {
+            'sessionId': sessionId,
+            'challenge': challenge,
+            'language': currentLanguage,
+            if (shared) 'appId': 'todo',
+            if (!const bool.fromEnvironment('STICKY_PREVIEW'))
+              'returnTo': 'app',
+          },
+        ).query;
+        final approvalOrigin = origin == dianeSharedOrigin
+            ? 'https://pipedreams.work'
+            : origin;
+        if (!await openBrowser(Uri.parse('$approvalOrigin/signin#$fragment'))) {
+          throw StateError(ui("Could not open your browser. Try again."));
+        }
       }
-      final until = DateTime.now().add(const Duration(minutes: 5));
       while (epoch == _epoch && !_disposed && DateTime.now().isBefore(until)) {
         await Future<void>.delayed(pollInterval);
         if (epoch != _epoch || _disposed) return;
@@ -1233,8 +1286,12 @@ class CloudSyncController extends ChangeNotifier {
         error = cause.toString().replaceFirst('Bad state: ', '');
       }
     } finally {
-      if (epoch == _epoch) {
-        signingIn = false;
+      if (epoch == _epoch && !_disposed) {
+        try {
+          await _writePending('');
+        } finally {
+          if (epoch == _epoch) signingIn = false;
+        }
         _notify();
       }
     }
@@ -1668,9 +1725,9 @@ class CloudSyncController extends ChangeNotifier {
     if (value) _schedule();
   }
 
-  Map<String, Map<String, dynamic>> _snapshot() =>
-      object(jsonDecode(jsonEncode(store.syncRecords())))
-          .map((key, value) => MapEntry(key, object(value)));
+  Map<String, Map<String, dynamic>> _snapshot() => object(
+    jsonDecode(jsonEncode(store.syncRecords())),
+  ).map((key, value) => MapEntry(key, object(value)));
   Future<void> synchronize({
     String? resolveKey,
     bool useCloud = false,

@@ -109,13 +109,29 @@ function randomCode(): string {
 }
 
 export async function googleSignIn(origin: string, auth: Auth, signal: AbortSignal, kbPath?: string): Promise<User> {
+  const native = isTauri()
+  const popup = native ? null : window.open('about:blank', '_blank')
+  if (!native && !popup) throw new Error('Could not open the link in your browser.')
+  if (popup) popup.opener = null
+  try {
+    return await completeGoogleSignIn(origin, auth, signal, url => {
+      if (popup) popup.location.replace(url)
+      else return invoke<void>('open_account_sign_in', { url })
+    }, kbPath)
+  } finally {
+    popup?.close()
+  }
+}
+
+async function completeGoogleSignIn(origin: string, auth: Auth, signal: AbortSignal, open: (url: string) => void | Promise<void>, kbPath?: string): Promise<User> {
   const verifier = randomCode()
   const sessionId = randomCode()
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const challenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-  const url = `${origin}/signin#${new URLSearchParams({ sessionId, challenge, language:displayLanguage(), ...(brokerOrigins.has(origin)?{appId:'todo', ...(!isTauri() ? {returnTo:'web'} : {})}:{}) })}`
-  if (isTauri()) await invoke('open_account_sign_in', { url })
-  else window.open(url, '_blank', 'noopener,noreferrer')
+  const approvalOrigin = origin === DIANE_SHARED_ORIGIN ? 'https://pipedreams.work' : origin
+  const url = `${approvalOrigin}/signin#${new URLSearchParams({ sessionId, challenge, language:displayLanguage(), ...(brokerOrigins.has(origin)?{appId:'todo', ...(!isTauri() ? {returnTo:'web'} : {})}:{}) })}`
+  if (signal.aborted) throw new Error('Sign-in cancelled.')
+  await open(url)
   const expires = Date.now() + 5 * 60_000
   while (Date.now() < expires && !signal.aborted) {
     await new Promise(resolve => setTimeout(resolve, 1500))

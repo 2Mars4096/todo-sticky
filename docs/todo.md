@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Verify branded browser sign-in and restore pending phone approval after process loss. [Account return](plans/23-dockit-transfer.md#browser-sign-in-return)
+
 - [x] Open Settings from the Dockit icon and expose sign-in directly from the phone notebook. [Phone navigation](plans/23-dockit-transfer.md#phone-navigation-and-sign-in)
 
 - [x] Verify backend ownership, retired project state and local scaffold cleanup. [Operations](backend-operations.md)

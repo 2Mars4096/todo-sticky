@@ -1,5 +1,9 @@
 # Architecture
 
+## Browser approval and phone return
+
+The production shared account opens `https://pipedreams.work/signin`. Discovery and verifier exchange continue at the selected broker. The phone saves the request ID, verifier and deadline in the secure credential store before opening the browser. The URL `todo-sticky://account-return` brings the app forward. A restarted app resumes only an existing request within its original five-minute window. Cancellation and completion clear the pending record. Separate service installations use their configured sign-in origin.
+
 ## Phone notebook navigation
 
 The app mark opens a Flutter drawer on each of the three notebook tabs. Settings and Account & sync use the existing Navigator and store. The account controller supplies the signed-out Sign in action and the signed-in sync indicator. Opening the account leaves notebook sync under its existing opt-in control.

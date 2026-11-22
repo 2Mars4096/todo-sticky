@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-22 — Browser sign-in return
+
+Connected Dockit opens the shared approval page on pipedreams.work. The phone restores an unfinished five-minute sign-in when the browser returns to a newly launched app. [Account return](plans/23-dockit-transfer.md#browser-sign-in-return)
+
 ## 2026-11-22 — Phone notebook navigation
 
 Dockit 2.1.20+35 opens Settings and Account & sync from its app icon. Signed-out users can open sign-in directly from Notes, Goals and Focus. [Navigation and account checks](plans/23-dockit-transfer.md#phone-navigation-and-sign-in)

@@ -115,3 +115,12 @@ The local phone exports retain version 2.1.19 and advance the build to 33. The t
 - [x] Run 39 focused Flutter tests, including the ordinary account-enabled application entry, local notebook edits and steps, goals, archive filter recovery, conditional synchronization and Shiprite assignments. The catalog audit checked 1,362 keys per translation.
 
 The local signed APK has SHA-256 `0c17a555264316aa1eb81f3f16b8d9f696fc0e4267a65d506926566394357b7c`. Live Google authentication and a provisioned physical iPhone remain open.
+
+## Browser sign-in return
+
+- [x] Preserve the shared issuer, verifier exchange and original notebook or recording ownership when opening the branded approval URL.
+- [x] Verify cold-start continuation without a second browser, the Android callback with a stopped process and the same callback with the activity backgrounded.
+
+The signed 2.1.21+36 (Android version code 2036) Android build retained its package and signer. On Android API 35, the actual sign-in button opened `https://pipedreams.work/signin`. The OS dispatched `todo-sticky://account-return` to the installed app in both tests. 48 focused Flutter checks passed. The iOS 26.4 simulator app and unsigned device IPA carry the matching version. Live Google account selection and provisioned physical iPhone installation remain unverified.
+
+A dedicated iPhone 17 Pro simulator running iOS 26.4 opened the installed app through the system URL resolver. XCTest observed the app reach the foreground from terminated and background states for both return URLs. The run completed two tests with zero failures.
