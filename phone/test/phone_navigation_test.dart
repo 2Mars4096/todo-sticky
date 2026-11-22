@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sticky_todo/screens/account_screen.dart';
 import 'package:sticky_todo/services/persistence.dart';
 import 'package:sticky_todo/state/sticky_store.dart';
+import 'package:sticky_todo/widgets/dockit_footer_mark.dart';
 
 void verifyFooter(WidgetTester tester, int selected) {
   final bar = find.byType(NavigationBar);
@@ -12,7 +13,9 @@ void verifyFooter(WidgetTester tester, int selected) {
   final menu = find.byTooltip('Open navigation menu');
   expect(
     tester
-        .getCenter(find.descendant(of: menu, matching: find.byType(Image)))
+        .getCenter(
+          find.descendant(of: menu, matching: find.byType(DockitFooterMark)),
+        )
         .dy,
     closeTo(center, 0.01),
   );
@@ -21,6 +24,12 @@ void verifyFooter(WidgetTester tester, int selected) {
   for (final destination in widget.destinations.cast<NavigationDestination>()) {
     final item = find.byWidget(destination);
     final glyph = find.descendant(of: item, matching: find.byType(Icon)).first;
+    expect(tester.getSize(menu).width, tester.getSize(menu).height);
+    expect(
+      tester.getSize(item).width,
+      closeTo(tester.getSize(bar).width / 3, 0.01),
+    );
+    expect(tester.getSize(item).height, tester.getSize(menu).height);
     expect(tester.getCenter(glyph).dy, closeTo(center, 0.01));
     expect(tester.getSize(item).shortestSide, greaterThanOrEqualTo(48));
     expect(find.byTooltip(destination.label), findsOneWidget);

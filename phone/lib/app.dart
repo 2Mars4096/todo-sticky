@@ -16,7 +16,9 @@ import 'models/workflow.dart';
 import 'screens/goals_screen.dart';
 import 'screens/focus_screen.dart';
 import 'screens/settings_screen.dart';
+import 'widgets/dockit_footer_mark.dart';
 
+const double _footerHeight = 56;
 const paper = Color(0xfffff8dc);
 const ink = Color(0xff3d3520);
 const amber = Color(0xff856519);
@@ -152,7 +154,7 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
             ),
             navigationBarTheme: const NavigationBarThemeData(
               indicatorColor: Color(0xffeadba5),
-              height: 56,
+              height: _footerHeight,
               backgroundColor: Colors.transparent,
               labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
             ),
@@ -349,59 +351,62 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-              bottomNavigationBar: SafeArea(
-                top: false,
-                child: Row(
-                  children: [
-                    Builder(
-                      builder: (scaffold) => IconButton(
-                        tooltip: MaterialLocalizations.of(scaffold)
-                            .openAppDrawerTooltip,
-                        onPressed: () => Scaffold.of(scaffold).openDrawer(),
-                        icon: Image.asset(
-                          'assets/brand/dockit.png',
-                          width: 32,
-                          height: 32,
-                          excludeFromSemantics: true,
+              bottomNavigationBar: Material(
+                color: background,
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                      SizedBox.square(
+                        dimension: _footerHeight,
+                        child: Builder(
+                          builder: (scaffold) => IconButton(
+                            tooltip: MaterialLocalizations.of(scaffold)
+                                .openAppDrawerTooltip,
+                            onPressed: () => Scaffold.of(scaffold).openDrawer(),
+                            icon: const DockitFooterMark(),
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: MediaQuery.removePadding(
-                        context: context,
-                        removeTop: true,
-                        removeLeft: true,
-                        removeRight: true,
-                        removeBottom: true,
-                        child: NavigationBar(
-                          selectedIndex: tab,
-                          onDestinationSelected: (value) =>
-                              setState(() => tab = value),
-                          destinations: [
-                            NavigationDestination(
-                              icon: Icon(Icons.sticky_note_2_outlined),
-                              selectedIcon: Icon(Icons.sticky_note_2_rounded),
-                              label: tr(context, "Notes"),
-                            ),
-                            NavigationDestination(
-                              icon: Icon(Icons.flag_outlined),
-                              selectedIcon: Icon(Icons.flag_rounded),
-                              label: tr(context, "Goals"),
-                            ),
-                            NavigationDestination(
-                              icon: Badge(
-                                isLabelVisible:
-                                    store.focus.activeSession != null,
-                                child: const Icon(Icons.nightlight_outlined),
+                      Expanded(
+                        child: MediaQuery.removePadding(
+                          context: context,
+                          removeTop: true,
+                          removeLeft: true,
+                          removeRight: true,
+                          removeBottom: true,
+                          child: NavigationBar(
+                            selectedIndex: tab,
+                            onDestinationSelected: (value) =>
+                                setState(() => tab = value),
+                            destinations: [
+                              NavigationDestination(
+                                icon: Icon(Icons.sticky_note_2_outlined),
+                                selectedIcon: Icon(Icons.sticky_note_2_rounded),
+                                label: tr(context, "Notes"),
                               ),
-                              selectedIcon: const Icon(Icons.nightlight_round),
-                              label: tr(context, "Focus"),
-                            ),
-                          ],
+                              NavigationDestination(
+                                icon: Icon(Icons.flag_outlined),
+                                selectedIcon: Icon(Icons.flag_rounded),
+                                label: tr(context, "Goals"),
+                              ),
+                              NavigationDestination(
+                                icon: Badge(
+                                  isLabelVisible:
+                                      store.focus.activeSession != null,
+                                  child: const Icon(Icons.nightlight_outlined),
+                                ),
+                                selectedIcon: const Icon(
+                                  Icons.nightlight_round,
+                                ),
+                                label: tr(context, "Focus"),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

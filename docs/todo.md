@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Draw the folder-tray mark directly on the phone footer and give the drawer a square leading slot. [Optical and installed checks](plans/23-dockit-transfer.md#transparent-phone-drawer-mark)
+
 - [x] Align the phone logo and icon-only destinations and give web and Mac footer actions accessible icons. [Release verification](plans/23-dockit-transfer.md#icon-only-footer-navigation)
 
 - [x] Load only the active language in the web and Mac notebooks. [Loading and release checks](plans/23-dockit-transfer.md#notebook-language-loading)
