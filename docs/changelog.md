@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-22 — Connected phone release verification
+
+Verified the compiled production origins, public discovery and hosted entry. 43 focused Flutter checks passed. [Phone release record](plans/23-dockit-transfer.md#phone-settings-and-navigation)
+
 ## 2026-11-22 — Phone Settings and navigation
 
 Notes opens on the selected notebook date, with search and progress beside it. The app mark beside Notes, Goals and Focus opens Settings or Account & sync. Settings shows the account state, display language, notebook material, AI provider and planning machines. [Release 2.1.22+37](plans/23-dockit-transfer.md#phone-settings-and-navigation)

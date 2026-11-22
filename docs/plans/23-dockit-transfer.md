@@ -134,3 +134,5 @@ A dedicated iPhone 17 Pro simulator running iOS 26.4 opened the installed app th
 [Android home](../reviews/phone-settings/android-home.png) · [Android Settings](../reviews/phone-settings/android-settings.png) · [Installed Android checks](../reviews/phone-settings/installed-android.json) · [iPhone home](../reviews/phone-settings/iphone-home.png) · [iPhone Settings](../reviews/phone-settings/iphone-settings.png)
 
 43 focused Flutter tests passed, including all ten language choices, 320 px at 1.4×, 360 px at 1.5× with a keyboard, nested edits, account fixtures and cloud synchronization. The installed Android app retained a task created on the previous build and returned to it from Account & sync.
+
+The ARM64 release binary contains the production broker and branded approval origin. Public HTTPS discovery for `todo` returned project `dear-diane-202610`, API prefix `/api/plugins/todo` and the branded sign-in path. The public Dockit website and approval route each returned HTTP 200. The notebook opens its real app-private file store and the account controller selects the production shared service. An empty notebook has no sample records.
