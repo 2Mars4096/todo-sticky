@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Verify the lowered 48 px phone footer on both phone platforms and upgrade the installed notebook. [Checks](plans/23-dockit-transfer.md#phone-footer-clearance)
+
 - [x] Draw the folder-tray mark directly on the phone footer and give the drawer a square leading slot. [Optical and installed checks](plans/23-dockit-transfer.md#transparent-phone-drawer-mark)
 
 - [x] Align the phone logo and icon-only destinations and give web and Mac footer actions accessible icons. [Release verification](plans/23-dockit-transfer.md#icon-only-footer-navigation)

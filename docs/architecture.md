@@ -2,7 +2,7 @@
 
 ## Footer navigation
 
-One outer safe area positions the entire Flutter drawer-and-destinations row. The drawer occupies a leading square whose side is the row height. Its transparent folder-tray mark and the three evenly divided destinations sit on the same notebook material. The full-color brand asset is still used in the existing content and settings screens. The navigation bar hides its labels while retaining them for long presses and screen readers. On web and Mac, the bottom action buttons use accessible, localized names and tooltips. The active archive page and open panels expose their selected or expanded state; the timer and provider selector keep their existing content.
+One outer safe area positions the entire Flutter drawer-and-destinations row. The drawer occupies the leading 48 × 48 logical-pixel square. All four control centers sit 24 logical pixels above the system safe area. Its transparent folder-tray mark and the three evenly divided destinations sit on the same notebook material. The full-color brand asset is still used in the existing content and settings screens. The navigation bar hides its labels while retaining them for long presses and screen readers. On web and Mac, the bottom action buttons use accessible, localized names and tooltips. The active archive page and open panels expose their selected or expanded state; the timer and provider selector keep their existing content.
 
 ## Web and Mac language catalogs
 

@@ -10,6 +10,11 @@ void verifyFooter(WidgetTester tester, int selected) {
   final bar = find.byType(NavigationBar);
   final widget = tester.widget<NavigationBar>(bar);
   final center = tester.getCenter(bar).dy;
+  final view = tester.view;
+  final usableBottom =
+      (view.physicalSize.height - view.padding.bottom) / view.devicePixelRatio;
+  expect(tester.getBottomLeft(bar).dy, usableBottom);
+  expect(center, usableBottom - 24);
   final menu = find.byTooltip('Open navigation menu');
   expect(
     tester
@@ -19,7 +24,7 @@ void verifyFooter(WidgetTester tester, int selected) {
         .dy,
     closeTo(center, 0.01),
   );
-  expect(tester.getSize(menu).shortestSide, greaterThanOrEqualTo(48));
+  expect(tester.getSize(menu), const Size(48, 48));
   expect(widget.selectedIndex, selected);
   for (final destination in widget.destinations.cast<NavigationDestination>()) {
     final item = find.byWidget(destination);
@@ -61,6 +66,10 @@ void main() {
         addTearDown(() => debugDefaultTargetPlatformOverride = null);
         tester.view.physicalSize = const Size(320, 740);
         tester.view.devicePixelRatio = 1;
+        tester.view.padding = const FakeViewPadding(top: 24, bottom: 20);
+        tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 20);
+        addTearDown(tester.view.resetPadding);
+        addTearDown(tester.view.resetViewPadding);
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
         tester.platformDispatcher.textScaleFactorTestValue = 1.4;

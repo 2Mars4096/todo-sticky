@@ -18,7 +18,7 @@ import 'screens/focus_screen.dart';
 import 'screens/settings_screen.dart';
 import 'widgets/dockit_footer_mark.dart';
 
-const double _footerHeight = 56;
+const double _footerHeight = 48;
 const paper = Color(0xfffff8dc);
 const ink = Color(0xff3d3520);
 const amber = Color(0xff856519);

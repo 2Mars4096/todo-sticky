@@ -30,7 +30,7 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-The [local Mac 2.1.18 app](desktop/src-tauri/target/release/bundle/macos/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. Hover over a footer action to see its name. The phone release is 2.1.25+41. Its square drawer button shows the folder tray directly on the selected notebook material. [Release checks](docs/plans/23-dockit-transfer.md#icon-only-footer-navigation)
+The [local Mac 2.1.18 app](desktop/src-tauri/target/release/bundle/macos/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. Hover over a footer action to see its name. The phone release is 2.1.26+42. Its square drawer button shows the folder tray directly on the selected notebook material. [Release checks](docs/plans/23-dockit-transfer.md#icon-only-footer-navigation)
 
 Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, rebuilt and reinstalled with the **Diane shared backend** and editable local setup/session handoff (2026-11-10). Your original Todo interface and local notes remain. Open **Settings → Account → Continue with Google** with the same account as Diane, then **Sync**. Local Diane connection is enabled on this installation; Push stays grey when Diane is unavailable.
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-22 — Phone footer clearance
+
+Notes, Goals, Focus and the transparent drawer mark now sit four logical pixels closer to the safe bottom. [Android and iPhone build 42](plans/23-dockit-transfer.md#phone-footer-clearance)
+
 ## 2026-11-22 — Transparent phone drawer mark
 
 Dockit’s three-tab folder tray is drawn directly onto the active notebook material. The left drawer button is a 56 px square and Notes, Goals and Focus divide the remaining width equally. [Android and iPhone 2.1.25 build 41](plans/23-dockit-transfer.md#transparent-phone-drawer-mark)
