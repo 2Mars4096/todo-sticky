@@ -162,3 +162,9 @@ Sticky Todo at `5d6a8ff` searched nested task text and filtered the archive by s
 - [x] Run all 33 Node suites. Chromium opened the production build in English, French and Japanese. The latter two typed into the notebook during an intentionally stalled catalog download and retained the draft after translation. Each requested only its own catalog. English requested none.
 - [x] Publish Hosting version `af423af58e95a0f8`. Production entry bytes fell from 1,598,894 to 769,341 (gzip level 6 from 466,010 to 214,455). Compare all 22 staged app files with the live site, retain the 15 other original file hashes and verify both app URLs and the shared-task route.
 - [x] Build the [local Mac application](../../output/clients/phased-loading/macOS/Dockit.app), version 2.1.17, and verify its ad-hoc signature and bundled screenshot helper. The executable SHA-256 is `efdad0a45807ac5ce8a669b9feb34a1c6dac10b0bd07888e5ee0bca59cf28df6`.
+
+## Peer navigation alignment (2026-11-22)
+
+At 390 × 844 with the same safe-area insets, the first entry field started at y103 in Notes and y104 in Goals. Both shared the y730 bottom rail with Focus. Focus opened on its timer at y32. These measurements came from the production Flutter widget trees with isolated records on Android and iOS test targets.
+
+At 1280 × 800, Search and Progress shared a header ending at y52 and a results area beginning at y102. Notes used a date header ending at y63. The lower action bar stayed at y756. The web and packaged Mac frontend were measured in Chromium, with a test bridge for the Mac sample.
