@@ -116,16 +116,19 @@ class DockitLocaleScope extends InheritedWidget {
 
 class InterfaceLanguageButton extends StatelessWidget {
   final String choice;
+  final Widget? child;
   final ValueChanged<String> onChanged;
   const InterfaceLanguageButton({
     super.key,
     required this.choice,
+    this.child,
     required this.onChanged,
   });
   @override
   Widget build(BuildContext context) => PopupMenuButton<String>(
     tooltip: tr(context, 'Display language'),
-    icon: const Icon(Icons.language_outlined),
+    icon: child == null ? const Icon(Icons.language_outlined) : null,
+    child: child,
     initialValue: choice,
     onSelected: onChanged,
     itemBuilder: (_) => [

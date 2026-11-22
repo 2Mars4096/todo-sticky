@@ -13,12 +13,16 @@ import '../state/sticky_store.dart';
 class SettingsScreen extends StatelessWidget {
   final StickyStore store;
   final AiService ai;
+  final WidgetBuilder? accountStatusBuilder;
+  final WidgetBuilder? syncIndicatorBuilder;
   final Widget Function(StickyStore store)? accountBuilder;
   const SettingsScreen({
     super.key,
     required this.store,
     required this.ai,
     this.accountBuilder,
+    this.accountStatusBuilder,
+    this.syncIndicatorBuilder,
   });
   Future<void> restore(BuildContext context) async {
     try {
@@ -75,58 +79,46 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 32),
         children: [
-          if (accountBuilder != null)
+          if (accountBuilder != null) ...[
+            _SettingsSection(tr(context, 'Personal account')),
             ListTile(
               leading: const Icon(Icons.account_circle_outlined),
               title: Text(tr(context, "Account & sync")),
+              subtitle: accountStatusBuilder?.call(context),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute<void>(builder: (_) => accountBuilder!(store)),
               ),
             ),
-          ListTile(
-            leading: const Icon(Icons.auto_awesome_outlined),
-            title: Text(tr(context, "AI assistance")),
-            subtitle: Text(
-              ai.usesShared(store.preferences)
-                  ? tr(context, "pipedreams account")
-                  : providerPresets[store.preferences.provider]?['name'] ??
-                        store.preferences.provider,
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => ProviderEditor(
-                  store: store,
-                  sharedRequest: ai.sharedRequest,
-                ),
+            if (syncIndicatorBuilder != null)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: syncIndicatorBuilder!(context),
               ),
+          ],
+          _SettingsSection(tr(context, 'YOUR NOTEBOOK')),
+          InterfaceLanguageButton(
+            choice: store.preferences.interfaceLanguage,
+            onChanged: (tag) {
+              store.preferences.interfaceLanguage = tag;
+              store.changed();
+            },
+            child: ListTile(
+              leading: const Icon(Icons.language),
+              title: Text(tr(context, 'Display language')),
+              subtitle: Text(
+                languageNames[store.preferences.interfaceLanguage] ??
+                    tr(context, 'System default'),
+              ),
+              trailing: const Icon(Icons.expand_more),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.computer_outlined),
-            title: Text(tr(context, "Planning machines")),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => MachinesScreen(store: store),
-              ),
-            ),
-          ),
-          const Divider(height: 32),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Text(
-              tr(context, "NOTE MATERIAL"),
-              style: TextStyle(
-                fontSize: 12,
-                letterSpacing: 1,
-                color: mutedInk,
-                fontWeight: FontWeight.w700,
-              ),
+              tr(context, 'NOTE MATERIAL'),
+              style: Theme.of(context).textTheme.labelMedium,
             ),
           ),
           Padding(
@@ -153,19 +145,47 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 20),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              tr(context, "YOUR NOTEBOOK"),
-              style: TextStyle(
-                fontSize: 12,
-                letterSpacing: 1,
-                color: mutedInk,
-                fontWeight: FontWeight.w700,
+          _SettingsSection(tr(context, 'Plan')),
+          ListTile(
+            leading: const Icon(Icons.auto_awesome_outlined),
+            title: Text(tr(context, "AI assistance")),
+            subtitle: Text(
+              ai.usesShared(store.preferences)
+                  ? tr(context, "pipedreams account")
+                  : providerPresets[store.preferences.provider]?['name'] ??
+                        store.preferences.provider,
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => ProviderEditor(
+                  store: store,
+                  sharedRequest: ai.sharedRequest,
+                ),
               ),
             ),
           ),
+          ListTile(
+            leading: const Icon(Icons.computer_outlined),
+            title: Text(tr(context, "Planning machines")),
+            subtitle: Text(
+              store.preferences.machines.isEmpty
+                  ? tr(context, 'No machines added.')
+                  : store.preferences.machines
+                        .map((machine) => machine['name'])
+                        .whereType<String>()
+                        .join(', '),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => MachinesScreen(store: store),
+              ),
+            ),
+          ),
+          _SettingsSection(tr(context, 'Backups')),
           ListTile(
             leading: const Icon(Icons.save_alt_rounded),
             title: Text(tr(context, "Export a backup")),
@@ -221,9 +241,25 @@ class SettingsScreen extends StatelessWidget {
               excludeFromSemantics: true,
             ),
             title: Text('Dockit'),
-            subtitle: Text('2.1.20'),
+            subtitle: Text('2.1.22'),
           ),
         ],
+      ),
+    ),
+  );
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection(this.label);
+  final String label;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
+    child: Semantics(
+      header: true,
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(color: amber),
       ),
     ),
   );

@@ -16,6 +16,8 @@ void main() {
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
+        tester.platformDispatcher.textScaleFactorTestValue = 1.4;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
         final store = StickyStore(
           persistence: MemoryPersistence(),
           credentials: MemoryCredentials(),
@@ -32,11 +34,23 @@ void main() {
               .map((d) => d.label),
           ['Notes', 'Goals', 'Focus'],
         );
-        await tester.tap(find.text('Sign in'));
+        expect(find.byType(AppBar), findsNothing);
+        expect(find.text('Sign in'), findsNothing);
+        await tester.enterText(find.byType(TextField).first, 'Meeting review draft');
+        await tester.tap(find.byTooltip('Open navigation menu'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Settings'));
+        await tester.pumpAndSettle();
+        expect(find.text('Signed out'), findsOneWidget);
+        expect(find.text('System default'), findsOneWidget);
+        await tester.tap(find.text('Account & sync'));
         await tester.pumpAndSettle();
         expect(find.text('Continue with Google'), findsOneWidget);
         await tester.pageBack();
         await tester.pumpAndSettle();
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        expect(find.text('Meeting review draft'), findsOneWidget);
         await tester.tap(find.widgetWithText(NavigationDestination, 'Goals'));
         await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('Open navigation menu'));

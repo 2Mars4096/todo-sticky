@@ -29,7 +29,8 @@ class StickyApp extends StatefulWidget {
   final WidgetBuilder? meetingBuilder;
   final SharedAgentRequest? sharedAgent;
   final Widget Function(StickyStore store)? accountBuilder;
-  final Widget Function(BuildContext context)? syncIndicatorBuilder;
+  final WidgetBuilder? syncIndicatorBuilder;
+  final WidgetBuilder? accountStatusBuilder;
   const StickyApp({
     super.key,
     required this.store,
@@ -39,6 +40,7 @@ class StickyApp extends StatefulWidget {
     this.sharedAgent,
     this.accountBuilder,
     this.syncIndicatorBuilder,
+    this.accountStatusBuilder,
   });
   @override
   State<StickyApp> createState() => _StickyAppState();
@@ -165,81 +167,6 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
           ),
           home: Builder(
             builder: (context) => Scaffold(
-              appBar: AppBar(
-                leading: Builder(
-                  builder: (scaffold) => IconButton(
-                    tooltip: MaterialLocalizations.of(scaffold)
-                        .openAppDrawerTooltip,
-                    onPressed: () => Scaffold.of(scaffold).openDrawer(),
-                    icon: Image.asset(
-                      'assets/brand/dockit.png',
-                      width: 32,
-                      height: 32,
-                      excludeFromSemantics: true,
-                    ),
-                  ),
-                ),
-                titleSpacing: 0,
-                title: Text(
-                  tab == 0
-                      ? 'Dockit'
-                      : tab == 1
-                      ? tr(context, "Goals & routines")
-                      : tr(context, "Focus"),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                actions: [
-                  InterfaceLanguageButton(
-                    choice: store.preferences.interfaceLanguage,
-                    onChanged: (tag) {
-                      store.preferences.interfaceLanguage = tag;
-                      store.changed();
-                    },
-                  ),
-                  if (store.ready && tab == 0) ...[
-                    IconButton(
-                      tooltip: tr(context, "Search tasks"),
-                      icon: const Icon(Icons.search),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => ArchiveScreen(
-                            store: store,
-                            ai: ai,
-                            openFocus: () {
-                              Navigator.of(context)
-                                  .popUntil((route) => route.isFirst);
-                              setState(() => tab = 2);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: tr(context, "Progress"),
-                      icon: const Icon(Icons.bar_chart_outlined),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => ArchiveScreen(
-                            store: store,
-                            ai: ai,
-                            progress: true,
-                            openFocus: () {
-                              Navigator.of(context)
-                                  .popUntil((route) => route.isFirst);
-                              setState(() => tab = 2);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (widget.syncIndicatorBuilder != null)
-                    widget.syncIndicatorBuilder!(context),
-                ],
-              ),
               drawer: Drawer(
                 child: SafeArea(
                   child: ListView(
@@ -262,6 +189,10 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                                 store: store,
                                 ai: ai,
                                 accountBuilder: widget.accountBuilder,
+                                accountStatusBuilder:
+                                    widget.accountStatusBuilder,
+                                syncIndicatorBuilder:
+                                    widget.syncIndicatorBuilder,
                               ),
                             ),
                           );
@@ -286,7 +217,7 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                 ),
               ),
               body: SafeArea(
-                top: false,
+                bottom: false,
                 child: Column(
                   children: [
                     if (store.saveError != null)
@@ -392,6 +323,21 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                               ),
                               _ => HomeScreen(
                                 meetingBuilder: widget.meetingBuilder,
+                                openArchive: (progress) => Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => ArchiveScreen(
+                                      store: store,
+                                      ai: ai,
+                                      progress: progress,
+                                      openFocus: () {
+                                        Navigator.of(context)
+                                            .popUntil((route) => route.isFirst);
+                                        setState(() => tab = 2);
+                                      },
+                                    ),
+                                  ),
+                                ),
                                 store: store,
                                 ai: ai,
                                 openFocus: () => setState(() => tab = 2),
@@ -401,29 +347,57 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: tab,
-                onDestinationSelected: (value) => setState(() => tab = value),
-                destinations: [
-                  NavigationDestination(
-                    icon: Icon(Icons.sticky_note_2_outlined),
-                    selectedIcon: Icon(Icons.sticky_note_2_rounded),
-                    label: tr(context, "Notes"),
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.flag_outlined),
-                    selectedIcon: Icon(Icons.flag_rounded),
-                    label: tr(context, "Goals"),
-                  ),
-                  NavigationDestination(
-                    icon: Badge(
-                      isLabelVisible: store.focus.activeSession != null,
-                      child: const Icon(Icons.nightlight_outlined),
+              bottomNavigationBar: SafeArea(
+                top: false,
+                child: Row(
+                  children: [
+                    Builder(
+                      builder: (scaffold) => IconButton(
+                        tooltip: MaterialLocalizations.of(scaffold)
+                            .openAppDrawerTooltip,
+                        onPressed: () => Scaffold.of(scaffold).openDrawer(),
+                        icon: Image.asset(
+                          'assets/brand/dockit.png',
+                          width: 32,
+                          height: 32,
+                          excludeFromSemantics: true,
+                        ),
+                      ),
                     ),
-                    selectedIcon: const Icon(Icons.nightlight_round),
-                    label: tr(context, "Focus"),
-                  ),
-                ],
+                    Expanded(
+                      child: MediaQuery.removePadding(
+                        context: context,
+                        removeBottom: true,
+                        child: NavigationBar(
+                          selectedIndex: tab,
+                          onDestinationSelected: (value) =>
+                              setState(() => tab = value),
+                          destinations: [
+                            NavigationDestination(
+                              icon: Icon(Icons.sticky_note_2_outlined),
+                              selectedIcon: Icon(Icons.sticky_note_2_rounded),
+                              label: tr(context, "Notes"),
+                            ),
+                            NavigationDestination(
+                              icon: Icon(Icons.flag_outlined),
+                              selectedIcon: Icon(Icons.flag_rounded),
+                              label: tr(context, "Goals"),
+                            ),
+                            NavigationDestination(
+                              icon: Badge(
+                                isLabelVisible:
+                                    store.focus.activeSession != null,
+                                child: const Icon(Icons.nightlight_outlined),
+                              ),
+                              selectedIcon: const Icon(Icons.nightlight_round),
+                              label: tr(context, "Focus"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

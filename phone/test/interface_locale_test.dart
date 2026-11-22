@@ -42,6 +42,10 @@ void main() {
     await tester.pumpWidget(StickyApp(store: store));
     await tester.pumpAndSettle();
     for (final tag in languageNames.keys.where((n) => n != 'en')) {
+      await tester.tap(find.byWidgetPredicate((w) => w is IconButton && w.icon is Image));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(ui('Settings')));
+      await tester.pumpAndSettle();
       final globe = find.byType(InterfaceLanguageButton);
       expect(globe, findsOneWidget);
       await tester.tap(globe);
@@ -55,6 +59,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(store.preferences.interfaceLanguage, tag);
       expect(find.byTooltip(globeNames[tag]!), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       expect(find.text(translateLabel(tag, 'Notes', [])), findsWidgets);
       expect(store.tasksFor(store.today).single.text, 'Delete');
       expect(find.text('Delete'), findsOneWidget);

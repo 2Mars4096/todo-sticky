@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Open the phone on the active task and manage account details from the menu. [Phone Settings](plans/23-dockit-transfer.md#phone-settings-and-navigation)
+
 - [x] Verify branded browser sign-in and restore pending phone approval after process loss. [Account return](plans/23-dockit-transfer.md#browser-sign-in-return)
 
 - [x] Open Settings from the Dockit icon and expose sign-in directly from the phone notebook. [Phone navigation](plans/23-dockit-transfer.md#phone-navigation-and-sign-in)

@@ -4,7 +4,7 @@ Dockit is part of pipedreams by Liberate AI.
 
 Dockit organizes proposals into dated tasks and nested steps on the web, Mac, Android and iPhone. Add a task, open its actions and choose **Add step**. In **Account → Workspace assignments**, choose an editor workspace, task and optional assignee UID, then select **Assign in Shiprite**. The web stores tasks in this browser, the Mac uses Markdown, and the phones use their app-private notebooks.
 
-On phones, the Dockit icon opens **Settings** and **Account & sync**. **Sign in** is visible on the notebook while signed out. The shared account opens pipedreams.work. After Google approval, return to Dockit to finish. Notes, Goals and Focus remain available offline.
+On phones, tap the Dockit icon beside the bottom tabs to open **Account & sync** and sign in, or choose **Settings** for account status, language, notebook material, planning tools and backups. The shared account opens pipedreams.work. After Google approval, return to Dockit to finish. Notes, Goals and Focus remain available offline.
 
 Run the browser client with `npm run dev:vite`. For a production preview, run `npm run build:frontend` followed by `npm run preview`. See [phone build instructions](phone/README.md) and [per-client build, install and workflow evidence](docs/plans/23-dockit-transfer.md).
 
@@ -44,7 +44,7 @@ Download the latest installer from [Releases](https://github.com/2Mars4096/todo-
 | **Windows** | `.msi` or `.exe` |
 | **Linux** | `.deb` or `.AppImage` |
 
-Use the globe in the notebook header to choose the display language. **System default** follows your device. Dockit remembers an explicit choice on the device or in the current browser profile. English, 简体中文, 繁體中文, 廣東話, 日本語, 한국어, Français, Deutsch, Español and Português are available offline. Changing language preserves an open draft and the original task text.
+On phones, choose **Settings → Display language**. On web and Mac, use the globe in the notebook header. **System default** follows your device. Dockit remembers an explicit choice on the device or in the current browser profile. English, 简体中文, 繁體中文, 廣東話, 日本語, 한국어, Français, Deutsch, Español and Português are available offline. Changing language preserves an open draft and the original task text.
 
 First launch opens the task list with the **What needs doing?** field ready. Write a task, then choose **Add** or press **Cmd/Ctrl+Enter**. Enter inserts a new line. Paragraphs and blank lines stay with the task. After adding, keep typing in the same field to capture the next task. Phones also accept Cmd/Ctrl+Enter on a hardware keyboard. AI setup is optional and can wait until you need it.
 
@@ -192,7 +192,7 @@ Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as th
 
 The magnifying-glass button opens **Search** across task dates, including completed/stopped tasks and steps. Results show their date and parent context; selecting one opens the original task. The chart button opens **Progress** for a day or week. Task counts describe the current states on those dates' lists, not when completion occurred. Steps are separate, and focus totals use retained sessions and planned minutes. Unavailable archive files are reported rather than counted as empty history.
 
-The small account indicator opens Account details on desktop. On phone, the cloud button syncs directly and briefly shows the result; configuration and conflict review remain in **Settings → Account & sync**. Symbols and tooltips distinguish local-only, waiting, syncing, cloud-acknowledged and attention states. Editing a task clears the prior synced indication until the current content is acknowledged. The phone eye button shows/hides completed and stopped tasks without deleting them.
+The small account indicator opens Account details on desktop. On phones, the cloud button in Settings syncs directly and briefly shows the result; configuration and conflict review remain in **Settings → Account & sync**. Symbols and tooltips distinguish local-only, waiting, syncing, cloud-acknowledged and attention states. Editing a task clears the prior synced indication until the current content is acknowledged. The phone eye button shows/hides completed and stopped tasks without deleting them.
 
 Under **Goals → Routines**, Manual remains unchanged. Daily, Weekdays and Weekly generate one ordinary task on eligible dates when Today is loaded. Weekly uses the weekday you configure it; the device's local calendar controls dates. Schedules are stored on this device for the current task folder, while generated tasks can sync normally. Missed days are not backfilled. **Pause** leaves existing tasks intact; **Skip next** skips the next ungenerated occurrence. Changing a schedule affects future generation, not existing task text. A failed task save leaves the occurrence pending for Retry without duplicating it.
 

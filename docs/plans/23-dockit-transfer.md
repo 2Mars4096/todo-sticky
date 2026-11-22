@@ -124,3 +124,13 @@ The local signed APK has SHA-256 `0c17a555264316aa1eb81f3f16b8d9f696fc0e4267a65d
 The signed 2.1.21+36 (Android version code 2036) Android build retained its package and signer. On Android API 35, the actual sign-in button opened `https://pipedreams.work/signin`. The OS dispatched `todo-sticky://account-return` to the installed app in both tests. 48 focused Flutter checks passed. The iOS 26.4 simulator app and unsigned device IPA carry the matching version. Live Google account selection and provisioned physical iPhone installation remain unverified.
 
 A dedicated iPhone 17 Pro simulator running iOS 26.4 opened the installed app through the system URL resolver. XCTest observed the app reach the foreground from terminated and background states for both return URLs. The run completed two tests with zero failures.
+
+## Phone Settings and navigation
+
+- [x] Notes opens on the selected notebook date, with search and progress beside it. The app mark beside Notes, Goals and Focus opens Settings or Account & sync. Settings shows the account state, display language, notebook material, AI provider and planning machines.
+- [x] Retain the original bottom destinations checked against `5d6a8ff` (Notes, Goals and Focus). The signed release preserves the existing application ID and signer while upgrading 2036 to 2037 on Android API 35.
+- [x] Verify the menu, Settings, account entry and return on an installed iPhone 17 Pro simulator running iOS 26.4. The matching device IPA is unsigned and requires provisioning. Signed-in service tests use fixtures. No personal account was used.
+
+[Android home](../reviews/phone-settings/android-home.png) · [Android Settings](../reviews/phone-settings/android-settings.png) · [Installed Android checks](../reviews/phone-settings/installed-android.json) · [iPhone home](../reviews/phone-settings/iphone-home.png) · [iPhone Settings](../reviews/phone-settings/iphone-settings.png)
+
+43 focused Flutter tests passed, including all ten language choices, 320 px at 1.4×, 360 px at 1.5× with a keyboard, nested edits, account fixtures and cloud synchronization. The installed Android app retained a task created on the previous build and returned to it from Account & sync.

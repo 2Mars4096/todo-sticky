@@ -20,12 +20,14 @@ import 'albums_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final WidgetBuilder? meetingBuilder;
+  final ValueChanged<bool>? openArchive;
   final StickyStore store;
   final AiService ai;
   final VoidCallback openFocus;
   const HomeScreen({
     super.key,
     this.meetingBuilder,
+    this.openArchive,
     required this.store,
     required this.ai,
     required this.openFocus,
@@ -194,6 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final store = widget.store;
     final date = parseDate(store.selectedDate);
+    final keyboardOpen = View.of(context).viewInsets.bottom > 0;
     final tasks = store.selectedTasks;
     final visibleTasks = tasks
         .where((row) => store.preferences.showCompleted || !row.task.closed)
@@ -208,6 +211,12 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: [
+              if (!keyboardOpen && widget.openArchive != null)
+                IconButton(
+                  tooltip: tr(context, 'Search tasks'),
+                  icon: const Icon(Icons.search),
+                  onPressed: () => widget.openArchive!(false),
+                ),
               IconButton(
                 tooltip: tr(context, "Previous day"),
                 onPressed: () => store.selectDate(
@@ -247,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: ink,
                           ),
                         ),
-                        Text(
+                        if (!keyboardOpen) Text(
                           (currentLanguage == 'en'
                                   ? DateFormat('d MMMM y')
                                   : DateFormat.yMMMMd())
@@ -266,6 +275,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 icon: const Icon(Icons.chevron_right),
               ),
+              if (!keyboardOpen && widget.openArchive != null)
+                IconButton(
+                  tooltip: tr(context, 'Progress'),
+                  icon: const Icon(Icons.bar_chart_outlined),
+                  onPressed: () => widget.openArchive!(true),
+                ),
             ],
           ),
         ),

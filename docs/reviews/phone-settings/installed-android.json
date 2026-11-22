@@ -1,0 +1,59 @@
+{
+  "activity": "io.github.twomars4096.sticky_todo/.MainActivity",
+  "device": "API 35 emulator-5576",
+  "originalInstallRetained": true,
+  "observed": [
+    [
+      "Today",
+      "Today\n22 November 2026"
+    ],
+    [
+      "Add task",
+      "Add task"
+    ],
+    [
+      "Notebook settings review",
+      "Notebook settings review"
+    ],
+    [
+      "Search tasks",
+      "Search tasks"
+    ],
+    [
+      "Progress",
+      "Progress"
+    ],
+    [
+      "Open navigation menu",
+      "Open navigation menu"
+    ],
+    [
+      "Settings",
+      "Settings"
+    ],
+    [
+      "Display language",
+      "Display language\nSystem default"
+    ],
+    [
+      "Signed out",
+      "Account & sync\nSigned out"
+    ],
+    [
+      "System default",
+      "Display language\nSystem default"
+    ],
+    [
+      "Account & sync",
+      "Account & sync\nSigned out"
+    ],
+    [
+      "Continue with Google",
+      "Continue with Google"
+    ],
+    [
+      "Notebook settings review",
+      "Notebook settings review"
+    ]
+  ]
+}

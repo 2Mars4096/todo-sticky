@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## Compact keyboard and long drafts
+
+A 360 × 740 notebook with a 1.5× text scale could overflow when the keyboard and a multiline draft shared the screen with the full date controls. While editing, the date row keeps previous and next day and the date picker, and restores the supplementary date line and archive actions when the keyboard closes. The paragraph regression covers this layout.
+
 ## Browser approval after process loss
 
 The previous phone build registered its return URL but kept the verifier only in memory. Returning to a restarted app could reopen its signed-out screen after Google approval. A fresh controller now continues the original exchange from an expiring device record. [Account return](plans/23-dockit-transfer.md#browser-sign-in-return)

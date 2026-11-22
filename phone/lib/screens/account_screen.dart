@@ -253,24 +253,18 @@ class _AccountEnabledAppState extends State<AccountEnabledApp>
         },
       ),
       accountBuilder: (_) => AccountScreen(account: account),
-      syncIndicatorBuilder: (context) => ListenableBuilder(
+      accountStatusBuilder: (context) => ListenableBuilder(
         listenable: account,
-        builder: (_, _) => account.ready && account.session == null
-            ? ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 106),
-                child: TextButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => AccountScreen(account: account),
-                    ),
-                  ),
-                  child: Text(
-                    tr(context, "Sign in"),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
+        builder: (_, _) => Text(
+          !account.ready
+              ? tr(context, 'Loading…')
+              : account.session?.email ?? tr(context, 'Signed out'),
+        ),
+      ),
+      syncIndicatorBuilder: (_) => ListenableBuilder(
+        listenable: account,
+        builder: (_, _) => account.session == null
+            ? const SizedBox.shrink()
             : CloudSyncButton(account: account),
       ),
     ),
