@@ -155,3 +155,10 @@ Sticky Todo at `5d6a8ff` searched nested task text and filtered the archive by s
 43 focused Flutter tests and a 63-case store, account and sync run passed. The latter included an edit made while a slower disk refresh was pending. The archive regression separately verified alphabetical ordering on both phone targets. API 35 retained a task across the 2037 → 2038 signed upgrade and kept the sort control at identical coordinates during a horizontal swipe to Stopped. iOS 26.4 reopened the saved task and searched, filtered, sorted and pulled the installed archive.
 
 [Android](../reviews/phone-lists/android.png) · [iPhone](../reviews/phone-lists/iphone.png) · [Signed APK and unsigned IPA hashes](../reviews/phone-lists/release.json)
+
+## Notebook language loading
+
+- [x] Split nine language catalogs out of the shared initial module and mount the notebook while the selected language loads.
+- [x] Run all 33 Node suites. Chromium opened the production build in English, French and Japanese. The latter two typed into the notebook during an intentionally stalled catalog download and retained the draft after translation. Each requested only its own catalog. English requested none.
+- [x] Publish Hosting version `af423af58e95a0f8`. Production entry bytes fell from 1,598,894 to 769,341 (gzip level 6 from 466,010 to 214,455). Compare all 22 staged app files with the live site, retain the 15 other original file hashes and verify both app URLs and the shared-task route.
+- [x] Build the [local Mac application](../../output/clients/phased-loading/macOS/Dockit.app), version 2.1.17, and verify its ad-hoc signature and bundled screenshot helper. The executable SHA-256 is `efdad0a45807ac5ce8a669b9feb34a1c6dac10b0bd07888e5ee0bca59cf28df6`.

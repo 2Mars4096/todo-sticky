@@ -1,4 +1,4 @@
-import { ui } from './interfaceLocale'
+import { loadLanguage, ui } from './interfaceLocale'
 import './app-menu.js'
 import './app-menu.css'
 import { invoke, isTauri } from '@tauri-apps/api/core'
@@ -60,7 +60,9 @@ if (!rootElement) {
   throw error
 }
 
-ReactDOM.createRoot(rootElement).render(
+const root = ReactDOM.createRoot(rootElement)
+void loadLanguage()
+root.render(
   <React.StrictMode>
     <AppErrorBoundary onError={recordBootError}>
       <App />

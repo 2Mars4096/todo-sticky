@@ -30,6 +30,8 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
+The [local Mac 2.1.17 app](output/clients/phased-loading/macOS/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. [Release checks](docs/plans/23-dockit-transfer.md#notebook-language-loading)
+
 Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, rebuilt and reinstalled with the **Diane shared backend** and editable local setup/session handoff (2026-11-10). Your original Todo interface and local notes remain. Open **Settings → Account → Continue with Google** with the same account as Diane, then **Sync**. Local Diane connection is enabled on this installation; Push stays grey when Diane is unavailable.
 
 Build 33 includes repeat step entry. [Signed Android ARM64 APK](output/clients/step-capture/Dockit-arm64-v8a-release.apk) · [iPhone Simulator app](output/clients/step-capture/iphonesimulator/Dockit.app) · [Unsigned device IPA](output/clients/step-capture/Dockit-unsigned.ipa) · [Local Mac app](output/clients/step-capture/macOS/Dockit.app) · [Verification](docs/plans/23-dockit-transfer.md#repeated-step-capture).

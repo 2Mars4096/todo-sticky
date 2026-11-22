@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## Local Mac build and updater credentials
+
+The normal release wrapper could not unlock the private local signing keychain. For the 2.1.17 local bundle, the existing ad-hoc identity and screenshot helper produced a deep-verified app. The updater additionally requires its private signing key, so this local build disabled updater artifact generation. No updater feed was released.
+
 ## Compact keyboard and long drafts
 
 A 360 × 740 notebook with a 1.5× text scale could overflow when the keyboard and a multiline draft shared the screen with the full date controls. While editing, the date row keeps previous and next day and the date picker, and restores the supplementary date line and archive actions when the keyboard closes. The paragraph regression covers this layout.

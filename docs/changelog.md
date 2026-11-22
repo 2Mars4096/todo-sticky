@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-22 — Web and Mac language loading
+
+The notebook is editable while its selected language downloads. The production JavaScript entry shrank from 1,598,894 to 769,341 bytes. [Hosting and Mac release](plans/23-dockit-transfer.md#notebook-language-loading)
+
 ## 2026-11-22 — Phone list retrieval
 
 In Search and Progress, swipe through task states. The goal filter and sort controls stay beside the strip. Sort the archive by newest date, oldest date or task title. Pull Notes, Search or Progress to refresh the device notebook or run its enabled account sync. [Release 2.1.23+38](plans/23-dockit-transfer.md#phone-list-retrieval)

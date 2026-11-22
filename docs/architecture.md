@@ -1,5 +1,9 @@
 # Architecture
 
+## Web and Mac language catalogs
+
+The shared React client starts with English strings embedded in the source. Vite emits one chunk per additional supported language. Only the selected language is loaded, and a completed request applies only if the preference still selects it. Existing drafts stay in the mounted notebook.
+
 ## Browser approval and phone return
 
 The production shared account opens `https://pipedreams.work/signin`. Discovery and verifier exchange continue at the selected broker. The phone saves the request ID, verifier and deadline in the secure credential store before opening the browser. The URL `todo-sticky://account-return` brings the app forward. A restarted app resumes only an existing request within its original five-minute window. Cancellation and completion clear the pending record. Separate service installations use their configured sign-in origin.

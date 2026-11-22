@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Load only the active language in the web and Mac notebooks. [Loading and release checks](plans/23-dockit-transfer.md#notebook-language-loading)
+
 - [x] Preserve the original phone list workflows and verify search, ordering and refresh on Android and iPhone. [Phone list retrieval](plans/23-dockit-transfer.md#phone-list-retrieval)
 
 - [x] Publish the real web notebook at `/app/`, retain the product landing and verify browser persistence and sign-in. [Production release](plans/23-dockit-transfer.md#production-web-notebook)
