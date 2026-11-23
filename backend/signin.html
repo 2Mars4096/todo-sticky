@@ -15,7 +15,7 @@ button,.return { display:flex; justify-content:center; align-items:center; width
  margin-top:16px; padding:10px 16px; border:1px solid var(--action); border-radius:7px; background:var(--action);
  color:var(--on-action); text-align:center; font:600 15px/1.4 system-ui,sans-serif; text-decoration:none; cursor:pointer }
 .return { background:transparent; color:var(--secondary-ink); border-color:var(--control-border) }
-[hidden],p:empty { display:none!important } button:disabled { opacity:.6 }
+[hidden] { display:none!important } #status:empty,#error:empty { margin:0 } button:disabled { opacity:.6 }
 :is(button,a):focus-visible { outline:2px solid var(--focus); outline-offset:3px }
 .muted { color:var(--muted) } main > p:last-child { margin-top:20px; font-size:14px }
 #status { white-space:pre-wrap } #error { color:var(--error) }
