@@ -2,6 +2,23 @@
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-interface>Sign in · Dockit</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/dockit-32.png">
-<style>body{font:17px/1.6 system-ui;background:#fff8dc;color:#3d3520;margin:0;padding:32px}main{max-width:480px;margin:10vh auto}h1{font-size:30px;letter-spacing:-.04em}button,.return{font:inherit;padding:12px 20px;border:1px solid #856519;border-radius:10px;background:#e6ce82;color:#3d3520;cursor:pointer}[hidden]{display:none!important}.return{display:inline-block;text-decoration:none;color:inherit;margin-top:12px}button:disabled{opacity:.6}button:focus-visible{outline:3px solid #856519;outline-offset:3px}.muted{color:#63583e}#status{white-space:pre-wrap}#error{color:#852f24}</style>
-<main><p class="muted"><img src="/dockit-32.png" width="24" height="24" alt="" style="vertical-align:middle;border-radius:5px"> Dockit · pipedreams</p><h1 data-interface>Connect your account</h1><p data-interface>Task sync stays off until you enable it in the app.</p><button id="signin" data-interface>Continue with Google</button><a id="return" class="return" href="todo-sticky://account-return" hidden data-interface>Return to Dockit</a><p id="status" role="status"></p><p id="error" role="alert"></p><p class="muted" data-interface>Only connect a sign-in request you started yourself. You can close this page after the app confirms your account.</p></main>
+<style>
+/* Hallmark · Dockit account · existing notebook paper and ink */
+:root { --paper:#fff8dc; --ink:#3d3520; --action:#68511f; --on-action:#fffaf0; --secondary-ink:#493d24; --control-border:#bdad80; --focus:#856519; --muted:#63583e; --error:#852f24; }
+* { box-sizing:border-box }
+body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 system-ui,sans-serif }
+main { inline-size:min(100%,26rem); margin-inline:auto; padding:clamp(32px,12vh,96px) 24px 40px }
+.brand { display:flex; gap:10px; align-items:center; margin:0 0 18px; font-weight:600 }
+h1 { margin:0; font-size:clamp(26px,5vw,32px); letter-spacing:-.035em; line-height:1.2 }
+main > p { margin:12px 0; overflow-wrap:anywhere }
+button,.return { display:flex; justify-content:center; align-items:center; width:100%; min-height:48px;
+ margin-top:16px; padding:10px 16px; border:1px solid var(--action); border-radius:7px; background:var(--action);
+ color:var(--on-action); text-align:center; font:600 15px/1.4 system-ui,sans-serif; text-decoration:none; cursor:pointer }
+.return { background:transparent; color:var(--secondary-ink); border-color:var(--control-border) }
+[hidden],p:empty { display:none!important } button:disabled { opacity:.6 }
+:is(button,a):focus-visible { outline:2px solid var(--focus); outline-offset:3px }
+.muted { color:var(--muted) } main > p:last-child { margin-top:20px; font-size:14px }
+#status { white-space:pre-wrap } #error { color:var(--error) }
+</style>
+<main><p class="brand"><img src="/dockit-32.png" width="24" height="24" alt="" style="vertical-align:middle;border-radius:5px"> Dockit · pipedreams</p><h1 data-interface>Connect your account</h1><p data-interface>Task sync stays off until you enable it in the app.</p><button id="signin" data-interface>Continue with Google</button><a id="return" class="return" href="todo-sticky://account-return" hidden data-interface>Return to Dockit</a><p id="status" role="status"></p><p id="error" role="alert"></p><p class="muted" data-interface>Only connect a sign-in request you started yourself. You can close this page after the app confirms your account.</p></main>
 <script type="module" src="/signin.js"></script></html>

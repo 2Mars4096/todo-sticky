@@ -20,7 +20,7 @@ export function AccountPanel({ account, flush = waitForPendingWrites }: { accoun
   useEffect(() => { if (!review && restoreFocus.current) { reviewButton.current?.focus(); restoreFocus.current = false } }, [review])
   const back = () => { restoreFocus.current = true; setReview(null) }
   if (review) return <ConflictReview account={account} initialHistory={review === 'history'} onBack={back} />
-  return <section className="settings-section cloud-account" aria-labelledby="account-heading">
+  return <section className={`settings-section cloud-account${account.user ? '' : ' cloud-signin'}`} aria-labelledby="account-heading">
     <header className="cloud-account-heading">
       <div><h3 id="account-heading">{account.user?.displayName || (shared ? ui("pipedreams account") : ui("Account"))}</h3>{account.user?.email && <p className="cloud-email">{account.user.email}</p>}</div>
       {account.user && <button type="button" className="cloud-quiet" disabled={account.busy} onClick={() => { void account.logout() }}>{ui("Sign out")}</button>}
@@ -36,7 +36,7 @@ export function AccountPanel({ account, flush = waitForPendingWrites }: { accoun
     </> : <div className="cloud-login-actions"><button type="button" className="cloud-primary" onClick={() => { void account.login() }} disabled={!account.connected || account.signingIn}>{account.signingIn
       ? shared ? ui("Waiting for sign-in…") : ui("Waiting for Google…")
       : shared ? ui("Continue with pipedreams") : ui("Continue with Google")}</button>{account.signingIn && <button type="button" className="cloud-quiet" onClick={account.cancelSignIn}>{ui("Cancel")}</button>}</div>}
-    {shared && <p><SuiteLink href="https://pipedreams.work/account">{ui("Manage sign-in methods")}</SuiteLink></p>}
+    {shared && <p className="cloud-account-manage"><SuiteLink href="https://pipedreams.work/account">{ui("Manage sign-in methods")}</SuiteLink></p>}
     {account.error && <p role="alert" className="settings-error">{account.error}</p>}
     <details open={!account.server || undefined} className="cloud-connection">
       <summary>{ui("Connection")}</summary>

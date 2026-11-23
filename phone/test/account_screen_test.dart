@@ -204,6 +204,13 @@ void main() {
       await openAccount(tester, account, GlobalKey());
       expect(find.text('Continue with pipedreams'), findsOneWidget);
       expect(find.text('Continue with Google'), findsNothing);
+      final signIn = tester.getRect(
+        buttonWithLabel('Continue with pipedreams'),
+      );
+      final manage = tester.getRect(buttonWithLabel('Manage sign-in methods'));
+      expect(manage.left, closeTo(signIn.left, 0.01));
+      expect(manage.right, closeTo(signIn.right, 0.01));
+      expect(manage.top - signIn.bottom, greaterThanOrEqualTo(12));
       await revealButton(tester, 'Manage sign-in methods');
       await tester.tap(buttonWithLabel('Manage sign-in methods'));
       await tester.pumpAndSettle();

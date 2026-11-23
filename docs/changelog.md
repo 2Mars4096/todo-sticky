@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 — Account action layout
+
+Settings → Account now gives shared sign-in and sign-in management clear, separate rows. A configured phone puts setup below the actions; an unconfigured phone opens setup first. The independent Google approval page retains its own flow. [Platform checks](plans/23-dockit-transfer.md#signed-out-account-layout)
+
 ## 2026-11-23 — Shared sign-in and account management
 
 Open Settings → Account on Mac or web, or Account & sync on the phone, to continue with pipedreams or manage sign-in methods. The browser manager opens without a UID, token or handoff proof. Independent services retain Google-specific entry controls. [Release checks](plans/23-dockit-transfer.md#shared-sign-in-and-account-management)

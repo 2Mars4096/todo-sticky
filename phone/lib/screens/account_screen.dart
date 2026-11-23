@@ -340,6 +340,66 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  Widget serviceSetup(CloudSyncController account, bool unavailable) =>
+      ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        initiallyExpanded: account.server.isEmpty,
+        title: Text(tr(context, "Sync service")),
+        subtitle: account.server == dianeSharedOrigin
+            ? null
+            : Text(
+                account.server.isEmpty
+                    ? tr(context, "Connect your Google Cloud backend")
+                    : account.server,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+        children: [
+          TextField(
+            controller: endpoint,
+            enabled: !unavailable,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            decoration: InputDecoration(
+              labelText: tr(context, "Service URL"),
+              hintText: 'https://sticky-sync.example.com',
+            ),
+            onSubmitted: (_) {
+              if (!unavailable) configure();
+            },
+          ),
+          const SizedBox(height: 12),
+          if (setupError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                setupError!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.tonal(
+              onPressed: unavailable ? null : configure,
+              child: Text(
+                configuring
+                    ? tr(context, "Connecting…")
+                    : tr(context, "Connect service"),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      );
+
+  Future<void> openManager() => run(() async {
+    if (!await widget.account.openBrowser(
+      Uri.https('pipedreams.work', '/account'),
+    )) {
+      throw StateError(ui("Could not open the link in your browser."));
+    }
+  });
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: widget.account,
@@ -386,235 +446,218 @@ class _AccountScreenState extends State<AccountScreen> {
                 : tr(context, "Account & sync"),
           ),
         ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
-          children: [
-            if (account.session != null) ...[
-              Text(
-                account.session!.email,
-                style: Theme.of(context).textTheme.titleMedium,
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: account.session == null ? 460 : double.infinity,
+            ),
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                account.session == null ? 20 : 12,
+                20,
+                40,
               ),
-              if (account.session!.origin == dianeSharedOrigin)
-                WorkspaceAssignments(
-                  key: ValueKey(account.session!.owner),
-                  initialTask: widget.assignmentKey,
-                  account: account,
-                ),
-              const SizedBox(height: 16),
-            ],
-            if (account.session == null) ...[
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                initiallyExpanded: account.server.isEmpty,
-                title: Text(tr(context, "Sync service")),
-                subtitle: Text(
-                  account.server.isEmpty
-                      ? tr(context, "Connect your Google Cloud backend")
-                      : account.server,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                children: [
-                  TextField(
-                    controller: endpoint,
-                    enabled: !unavailable,
-                    keyboardType: TextInputType.url,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: tr(context, "Service URL"),
-                      hintText: 'https://sticky-sync.example.com',
-                    ),
-                    onSubmitted: (_) {
-                      if (!unavailable) configure();
-                    },
+              children: [
+                if (account.session != null) ...[
+                  Text(
+                    account.session!.email,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 12),
-                  if (setupError != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        setupError!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
+                  if (account.session!.origin == dianeSharedOrigin)
+                    WorkspaceAssignments(
+                      key: ValueKey(account.session!.owner),
+                      initialTask: widget.assignmentKey,
+                      account: account,
                     ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton.tonal(
-                      onPressed: unavailable ? null : configure,
-                      child: Text(
-                        configuring
-                            ? tr(context, "Connecting…")
-                            : tr(context, "Connect service"),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                 ],
-              ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: unavailable || account.server.isEmpty
-                    ? null
-                    : () => run(account.signIn),
-                icon: const Icon(Icons.account_circle_outlined),
-                label: Text(
-                  account.server == dianeSharedOrigin
-                      ? tr(context, "Continue with pipedreams")
-                      : tr(context, "Continue with Google"),
-                ),
-              ),
-              if (account.signingIn)
-                TextButton(
-                  onPressed: account.cancelSignIn,
-                  child: Text(tr(context, "Cancel sign-in")),
-                ),
-            ] else ...[
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                title: Text(tr(context, "Sync this notebook")),
-                subtitle: Text(
-                  account.enabled
-                      ? tr(context, "Syncs while the app is open.")
-                      : tr(
-                          context,
-                          "Upload tasks, goals and completed sessions.",
-                        ),
-                ),
-                value: account.enabled,
-                onChanged: unavailable
-                    ? null
-                    : (value) => run(() => account.setEnabled(value)),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 10,
-                runSpacing: 8,
-                children: [
+                if (account.session == null) ...[
+                  if (account.server.isEmpty) ...[
+                    serviceSetup(account, unavailable),
+                    const SizedBox(height: 12),
+                  ],
                   FilledButton.icon(
-                    onPressed: unavailable || !account.enabled
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    onPressed: unavailable || account.server.isEmpty
                         ? null
-                        : () => run(() => account.synchronize()),
-                    icon: account.busy && !account.background
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.sync),
+                        : () => run(account.signIn),
+                    icon: const Icon(Icons.account_circle_outlined),
                     label: Text(
-                      account.busy && !account.background
-                          ? tr(context, "Syncing…")
-                          : tr(context, "Sync now"),
+                      account.server == dianeSharedOrigin
+                          ? tr(context, "Continue with pipedreams")
+                          : tr(context, "Continue with Google"),
                     ),
                   ),
-                  OutlinedButton(
-                    onPressed: unavailable ? null : () => run(account.signOut),
-                    child: Text(tr(context, "Sign out")),
-                  ),
-                  if (account.error != null)
+                  if (account.signingIn)
                     TextButton(
-                      onPressed: unavailable ? null : () => run(account.signIn),
-                      child: Text(
-                        account.server == dianeSharedOrigin
-                            ? tr(context, "Reconnect")
-                            : tr(context, "Reconnect Google"),
+                      onPressed: account.cancelSignIn,
+                      child: Text(tr(context, "Cancel sign-in")),
+                    ),
+                ] else ...[
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(tr(context, "Sync this notebook")),
+                    subtitle: Text(
+                      account.enabled
+                          ? tr(context, "Syncs while the app is open.")
+                          : tr(
+                              context,
+                              "Upload tasks, goals and completed sessions.",
+                            ),
+                    ),
+                    value: account.enabled,
+                    onChanged: unavailable
+                        ? null
+                        : (value) => run(() => account.setEnabled(value)),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: unavailable || !account.enabled
+                            ? null
+                            : () => run(() => account.synchronize()),
+                        icon: account.busy && !account.background
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.sync),
+                        label: Text(
+                          account.busy && !account.background
+                              ? tr(context, "Syncing…")
+                              : tr(context, "Sync now"),
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: unavailable
+                            ? null
+                            : () => run(account.signOut),
+                        child: Text(tr(context, "Sign out")),
+                      ),
+                      if (account.error != null)
+                        TextButton(
+                          onPressed: unavailable
+                              ? null
+                              : () => run(account.signIn),
+                          child: Text(
+                            account.server == dianeSharedOrigin
+                                ? tr(context, "Reconnect")
+                                : tr(context, "Reconnect Google"),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+                if (account.busy &&
+                    !account.background &&
+                    account.progress != null)
+                  SyncProgressView(progress: account.progress!),
+                if ((!account.busy || account.background) &&
+                    account.message.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      account.message,
+                      style: const TextStyle(color: mutedInk, height: 1.4),
+                    ),
+                  ),
+                ],
+                if (account.server == dianeSharedOrigin) ...[
+                  const SizedBox(height: 12),
+                  if (account.session == null)
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      onPressed: openManager,
+                      icon: const Icon(Icons.open_in_new),
+                      label: Text(tr(context, "Manage sign-in methods")),
+                    )
+                  else
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: openManager,
+                        icon: const Icon(Icons.open_in_new),
+                        label: Text(tr(context, "Manage sign-in methods")),
                       ),
                     ),
                 ],
-              ),
-            ],
-            if (account.busy && !account.background && account.progress != null)
-              SyncProgressView(progress: account.progress!),
-            if ((!account.busy || account.background) &&
-                account.message.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  account.message,
-                  style: const TextStyle(color: mutedInk, height: 1.4),
-                ),
-              ),
-            ],
-            if (account.server == dianeSharedOrigin)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  icon: const Icon(Icons.open_in_new),
-                  label: Text(tr(context, "Manage sign-in methods")),
-                  onPressed: () async {
-                    try {
-                      if (!await account.openBrowser(
-                        Uri.https('pipedreams.work', '/account'),
-                      )) {
-                        throw StateError(
-                          ui("Could not open the link in your browser."),
-                        );
-                      }
-                    } catch (error) {
-                      if (context.mounted) showError(context, error);
-                    }
-                  },
-                ),
-              ),
-            if (account.error != null) ...[
-              const SizedBox(height: 10),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  account.error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
-            if (account.lastSynced != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  tr(context, "Last sync: {0}", [
-                    account.lastSynced!.substring(0, 16).replaceAll('T', ' '),
-                  ]),
-                  style: const TextStyle(color: mutedInk, fontSize: 12),
-                ),
-              ),
-            if (account.conflicts.isNotEmpty) ...[
-              const Divider(height: 36),
-              Text(
-                tr(context, "Conflicts"),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                tr(context, "Both copies saved"),
-                style: TextStyle(height: 1.4),
-              ),
-              for (final conflict in account.conflicts)
-                ConflictItems(
-                  key: ValueKey(conflict.key),
-                  account: account,
-                  conflict: conflict,
-                ),
-            ],
-            if (account.session != null)
-              TextButton.icon(
-                onPressed: unavailable
-                    ? null
-                    : () => run(
-                        () => NativeFiles.write(
-                          'sticky-todo-sync-recovery.json',
-                          'application/json',
-                          account.exportRecovery(),
-                        ),
+                if (account.session == null && account.server.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  serviceSetup(account, unavailable),
+                ],
+                if (account.error != null) ...[
+                  const SizedBox(height: 10),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      account.error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        height: 1.4,
                       ),
-                icon: const Icon(Icons.download_outlined),
-                label: Text(tr(context, "Export conflict recovery copies")),
-              ),
-          ],
+                    ),
+                  ),
+                ],
+                if (account.lastSynced != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      tr(context, "Last sync: {0}", [
+                        account.lastSynced!
+                            .substring(0, 16)
+                            .replaceAll('T', ' '),
+                      ]),
+                      style: const TextStyle(color: mutedInk, fontSize: 12),
+                    ),
+                  ),
+                if (account.conflicts.isNotEmpty) ...[
+                  const Divider(height: 36),
+                  Text(
+                    tr(context, "Conflicts"),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tr(context, "Both copies saved"),
+                    style: TextStyle(height: 1.4),
+                  ),
+                  for (final conflict in account.conflicts)
+                    ConflictItems(
+                      key: ValueKey(conflict.key),
+                      account: account,
+                      conflict: conflict,
+                    ),
+                ],
+                if (account.session != null)
+                  TextButton.icon(
+                    onPressed: unavailable
+                        ? null
+                        : () => run(
+                            () => NativeFiles.write(
+                              'sticky-todo-sync-recovery.json',
+                              'application/json',
+                              account.exportRecovery(),
+                            ),
+                          ),
+                    icon: const Icon(Icons.download_outlined),
+                    label: Text(tr(context, "Export conflict recovery copies")),
+                  ),
+              ],
+            ),
+          ),
         ),
       );
     },

@@ -1,5 +1,9 @@
 # Architecture
 
+## Signed-out account layout
+
+The signed-out React Account panel has one bounded stack for sign-in and account management. On phones the equivalent actions use full-width 48 px controls. The Sync service disclosure follows the actions for a configured service; a fresh independent service opens setup first. Signed-in notebook controls keep their existing hierarchy.
+
 ## Shared account settings
 
 For the production broker, use the suite account name in sign-in prompts and the verified email requirement after exchange. The short-lived app sign-in proof remains tied to the opening client. The separate Manage sign-in methods action opens the exact standalone HTTPS account page in a new browser tab or system browser, passing no account data. The Tauri permitted-URL check admits the single canonical manager URL. Self-hosted Google-only services continue to use their existing prompts and authorization.

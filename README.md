@@ -30,9 +30,9 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-The [local Mac 2.1.19 app](desktop/src-tauri/target/release/bundle/macos/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. Hover over a footer action to see its name. The phone release is 2.1.27+43. Its square drawer button shows the folder tray directly on the selected notebook material. [Release checks](docs/plans/23-dockit-transfer.md#icon-only-footer-navigation)
+The [local Mac 2.1.20 app](desktop/src-tauri/target/release/bundle/macos/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. Hover over a footer action to see its name. The phone release is 2.1.28+44. Its square drawer button shows the folder tray directly on the selected notebook material. [Release checks](docs/plans/23-dockit-transfer.md#icon-only-footer-navigation)
 
-The installed Mac app is `/Applications/Dockit.app` (2.1.19). Open **Settings → Account → Continue with pipedreams** to connect the same pipedreams account you use in Shiprite. Choose **Manage sign-in methods** to open the shared account page in your browser. Sync and the local Shiprite connection are separate controls.
+The installed Mac app is `/Applications/Dockit.app` (2.1.20). Open **Settings → Account → Continue with pipedreams** to connect the same pipedreams account you use in Shiprite. Choose **Manage sign-in methods** to open the shared account page in your browser. Sync and the local Shiprite connection are separate controls.
 
 Build 33 includes repeat step entry. [Signed Android ARM64 APK](output/clients/step-capture/Dockit-arm64-v8a-release.apk) · [iPhone Simulator app](output/clients/step-capture/iphonesimulator/Dockit.app) · [Unsigned device IPA](output/clients/step-capture/Dockit-unsigned.ipa) · [Local Mac app](output/clients/step-capture/macOS/Dockit.app) · [Verification](docs/plans/23-dockit-transfer.md#repeated-step-capture).
 
