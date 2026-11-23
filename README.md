@@ -34,9 +34,7 @@ The [local Mac 2.1.20 app](desktop/src-tauri/target/release/bundle/macos/Dockit.
 
 The installed Mac app is `/Applications/Dockit.app` (2.1.20). Open **Settings → Account → Continue with pipedreams** to connect the same pipedreams account you use in Shiprite. Choose **Manage sign-in methods** to open the shared account page in your browser. Sync and the local Shiprite connection are separate controls.
 
-Build 33 includes repeat step entry. [Signed Android ARM64 APK](output/clients/step-capture/Dockit-arm64-v8a-release.apk) · [iPhone Simulator app](output/clients/step-capture/iphonesimulator/Dockit.app) · [Unsigned device IPA](output/clients/step-capture/Dockit-unsigned.ipa) · [Local Mac app](output/clients/step-capture/macOS/Dockit.app) · [Verification](docs/plans/23-dockit-transfer.md#repeated-step-capture).
-
-The previous local [signed ARM64 Android release](output/clients/android-release/Dockit-arm64-v8a-release.apk) is 2.1.19+32. [iPhone Simulator app](output/clients/ios-simulator/Dockit.app) · [Unsigned device IPA](output/clients/ios-device/Dockit-unsigned.ipa) · [Build and signing details](docs/plans/25-interface-element-review.md#build-32-deadline-verification). Install over the existing signed app and open **Today → Meeting follow-ups** while signed in to Diane.
+In the adjacent pipedreams checkout, `Dockit.apk` is the current signed Android ARM64 installer. The [iPhone Simulator app](output/clients/pair-review/iphonesimulator/Dockit.app) and [unsigned device IPA](output/clients/pair-review/Dockit-unsigned.ipa) are built from the same phone release. [Release verification](docs/plans/23-dockit-transfer.md#signed-out-account-layout)
 
 Android 2.1.15+9 adds Earlier-to-Today dragging and **Goals → plan → linked daily tasks → Progress**. Add steps manually or review an AI proposal, then schedule selected steps for Today or another date. Completion follows the actual daily tasks. See [Android usage and preview build](phone/README.md). The compatible backend is deployed, and the local APK is an original-key production update. A separately installable preview remains a fallback for environments without the production key.
 

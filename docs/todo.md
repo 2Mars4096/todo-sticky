@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Prune completed native build intermediates and retired local packaging output. [Release checks](plans/5-build-artifact-cleanup.md#local-build-output)
+
 - [x] Make shared sign-in and account management separate, equally sized actions on all client platforms and retain standalone setup. [Geometry and release evidence](plans/23-dockit-transfer.md#signed-out-account-layout)
 
 - [x] Direct shared sign-in and account management to the canonical suite browser pages while preserving standalone Google sign-in. [Release checks](plans/23-dockit-transfer.md#shared-sign-in-and-account-management)

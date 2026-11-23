@@ -23,3 +23,9 @@
 Routine CI builds and tests do not upload retained build artifacts. A default-branch cleanup workflow deletes artifacts from the listed completed workflows, including runs on older branches. It reads only GitHub metadata, never checks out triggering code, and deletes only artifacts for the completed run. Source code, workflow run logs, dependency caches and GitHub Releases are unaffected. Release jobs still exchange temporary installers until the complete release workflow finishes; cleanup then deletes them. New release artifacts also have a one-day expiry fallback. Re-running a publish-only job after cleanup requires rebuilding its artifacts.
 
 Validation: YAML parsing and structural comparison confirm that only upload steps were removed from routine CI; existing build/test steps and triggers remain unchanged. Cleanup shell passes bash -n. Full application builds were not rerun for this storage-only change.
+
+## Local build output
+
+- [x] Remove completed local Cargo build and incremental intermediates and Flutter test outputs. Remove the superseded 2.1.16 Sticky Todo bundle and unsigned updater archive from the Tauri build directory. The historical release delivery, the runnable native tools and the review scripts’ debug bundle remain available.
+- [x] Verify 17,254 ignored regular files totaling 7,225,498,238 logical bytes were removed from this checkout. No tracked implementation files changed.
+- [x] Verify Android 2.1.28 code 2044 against the original signer and checksum, both iPhone build 44 directories against the release metadata, and the device IPA against the extracted frameworks. The strict-signed 2.1.20 local Mac executable still matches the installed copy.

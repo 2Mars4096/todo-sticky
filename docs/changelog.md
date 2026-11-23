@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 — Local build output cleanup
+
+Removed 7.23 GB of Cargo and Flutter intermediates and the superseded, unsigned-updater output for the old local Sticky Todo bundle. The install guide now points to the current phone exports. [Cleanup record](plans/5-build-artifact-cleanup.md#local-build-output)
+
 ## 2026-11-23 — Account action layout
 
 Settings → Account now gives shared sign-in and sign-in management clear, separate rows. A configured phone puts setup below the actions; an unconfigured phone opens setup first. The independent Google approval page retains its own flow. [Platform checks](plans/23-dockit-transfer.md#signed-out-account-layout)
