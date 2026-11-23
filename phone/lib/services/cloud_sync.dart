@@ -1127,9 +1127,9 @@ class CloudSyncController extends ChangeNotifier {
     final origin = server;
     signingIn = true;
     error = null;
-    message = ui(
-      "Choose your Google account in the browser, then return here.",
-    );
+    message = origin == dianeSharedOrigin
+        ? ui("Finish signing in in your browser, then return here.")
+        : ui("Choose your Google account in the browser, then return here.");
     _notify();
     try {
       final config = await transport.request(accountConfigurationUri(origin));
@@ -1228,7 +1228,11 @@ class CloudSyncController extends ChangeNotifier {
             (user['localId'] as String).isEmpty ||
             user['email'] is! String ||
             user['emailVerified'] != true) {
-          throw StateError(ui("Use a verified Google account to sync."));
+          throw StateError(
+            shared
+                ? ui("Verify your email address to sync.")
+                : ui("Use a verified Google account to sync."),
+          );
         }
         // Custom-token sign-in returns tokens only. The authenticated lookup
         // response supplies the UID and verified email for this ID token.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 — Shared sign-in and account management
+
+Open Settings → Account on Mac or web, or Account & sync on the phone, to continue with pipedreams or manage sign-in methods. The browser manager opens without a UID, token or handoff proof. Independent services retain Google-specific entry controls. [Release checks](plans/23-dockit-transfer.md#shared-sign-in-and-account-management)
+
 ## 2026-11-22 — Phone footer clearance
 
 Notes, Goals, Focus and the transparent drawer mark now sit four logical pixels closer to the safe bottom. [Android and iPhone build 42](plans/23-dockit-transfer.md#phone-footer-clearance)

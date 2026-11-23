@@ -147,7 +147,7 @@ export function useCloudSync(hooks: Hooks) {
 
   const login = useCallback(async () => {
     if (!auth || signingIn) return
-    setSigningIn(true); setError(null); setMessage(ui("Waiting for Google"))
+    setSigningIn(true); setError(null); setMessage(server === DIANE_SHARED_ORIGIN ? ui("Waiting for sign-in…") : ui("Waiting for Google"))
     const controller = new AbortController(); signInController.current = controller
     try { await googleSignIn(server, auth, controller.signal, hooks.kbPath); setMessage(ui("Signed in")); setConnectAttempt(value=>value+1) }
     catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }

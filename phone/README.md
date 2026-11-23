@@ -1,5 +1,7 @@
 # Dockit for Android and iPhone
 
+In **Account & sync**, use **Continue with pipedreams** to sign in to the shared service. **Manage sign-in methods** opens your [pipedreams account](https://pipedreams.work/account) in the browser. An independently configured Google-only service keeps its own sign-in button.
+
 Both phone apps share the local notebook. Open **Settings → Account & sync → Workspace assignments** to send one task and its steps to an editor workspace.
 
 For an Android review build from this directory, run `ORG_GRADLE_PROJECT_stickyReviewBuild=true flutter build apk --debug --dart-define=STICKY_PREVIEW=true`. The separate preview application ID allows installation alongside the production app. For iPhone, use Flutter 3.47.8 with its iOS artifacts, Xcode and CocoaPods. Run `flutter pub get --enforce-lockfile`, then `flutter build ios --release --no-codesign` for an unsigned compilation check. To install on an iPhone, select the signing team for Runner in `ios/Runner.xcworkspace` and run `flutter run --release -d <device-id>`. See [verified packages and outstanding device checks](../docs/plans/23-dockit-transfer.md).

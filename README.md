@@ -30,9 +30,9 @@ Repository files: [folder and script guide](docs/folder-guide.md), including hid
 
 ## Install
 
-The [local Mac 2.1.18 app](desktop/src-tauri/target/release/bundle/macos/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. Hover over a footer action to see its name. The phone release is 2.1.26+42. Its square drawer button shows the folder tray directly on the selected notebook material. [Release checks](docs/plans/23-dockit-transfer.md#icon-only-footer-navigation)
+The [local Mac 2.1.19 app](desktop/src-tauri/target/release/bundle/macos/Dockit.app) and [web notebook](https://dockit.pipedreams.work/app/) open while the selected language loads. Hover over a footer action to see its name. The phone release is 2.1.27+43. Its square drawer button shows the folder tray directly on the selected notebook material. [Release checks](docs/plans/23-dockit-transfer.md#icon-only-footer-navigation)
 
-Local macOS installation: `/Applications/Sticky Todo.app` is version 2.1.16, rebuilt and reinstalled with the **Diane shared backend** and editable local setup/session handoff (2026-11-10). Your original Todo interface and local notes remain. Open **Settings → Account → Continue with Google** with the same account as Diane, then **Sync**. Local Diane connection is enabled on this installation; Push stays grey when Diane is unavailable.
+The installed Mac app is `/Applications/Dockit.app` (2.1.19). Open **Settings → Account → Continue with pipedreams** to connect the same pipedreams account you use in Shiprite. Choose **Manage sign-in methods** to open the shared account page in your browser. Sync and the local Shiprite connection are separate controls.
 
 Build 33 includes repeat step entry. [Signed Android ARM64 APK](output/clients/step-capture/Dockit-arm64-v8a-release.apk) · [iPhone Simulator app](output/clients/step-capture/iphonesimulator/Dockit.app) · [Unsigned device IPA](output/clients/step-capture/Dockit-unsigned.ipa) · [Local Mac app](output/clients/step-capture/macOS/Dockit.app) · [Verification](docs/plans/23-dockit-transfer.md#repeated-step-capture).
 
@@ -317,7 +317,7 @@ Browser controls can be checked without native data or an agent: serve the repos
 
 Settings uses one navigation row (Storage, AI, Integrations, Updates) and a stable viewport-bounded dialog height. Longer sections scroll internally while the header and Save/Cancel controls stay in place.
 
-## Optional Google account and cross-platform sync
+## Optional account and cross-platform sync
 
 Desktop and phone clients can use the shared account for optional sync. Tasks remain usable offline. **Settings → Account** shows sync progress and **Conflicts & recovery** keeps both versions of conflicting local changes available for review. AI keys and active timers stay on the device. [Backend operations](docs/backend-operations.md) · [Account setup and sync protocol](docs/account-sync.md)
 

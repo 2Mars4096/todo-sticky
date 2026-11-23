@@ -2,7 +2,7 @@ import { ui } from '../interfaceLocale'
 import { useState, type ReactNode } from 'react'
 import { invoke, isTauri } from '@tauri-apps/api/core'
 
-export function SuiteLink({href, destination, children}: {href:string; destination:"mynit" | "shiprite"; children:ReactNode}) {
+export function SuiteLink({href, destination, children}: {href:string; destination?:"mynit" | "shiprite"; children:ReactNode}) {
   const [error,setError] = useState('')
   return <><a data-pd-destination={destination} href={href} target="_blank" rel="noopener noreferrer" onClick={event => {
     if (!isTauri()) return

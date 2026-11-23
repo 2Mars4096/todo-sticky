@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Direct shared sign-in and account management to the canonical suite browser pages while preserving standalone Google sign-in. [Release checks](plans/23-dockit-transfer.md#shared-sign-in-and-account-management)
+
 - [x] Verify the lowered 48 px phone footer on both phone platforms and upgrade the installed notebook. [Checks](plans/23-dockit-transfer.md#phone-footer-clearance)
 
 - [x] Draw the folder-tray mark directly on the phone footer and give the drawer a square leading slot. [Optical and installed checks](plans/23-dockit-transfer.md#transparent-phone-drawer-mark)

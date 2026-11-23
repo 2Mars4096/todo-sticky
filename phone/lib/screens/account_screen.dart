@@ -459,7 +459,11 @@ class _AccountScreenState extends State<AccountScreen> {
                     ? null
                     : () => run(account.signIn),
                 icon: const Icon(Icons.account_circle_outlined),
-                label: Text(tr(context, "Continue with Google")),
+                label: Text(
+                  account.server == dianeSharedOrigin
+                      ? tr(context, "Continue with pipedreams")
+                      : tr(context, "Continue with Google"),
+                ),
               ),
               if (account.signingIn)
                 TextButton(
@@ -512,7 +516,11 @@ class _AccountScreenState extends State<AccountScreen> {
                   if (account.error != null)
                     TextButton(
                       onPressed: unavailable ? null : () => run(account.signIn),
-                      child: Text(tr(context, "Reconnect Google")),
+                      child: Text(
+                        account.server == dianeSharedOrigin
+                            ? tr(context, "Reconnect")
+                            : tr(context, "Reconnect Google"),
+                      ),
                     ),
                 ],
               ),
@@ -530,6 +538,27 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ),
             ],
+            if (account.server == dianeSharedOrigin)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.open_in_new),
+                  label: Text(tr(context, "Manage sign-in methods")),
+                  onPressed: () async {
+                    try {
+                      if (!await account.openBrowser(
+                        Uri.https('pipedreams.work', '/account'),
+                      )) {
+                        throw StateError(
+                          ui("Could not open the link in your browser."),
+                        );
+                      }
+                    } catch (error) {
+                      if (context.mounted) showError(context, error);
+                    }
+                  },
+                ),
+              ),
             if (account.error != null) ...[
               const SizedBox(height: 10),
               Semantics(

@@ -28,8 +28,11 @@ class ScreenAccount extends CloudSyncController {
   void refresh() => notifyListeners();
   final resolutions = <({String? key, bool useCloud})>[];
 
-  ScreenAccount({required super.store, required super.transport})
-    : super(openBrowser: (_) async => true) {
+  ScreenAccount({
+    required super.store,
+    required super.transport,
+    Future<bool> Function(Uri)? openBrowser,
+  }) : super(openBrowser: openBrowser ?? ((_) async => true)) {
     ready = true;
   }
 
@@ -54,7 +57,10 @@ class ScreenAccount extends CloudSyncController {
   }
 }
 
-Future<ScreenAccount> makeAccount(List<Uri> requests) async {
+Future<ScreenAccount> makeAccount(
+  List<Uri> requests, {
+  Future<bool> Function(Uri)? openBrowser,
+}) async {
   final store = StickyStore(
     persistence: MemoryPersistence(),
     credentials: MemoryCredentials(),
@@ -62,6 +68,7 @@ Future<ScreenAccount> makeAccount(List<Uri> requests) async {
   await store.initialize();
   return ScreenAccount(
     store: store,
+    openBrowser: openBrowser,
     transport: CloudTransport(
       client: MockClient((request) async {
         requests.add(request.url);
@@ -177,6 +184,32 @@ void main() {
       ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'));
     await icons.load();
   });
+
+  testWidgets(
+    'shared service opens the standalone manager without account data',
+    (tester) async {
+      final opened = <Uri>[];
+      final account = await makeAccount(
+        [],
+        openBrowser: (uri) async {
+          opened.add(uri);
+          return true;
+        },
+      );
+      addTearDown(() {
+        account.dispose();
+        account.store.dispose();
+      });
+      account.server = dianeSharedOrigin;
+      await openAccount(tester, account, GlobalKey());
+      expect(find.text('Continue with pipedreams'), findsOneWidget);
+      expect(find.text('Continue with Google'), findsNothing);
+      await revealButton(tester, 'Manage sign-in methods');
+      await tester.tap(buttonWithLabel('Manage sign-in methods'));
+      await tester.pumpAndSettle();
+      expect(opened, [Uri.https('pipedreams.work', '/account')]);
+    },
+  );
 
   testWidgets('service setup works at 360px with 150% text', (tester) async {
     final requests = <Uri>[];

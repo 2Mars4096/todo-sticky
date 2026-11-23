@@ -43,6 +43,9 @@ pub fn open_account_sign_in(url: String) -> Result<(), String> {
 #[tauri::command]
 pub fn open_suite_link(url: String) -> Result<(), String> {
     let parsed = reqwest::Url::parse(&url).map_err(|_| "Invalid product link")?;
+    if url == "https://pipedreams.work/account" {
+        return open_browser(&parsed);
+    }
     if parsed.scheme() != "https" || parsed.port().is_some() || !parsed.username().is_empty() || parsed.password().is_some()
         || !matches!(parsed.host_str(),Some("mynit.pipedreams.work" | "shiprite.pipedreams.work" | "zilo.pipedreams.work" | "zethea.pipedreams.work" | "dockit.pipedreams.work")) {
         return Err("Choose a pipedreams product link".into());

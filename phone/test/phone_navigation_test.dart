@@ -105,7 +105,8 @@ void main() {
         expect(find.text('System default'), findsOneWidget);
         await tester.tap(find.text('Account & sync'));
         await tester.pumpAndSettle();
-        expect(find.text('Continue with Google'), findsOneWidget);
+        expect(find.text('Continue with pipedreams'), findsOneWidget);
+        expect(find.text('Manage sign-in methods'), findsOneWidget);
         await tester.pageBack();
         await tester.pumpAndSettle();
         await tester.pageBack();
