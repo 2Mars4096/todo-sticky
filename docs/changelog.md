@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-26 — Final-review interaction and panel refinement
+
+Made the phone checklist importer scroll with the keyboard open, wrapped its actions, and expanded the Earlier drag handle hit area. Refined warm-paper panel edges, pressed/selected feedback and touch action sizes across web/Mac and phone. Updated navigation/gesture fixtures and added compact-keyboard import coverage. [Surface inventory, evidence and phased release gates](plans/26-final-release-review.md)
+
+
 ## 2026-11-26 — Major-version pre-review baseline
 
 Preserved the existing album recommendations and Chinese label updates and advanced standalone web/Mac and phone metadata to 3.0.0 (phone build 47). The annotated `baseline/v3.0.0` checkpoint precedes the final release review; it does not certify release readiness or publish installers.

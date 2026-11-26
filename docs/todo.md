@@ -1,7 +1,10 @@
 # Todo
 
+- [x] Improve final-review nested action panels and phone import/grip behavior. [Review and release gates](plans/26-final-release-review.md)
+- [ ] Complete production identity/sync/handoffs and exact signed-device acceptance before public release. [P0 roadmap](plans/26-final-release-review.md#p0--before-public-release)
+
 - [x] Prepare the 3.0.0 pre-review baseline with existing work preserved. [Baseline](plans/23-dockit-transfer.md#major-version-pre-review-baseline)
-- [ ] Complete the final cross-platform release review after all suite baselines are pushed.
+- [x] Complete the source/build final review after all suite baselines; signed-device and connected acceptance remain P0. [Evidence](plans/26-final-release-review.md)
 
 - [x] Diversify work album picks and keep the previous list on retry failures. [Album recommendations](plans/23-dockit-transfer.md#work-album-recommendations)
 - [x] Correct the Chinese music labels, reinstall Mac and simulator clients, export the signed APK, and deploy the web notebook. [Release verification](plans/23-dockit-transfer.md#album-language-and-client-release)

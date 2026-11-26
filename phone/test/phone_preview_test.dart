@@ -110,7 +110,7 @@ void main() {
     await tester.tap(find.byTooltip('Show task actions and steps').first);
     await tester.pumpAndSettle();
     await capture('task-actions');
-    await tester.tap(find.text('Goals').last);
+    await tester.tap(find.byTooltip('Goals'));
     await tester.pumpAndSettle();
     await capture('goals');
     await tester.ensureVisible(find.text(goalText));
@@ -121,7 +121,7 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     store.startFocus(first, 25);
-    await tester.tap(find.text('Focus').last);
+    await tester.tap(find.byTooltip('Focus'));
     await tester.pumpAndSettle();
     await capture('focus');
     await tester.pumpWidget(const SizedBox());

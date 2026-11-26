@@ -291,7 +291,7 @@ void main() {
         expect(tester.takeException(), isNull);
         await tester.pageBack();
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Goals').last);
+        await tester.tap(find.byTooltip('Goals'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Routines').first);
         await tester.pumpAndSettle();
@@ -307,7 +307,7 @@ void main() {
         await captureReview(tester, 'routines-$scale');
         expect(tester.takeException(), isNull);
         store.startFocus(task, 25);
-        await tester.tap(find.text('Focus').last);
+        await tester.tap(find.byTooltip('Focus'));
         await tester.pumpAndSettle();
         await tester.ensureVisible(find.text('Finish session'));
         await tester.tap(find.text('Finish session'));

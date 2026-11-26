@@ -162,6 +162,23 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
               color: ink.withValues(alpha: .12),
               thickness: 1,
             ),
+            bottomSheetTheme: BottomSheetThemeData(
+              backgroundColor: background,
+              surfaceTintColor: Colors.transparent,
+              elevation: 8,
+              dragHandleColor: mutedInk,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                side: BorderSide(color: Color(0xffe8d9a0)),
+              ),
+            ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(48, 48),
+                side: const BorderSide(color: Color(0xffb7a56a)),
+                textStyle: emphasisText.copyWith(fontSize: 14),
+              ),
+            ),
             filledButtonTheme: FilledButtonThemeData(
               style: FilledButton.styleFrom(
                 minimumSize: const Size(48, 48),

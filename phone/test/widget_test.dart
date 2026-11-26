@@ -191,7 +191,7 @@ void main() {
       store.tasksFor(store.selectedDate).single.subtasks.single.text,
       'Write the outline',
     );
-    await tester.tap(find.text('Goals').last);
+    await tester.tap(find.byTooltip('Goals'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, 'Submit a paper');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -307,7 +307,7 @@ void main() {
     await tester.tap(find.byTooltip('Show task actions and steps').first);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tester.tap(find.text('Focus').last);
+    await tester.tap(find.byTooltip('Focus'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
@@ -324,7 +324,7 @@ void main() {
     store.focus.sessionDurationMinutes = 240;
     await tester.pumpWidget(StickyApp(store: store));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Focus').last);
+    await tester.tap(find.byTooltip('Focus'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     await tester.scrollUntilVisible(find.byType(Slider), 300);

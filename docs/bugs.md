@@ -436,3 +436,7 @@ A temporary phone-only copy cannot run sync_merge_test.dart without the reposito
 - November10 local .app packaging completed; automatic updater archive signing then refused because no private release key was supplied. The staged .app is separately ad-hoc-signed and verified; it is not an updater release.
 
 - 2026-11-13: Plugin browser fixtures outside `plugin/` resolve root React18 by default and cause duplicate-React hook failures. Explicitly alias React and React DOM to `plugin/node_modules` (React19), include the full production styles and use host-equivalent border-box sizing. Corrected synthetic fixture passes; no production runtime defect inferred. Npm package checks need a writable cache in this sandbox (`npm_config_cache=/private/tmp/todo-npm-cache`).
+
+## 2026-11-26 — Final-review phone and fixture findings
+
+The checklist import sheet used a non-scrollable Column and a fixed action Row, leaving keyboard/large-text layouts vulnerable to clipped actions. It now scrolls and wraps, with a compact keyboard regression. Earlier drag slots now use opaque hit testing. Ten initial phone failures included stale hidden-label/image selectors and synthetic drags that did not cross touch slop before jumping to the destination; fixtures now target current controls and use realistic gestures while retaining data assertions. The default PATH Flutter SDK has Dart 3.11.5 and cannot resolve this project; use pinned `/Volumes/data/codex-tmp/pipedreams-flutter-3.47.8`.

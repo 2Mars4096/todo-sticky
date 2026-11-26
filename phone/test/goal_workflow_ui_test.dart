@@ -86,7 +86,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Goals').last);
+        await tester.tap(find.byTooltip('Goals'));
         await tester.pumpAndSettle();
         await capture(
           tester,

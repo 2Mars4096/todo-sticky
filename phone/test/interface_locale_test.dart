@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sticky_todo/app.dart';
+import 'package:sticky_todo/widgets/dockit_footer_mark.dart';
 import 'package:sticky_todo/interface_locale.dart';
 import 'package:sticky_todo/services/persistence.dart';
 import 'package:sticky_todo/state/sticky_store.dart';
@@ -42,7 +43,12 @@ void main() {
     await tester.pumpWidget(StickyApp(store: store));
     await tester.pumpAndSettle();
     for (final tag in languageNames.keys.where((n) => n != 'en')) {
-      await tester.tap(find.byWidgetPredicate((w) => w is IconButton && w.icon is Image));
+      await tester.tap(
+        find.ancestor(
+          of: find.byType(DockitFooterMark),
+          matching: find.byType(IconButton),
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text(ui('Settings')));
       await tester.pumpAndSettle();

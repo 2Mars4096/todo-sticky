@@ -39,7 +39,7 @@ Future<void> dragTo(
   Offset destination,
 ) async {
   final gesture = await tester.startGesture(tester.getCenter(grip));
-  await gesture.moveBy(const Offset(0, -12));
+  await gesture.moveBy(const Offset(0, -24));
   await tester.pump();
   await gesture.moveTo(destination);
   await tester.pump(const Duration(milliseconds: 100));

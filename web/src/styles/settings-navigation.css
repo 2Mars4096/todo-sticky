@@ -320,3 +320,29 @@
     overflow-wrap: anywhere;
   }
 }
+
+/* Warm paper edges and restrained feedback carry into nested action panels. */
+.settings-overlay .settings-panel.settings-refined {
+  border: 1px solid var(--sticky-border);
+  box-shadow: 0 16px 48px rgb(61 53 32 / .2), inset 0 1px 0 rgb(255 255 255 / .8);
+}
+.settings-panel.settings-refined .btn-row { flex-wrap: wrap; gap: 8px; }
+.settings-panel.settings-refined .btn-row > button { flex: 0 1 auto; }
+.settings-panel.settings-refined button {
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+.settings-panel.settings-refined button:active:not(:disabled) {
+  box-shadow: inset 0 1px 3px rgb(61 53 32 / .2);
+}
+.settings-panel.settings-refined .settings-section-nav button[aria-pressed="true"] {
+  box-shadow: inset 0 -2px 0 #856519;
+}
+@media (pointer: coarse) {
+  .settings-panel.settings-refined button,
+  .settings-panel.settings-refined .settings-close,
+  .settings-panel.settings-refined .settings-section-nav button { min-height: 44px; }
+  .settings-panel.settings-refined .settings-close { min-width: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-panel.settings-refined button { transition: none; }
+}

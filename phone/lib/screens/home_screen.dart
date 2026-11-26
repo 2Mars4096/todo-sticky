@@ -140,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _earlierHandle(DatedTask row) {
     final data = _EarlierTaskDrag(row.date, row.task.id);
     return Draggable<_EarlierTaskDrag>(
+      hitTestBehavior: HitTestBehavior.opaque,
       data: data,
       maxSimultaneousDrags: 1,
       onDragStarted: () => _startEarlierDrag(data),

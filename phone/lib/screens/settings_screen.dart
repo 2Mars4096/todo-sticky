@@ -536,63 +536,66 @@ class _ChecklistImporterState extends State<ChecklistImporter> {
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          tr(context, "Import to {0}", [widget.store.selectedDate]),
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: text,
-          minLines: 4,
-          maxLines: 8,
-          decoration: InputDecoration(
-            hintText: tr(context, "- [ ] Task\n  - [ ] First step"),
-          ),
-        ),
-        if (error != null)
+  Widget build(BuildContext context) => SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            error!,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
+            tr(context, "Import to {0}", [widget.store.selectedDate]),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            TextButton.icon(
-              onPressed: () async {
-                final value = await Clipboard.getData(Clipboard.kTextPlain);
-                if (mounted && value?.text != null) text.text = value!.text!;
-              },
-              icon: const Icon(Icons.paste),
-              label: Text(tr(context, "Paste")),
+          const SizedBox(height: 16),
+          TextField(
+            controller: text,
+            minLines: 4,
+            maxLines: 8,
+            decoration: InputDecoration(
+              hintText: tr(context, "- [ ] Task\n  - [ ] First step"),
             ),
-            const Spacer(),
-            FilledButton(
-              onPressed: () {
-                try {
-                  final tasks = parseMarkdownTasks(text.text);
-                  if (tasks.isEmpty) {
-                    throw FormatException(ui("No checklist tasks found"));
+          ),
+          if (error != null)
+            Text(
+              error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          const SizedBox(height: 12),
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              TextButton.icon(
+                onPressed: () async {
+                  final value = await Clipboard.getData(Clipboard.kTextPlain);
+                  if (mounted && value?.text != null) text.text = value!.text!;
+                },
+                icon: const Icon(Icons.paste),
+                label: Text(tr(context, "Paste")),
+              ),
+              FilledButton(
+                onPressed: () {
+                  try {
+                    final tasks = parseMarkdownTasks(text.text);
+                    if (tasks.isEmpty) {
+                      throw FormatException(ui("No checklist tasks found"));
+                    }
+                    (widget.store.days[widget.store.selectedDate] ??= [])
+                        .addAll(tasks);
+                    widget.store.changed();
+                    Navigator.pop(context);
+                  } catch (e) {
+                    setState(() => error = e.toString());
                   }
-                  (widget.store.days[widget.store.selectedDate] ??= []).addAll(
-                    tasks,
-                  );
-                  widget.store.changed();
-                  Navigator.pop(context);
-                } catch (e) {
-                  setState(() => error = e.toString());
-                }
-              },
-              child: Text(tr(context, "Add tasks")),
-            ),
-          ],
-        ),
-      ],
+                },
+                child: Text(tr(context, "Add tasks")),
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }

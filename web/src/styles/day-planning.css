@@ -43,7 +43,7 @@
 .day-plan-assignee { color: var(--text-secondary); font-size: 12px; }
 .day-plan-proposal details { margin-bottom: 12px; }
 .day-plan-proposal summary { min-height: 28px; cursor: pointer; color: var(--text-secondary); }
-.day-plan-actions { justify-content: flex-end; border-top: 1px solid var(--sticky-border); }
+.day-plan-actions { flex-wrap: wrap; justify-content: flex-end; border-top: 1px solid var(--sticky-border); }
 .day-plan-actions .primary { background: var(--accent); border-color: #9e7f23; font-weight: 600; }
 @media (max-width: 380px) {
   .day-plan-timeline li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
@@ -57,3 +57,7 @@
 .planning-estimate select { font:inherit; color:inherit; padding:5px; background:transparent; border:1px solid var(--sticky-border); border-radius:4px; }
 .planning-break { display:flex; gap:5px; align-items:center; margin:6px 0; }
 .planning-break input { min-width:0; width:100%; font:inherit; color:inherit; padding:5px 2px; background:transparent; border:1px solid var(--sticky-border); border-radius:4px; }
+
+.day-plan-panel { box-shadow: 0 16px 48px rgb(61 53 32 / .2), inset 0 1px 0 rgb(255 255 255 / .8); }
+.day-plan-actions button { max-width: 100%; overflow-wrap: anywhere; }
+@media (pointer: coarse) { .day-plan-panel button { min-height: 44px; } }
