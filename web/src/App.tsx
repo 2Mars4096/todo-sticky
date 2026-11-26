@@ -25,6 +25,8 @@ import { TaskList } from './components/TaskList'
 import { DianeProvider } from './components/DianeAction'
 import { AddTask } from './components/AddTask'
 import { AlbumRecommendations } from './components/AlbumRecommendations'
+import { rememberAlbums, type AlbumIdentity } from './albumCuration'
+import { aiErrorMessage } from './aiErrors'
 import { DevToolsPanel } from './components/DevToolsPanel'
 import { GoalsSidebar } from './components/GoalsSidebar'
 import { MissionControlSidebar } from './components/MissionControlSidebar'
@@ -104,6 +106,8 @@ export default function App() {
   const [showAlbumRecommendations, setShowAlbumRecommendations] = useState(false)
   const [albumRecommendations, setAlbumRecommendations] = useState<AlbumRecommendationResult | null>(null)
   const [albumRecommendationTaskKey, setAlbumRecommendationTaskKey] = useState<string | null>(null)
+  const [albumError, setAlbumError] = useState<string | null>(null)
+  const recentAlbums = useRef<AlbumIdentity[]>([])
   const [appNotice, setAppNotice] = useState<AppNotice | null>(null)
   const [windowWidth, setWindowWidth] = useState(() => (
     typeof window === 'undefined' ? 1024 : window.innerWidth
@@ -180,12 +184,15 @@ export default function App() {
     await tasks.flushPendingSave()
     await waitForPendingWrites()
   })
-  const albumTaskContext = useMemo(() => tasks.tasks.map(task => ({
+  const albumTaskContext = useMemo(() => tasks.tasks.filter(task => task.status !== 'done' && task.status !== 'stopped').map(task => ({
     text: task.text,
     status: task.status,
-    steps: task.todaySubtasks.map(step => ({ text: step.text, status: step.status })),
+    steps: task.todaySubtasks.filter(step => step.status !== 'done' && step.status !== 'stopped')
+      .map(step => ({ text: step.text, status: step.status })),
   })), [tasks.tasks])
-  const albumTaskKey = useMemo(() => JSON.stringify(albumTaskContext), [albumTaskContext])
+  const albumTaskKey = useMemo(() => JSON.stringify([calendar.dateStr, albumTaskContext]), [calendar.dateStr, albumTaskContext])
+  const currentAlbumTaskKey = useRef(albumTaskKey)
+  currentAlbumTaskKey.current = albumTaskKey
 
   const presentNotice = useCallback((notice: AppNotice) => {
     if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
@@ -437,6 +444,7 @@ export default function App() {
     setShowAlbumRecommendations(false)
     setAlbumRecommendations(null)
     setAlbumRecommendationTaskKey(null)
+    setAlbumError(null)
   }, [calendar.dateStr])
 
   useEffect(() => {
@@ -444,6 +452,7 @@ export default function App() {
     setShowAlbumRecommendations(false)
     setAlbumRecommendations(null)
     setAlbumRecommendationTaskKey(null)
+    setAlbumError(null)
   }, [albumRecommendationTaskKey, albumTaskKey])
 
   useEffect(() => {
@@ -541,35 +550,27 @@ export default function App() {
     if (!albumTaskContext.length || aiOperationRef.current) return
     aiOperationRef.current = true
     setShowAlbumRecommendations(true)
+    setAlbumError(null)
     setAiLoading('albums')
     try {
       const result = await api.llmRecommendAlbums({
         tasks: albumTaskContext,
+        excludeAlbums: recentAlbums.current,
       })
-      const albums = Array.isArray(result.albums)
-        ? result.albums.filter(album => album?.title && album?.artist).slice(0, 4)
-        : []
-
-      if (!albums.length) throw new Error(ui("The AI provider returned no album recommendations"))
-
-      setAlbumRecommendations({
-        summary: typeof result.summary === 'string' ? result.summary : '',
-        albums,
-      })
+      if (currentAlbumTaskKey.current !== albumTaskKey) return
+      recentAlbums.current = rememberAlbums(recentAlbums.current, result.albums)
+      setAlbumRecommendations(result)
       setAlbumRecommendationTaskKey(albumTaskKey)
     } catch (error) {
-      console.error('Album recommendations failed:', error)
-      setShowAlbumRecommendations(false)
-      presentNotice({
-        kind: 'error',
-        title: ui("Could not find albums"),
-        message: ui("Check the AI provider in Settings, then try again."),
-      })
+      if (currentAlbumTaskKey.current !== albumTaskKey) return
+      const fallback = ui("Check the AI provider in Settings, then try again.")
+      const detail = aiErrorMessage(error, fallback)
+      setAlbumError(detail.startsWith('API error:') ? fallback : detail)
     } finally {
       aiOperationRef.current = false
       setAiLoading(null)
     }
-  }, [albumTaskContext, albumTaskKey, presentNotice])
+  }, [albumTaskContext, albumTaskKey])
 
   const handleFocusTask = useCallback((taskId: string, taskText: string) => {
     starFocus.selectTask(taskId, taskText)
@@ -820,13 +821,14 @@ export default function App() {
 
         {showAlbumRecommendations && (
           <AlbumRecommendations
-            result={albumRecommendations}
+            result={albumRecommendationTaskKey === albumTaskKey ? albumRecommendations : null}
             loading={aiLoading === 'albums'}
+            error={albumError}
             providerLabel={aiSettings
               ? PROVIDER_PRESETS[aiSettings.provider].shortLabel
               : 'AI'}
             onClose={() => setShowAlbumRecommendations(false)}
-            onRegenerate={handleAlbumRecommendations}
+            onRegenerate={albumTaskContext.length && !aiLoading && !tasks.loading ? handleAlbumRecommendations : undefined}
           />
         )}
 
@@ -876,9 +878,9 @@ export default function App() {
                 handleAlbumRecommendations()
               }
             }}
-            disabled={!!aiLoading || !tasks.tasks.length}
+            disabled={!!aiLoading || tasks.loading || !albumTaskContext.length}
             aria-expanded={showAlbumRecommendations}
-            title={tasks.tasks.length
+            title={albumTaskContext.length
               ? ui("Recommend albums for the current tasks")
               : ui("Add a task before finding albums")}
           ><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></button>

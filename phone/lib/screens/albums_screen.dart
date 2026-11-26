@@ -17,9 +17,15 @@ class AlbumsScreen extends StatefulWidget {
 
 class _AlbumsScreenState extends State<AlbumsScreen> {
   List<Map<String, dynamic>> albums = [];
+  final recentAlbums = <Map<String, String>>[];
   bool busy = false;
   String? error;
   Future<void> generate() async {
+    final tasks = widget.store.planningTasks;
+    if (tasks.isEmpty) {
+      setState(() => error = ui("Add a task before finding albums"));
+      return;
+    }
     setState(() {
       busy = true;
       error = null;
@@ -27,11 +33,24 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     try {
       final result = await widget.ai.albums(
         widget.store.preferences,
-        widget.store.planningTasks,
+        tasks,
+        excludeAlbums: recentAlbums,
       );
-      if (mounted) setState(() => albums = result);
+      if (!mounted) return;
+      recentAlbums.addAll(
+        result.map(
+          (album) => {
+            'artist': album['artist'] as String,
+            'title': album['title'] as String,
+          },
+        ),
+      );
+      if (recentAlbums.length > 12) {
+        recentAlbums.removeRange(0, recentAlbums.length - 12);
+      }
+      setState(() => albums = result);
     } catch (e) {
-      if (mounted) setState(() => error = e.toString());
+      if (mounted) setState(() => error = ui(e.toString()));
     } finally {
       if (mounted) setState(() => busy = false);
     }

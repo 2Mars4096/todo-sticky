@@ -4060,6 +4060,11 @@ select:focus-visible {
   padding: 8px 12px 6px;
 }
 
+.album-recommendations-error {
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+
 .album-list {
   list-style: none;
 }

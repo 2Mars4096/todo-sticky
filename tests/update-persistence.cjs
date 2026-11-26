@@ -1,4 +1,5 @@
 const testedInterface = require('./helpers/load-typescript.cjs')('web/src/interfaceLocale.ts')
+const albumCuration = require('./helpers/load-typescript.cjs')('web/src/albumCuration.ts')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const vm = require('node:vm')
@@ -10,6 +11,7 @@ function fixture() {
   const writes=[], timers=new Map();let taskState=[],nextTimer=0
   const apiExports={}
   vm.runInNewContext(transpile('src/api.ts'), {exports:apiExports,require:name => { if (name.endsWith('/interfaceLocale')) return testedInterface;
+    if(name==='./albumCuration') return albumCuration
     if(name==='@tauri-apps/api/core') return {isTauri:()=>true}
     if(name==='./notebookCommand') return {invoke:(command,payload)=>new Promise((resolve,reject)=>writes.push({command,payload,resolve,reject}))}
     if(name==='@tauri-apps/api/event') return {listen:()=>{}}

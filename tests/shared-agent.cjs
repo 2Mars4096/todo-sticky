@@ -1,7 +1,11 @@
 const assert=require('node:assert/strict')
 const load=require('./helpers/load-typescript.cjs')
 let provider='openai';const calls=[],shared=[]
-const api=load('src/api.ts',{'./notebookCommand':{invoke:async(name,args)=>{calls.push({name,args});if(name==='get_settings')return {provider,kbPath:'/fixture'};return {subtasks:[{text:'Direct result'}]}}},'@tauri-apps/api/event':{},'./cloudAccount':{usesDianeOpenRouter:p=>p==='diane'||p==='openrouter',runSharedTodoAgent:async(...args)=>{shared.push(args);return {subtasks:[{text:'Shared result'}]}}}}).api
+const album = (artist,title) => ({ artist, title, fit: 'Sparse piano', bestFor: 'Quiet focus' })
+const repeated = album(' Artist  A ', 'FIRST')
+const fresh = album('Artist B', 'Second')
+let albumResult = {summary:'Quiet',albums:[repeated,fresh,album('artist  b','Third'),null,album('Artist C',' ')]}
+const api=load('src/api.ts',{'./notebookCommand':{invoke:async(name,args)=>{calls.push({name,args});if(name==='get_settings')return {provider,kbPath:'/fixture'};if(name==='llm_recommend_albums')return albumResult;return {subtasks:[{text:'Direct result'}]}}},'@tauri-apps/api/event':{},'./cloudAccount':{usesDianeOpenRouter:p=>p==='diane'||p==='openrouter',runSharedTodoAgent:async(...args)=>{shared.push(args);if(args[0]==='albums')return albumResult;return {subtasks:[{text:'Shared result'}]}}}}).api
 ;(async()=>{
  await api.llmBreakdown({taskText:'Work',existingSubtasks:[]});assert.equal(shared.length,0);assert.equal(calls.at(-1).name,'llm_breakdown')
  provider='openrouter';calls.length=0
@@ -13,6 +17,17 @@ const api=load('src/api.ts',{'./notebookCommand':{invoke:async(name,args)=>{call
  await api.llmProjectPlan({mode:'steps',goal:{text:'Outcome'}});assert.equal(shared.at(-1)[0],'project')
  const connection = await api.testConnection({provider:'diane',apiBase:'',apiKey:'',model:''})
  assert.equal(connection.message,'pipedreams connected. Requests use your shared account limits.')
- await api.llmRecommendAlbums({tasks:[]});assert.equal(shared.at(-1)[0],'albums')
+ const albumInput = {tasks:[{text:'Read a working paper'}],excludeAlbums:[{artist:'artist a',title:'First'}]}
+ const result = await api.llmRecommendAlbums(albumInput)
+ assert.deepEqual(Array.from(result.albums),[fresh])
+ assert.equal(shared.at(-1)[0],'albums')
+ assert.equal(shared.at(-1)[1].excludeAlbums,albumInput.excludeAlbums)
+ assert.match(shared.at(-1)[1].curation,/four distinct artists/)
+ provider='openai'
+ assert.deepEqual(Array.from((await api.llmRecommendAlbums(albumInput)).albums),[fresh])
+ assert.equal(calls.at(-1).name,'llm_recommend_albums')
+ assert.equal(calls.at(-1).args.excludeAlbums,albumInput.excludeAlbums)
+ albumResult = {albums:[repeated]}
+ await assert.rejects(api.llmRecommendAlbums(albumInput),/no album recommendations/)
  console.log('Shared agent: explicit direct provider stays direct; shared mode uses original typed action/input through the account bridge without native fallback')
 })().catch(error=>{console.error(error);process.exit(1)})

@@ -1,5 +1,13 @@
 # Bugs And Failed Approaches
 
+## 2026-11-24 — Work albums read as photo albums
+
+The Chinese music panel used 相册 or 相冊 for a recording. The revised catalogs use 专辑 or 專輯 in headings, actions, loading and errors. The browser regression renders the panel in all three Chinese locales. [Release checks](plans/23-dockit-transfer.md#album-language-and-client-release)
+
+## 2026-11-24 — Repeated work albums
+
+Album retries previously sent the same work context and forgot the albums already shown. Web and Mac also closed the panel on errors and replaced the provider detail with a generic Settings notice. Clients now send recent picks as exclusions, filter repeated or incomplete results, and leave the retry control and previous results available. [Client checks](plans/23-dockit-transfer.md#work-album-recommendations)
+
 ## Local Mac build and updater credentials
 
 The normal release wrapper could not unlock the private local signing keychain. For the 2.1.17 local bundle, the existing ad-hoc identity and screenshot helper produced a deep-verified app. The updater additionally requires its private signing key, so this local build disabled updater artifact generation. No updater feed was released.

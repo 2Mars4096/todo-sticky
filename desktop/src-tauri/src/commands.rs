@@ -253,8 +253,8 @@ pub async fn llm_project_plan(request: Value, app: AppHandle) -> Result<Value, S
 }
 
 #[tauri::command]
-pub async fn llm_recommend_albums(tasks: Value, app: AppHandle) -> Result<Value, String> {
-    llm::recommend_albums(&app, &tasks).await
+pub async fn llm_recommend_albums(tasks: Value, exclude_albums: Option<Value>, app: AppHandle) -> Result<Value, String> {
+    llm::recommend_albums(&app, &tasks, exclude_albums.as_ref()).await
 }
 
 #[tauri::command]

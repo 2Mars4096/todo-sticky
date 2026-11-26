@@ -36,6 +36,33 @@ Added top padding to the expanded workspace selector and verified the full float
 
 An independent device build restored Flutter 3.47.8’s iOS engine and resolved the Swift packages. Xcode still reports that the iOS 26.4 device destination is unavailable. The normal iPhone build and physical installation remain open.
 
+## Work album recommendations
+
+- [x] Ask for distinct artists and musical approaches suited to unfinished work.
+- [x] Remember up to 12 recent album identities and filter repeated picks before replacing the visible list.
+- [x] Keep the last successful list and retry control available on provider errors.
+- [ ] Verify consecutive batches with the live pipedreams provider and in installed releases.
+
+| Client | Build check | Workflow check |
+| --- | --- | --- |
+| Web | Vite production build and strict TypeScript passed. | Chromium fixture exercised signed-out guidance, shared request exclusions, repeat rejection, list retention and successful retry. |
+| Mac | Rust/Tauri compile check and shared frontend build passed. | Chromium with a fixture Tauri bridge exercised the direct-provider invocation and the same retry sequence. Packaged-window acceptance is pending. |
+| Android | Flutter test compilation passed. APK packaging is pending. | Android-styled Flutter Music screen kept the previous list after repeats and accepted a fresh batch. Device acceptance is pending. |
+| iPhone | Flutter test compilation passed. iOS packaging is pending. | iOS-styled Flutter Music screen kept the previous list after repeats and accepted a fresh batch. Device acceptance is pending. |
+
+All 33 Node regression suites and seven targeted phone tests passed. The full phone suite had 146 passes, one skip, and the same 11 failures as the unchanged baseline in the temporary test environment. The interface audit reports three unused catalog keys on both the unchanged and updated sources.
+
+### Album language and client release
+
+The Simplified Chinese, Traditional Chinese and Cantonese headings now read 工作时听的专辑, 工作時聽的專輯 and 做嘢時聽嘅專輯. All 33 Node suites and TypeScript passed. Chromium rendered the three headings using the staged production bundle. The user will test live recommendations.
+
+| Client | Build and install | Workflow verification |
+| --- | --- | --- |
+| Web | Published the existing `pipedreams-dockit` Hosting site, version `a608aafeec809573`, succeeding `11444439fdc93558`. | All deployed app files match the staged bundle. The landing page bytes and shared task route were verified. |
+| Mac | Reinstalled and relaunched 2.1.22. The bundle passed strict deep signature checks and retained the original helper. Executable SHA-256 `75c5b4c256d262898c7e515cb59740326488af5f34d3132cc56d3e50936ab4f5`. | The three translated assets match the rendered web fixture. |
+| Android | Signed ARM64 2.1.30+46 (version code 2046) installed in place on API 35 and exported as the suite’s `Dockit.apk`. SHA-256 `2100addc998e17ea80cf9e1b1cb967d95d3f2ed0f71d4fddb10d316199e12164`. | The original install timestamp and signer were preserved. Installed APK bytes match the export. The main activity cold-launched and the compiled labels were verified. |
+| iPhone | 2.1.30 build 46 installed and launched on the iOS 26.4 review simulator. An unsigned device IPA was exported. SHA-256 `3020ad6e5269e503c5503b53cc603afccb2996288cf34a5241d0bb67f9ea8523`. | The installed build version and compiled labels were verified. A physical iPhone was unavailable. |
+
 ## Suite UI and record handoffs
 
 A normal notebook open recovers an imported task's source from its owner's canonical record. Dockit displays the quote and timestamp, checks account changes, opens an exact Mynit reference, and tries the native app with a browser fallback on phones. Assigning a dated task sends its stable ID and origin to Shiprite, which returns a creator-scoped receipt. Checking status returns the shared state and revision. The link back opens the original dated task.
@@ -205,3 +232,11 @@ At 1280 × 800, Search and Progress shared a header ending at y52 and a results 
 - [x] Compare web and Mac frontend renders at 320, 390, 493 and 1280 px. The actions share the same width, measure at least 46 px high and have a 14 px gap. The hosted notebook and both `/app` routes passed a live account handoff and cancellation check. Hosting `11444439fdc93558` retains the 42 prior file hashes other than `/app/index.html`.
 - [x] Verify the signed Android upgrade from 2043 to 2044 and iPhone simulator build 44. Android's sign-in and manager actions measured 975 × 126 physical pixels with a 31 px gap; formerly they touched. On the iPhone they measured 362 × 48 points with a 12 pt gap. Eleven Flutter setup, navigation and account tests passed, including the 150% text case. The Android SHA-256 is `fd9851ca083f005dc37c593f0ec217cf8792dff8b700e40a630eb3eef47fb924`. The unsigned iPhone device IPA SHA-256 is `87ced51c834e49eacea66235b42c6013b9282c16259dc4aeceb60bfca1e1a130`.
 - [x] Install and normally relaunch `/Applications/Dockit.app` version 2.1.20. Verify its ad-hoc signature, bundle ID, unchanged native helper and executable SHA-256 `4a31de96efa782c725e45e2a1bd5eba9d6586e4616973113c77d66a57abab8b8`. The 33 Node regression suites and TypeScript passed.
+
+## Major-version pre-review baseline
+
+- [x] Preserve current album recommendation and Chinese-label changes.
+- [x] Set web/Mac version 3.0.0 and phone version 3.0.0+47.
+- [ ] Final platform and integrated-workflow review.
+
+Use annotated `baseline/v3.0.0` rather than a `v*` release tag: `v*` starts public installer publishing. This checkpoint records the user-requested major version before review; it is not release acceptance.

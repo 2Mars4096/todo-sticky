@@ -23,6 +23,20 @@ async function verify() {
     const personal = 'Delete · {1} · 日本語'
     assert.ok(api.ui('New step for {0}',[personal]).includes(personal))
   }
+  const musicHeadings = {
+    'zh-Hans': '工作时听的专辑',
+    'zh-Hant': '工作時聽的專輯',
+    yue: '做嘢時聽嘅專輯',
+  }
+  for (const [tag, heading] of Object.entries(musicHeadings)) {
+    await api.chooseLanguage(tag)
+    assert.equal(api.ui('Albums for working'), heading)
+    const catalog = require(`../phone/assets/interface/${tag}.json`)
+    for (const [key, translation] of Object.entries(catalog)) {
+      if (/\balbums?\b/i.test(key)) assert.doesNotMatch(translation, /相册|相冊|相簿/, key)
+    }
+  }
+  await api.chooseLanguage('pt')
   const restarted = load('web/src/interfaceLocale.ts', {}, globals)
   await restarted.loadLanguage()
   assert.equal(restarted.displayLanguage(),'pt')

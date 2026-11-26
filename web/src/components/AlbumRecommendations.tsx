@@ -4,14 +4,16 @@ import type { AlbumRecommendationResult } from '../types'
 interface Props {
   result: AlbumRecommendationResult | null
   loading: boolean
+  error?: string | null
   providerLabel: string
   onClose: () => void
-  onRegenerate: () => void
+  onRegenerate?: () => void
 }
 
 export function AlbumRecommendations({
   result,
   loading,
+  error,
   providerLabel,
   onClose,
   onRegenerate,
@@ -51,6 +53,12 @@ export function AlbumRecommendations({
           </div>
         ) : (
           <>
+            {error && (
+              <p className="album-recommendations-error">
+                <strong>{ui("Could not find albums")}</strong><br />
+                {error}
+              </p>
+            )}
             <ol className="album-list">
               {albums.map((album, index) => (
                 <li className="album-row" key={`${album.artist}-${album.title}-${index}`}>
@@ -58,7 +66,7 @@ export function AlbumRecommendations({
                   <div className="album-copy">
                     <div className="album-title-line">
                       <strong>{album.title}</strong>
-                      <span>{album.artist}{album.year ? ` · ${album.year}` : ''}</span>
+                      <span>{album.artist}{typeof album.year === 'number' ? ` · ${album.year}` : ''}</span>
                     </div>
                     <p>{album.fit}</p>
                   </div>
@@ -72,7 +80,7 @@ export function AlbumRecommendations({
 
       <footer className="album-recommendations-footer">
         <span>{ui("{0} · Current tasks", [providerLabel])}</span>
-        <button onClick={onRegenerate} disabled={loading}>{ui("Regenerate")}</button>
+        <button onClick={onRegenerate} disabled={loading || !onRegenerate}>{ui("Regenerate")}</button>
       </footer>
     </section>
   )

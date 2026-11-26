@@ -1,5 +1,12 @@
 # Todo
 
+- [x] Prepare the 3.0.0 pre-review baseline with existing work preserved. [Baseline](plans/23-dockit-transfer.md#major-version-pre-review-baseline)
+- [ ] Complete the final cross-platform release review after all suite baselines are pushed.
+
+- [x] Diversify work album picks and keep the previous list on retry failures. [Album recommendations](plans/23-dockit-transfer.md#work-album-recommendations)
+- [x] Correct the Chinese music labels, reinstall Mac and simulator clients, export the signed APK, and deploy the web notebook. [Release verification](plans/23-dockit-transfer.md#album-language-and-client-release)
+- [ ] Compare successive live album batches during user acceptance. [Verification](plans/23-dockit-transfer.md#work-album-recommendations)
+
 - [x] Prune completed native build intermediates and retired local packaging output. [Release checks](plans/5-build-artifact-cleanup.md#local-build-output)
 
 - [x] Make shared sign-in and account management separate, equally sized actions on all client platforms and retain standalone setup. [Geometry and release evidence](plans/23-dockit-transfer.md#signed-out-account-layout)

@@ -50,6 +50,8 @@ On Mac, only the helper inside Sticky Todo’s Contents/Helpers is launched. It 
 
 OpenRouter requests use the signed-in Diane account, including legacy provider profiles and custom endpoints pointing to openrouter.ai. Missing sign-in or account setup blocks the request.
 
+Album recommendations use the existing provider transports. React and Flutter carry only recent artist/title pairs as exclusions and filter unusable entries and repeated identities before replacing the visible batch. React holds up to 12 pairs in the app session. Flutter keeps the same limit for the current Music screen visit.
+
 ## Project steps from meetings
 
 The dashboard push transaction maintains an owner-scoped group receipt for the project and list date. The receipt stores the active parent and next step position. Completed, deleted or moved parents retain their prior work. The next accepted step starts a new group.

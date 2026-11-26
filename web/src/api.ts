@@ -1,4 +1,5 @@
 import { ui } from './interfaceLocale'
+import { albumCurationBrief, curateAlbumResults, type AlbumIdentity } from './albumCuration'
 import { runSharedTodoAgent, usesDianeOpenRouter } from './cloudAccount'
 import { invoke } from './notebookCommand'
 import { isTauri } from '@tauri-apps/api/core'
@@ -96,8 +97,15 @@ export const api = {
 
   llmProjectPlan: (request: unknown) => agentCall<unknown>('project',request,'llm_project_plan',{request}),
 
-  llmRecommendAlbums: (data: { tasks: any[] }) =>
-    agentCall<AlbumRecommendationResult>('albums',data,'llm_recommend_albums',data),
+  llmRecommendAlbums: async ({ tasks, excludeAlbums = [] }: { tasks: unknown[]; excludeAlbums?: AlbumIdentity[] }) => {
+    const data = { tasks, excludeAlbums }
+    const result = await agentCall<AlbumRecommendationResult>(
+      'albums', { ...data, curation: albumCurationBrief }, 'llm_recommend_albums', data,
+    )
+    const albums = curateAlbumResults(result?.albums, excludeAlbums)
+    if (!albums.length) throw new Error(ui("The AI provider returned no album recommendations"))
+    return { summary: typeof result.summary === 'string' ? result.summary : '', albums }
+  },
 
   getSettings: () =>
     invoke<AppSettings>('get_settings'),

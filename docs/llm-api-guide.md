@@ -212,9 +212,9 @@ These commands belong to the interactive desktop app and are not part of the det
 
 - `llmBreakdown({ taskText, existingSubtasks })` → native `llm_breakdown`
 - `llmSchedule({ tasks, machines, dateStr, availableStart, availableEnd })` → native `llm_schedule`
-- `llmRecommendAlbums({ tasks })` → native `llm_recommend_albums`
+- `llmRecommendAlbums({ tasks, excludeAlbums? })` → shared `albums` or native `llm_recommend_albums`. Use `{ title, artist }` entries for recent picks.
 
-Album requests contain only the visible date's task text, status, and current-day steps. The response uses `summary` plus an `albums` array whose entries contain `title`, `artist`, optional `year`, `fit`, and `bestFor`. `summary` describes the working atmosphere, `fit` explains audible qualities and listening suitability, and `bestFor` is a short listening-mood or energy cue. Selection uses inferred attention needs rather than keyword or topic matching. Results remain in frontend memory and are not written to the Markdown archive or app-state files.
+Album requests include the visible date's unfinished task text, status, and open current-day steps. The response uses `summary` plus up to four `albums` containing `title`, `artist`, optional `year`, `fit`, and `bestFor`. `summary` describes the working atmosphere, `fit` describes the sound and listening suitability, and `bestFor` is a short mood or energy cue. The client filters repeated album identities and duplicate artists in a set. Regeneration sends up to 12 album titles and artists kept in memory for the current web or Mac app session, or phone Music screen visit.
 
 #### Day-plan proposals
 

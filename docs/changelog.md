@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-11-26 — Major-version pre-review baseline
+
+Preserved the existing album recommendations and Chinese label updates and advanced standalone web/Mac and phone metadata to 3.0.0 (phone build 47). The annotated `baseline/v3.0.0` checkpoint precedes the final release review; it does not certify release readiness or publish installers.
+
+## 2026-11-24 — Chinese music labels and client release
+
+The music panel now uses 专辑 or 專輯 in Simplified Chinese, Traditional Chinese and Cantonese. Released the corrected web notebook, reinstalled Mac 2.1.22, and installed Android and iPhone simulator builds 46. [Release checks](plans/23-dockit-transfer.md#album-language-and-client-release)
+
+## 2026-11-24 — More varied work albums
+
+Albums uses open work to request four distinct artists and different sounds. Regenerate and Suggest more skip recent picks. Provider errors appear inside the panel and keep the last successful list available. [Client checks](plans/23-dockit-transfer.md#work-album-recommendations)
+
 ## 2026-11-23 — Local build output cleanup
 
 Removed 7.23 GB of Cargo and Flutter intermediates and the superseded, unsigned-updater output for the old local Sticky Todo bundle. The install guide now points to the current phone exports. [Cleanup record](plans/5-build-artifact-cleanup.md#local-build-output)
