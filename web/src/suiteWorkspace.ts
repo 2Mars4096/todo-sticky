@@ -66,3 +66,9 @@ export function datedNotebookTask(id: string) {
   const match = /^notebook\.(\d{4}-\d{2}-\d{2})\.([A-Za-z0-9_-]{1,128})$/.exec(id)
   return match ? {date:match[1],taskId:match[2]} : null
 }
+
+/** A single local task needs no chooser; stale explicit requests must not pick another task. */
+export function assignmentTaskSelection(keys: string[], requested = '') {
+  if (requested) return keys.includes(requested) ? requested : ''
+  return keys.length === 1 ? keys[0] : ''
+}

@@ -110,7 +110,7 @@ void main() {
       await tap(find.byTooltip('Open navigation menu'));
       await tap(find.text('Settings'));
       await tap(find.text('Account & sync'));
-      await tap(find.text('Workspace assignments'));
+      await tap(find.widgetWithText(ExpansionTile, 'Assign in Shiprite'));
       await tap(find.text('Personal account'));
       await tap(find.text('Studio').last);
       await tap(find.byType(DropdownButton<String>).last);
@@ -119,9 +119,9 @@ void main() {
         find.widgetWithText(TextField, 'Assignee UID (optional)'),
         'studio-member',
       );
-      await tap(find.text('Assign in Shiprite'));
+      await tap(find.widgetWithText(FilledButton, 'Assign in Shiprite'));
       expect(find.textContaining('Try again.'), findsOneWidget);
-      await tap(find.text('Assign in Shiprite'));
+      await tap(find.widgetWithText(FilledButton, 'Assign in Shiprite'));
       expect(find.text('Ready to start · Revision 1'), findsOneWidget);
       expect(writes.length, 2);
       expect(writes.last.method, 'POST');

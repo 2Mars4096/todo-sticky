@@ -1,0 +1,25 @@
+const assert = require('node:assert/strict')
+const load = require('./helpers/load-typescript.cjs')
+const values = new Map()
+const storage = {getItem:key=>values.get(key)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)}
+const suite = load('web/src/suiteWorkspace.ts', {'./interfaceLocale':{ui:s=>s}}, {localStorage:storage})
+assert.equal(suite.assignmentTaskSelection([]), '')
+assert.equal(suite.assignmentTaskSelection(['day:a']), 'day:a')
+assert.equal(suite.assignmentTaskSelection(['day:a','day:b']), '')
+assert.equal(suite.assignmentTaskSelection(['day:a','day:b'],'day:b'), 'day:b')
+assert.equal(suite.assignmentTaskSelection(['day:a'],'missing'), '')
+suite.chooseWorkspace('alice','shared')
+assert.equal(suite.selectedWorkspace('alice'),'shared')
+assert.equal(suite.selectedWorkspace('bob'),'')
+;(async()=>{
+ for (const rows of [[],[{id:'one',name:'Shared',role:'editor'}],[{id:'one',name:'Shared',role:'editor'},{id:'two',name:'Another',role:'editor'}]]) {
+   await suite.editorWorkspaces(async()=>({workspaces:rows}))
+   assert.equal(suite.selectedWorkspace('bob'),'','Membership discovery never changes personal scope')
+   assert.equal(suite.selectedWorkspace('alice'),'shared','Existing selection is never silently rewritten')
+ }
+ values.set('dockit-workspace-v1:dear-diane-202610:alice','!invalid!')
+ assert.throws(()=>suite.selectedWorkspace('alice'))
+ suite.chooseWorkspace('alice','')
+ assert.equal(suite.selectedWorkspace('alice'),'')
+ console.log('Personal task selection, explicit shared scope and account isolation passed')
+})().catch(e=>{console.error(e);process.exitCode=1})

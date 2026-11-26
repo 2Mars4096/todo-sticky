@@ -2,7 +2,7 @@
 
 ## Signed-out account layout
 
-The signed-out React Account panel has one bounded stack for sign-in and account management. On phones the equivalent actions use full-width 48 px controls. The Sync service disclosure follows the actions for a configured service; a fresh independent service opens setup first. Signed-in notebook controls keep their existing hierarchy.
+The signed-out React Account panel has one bounded stack for sign-in and account management. On phones the equivalent actions use full-width 48 px controls. The Sync service disclosure follows the actions for a configured service; a fresh independent service opens setup first. Signed-in notebook controls lead with personal Sync/recovery; optional Shiprite assignments follow. Membership discovery runs only on explicit expansion. A sole local task can be implicit, but shared destination selection remains explicit because it scopes both assignments and AI usage.
 
 ## Shared account settings
 

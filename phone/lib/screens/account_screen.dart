@@ -465,7 +465,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     account.session!.email,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  if (account.session!.origin == dianeSharedOrigin)
+                  if (account.session!.origin == dianeSharedOrigin &&
+                      widget.assignmentKey != null)
                     WorkspaceAssignments(
                       key: ValueKey(account.session!.owner),
                       initialTask: widget.assignmentKey,
@@ -594,6 +595,12 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                     ),
                 ],
+                if (account.session?.origin == dianeSharedOrigin &&
+                    widget.assignmentKey == null)
+                  WorkspaceAssignments(
+                    key: ValueKey(account.session!.owner),
+                    account: account,
+                  ),
                 if (account.session == null && account.server.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   serviceSetup(account, unavailable),

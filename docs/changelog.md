@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-26 — Personal notebook first
+
+Account now puts personal Sync and recovery before optional Shiprite assignments. Empty shared-context selectors are hidden, a sole local task is implicit, and shared destinations remain explicitly chosen. Preserved task-specific entry and invalid-context recovery. [Review and checks](plans/26-1-personal-notebook.md)
+
 ## 2026-11-26 — Final-review interaction and panel refinement
 
 Made the phone checklist importer scroll with the keyboard open, wrapped its actions, and expanded the Earlier drag handle hit area. Refined warm-paper panel edges, pressed/selected feedback and touch action sizes across web/Mac and phone. Updated navigation/gesture fixtures and added compact-keyboard import coverage. [Surface inventory, evidence and phased release gates](plans/26-final-release-review.md)

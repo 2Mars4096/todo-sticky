@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Make personal Sync primary and simplify optional assignment choices without changing data scope. [Personal notebook review](plans/26-1-personal-notebook.md)
+
 - [x] Improve final-review nested action panels and phone import/grip behavior. [Review and release gates](plans/26-final-release-review.md)
 - [ ] Complete production identity/sync/handoffs and exact signed-device acceptance before public release. [P0 roadmap](plans/26-final-release-review.md#p0--before-public-release)
 

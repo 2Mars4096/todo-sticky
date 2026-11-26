@@ -373,3 +373,5 @@ Expand a synced task to inspect its Mynit quotation and open the timestamped pas
 ### Local Flutter phone exports
 
 See the [per-platform verification record](docs/plans/25-interface-element-review.md) for the signed Android release APKs, separate Preview APK, iPhone Simulator app and unsigned iPhone device app/IPA. The production Android release preserves the original package/signing identity. The unsigned iPhone device export requires provisioning and signing before installation.
+
+Personal notebooks work without an account or shared workspace. Account puts Sync and recovery first; open **Assign in Shiprite** only when assigning work. A single local task is selected for you, while a shared destination always requires your choice. [Personal-use checks](docs/plans/26-1-personal-notebook.md)

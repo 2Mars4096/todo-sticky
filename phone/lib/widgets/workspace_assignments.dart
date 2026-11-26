@@ -63,6 +63,10 @@ class _WorkspaceAssignmentsState extends State<WorkspaceAssignments> {
     taskKey = widget.initialTask ?? '';
     workspaces = {};
     workspaces = await widget.account.editorWorkspaces();
+    final keys = archiveRows(widget.account.store.days)
+        .map((item) => '${item.date}:${item.task.id}')
+        .toList();
+    if (widget.initialTask == null && keys.length == 1) taskKey = keys.single;
     loaded = true;
   });
 
@@ -99,7 +103,7 @@ class _WorkspaceAssignmentsState extends State<WorkspaceAssignments> {
     });
     return ExpansionTile(
       initiallyExpanded: widget.initialTask != null,
-      title: Text(tr(context, "Workspace assignments")),
+      title: Text(tr(context, "Assign in Shiprite")),
       subtitle: Text(
         workspaces[selected] ??
             (selected.isEmpty ? tr(context, "Personal notebook") : selected),
@@ -110,41 +114,45 @@ class _WorkspaceAssignmentsState extends State<WorkspaceAssignments> {
         if (open) refresh();
       },
       children: [
-        DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            labelText: tr(context, "Workspace for assignments and AI usage"),
-          ),
-          isExpanded: true,
-          initialValue: selected,
-          items: [
-            DropdownMenuItem(
-              value: '',
-              child: Text(tr(context, "Personal account")),
+        if (workspaces.isNotEmpty || selected.isNotEmpty)
+          DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: tr(context, "Workspace for assignments and AI usage"),
             ),
-            if (selected.isNotEmpty && !workspaces.containsKey(selected))
+            isExpanded: true,
+            initialValue: selected,
+            items: [
               DropdownMenuItem(
-                value: selected,
-                enabled: false,
-                child: Text(tr(context, "{0} (check access)", [selected])),
+                value: '',
+                child: Text(tr(context, "Personal account")),
               ),
-            for (final item in workspaces.entries)
-              DropdownMenuItem(value: item.key, child: Text(item.value)),
-          ],
-          onChanged: busy
-              ? null
-              : (id) {
-                  if (id != null) {
-                    run(() async {
-                      await account.chooseWorkspace(id);
-                      member.clear();
-                      taskKey = selected.isEmpty
-                          ? widget.initialTask ?? ''
-                          : '';
-                      receipt = null;
-                    });
-                  }
-                },
-        ),
+              if (selected.isNotEmpty && !workspaces.containsKey(selected))
+                DropdownMenuItem(
+                  value: selected,
+                  enabled: false,
+                  child: Text(tr(context, "{0} (check access)", [selected])),
+                ),
+              for (final item in workspaces.entries)
+                DropdownMenuItem(
+                  value: item.key,
+                  child: Text(item.value, overflow: TextOverflow.ellipsis),
+                ),
+            ],
+            onChanged: busy
+                ? null
+                : (id) {
+                    if (id != null) {
+                      run(() async {
+                        await account.chooseWorkspace(id);
+                        member.clear();
+                        taskKey =
+                            widget.initialTask ??
+                            (tasks.length == 1 ? tasks.keys.single : '');
+                        receipt = null;
+                      });
+                    }
+                  },
+          ),
         if (loaded && workspaces.isEmpty)
           Text(
             tr(
@@ -156,45 +164,34 @@ class _WorkspaceAssignmentsState extends State<WorkspaceAssignments> {
           Text(tr(context, "Add a task to your notebook to assign it.")),
         if (workspaces.containsKey(selected) && tasks.isNotEmpty) ...[
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            key: ValueKey(selected),
-            decoration: InputDecoration(
-              labelText: tr(context, "Task and steps"),
-            ),
-            isExpanded: true,
-            initialValue: row == null ? null : taskKey,
-            hint: Text(tr(context, "Choose task")),
-            items: [
-              for (final item in tasks.entries)
-                DropdownMenuItem(
-                  value: item.key,
-                  child: Text(
-                    '${item.value.date} · ${item.value.task.text}',
-                    overflow: TextOverflow.ellipsis,
+          if (tasks.length > 1 || row == null)
+            DropdownButtonFormField<String>(
+              key: ValueKey(selected),
+              decoration: InputDecoration(
+                labelText: tr(context, "Task and steps"),
+              ),
+              isExpanded: true,
+              initialValue: row == null ? null : taskKey,
+              hint: Text(tr(context, "Choose task")),
+              items: [
+                for (final item in tasks.entries)
+                  DropdownMenuItem(
+                    value: item.key,
+                    child: Text(
+                      '${item.value.date} · ${item.value.task.text}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-            ],
-            onChanged: busy
-                ? null
-                : (key) => setState(() {
-                    taskKey = key ?? '';
-                    receipt = null;
-                    notice = '';
-                  }),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: member,
-            onChanged: (_) => setState(() {
-              receipt = null;
-              notice = '';
-            }),
-            enabled: !busy,
-            maxLength: 128,
-            decoration: InputDecoration(
-              labelText: tr(context, "Assignee UID (optional)"),
+              ],
+              onChanged: busy
+                  ? null
+                  : (key) => setState(() {
+                      taskKey = key ?? '';
+                      receipt = null;
+                      notice = '';
+                    }),
             ),
-          ),
+          const SizedBox(height: 12),
           if (row != null) ...[
             Text(row.task.text),
             if (row.task.subtasks.isNotEmpty)
@@ -217,8 +214,21 @@ class _WorkspaceAssignmentsState extends State<WorkspaceAssignments> {
               ),
             ),
           ],
+          TextField(
+            controller: member,
+            onChanged: (_) => setState(() {
+              receipt = null;
+              notice = '';
+            }),
+            enabled: !busy,
+            maxLength: 128,
+            decoration: InputDecoration(
+              labelText: tr(context, "Assignee UID (optional)"),
+            ),
+          ),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children: [
               FilledButton(
                 onPressed: busy || row == null ? null : () => send(false),

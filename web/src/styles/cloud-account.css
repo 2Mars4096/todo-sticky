@@ -112,3 +112,5 @@
 .cloud-signin .cloud-account-manage a:hover { background: #faf3d7; }
 .cloud-signin .cloud-connection { margin: 0; }
 .cloud-signin .cloud-connection summary { display: list-item; min-height: 36px; padding: 9px 0; }
+
+.assignment-summary { overflow-wrap: anywhere; }
