@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-27 — Branch consolidation and selected-day planning
+
+Integrated the Dockit transfer review, restored the embedded editor’s canonical document adapter and tests, and ported selected-day planning to the current web and Mac notebook. Apply requires time for every unfinished selected-day task before adding earlier work to the same resource. [Planning and verification](plans/4-50-today-first-planning.md)
+
 ## 2026-11-26 — Personal notebook first
 
 Account now puts personal Sync and recovery before optional Shiprite assignments. Empty shared-context selectors are hidden, a sole local task is implicit, and shared destinations remain explicitly chosen. Preserved task-specific entry and invalid-context recovery. [Review and checks](plans/26-1-personal-notebook.md)

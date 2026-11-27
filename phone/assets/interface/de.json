@@ -898,7 +898,6 @@
   "Show or hide Dockit": "Dockit ein- oder ausblenden",
   "Show task actions and steps": "Zeigen Sie Aufgabenaktionen und -schritte an.",
   "Showing the simplified map. Focus controls remain available.": "Die vereinfachte Karte wird angezeigt. Die Kontrollmechanismen sind weiterhin verfügbar.",
-  "Sign in": "Anmelden",
   "Sign in and enable sync to open this task.": "Sind Sie angemeldet und aktivieren Sie die Synchronisierung, um diese Aufgabe zu öffnen.",
   "Sign in to pipedreams.": "Sind Sie bei pipedreams angemeldet.",
   "Sign in to open this notebook task.": "Sind Sie angemeldet, um dieses Notenblatt-Aufgaben zu öffnen.",
@@ -1222,7 +1221,6 @@
   "Work date": "Arbeitsdatum”,",
   "Working…": "Arbeiten…”,",
   "Workspace": "Arbeitsbereich",
-  "Workspace assignments": "Aufgaben im Arbeitsraum”,",
   "Workspace changed. Check status in the original workspace.": "Die Arbeitsumgebung hat sich geändert. Überprüfen Sie den Status in der ursprünglichen Arbeitsumgebung.",
   "Workspace changed. Select your task again.": "Die Arbeitsumgebung hat sich geändert. Wählen Sie Ihre Aufgabe erneut aus.",
   "Workspace for assignments and AI usage": "Arbeitsraum für Aufgaben und Nutzung von AI”,",
@@ -1367,6 +1365,8 @@
   "Dockit settings": "Dockit Einstellungen",
   "Update Shiprite to discard a result without closing its task.": "Aktualisieren Sie Shiprite, um ein Ergebnis ohne Schließen der Aufgabe zu speichern.",
   "Sort by": "Sortieren nach",
-  "Newest first": "Neueste zuerst",
-  "Oldest first": "Älteste zuerst"
+  "Allow more time or adjust the tasks, then generate another proposal.": "Planen Sie mehr Zeit ein oder passen Sie die Aufgaben an. Erstellen Sie dann einen neuen Vorschlag.",
+  "Auto lets AI estimate. Tasks for the selected day come first.": "Bei „Automatisch“ schätzt die KI den Zeitbedarf. Aufgaben des gewählten Tages haben Vorrang.",
+  "Generate another proposal that schedules selected-day tasks before earlier work.": "Erstellen Sie einen neuen Vorschlag, der Aufgaben des gewählten Tages vor älteren Aufgaben einplant.",
+  "{0} of {1} selected-day tasks planned": "{0} von {1} Aufgaben für den gewählten Tag eingeplant"
 }

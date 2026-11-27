@@ -898,7 +898,6 @@
   "Show or hide Dockit": "Afficher ou masquer Dockit",
   "Show task actions and steps": "Afficher les actions et étapes de la tâche",
   "Showing the simplified map. Focus controls remain available.": "La carte simplifiée est affichée. Les contrôles de focus sont toujours disponibles.",
-  "Sign in": "Se connecter",
   "Sign in and enable sync to open this task.": "Connectez-vous et activez la synchronisation pour ouvrir cette tâche.",
   "Sign in to pipedreams.": "Connectez-vous à pipedreams.",
   "Sign in to open this notebook task.": "Connectez-vous pour ouvrir cette tâche de notebook.",
@@ -1222,7 +1221,6 @@
   "Work date": "Date de travail",
   "Working…": "En train de travailler…",
   "Workspace": "Espace de travail",
-  "Workspace assignments": "Tâches assignées dans la zone de travail",
   "Workspace changed. Check status in the original workspace.": "Le workspace a changé. Vérifiez l’état dans le workspace original.",
   "Workspace changed. Select your task again.": "Le workspace a changé. Sélectionnez votre tâche à nouveau.",
   "Workspace for assignments and AI usage": "Zone de travail pour les tâches et l’utilisation de l’IA",
@@ -1367,6 +1365,8 @@
   "Dockit settings": "Dockit Paramètres",
   "Update Shiprite to discard a result without closing its task.": "Met à jour Shiprite pour éliminer un résultat sans fermer la tâche correspondante.",
   "Sort by": "Trier par",
-  "Newest first": "Plus récents en premier",
-  "Oldest first": "Plus anciens en premier"
+  "Allow more time or adjust the tasks, then generate another proposal.": "Prévoyez plus de temps ou ajustez les tâches, puis générez une autre proposition.",
+  "Auto lets AI estimate. Tasks for the selected day come first.": "En mode Auto, l’IA estime la durée. Les tâches du jour sélectionné sont prioritaires.",
+  "Generate another proposal that schedules selected-day tasks before earlier work.": "Générez une proposition qui planifie les tâches du jour sélectionné avant celles des jours précédents.",
+  "{0} of {1} selected-day tasks planned": "{0} tâches planifiées sur {1} pour le jour sélectionné"
 }

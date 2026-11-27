@@ -7,7 +7,7 @@ import { resolveTaskCarryForwardTarget } from '../taskCarryForward'
 import { carriedTasks, completeTree, flattenTasks, mergeCarriedSection, moveCarriedToToday } from '../taskRollover'
 import { applyPlanWithUndo, deleteWithUndo, restoreTaskChange, type TaskUndo } from '../taskHistory'
 import { assignTaskProject } from '../projectPlanning'
-import { planningTaskKey, type PlannedBlock } from '../taskPlanning'
+import { dayPlanCoverage, planningTaskKey, type PlannedBlock } from '../taskPlanning'
 
 // A stalled archive must not leave the entire task surface waiting forever.
 function readWithTimeout<T>(request: Promise<T>, milliseconds = 8000): Promise<T> {
@@ -615,6 +615,7 @@ export function useTasks(dateStr: string, isCurrentDay = false) {
     const batchId = newId()
     setTasks(prev => {
       if (loadingRef.current || expectedDate !== loadedDateRef.current || planningTaskKey(prev) !== expectedTaskKey) return prev
+      if (!dayPlanCoverage(schedule, prev, expectedDate).complete) return prev
       const change = applyPlanWithUndo(prev, expectedDate, schedule, batchId)
       if (!change) return prev
       setUndo(change.undo)

@@ -898,7 +898,6 @@
   "Show or hide Dockit": "Mostrar ou ocultar Dockit",
   "Show task actions and steps": "Mostrar ações e etapas da tarefa.",
   "Showing the simplified map. Focus controls remain available.": "A mapa simplificada está sendo exibida. Os controles de foco ainda estão disponíveis.",
-  "Sign in": "Entrar",
   "Sign in and enable sync to open this task.": "Faça login e ative a sincronização para abrir esta tarefa.",
   "Sign in to pipedreams.": "Faça login em pipedreams.",
   "Sign in to open this notebook task.": "Faça login para abrir esta tarefa do notebook.",
@@ -1222,7 +1221,6 @@
   "Work date": "Data de trabalho",
   "Working…": "Trabalhando…",
   "Workspace": "Área de trabalho",
-  "Workspace assignments": "Atribuições de workspace",
   "Workspace changed. Check status in the original workspace.": "O workspace mudou. Verifique o status no workspace original.",
   "Workspace changed. Select your task again.": "O workspace mudou. Selecione sua tarefa novamente.",
   "Workspace for assignments and AI usage": "Espaço de trabalho para atribuições e uso de AI",
@@ -1367,6 +1365,8 @@
   "Dockit settings": "Dockit configurações",
   "Update Shiprite to discard a result without closing its task.": "Atualize o Shiprite para descartar um resultado sem fechar a tarefa.",
   "Sort by": "Ordenar por",
-  "Newest first": "Mais recentes primeiro",
-  "Oldest first": "Mais antigos primeiro"
+  "Allow more time or adjust the tasks, then generate another proposal.": "Reserve mais tempo ou ajuste as tarefas e gere outra proposta.",
+  "Auto lets AI estimate. Tasks for the selected day come first.": "No modo automático, a IA estima a duração. As tarefas do dia selecionado têm prioridade.",
+  "Generate another proposal that schedules selected-day tasks before earlier work.": "Gere outra proposta que programe as tarefas do dia selecionado antes das anteriores.",
+  "{0} of {1} selected-day tasks planned": "{0} de {1} tarefas do dia selecionado planejadas"
 }

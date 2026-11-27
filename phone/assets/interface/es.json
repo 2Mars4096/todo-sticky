@@ -898,7 +898,6 @@
   "Show or hide Dockit": "Mostrar u ocultar Dockit",
   "Show task actions and steps": "Muestre las acciones y pasos de la tarea.",
   "Showing the simplified map. Focus controls remain available.": "Se está mostrando la mapa simplificada. Los controles de enfoque siguen disponibles.",
-  "Sign in": "Iniciar sesión",
   "Sign in and enable sync to open this task.": "Inicie sesión y habilite la sincronización para abrir esta tarea.",
   "Sign in to pipedreams.": "Inicie sesión en pipedreams.",
   "Sign in to open this notebook task.": "Inicie sesión para abrir esta tarea del cuaderno.",
@@ -1222,7 +1221,6 @@
   "Work date": "Fecha de trabajo",
   "Working…": "Trabajando…",
   "Workspace": "Espacio de trabajo",
-  "Workspace assignments": "Asignaciones de espacio de trabajo",
   "Workspace changed. Check status in the original workspace.": "El espacio de trabajo cambió. Compruebe el estado en el espacio de trabajo original.",
   "Workspace changed. Select your task again.": "El espacio de trabajo cambió. Seleccione su tarea de nuevo.",
   "Workspace for assignments and AI usage": "Espacio de trabajo para asignaciones y uso de AI",
@@ -1367,6 +1365,8 @@
   "Dockit settings": "Dockit Configuraciones",
   "Update Shiprite to discard a result without closing its task.": "Actualice Shiprite para descartar un resultado sin cerrar la tarea.",
   "Sort by": "Ordenar por",
-  "Newest first": "Más recientes primero",
-  "Oldest first": "Más antiguos primero"
+  "Allow more time or adjust the tasks, then generate another proposal.": "Reserva más tiempo o ajusta las tareas y genera otra propuesta.",
+  "Auto lets AI estimate. Tasks for the selected day come first.": "En modo automático, la IA estima la duración. Las tareas del día seleccionado tienen prioridad.",
+  "Generate another proposal that schedules selected-day tasks before earlier work.": "Genera otra propuesta que programe las tareas del día seleccionado antes que las anteriores.",
+  "{0} of {1} selected-day tasks planned": "{0} de {1} tareas del día seleccionado planificadas"
 }

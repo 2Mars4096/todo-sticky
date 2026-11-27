@@ -1,5 +1,9 @@
 # Bugs And Failed Approaches
 
+## 2026-11-27 — Older branches overlap current client code
+
+The transfer and editor branches diverged before Dockit’s current account routing and localization. Their older trees would reintroduce retired code. The consolidation keeps the current client surfaces and restores the editor’s missing backend adapter and tests. The host regression inspects FastAPI’s effective OpenAPI paths because recent FastAPI versions defer expansion of included routers.
+
 ## 2026-11-24 — Work albums read as photo albums
 
 The Chinese music panel used 相册 or 相冊 for a recording. The revised catalogs use 专辑 or 專輯 in headings, actions, loading and errors. The browser regression renders the panel in all three Chinese locales. [Release checks](plans/23-dockit-transfer.md#album-language-and-client-release)

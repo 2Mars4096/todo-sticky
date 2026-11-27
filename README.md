@@ -186,6 +186,8 @@ AI step suggestions use the outcome and date to propose bounded work including a
 
 ### Review a day plan before applying it
 
+Apply requires a block for every unfinished task on the selected day. Earlier tasks use spare time on each person or machine.
+
 Open **Plan** for the selected date, set your available **From / Until** times, and optionally select configured machines. The desktop remembers these choices. **Adjust task time & breaks** offers optional time budgets and unavailable periods together; Auto lets AI estimate. **Generate proposal** shows chronological blocks and any tasks left unscheduled. Generating a proposal does not change your tasks.
 
 Choose **Apply plan** to add the blocks, or **Discard** to leave the tasks as they were. Desktop replanning replaces untouched todo suggestions for that planning date while retaining edited, started, manual and completed work. Older generated steps without original-text fingerprints are retained too. The confirmation offers **Undo**. If tasks or planning details change during review, generate a fresh proposal before applying it.

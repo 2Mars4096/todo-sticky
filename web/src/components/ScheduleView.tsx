@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import { api } from '../api'
 import { aiErrorMessage } from '../aiErrors'
 import { useDialogFocus } from '../hooks/useDialogFocus'
-import { minutesOfDay, validUnavailable, type UnavailableTime, planningTaskKey, validateDayPlan, type DayPlan, type PlannedBlock, type PlanningContext } from '../taskPlanning'
+import { minutesOfDay, validUnavailable, type UnavailableTime, planningTaskKey, planningTaskGroups, dayPlanCoverage, validateDayPlan, type DayPlan, type PlannedBlock, type PlanningContext } from '../taskPlanning'
 import type { AggregatedTask, AppSettings } from '../types'
 import '../styles/day-planning.css'
 
@@ -40,7 +40,8 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
   const generationRef = useRef(0)
   useEffect(() => () => { generationRef.current += 1 }, [])
 
-  const eligible = tasks.filter(task => task.status !== 'done' && task.status !== 'stopped')
+  const { required, earlier } = planningTaskGroups(tasks, date)
+  const eligible = [...required, ...earlier]
   const taskKey = planningTaskKey(tasks)
   const selected = machines.filter(machine => selectedMachines.includes(machine.name))
   const constraintsKey = JSON.stringify({ unavailable, estimates })
@@ -52,7 +53,9 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
   const endMinute = minutesOfDay(end)
   const validTimes = startMinute !== null && endMinute !== null && endMinute > startMinute && validUnavailable(unavailable)
   const scheduledIds = new Set(proposal?.result.schedule.map(block => block.taskId))
-  const deferred = eligible.filter(task => !scheduledIds.has(task.id))
+  const deferred = earlier.filter(task => !scheduledIds.has(task.id))
+  const coverage = proposal ? dayPlanCoverage(proposal.result.schedule, proposal.context.tasks, proposal.context.date) : null
+  const canApply = Boolean(proposal && coverage?.complete && !contextChanged && !loading && !tasksLoading)
 
   useEffect(() => {
     if (!proposal) return
@@ -107,7 +110,7 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
               <summary>{ui("Adjust task time & breaks")}</summary>
               <fieldset disabled={loading}>
                 <legend>{ui("Time budget per task")}</legend>
-                <p className="day-plan-hint">{ui("Auto lets AI estimate. List order guides priority.")}</p>
+                <p className="day-plan-hint">{ui("Auto lets AI estimate. Tasks for the selected day come first.")}</p>
                 {eligible.map(task => <label className="planning-estimate" key={task.id}>
                   <span>{task.text}</span><select aria-label={ui("Time budget for {0}", [task.text])} value={estimates[task.id] ?? ''} onChange={event => setEstimates(current => {
                     const next = { ...current }; if (event.target.value) next[task.id] = Number(event.target.value); else delete next[task.id]; return next
@@ -148,6 +151,18 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
           {proposal && (
             <section aria-label={ui("Proposed plan")} className="day-plan-proposal">
               <h3 ref={proposalHeading} tabIndex={-1}>{ui("{0} proposed {1}", [proposal.result.schedule.length, proposal.result.schedule.length === 1 ? ui("block") : ui("blocks")])}</h3>
+              {coverage && coverage.required.length > 0 && (
+                <div className={`day-plan-coverage ${coverage.complete ? 'day-plan-hint' : 'day-plan-error'}`} role={coverage.complete ? 'status' : 'alert'}>
+                  <strong>{ui("{0} of {1} selected-day tasks planned", [coverage.required.length - coverage.missing.length, coverage.required.length])}</strong>
+                  {coverage.missing.length > 0 && (
+                    <>
+                      <p>{ui("Allow more time or adjust the tasks, then generate another proposal.")}</p>
+                      <ul>{coverage.missing.map(task => <li key={task.id}>{task.text}</li>)}</ul>
+                    </>
+                  )}
+                  {coverage.displacesRequired && <p>{ui("Generate another proposal that schedules selected-day tasks before earlier work.")}</p>}
+                </div>
+              )}
               {proposal.result.plan && <p>{proposal.result.plan}</p>}
               <ol className="day-plan-timeline">
                 {proposal.result.schedule.map((block, index) => (
@@ -169,8 +184,8 @@ export function ScheduleView({ date, tasks, tasksLoading, machines, onApply, onC
         </div>
         <footer className="day-plan-actions">
           <button onClick={onClose}>{proposal ? ui("Discard") : ui("Cancel")}</button>
-          <button className="primary" disabled={!proposal || Boolean(contextChanged) || loading || tasksLoading}
-            onClick={() => { if (proposal && !contextChanged && !tasksLoading) onApply(proposal.result.schedule, proposal.context.date, proposal.taskKey) }}>{ui("Apply plan")}</button>
+          <button className="primary" disabled={!canApply}
+            onClick={() => { if (proposal && canApply) onApply(proposal.result.schedule, proposal.context.date, proposal.taskKey) }}>{ui("Apply plan")}</button>
         </footer>
       </div>
     </div>

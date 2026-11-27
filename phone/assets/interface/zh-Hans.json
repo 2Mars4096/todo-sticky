@@ -898,7 +898,6 @@
   "Show or hide Dockit": "显示或隐藏 Dockit",
   "Show task actions and steps": "显示任务操作和步骤。",
   "Showing the simplified map. Focus controls remain available.": "正在显示简化地图。焦点控制仍然可用。",
-  "Sign in": "登录",
   "Sign in and enable sync to open this task.": "登录并启用同步以打开此任务。",
   "Sign in to pipedreams.": "登录到pipedreams。",
   "Sign in to open this notebook task.": "登录以打开此笔记本任务。",
@@ -1222,7 +1221,6 @@
   "Work date": "工作日期",
   "Working…": "正在工作…",
   "Workspace": "工作区",
-  "Workspace assignments": "工作区任务",
   "Workspace changed. Check status in the original workspace.": "工作区已更改。在原工作区中查看状态。",
   "Workspace changed. Select your task again.": "工作区已更改。再次选择您的任务。",
   "Workspace for assignments and AI usage": "用于任务与人工智能使用的工作区",
@@ -1367,6 +1365,8 @@
   "Dockit settings": "Dockit 设置",
   "Update Shiprite to discard a result without closing its task.": "更新Shiprite以丢弃结果而不关闭任务。",
   "Sort by": "排序方式",
-  "Newest first": "最新在前",
-  "Oldest first": "最早在前"
+  "Allow more time or adjust the tasks, then generate another proposal.": "请留出更多时间或调整任务，再生成一份方案。",
+  "Auto lets AI estimate. Tasks for the selected day come first.": "自动由 AI 估算，优先安排所选日期的任务。",
+  "Generate another proposal that schedules selected-day tasks before earlier work.": "请重新生成方案，先安排所选日期的任务，再安排之前的任务。",
+  "{0} of {1} selected-day tasks planned": "所选日期的 {1} 项任务中已安排 {0} 项"
 }

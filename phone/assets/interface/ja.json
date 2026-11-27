@@ -898,7 +898,6 @@
   "Show or hide Dockit": "Dockit を表示または隠す",
   "Show task actions and steps": "タスクの操作や手順を表示します。",
   "Showing the simplified map. Focus controls remain available.": "簡易マップが表示されています。フォーカスコントロールは引き続き利用可能です",
-  "Sign in": "ログイン",
   "Sign in and enable sync to open this task.": "このタスクを開くには、ログインして同期機能を有効にしてください。",
   "Sign in to pipedreams.": "pipedreamsにログインしてください。",
   "Sign in to open this notebook task.": "このノートブックタスクを開くには、ログインしてください。",
@@ -1222,7 +1221,6 @@
   "Work date": "作業日",
   "Working…": "作業中…",
   "Workspace": "ワークスペース",
-  "Workspace assignments": "ワークスペースの割り当て",
   "Workspace changed. Check status in the original workspace.": "ワークスペースが変更されました。元のワークスペースで状態を確認してください。",
   "Workspace changed. Select your task again.": "ワークスペースが変更されました。再度タスクを選択してください。",
   "Workspace for assignments and AI usage": "割り当てやAI使用のためのワークスペース",
@@ -1367,6 +1365,8 @@
   "Dockit settings": "Dockit 設定",
   "Update Shiprite to discard a result without closing its task.": "Shipriteを更新して、タスクを終了せずに結果を破棄します。",
   "Sort by": "並べ替え",
-  "Newest first": "新しい順",
-  "Oldest first": "古い順"
+  "Allow more time or adjust the tasks, then generate another proposal.": "時間を増やすかタスクを調整してから、別の案を作成してください。",
+  "Auto lets AI estimate. Tasks for the selected day come first.": "自動では AI が見積もり、選択した日のタスクを優先します。",
+  "Generate another proposal that schedules selected-day tasks before earlier work.": "選択した日のタスクを以前のタスクより先に入れた案を作成してください。",
+  "{0} of {1} selected-day tasks planned": "選択した日のタスク {1} 件中 {0} 件を計画済み"
 }

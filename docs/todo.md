@@ -1,5 +1,7 @@
 # Todo
 
+- [x] Consolidate the Dockit transfer, embedded editor and selected-day planning branches. [Planning](plans/4-50-today-first-planning.md) · [Editor](plans/22-plugin-continuous-editing.md)
+
 - [x] Make personal Sync primary and simplify optional assignment choices without changing data scope. [Personal notebook review](plans/26-1-personal-notebook.md)
 
 - [x] Improve final-review nested action panels and phone import/grip behavior. [Review and release gates](plans/26-final-release-review.md)
