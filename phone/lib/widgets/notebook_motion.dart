@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 // Dockit's motion and material vocabulary for the phone notebook.
@@ -115,6 +116,7 @@ class InkStrikeText extends StatefulWidget {
 
 class _InkStrikeTextState extends State<InkStrikeText>
     with SingleTickerProviderStateMixin {
+  final textKey = GlobalKey();
   late final AnimationController strike = AnimationController(
     vsync: this,
     duration: motionStrike,
@@ -141,75 +143,82 @@ class _InkStrikeTextState extends State<InkStrikeText>
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final textScaler = MediaQuery.textScalerOf(context);
-    final direction = Directionality.of(context);
-    return AnimatedBuilder(
-      animation: strike,
-      builder: (context, child) => CustomPaint(
-        foregroundPainter: strike.value == 0
-            ? null
-            : _StrikePainter(
-                text: widget.text,
-                style: widget.style,
-                progress: easeOutQuart.transform(strike.value),
-                textScaler: textScaler,
-                direction: direction,
-                color: (widget.style.color ?? _ink).withValues(alpha: .7),
-              ),
-        child: child,
-      ),
-      child: Text(widget.text, style: widget.style),
+  /// Line boxes from the laid-out paragraph, so the strike follows the
+  /// text exactly at every scale, font and width.
+  List<Rect> _lines() {
+    final paragraph = textKey.currentContext?.findRenderObject();
+    if (paragraph is! RenderParagraph || !paragraph.hasSize) return const [];
+    final boxes = paragraph.getBoxesForSelection(
+      TextSelection(baseOffset: 0, extentOffset: widget.text.length),
     );
+    final lines = <Rect>[];
+    for (final box in boxes) {
+      final rect = box.toRect();
+      if (rect.width <= 0) continue;
+      final index = lines.indexWhere(
+        (line) => (line.center.dy - rect.center.dy).abs() < rect.height / 2,
+      );
+      if (index < 0) {
+        lines.add(rect);
+      } else {
+        lines[index] = lines[index].expandToInclude(rect);
+      }
+    }
+    return lines;
   }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: strike,
+    builder: (context, child) => CustomPaint(
+      foregroundPainter: strike.value == 0
+          ? null
+          : _StrikePainter(
+              lines: _lines,
+              progress: easeOutQuart.transform(strike.value),
+              rtl: Directionality.of(context) == TextDirection.rtl,
+              width: math.max(1.4, (widget.style.fontSize ?? 16) / 10),
+              color: (widget.style.color ?? _ink).withValues(alpha: .7),
+            ),
+      child: child,
+    ),
+    child: Text(widget.text, key: textKey, style: widget.style),
+  );
 }
 
 class _StrikePainter extends CustomPainter {
   _StrikePainter({
-    required this.text,
-    required this.style,
+    required this.lines,
     required this.progress,
-    required this.textScaler,
-    required this.direction,
+    required this.rtl,
+    required this.width,
     required this.color,
   });
 
-  final String text;
-  final TextStyle style;
+  final List<Rect> Function() lines;
   final double progress;
-  final TextScaler textScaler;
-  final TextDirection direction;
+  final bool rtl;
+  final double width;
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: direction,
-      textScaler: textScaler,
-    )..layout(maxWidth: size.width);
-    final lines = painter.computeLineMetrics();
-    painter.dispose();
-    final total = lines.fold<double>(0, (sum, line) => sum + line.width);
+    final rows = lines();
+    final total = rows.fold<double>(0, (sum, line) => sum + line.width);
     if (total == 0) return;
     var remaining = total * progress;
     final stroke = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = math.max(1.4, (style.fontSize ?? 16) / 10);
-    for (final line in lines) {
+      ..strokeWidth = width;
+    for (final line in rows) {
       if (remaining <= 0) break;
       final length = math.min(line.width, remaining);
       remaining -= length;
-      final y = line.baseline - line.ascent * .32;
-      final start = direction == TextDirection.ltr
-          ? line.left - 1
-          : line.left + line.width + 1;
-      final end = direction == TextDirection.ltr
-          ? start + length + 2
-          : start - length - 2;
+      final y = line.top + line.height * .55;
+      final start = rtl ? line.right + 1 : line.left - 1;
+      final end = rtl ? start - length - 2 : start + length + 2;
       // A slight rise and settle reads as a pen stroke, not a rule.
       final path = Path()
         ..moveTo(start, y + .6)
@@ -220,11 +229,7 @@ class _StrikePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_StrikePainter old) =>
-      old.progress != progress ||
-      old.text != text ||
-      old.style != style ||
-      old.color != color ||
-      old.textScaler != textScaler;
+      old.progress != progress || old.color != color || old.width != width;
 }
 
 /// Briefly washes a newly written row so the eye finds where it landed.

@@ -221,28 +221,26 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              spacing: 8,
-                              children: [
-                                for (final entry in {
-                                  'all': 'All states',
-                                  'open': 'Unfinished',
-                                  'done': 'Completed',
-                                  'stopped': 'Stopped',
-                                }.entries)
-                                  ChoiceChip(
-                                    key: ValueKey('status-${entry.key}'),
-                                    label: Text(tr(context, entry.value)),
-                                    selected: status == entry.key,
-                                    onSelected: (_) => setState(() {
-                                      status = entry.key;
-                                      limit = 40;
-                                    }),
-                                  ),
-                              ],
-                            ),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final entry in {
+                                'all': 'All states',
+                                'open': 'Unfinished',
+                                'done': 'Completed',
+                                'stopped': 'Stopped',
+                              }.entries)
+                                ChoiceChip(
+                                  key: ValueKey('status-${entry.key}'),
+                                  label: Text(tr(context, entry.value)),
+                                  selected: status == entry.key,
+                                  onSelected: (_) => setState(() {
+                                    status = entry.key;
+                                    limit = 40;
+                                  }),
+                                ),
+                            ],
                           ),
                         ),
                         if (widget.store.goals.targets.isNotEmpty ||

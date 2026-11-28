@@ -121,45 +121,56 @@ class _GoalsScreenState extends State<GoalsScreen> {
       ),
       if (routines)
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 12, 4),
-          child: Wrap(
-            spacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Tooltip(
-                message: tr(context, "Schedules run on this device."),
-                child: Icon(Icons.info_outline, size: 18, color: mutedInk),
-              ),
-              if (items.any(
-                (item) =>
-                    item.done &&
-                    (widget.store.routineSchedules[item.id]?.cadence ??
-                            'manual') ==
-                        'manual',
-              ))
-                TextButton(
-                  onPressed: items.any((g) => g.done)
-                      ? () {
-                          for (final item in items) {
-                            if (widget
-                                        .store
-                                        .routineSchedules[item.id]
-                                        ?.cadence ==
-                                    null ||
-                                widget
-                                        .store
-                                        .routineSchedules[item.id]
-                                        ?.cadence ==
-                                    'manual') {
-                              item.done = false;
-                            }
-                          }
-                          widget.store.changed();
-                        }
-                      : null,
-                  child: Text(tr(context, "Reset routines")),
+          padding: const EdgeInsets.fromLTRB(8, 4, 12, 0),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Wrap(
+              spacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Tooltip(
+                  triggerMode: TooltipTriggerMode.tap,
+                  message: tr(context, "Schedules run on this device."),
+                  child: const SizedBox.square(
+                    dimension: 44,
+                    child: Icon(
+                      Icons.info_outline_rounded,
+                      size: 18,
+                      color: mutedInk,
+                    ),
+                  ),
                 ),
-            ],
+                if (items.any(
+                  (item) =>
+                      item.done &&
+                      (widget.store.routineSchedules[item.id]?.cadence ??
+                              'manual') ==
+                          'manual',
+                ))
+                  TextButton(
+                    onPressed: items.any((g) => g.done)
+                        ? () {
+                            for (final item in items) {
+                              if (widget
+                                          .store
+                                          .routineSchedules[item.id]
+                                          ?.cadence ==
+                                      null ||
+                                  widget
+                                          .store
+                                          .routineSchedules[item.id]
+                                          ?.cadence ==
+                                      'manual') {
+                                item.done = false;
+                              }
+                            }
+                            widget.store.changed();
+                          }
+                        : null,
+                    child: Text(tr(context, "Reset routines")),
+                  ),
+              ],
+            ),
           ),
         ),
       if (routines && widget.store.routineError != null)
@@ -204,6 +215,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       : widget.store.goalProgress(item);
                   return ListTile(
                     key: ValueKey(item.id),
+                    titleAlignment: ListTileTitleAlignment.top,
                     leading: !routines
                         ? Icon(
                             item.done
@@ -232,12 +244,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     subtitle: !routines
                         ? Text(
                             progress!.total == 0
-                                ? tr(context, "Plan")
+                                ? tr(context, "No steps yet")
                                 : tr(context, "{0}/{1} completed{2}", [
                                     progress.completed,
                                     progress.total,
                                     progress.scheduled > progress.completed
-                                        ? ' · ${progress.scheduled - progress.completed} scheduled'
+                                        ? ' · ${tr(context, "{0} scheduled", [progress.scheduled - progress.completed])}'
                                         : '',
                                   ]),
                             style: const TextStyle(
