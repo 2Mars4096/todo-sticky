@@ -112,7 +112,7 @@ export const interfaceRows: Record<string,string[]> = {
 "Delete item":["删除项目", "刪除項目", "刪除項目", "項目を削除", "항목 삭제", "Supprimer l’élément", "Element löschen", "Eliminar elemento", "Excluir item"],
 "Delete this project? Its daily tasks will remain.":["删除此项目？其每日任务将保留", "刪除此項目？其每日任務將保留", "刪除此專案？其每日任務將保持不變", "このプロジェクトを削除しますか？毎日のタスクは残ります.", "이 프로젝트를 삭제하시겠습니까? 일일 작업은 남아 있을 것입니다.", "Supprimer ce projet ? Ses tâches quotidiennes resteront.", "Löschen dieses Projekt? Die täglichen Aufgaben bleiben erhalten.", "¿Eliminar este proyecto? Sus tareas diarias permanecerán.", "Excluir este projeto? Suas tarefas diárias permanecerão."],
 "Delete {0}":["删除 {0}", "刪除 {0}", "刪除 {0}", "{0}を削除する", "{0}를 삭제하세요", "Supprimer {0}", "Löschen von {0}", "Eliminar {0}", "Excluir {0}"],
-"Discard":["丢弃", "放棄", "放棄", "破棄", "삭제", "Jeter les éléments qui ne sont pas nécessaires.", "Löschen", "Descartar", "Apagar"],
+"Discard":["丢弃", "放棄", "放棄", "破棄", "버리기", "Abandonner", "Verwerfen", "Descartar", "Descartar"],
 "Discard draft":["丢弃草案", "棄絕草案", "棄草案", "草案を破棄する", "초안을 폐기합니다.", "Annuler le projet.", "Abfallen des Entwurfs", "Descartar borrador", "Descartar rascunho"],
 "Discard remaining":["丢弃剩余内容", "丟棄剩餘內容", "丟棄剩餘的", "残りを破棄する", "남은 내용을 폐기", "Jeter les restants", "Ausgabe aller verbleibenden Daten", "Descartar lo restante", "Descartar o restante"],
 "Discard result":["丢弃结果。", "丟棄結果。", "丟棄結果。", "結果を破棄します。", "결과를 삭제하세요.", "Annuler le résultat.", "Widerschieben Sie das Ergebnis.", "Descartar el resultado", "Descartar resultado"],

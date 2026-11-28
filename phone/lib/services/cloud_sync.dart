@@ -270,9 +270,8 @@ class SyncRecord {
   factory SyncRecord.fromJson(Map<String, dynamic> j) {
     final key = j['key'];
     if (key is! String ||
-        !RegExp(
-          r'^(day:\d{4}-\d{2}-\d{2}|goals|focus:[A-Za-z0-9_-]{1,128})$',
-        ).hasMatch(key) ||
+        !RegExp(r'^(day:\d{4}-\d{2}-\d{2}|goals|focus:[A-Za-z0-9_-]{1,128})$')
+            .hasMatch(key) ||
         j['revision'] is! int ||
         (j['revision'] as int) < 1 ||
         j['deleted'] is! bool ||
@@ -687,8 +686,7 @@ List<SyncAction> reconcileRecords(
       if (action.merge!.issues.isEmpty && valid(action.merge!.payload)) {
         action.kind = SyncKind.merge;
       } else if (action.merge!.issues.isEmpty) {
-        action.mergeProblem =
-            'Combined changes exceed sync limits. Shorten the affected list or plan before syncing.';
+        action.mergeProblem = 'Combined changes exceed sync limits. Shorten the affected list or plan before syncing.';
       }
     }
     actions.add(action);
@@ -1736,9 +1734,9 @@ class CloudSyncController extends ChangeNotifier {
     if (value) _schedule();
   }
 
-  Map<String, Map<String, dynamic>> _snapshot() => object(
-    jsonDecode(jsonEncode(store.syncRecords())),
-  ).map((key, value) => MapEntry(key, object(value)));
+  Map<String, Map<String, dynamic>> _snapshot() =>
+      object(jsonDecode(jsonEncode(store.syncRecords())))
+          .map((key, value) => MapEntry(key, object(value)));
   Future<void> synchronize({
     String? resolveKey,
     bool useCloud = false,

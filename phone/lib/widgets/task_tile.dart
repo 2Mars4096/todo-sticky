@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
 
 import '../app.dart';
+import 'notebook_motion.dart';
 import 'task_grip.dart';
 import 'notebook_capture_field.dart';
 import '../models/models.dart';
@@ -32,6 +33,7 @@ class TaskTile extends StatefulWidget {
   final Widget? dragHandle;
   final String? revealId;
   final Map? linkedCitation;
+  final bool fresh;
   const TaskTile({
     super.key,
     required this.store,
@@ -47,6 +49,7 @@ class TaskTile extends StatefulWidget {
     this.dragHandle,
     this.revealId,
     this.linkedCitation,
+    this.fresh = false,
   });
   @override
   State<TaskTile> createState() => _TaskTileState();
@@ -163,6 +166,7 @@ class _TaskTileState extends State<TaskTile> {
 
   Future<void> finish() async {
     final task = widget.task;
+    NotebookHaptics.tick();
     if (task.closed) {
       widget.store.updateTask(widget.date, task.id, status: TaskStatus.todo);
       return;
@@ -330,545 +334,590 @@ class _TaskTileState extends State<TaskTile> {
     final task = widget.task;
     final goalId = widget.store.goalIdForTask(task);
     final goal = goalId == null ? null : widget.store.findGoal(goalId);
-    final storedIndex = widget.store
-        .tasksFor(widget.date)
-        .indexWhere((row) => row.id == task.id);
+    final siblings = widget.parentId == null
+        ? widget.store.tasksFor(widget.date)
+        : widget.store.findTask(widget.date, widget.parentId!)?.subtasks ??
+              const <Task>[];
+    final shown = siblings
+        .where((t) => widget.store.preferences.showCompleted || !t.closed)
+        .toList();
+    void moveBy(int delta) {
+      final from = siblings.indexWhere((row) => row.id == task.id);
+      final at = shown.indexWhere((row) => row.id == task.id);
+      final target = at + delta;
+      if (from < 0 || at < 0 || target < 0 || target >= shown.length) return;
+      final to = siblings.indexOf(shown[target]);
+      widget.store.reorder(
+        widget.date,
+        widget.parentId,
+        from,
+        to > from ? to + 1 : to,
+      );
+    }
+
     final controlHeight = taskControlHeight(context, depth: widget.depth);
     final hasHandle = widget.dragHandle != null || widget.reorderIndex != null;
     final contentInset = (hasHandle ? 64.0 : 40.0) + 2;
     final unfinished = task.subtasks.where((s) => !s.closed).length;
+    final shownSteps = task.subtasks
+        .where((s) => widget.store.preferences.showCompleted || !s.closed)
+        .toList();
     final history = widget.depth == 0
         ? widget.store.historicalSteps(widget.date, task)
         : <DatedTask>[];
-    return Material(
-      color: expanded
-          ? Colors.white.withValues(alpha: .30)
-          : Colors.transparent,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: widget.depth == 0 && hasHandle ? 0 : widget.leadingInset,
-          right: widget.depth == 0 ? 12 : 0,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return FreshInk(
+      fresh: widget.fresh,
+      child: AnimatedContainer(
+        duration: motion(context, motionState),
+        curve: easeOutQuart,
+        color: expanded
+            ? Colors.white.withValues(alpha: .34)
+            : Colors.white.withValues(alpha: 0),
+        child: Material(
+          type: MaterialType.transparency,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: widget.depth == 0 && hasHandle ? 0 : widget.leadingInset,
+              right: widget.depth == 0 ? 12 : 0,
+            ),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.dragHandle != null)
-                  widget.dragHandle!
-                else if (widget.reorderIndex != null)
-                  ReorderableDragStartListener(
-                    index: widget.reorderIndex!,
-                    child: Semantics(
-                      label: tr(context, "Reorder {0}", [task.text]),
-                      customSemanticsActions: {
-                        const CustomSemanticsAction(label: 'Move up'): () =>
-                            widget.store.reorder(
-                              widget.date,
-                              null,
-                              storedIndex,
-                              storedIndex - 1,
-                            ),
-                        const CustomSemanticsAction(label: 'Move down'): () =>
-                            widget.store.reorder(
-                              widget.date,
-                              null,
-                              storedIndex,
-                              storedIndex + 2,
-                            ),
-                      },
-                      child: Tooltip(
-                        message: tr(context, "Drag to reorder"),
-                        child: TaskGrip(height: controlHeight),
-                      ),
-                    ),
-                  ),
-                SizedBox(
-                  width: 40,
-                  height: controlHeight,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    iconSize: 24,
-                    tooltip: task.closed
-                        ? tr(context, "Reopen task")
-                        : tr(context, "Complete task"),
-                    onPressed: finish,
-                    icon: Icon(
-                      task.status == TaskStatus.done
-                          ? Icons.check_box_rounded
-                          : task.status == TaskStatus.stopped
-                          ? Icons.stop_circle_outlined
-                          : task.status == TaskStatus.partial
-                          ? Icons.indeterminate_check_box_outlined
-                          : task.status == TaskStatus.question
-                          ? Icons.help_outline
-                          : Icons.check_box_outline_blank,
-                      color: task.closed ? mutedInk : amber,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: InkWell(
-                    onTap: toggleDisclosure,
-                    onDoubleTap: () => editTask(
-                      context,
-                      widget.store,
-                      widget.ai,
-                      widget.date,
-                      task,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(2, 14, 0, 14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            task.text,
-                            style: TextStyle(
-                              fontSize: widget.depth == 0 ? 16 : 15,
-                              height: 1.4,
-                              color: task.closed ? mutedInk : ink,
-                              decoration: task.status == TaskStatus.done
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                            ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (widget.dragHandle != null)
+                      widget.dragHandle!
+                    else if (widget.reorderIndex != null)
+                      ReorderableDragStartListener(
+                        index: widget.reorderIndex!,
+                        child: Semantics(
+                          label: tr(context, "Reorder {0}", [task.text]),
+                          customSemanticsActions: {
+                            CustomSemanticsAction(label: ui('Move up')): () =>
+                                moveBy(-1),
+                            CustomSemanticsAction(label: ui('Move down')): () =>
+                                moveBy(1),
+                          },
+                          child: Tooltip(
+                            message: tr(context, "Drag to reorder"),
+                            child: TaskGrip(height: controlHeight),
                           ),
-                          if (task.finish?.doneWhen?.isNotEmpty == true)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 5),
-                              child: Text(
-                                tr(context, "Outcome · {0}", [
-                                  task.finish!.doneWhen,
-                                ]),
-                                style: const TextStyle(
-                                  color: mutedInk,
-                                  fontSize: 13,
+                        ),
+                      ),
+                    SizedBox(
+                      width: 40,
+                      height: controlHeight,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        iconSize: 24,
+                        tooltip: task.closed
+                            ? tr(context, "Reopen task")
+                            : tr(context, "Complete task"),
+                        onPressed: finish,
+                        icon: AnimatedSwitcher(
+                          duration: motion(context, motionState),
+                          switchInCurve: easeOutExpo,
+                          transitionBuilder: (child, animation) =>
+                              ScaleTransition(
+                                scale: Tween(
+                                  begin: .6,
+                                  end: 1.0,
+                                ).animate(animation),
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
                                 ),
                               ),
-                            ),
-                          if (task.finish?.by != null ||
-                              widget.showDate ||
-                              (widget.depth == 0 && goal != null) ||
-                              task.status == TaskStatus.stopped ||
-                              task.finish?.reviewReady == true)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: Wrap(
-                                spacing: 12,
-                                runSpacing: 4,
-                                children: [
-                                  if (widget.depth == 0 && goal != null)
-                                    Semantics(
-                                      button: true,
-                                      label: tr(context, "Open goal {0}", [
-                                        goal.text,
-                                      ]),
-                                      child: Tooltip(
-                                        message: tr(context, "Open goal plan"),
-                                        child: InkWell(
-                                          onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute<void>(
-                                              builder: (_) => GoalPlanScreen(
-                                                store: widget.store,
-                                                ai: widget.ai,
-                                                goalId: goal.id,
-                                                openFocus: widget.openFocus,
+                          child: Icon(
+                            key: ValueKey(task.status),
+                            task.status == TaskStatus.done
+                                ? Icons.check_box_rounded
+                                : task.status == TaskStatus.stopped
+                                ? Icons.stop_circle_outlined
+                                : task.status == TaskStatus.partial
+                                ? Icons.indeterminate_check_box_rounded
+                                : task.status == TaskStatus.question
+                                ? Icons.help_outline_rounded
+                                : Icons.check_box_outline_blank_rounded,
+                            color: task.closed ? mutedInk : amber,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: toggleDisclosure,
+                        onDoubleTap: () => editTask(
+                          context,
+                          widget.store,
+                          widget.ai,
+                          widget.date,
+                          task,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 14, 0, 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              InkStrikeText(
+                                task.text,
+                                struck: task.status == TaskStatus.done,
+                                style: TextStyle(
+                                  fontSize: widget.depth == 0 ? 16 : 15,
+                                  height: 1.4,
+                                  color: task.closed ? mutedInk : ink,
+                                ),
+                              ),
+                              if (task.finish?.doneWhen?.isNotEmpty == true)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 5),
+                                  child: Text(
+                                    tr(context, "Outcome · {0}", [
+                                      task.finish!.doneWhen,
+                                    ]),
+                                    style: const TextStyle(
+                                      color: mutedInk,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              if (task.finish?.by != null ||
+                                  widget.showDate ||
+                                  (widget.depth == 0 && goal != null) ||
+                                  task.status == TaskStatus.stopped ||
+                                  task.finish?.reviewReady == true)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Wrap(
+                                    spacing: 12,
+                                    runSpacing: 4,
+                                    children: [
+                                      if (widget.depth == 0 && goal != null)
+                                        Semantics(
+                                          button: true,
+                                          label: tr(context, "Open goal {0}", [
+                                            goal.text,
+                                          ]),
+                                          child: Tooltip(
+                                            message: tr(
+                                              context,
+                                              "Open goal plan",
+                                            ),
+                                            child: InkWell(
+                                              onTap: () => Navigator.push(
+                                                context,
+                                                MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      GoalPlanScreen(
+                                                        store: widget.store,
+                                                        ai: widget.ai,
+                                                        goalId: goal.id,
+                                                        openFocus:
+                                                            widget.openFocus,
+                                                      ),
+                                                ),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 4,
+                                                    ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.flag_outlined,
+                                                      size: 14,
+                                                      color: mutedInk,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Flexible(
+                                                      child: Text(
+                                                        goal.text,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: const TextStyle(
+                                                          color: mutedInk,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 4,
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(
-                                                  Icons.flag_outlined,
-                                                  size: 14,
-                                                  color: mutedInk,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Flexible(
-                                                  child: Text(
-                                                    goal.text,
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      color: mutedInk,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                        ),
+                                      if (task.finish?.by != null)
+                                        Text(
+                                          tr(context, "Due {0}", [
+                                            dayLabel(task.finish!.by),
+                                          ]),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color:
+                                                task.finish!.by!.compareTo(
+                                                          widget.store.today,
+                                                        ) <
+                                                        0 &&
+                                                    !task.closed
+                                                ? const Color(0xffa64230)
+                                                : mutedInk,
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  if (task.finish?.by != null)
-                                    Text(
-                                      tr(context, "Due {0}", [
-                                        dayLabel(task.finish!.by),
-                                      ]),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color:
-                                            task.finish!.by!.compareTo(
-                                                      widget.store.today,
-                                                    ) <
-                                                    0 &&
-                                                !task.closed
-                                            ? const Color(0xffa64230)
-                                            : mutedInk,
-                                      ),
-                                    ),
-                                  if (widget.showDate)
-                                    Text(
-                                      dayLabel(widget.date),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: mutedInk,
-                                      ),
-                                    ),
-                                  if (task.status == TaskStatus.stopped)
-                                    Text(
-                                      tr(context, "Stopped"),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: mutedInk,
-                                      ),
-                                    ),
-                                  if (task.finish?.reviewReady == true)
-                                    Text(
-                                      tr(context, "Ready for outcome review"),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: amber,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          if (!expanded && task.subtasks.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 7),
-                              child: Text(
-                                tr(context, "{0} steps left{1}", [
-                                  unfinished,
-                                  unfinished == 0
-                                      ? ''
-                                      : ' · ${task.subtasks.firstWhere((s) => !s.closed).text}',
-                                ]),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: mutedInk,
-                                  fontSize: 12,
+                                      if (widget.showDate)
+                                        Text(
+                                          dayLabel(widget.date),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: mutedInk,
+                                          ),
+                                        ),
+                                      if (task.status == TaskStatus.stopped)
+                                        Text(
+                                          tr(context, "Stopped"),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: mutedInk,
+                                          ),
+                                        ),
+                                      if (task.finish?.reviewReady == true)
+                                        Text(
+                                          tr(
+                                            context,
+                                            "Ready for outcome review",
+                                          ),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: amber,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Semantics(
-                  expanded: expanded,
-                  child: IconButton(
-                    tooltip: expanded
-                        ? tr(context, "Hide task actions and steps")
-                        : tr(context, "Show task actions and steps"),
-                    onPressed: toggleDisclosure,
-                    icon: MediaQuery.disableAnimationsOf(context)
-                        ? RotatedBox(
-                            quarterTurns: expanded ? 1 : 0,
-                            child: const Icon(Icons.chevron_right),
-                          )
-                        : AnimatedRotation(
-                            turns: expanded ? .25 : 0,
-                            duration: animateDisclosure
-                                ? const Duration(milliseconds: 150)
-                                : Duration.zero,
-                            curve: const Cubic(.23, 1, .32, 1),
-                            child: const Icon(Icons.chevron_right),
+                              if (!expanded && task.subtasks.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 7),
+                                  child: Text(
+                                    unfinished == 0
+                                        ? tr(context, "All steps finished")
+                                        : unfinished == 1
+                                        ? tr(context, "1 step left{0}", [
+                                            ' · ${task.subtasks.firstWhere((s) => !s.closed).text}',
+                                          ])
+                                        : tr(context, "{0} steps left{1}", [
+                                            unfinished,
+                                            ' · ${task.subtasks.firstWhere((s) => !s.closed).text}',
+                                          ]),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: mutedInk,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                  ),
-                ),
-              ],
-            ),
-            if (expanded) ...[
-              if (widget.revealId == task.id && widget.linkedCitation != null)
-                MynitCitation(source: widget.linkedCitation!)
-              else
-                NotebookCitation(taskId: task.id),
-              Padding(
-                padding: EdgeInsets.only(left: contentInset),
-                child: Wrap(
-                  spacing: 4,
-                  runSpacing: 2,
-                  children: [
-                    IconButton(
-                      tooltip: tr(context, "Focus on task"),
-                      onPressed: widget.store.focus.activeSession != null
-                          ? null
-                          : () {
-                              widget.store.startFocus(
-                                task,
-                                widget.store.focus.sessionDurationMinutes,
-                              );
-                              widget.openFocus();
-                            },
-                      icon: const Icon(Icons.nightlight_outlined, size: 18),
-                    ),
-                    if (!task.closed)
-                      IconButton(
-                        tooltip: tr(context, "Add a step"),
-                        onPressed: () => setState(() => adding = !adding),
-                        icon: const Icon(Icons.add, size: 18),
+                        ),
                       ),
-                    if (!task.closed)
-                      IconButton(
-                        tooltip: busy
-                            ? tr(context, "Preparing suggested steps")
-                            : tr(context, "Suggest steps with AI"),
-                        onPressed: busy ? null : suggest,
-                        icon: busy
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
+                    ),
+                    Semantics(
+                      expanded: expanded,
+                      child: IconButton(
+                        tooltip: expanded
+                            ? tr(context, "Hide task actions and steps")
+                            : tr(context, "Show task actions and steps"),
+                        onPressed: toggleDisclosure,
+                        icon: MediaQuery.disableAnimationsOf(context)
+                            ? RotatedBox(
+                                quarterTurns: expanded ? 1 : 0,
+                                child: const Icon(Icons.chevron_right_rounded),
                               )
-                            : const Icon(Icons.auto_awesome_outlined, size: 18),
+                            : AnimatedRotation(
+                                turns: expanded ? .25 : 0,
+                                duration: animateDisclosure
+                                    ? const Duration(milliseconds: 150)
+                                    : Duration.zero,
+                                curve: const Cubic(.23, 1, .32, 1),
+                                child: const Icon(Icons.chevron_right_rounded),
+                              ),
                       ),
-                    IconButton(
-                      tooltip: tr(
-                        context,
-                        "Move task · due date stays unchanged",
-                      ),
-                      onPressed: move,
-                      icon: const Icon(Icons.arrow_forward, size: 20),
                     ),
-                    PopupMenuButton<String>(
-                      tooltip: tr(context, "More task actions"),
-                      icon: const Icon(Icons.more_horiz, size: 20),
-                      onSelected: (action) async {
-                        if (action == 'shiprite') {
-                          AssignmentEntry.of(context)
-                              ?.open(widget.date, widget.task.id);
-                          return;
-                        }
-                        if (action == 'project') {
-                          await assignProject();
-                          return;
-                        }
-                        if (action == 'edit') {
-                          await editTask(
+                  ],
+                ),
+                if (expanded) ...[
+                  if (widget.revealId == task.id &&
+                      widget.linkedCitation != null)
+                    MynitCitation(source: widget.linkedCitation!)
+                  else
+                    NotebookCitation(taskId: task.id),
+                  Padding(
+                    padding: EdgeInsets.only(left: contentInset),
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 2,
+                      children: [
+                        IconButton(
+                          tooltip: tr(context, "Focus on task"),
+                          onPressed: widget.store.focus.activeSession != null
+                              ? null
+                              : () {
+                                  widget.store.startFocus(
+                                    task,
+                                    widget.store.focus.sessionDurationMinutes,
+                                  );
+                                  widget.openFocus();
+                                },
+                          icon: const Icon(Icons.nightlight_round, size: 19),
+                        ),
+                        if (!task.closed)
+                          IconButton(
+                            tooltip: tr(context, "Add a step"),
+                            onPressed: () => setState(() => adding = !adding),
+                            icon: const Icon(Icons.add_rounded, size: 21),
+                          ),
+                        if (!task.closed)
+                          IconButton(
+                            tooltip: busy
+                                ? tr(context, "Preparing suggested steps")
+                                : tr(context, "Suggest steps with AI"),
+                            onPressed: busy ? null : suggest,
+                            icon: busy
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.auto_awesome_rounded,
+                                    size: 19,
+                                  ),
+                          ),
+                        IconButton(
+                          tooltip: tr(
+                            context,
+                            "Move task · due date stays unchanged",
+                          ),
+                          onPressed: move,
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 20,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: tr(context, "Edit task"),
+                          onPressed: () => editTask(
                             context,
                             widget.store,
                             widget.ai,
                             widget.date,
                             task,
-                          );
-                        }
-                        if (action == 'delete') {
-                          widget.store.deleteTask(widget.date, task.id);
-                        }
-                        if (action == 'copy') {
-                          await Clipboard.setData(
-                            ClipboardData(text: agentPrompt()),
-                          );
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  tr(context, "Agent prompt copied"),
-                                ),
+                          ),
+                          icon: const Icon(Icons.edit_rounded, size: 19),
+                        ),
+                        PopupMenuButton<String>(
+                          tooltip: tr(context, "More task actions"),
+                          icon: const Icon(Icons.more_horiz_rounded, size: 21),
+                          onSelected: (action) async {
+                            if (action == 'shiprite') {
+                              AssignmentEntry.of(context)
+                                  ?.open(widget.date, widget.task.id);
+                              return;
+                            }
+                            if (action == 'project') {
+                              await assignProject();
+                              return;
+                            }
+                            if (action == 'edit') {
+                              await editTask(
+                                context,
+                                widget.store,
+                                widget.ai,
+                                widget.date,
+                                task,
+                              );
+                            }
+                            if (action == 'delete') {
+                              widget.store.deleteTask(widget.date, task.id);
+                            }
+                            if (action == 'copy') {
+                              await Clipboard.setData(
+                                ClipboardData(text: agentPrompt()),
+                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      tr(context, "Agent prompt copied"),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                            if (action == 'question') {
+                              widget.store.updateTask(
+                                widget.date,
+                                task.id,
+                                status: TaskStatus.question,
+                              );
+                            }
+                            if (action == 'partial') {
+                              widget.store.updateTask(
+                                widget.date,
+                                task.id,
+                                status: TaskStatus.partial,
+                              );
+                            }
+                            if (action == 'stop') {
+                              widget.store.updateTask(
+                                widget.date,
+                                task.id,
+                                status: TaskStatus.stopped,
+                              );
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            if (AssignmentEntry.of(context) != null)
+                              PopupMenuItem(
+                                value: 'shiprite',
+                                child: Text(tr(context, "Assign in Shiprite")),
                               ),
-                            );
-                          }
-                        }
-                        if (action == 'question') {
-                          widget.store.updateTask(
-                            widget.date,
-                            task.id,
-                            status: TaskStatus.question,
-                          );
-                        }
-                        if (action == 'partial') {
-                          widget.store.updateTask(
-                            widget.date,
-                            task.id,
-                            status: TaskStatus.partial,
-                          );
-                        }
-                        if (action == 'stop') {
-                          widget.store.updateTask(
-                            widget.date,
-                            task.id,
-                            status: TaskStatus.stopped,
-                          );
-                        }
-                      },
-                      itemBuilder: (_) => [
-                        if (AssignmentEntry.of(context) != null)
-                          PopupMenuItem(
-                            value: 'shiprite',
-                            child: Text(tr(context, "Assign in Shiprite")),
-                          ),
-                        PopupMenuItem(
-                          value: 'project',
-                          child: Text(tr(context, "Assign to project")),
-                        ),
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Text(tr(context, "Edit task")),
-                        ),
-                        PopupMenuItem(
-                          value: 'copy',
-                          child: Text(tr(context, "Copy as agent prompt")),
-                        ),
-                        if (!task.closed) ...[
-                          PopupMenuItem(
-                            value: 'question',
-                            child: Text(tr(context, "Mark as question")),
-                          ),
-                          PopupMenuItem(
-                            value: 'partial',
-                            child: Text(tr(context, "Mark partly done")),
-                          ),
-                          PopupMenuItem(
-                            value: 'stop',
-                            child: Text(tr(context, "Stop task")),
-                          ),
-                        ],
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Text(tr(context, "Delete task")),
+                            PopupMenuItem(
+                              value: 'project',
+                              child: Text(tr(context, "Assign to project")),
+                            ),
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Text(tr(context, "Edit task")),
+                            ),
+                            PopupMenuItem(
+                              value: 'copy',
+                              child: Text(tr(context, "Copy as agent prompt")),
+                            ),
+                            if (!task.closed) ...[
+                              PopupMenuItem(
+                                value: 'question',
+                                child: Text(tr(context, "Mark as question")),
+                              ),
+                              PopupMenuItem(
+                                value: 'partial',
+                                child: Text(tr(context, "Mark partly done")),
+                              ),
+                              PopupMenuItem(
+                                value: 'stop',
+                                child: Text(tr(context, "Stop task")),
+                              ),
+                            ],
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text(tr(context, "Delete task")),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              if (adding)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(44, 4, 8, 12),
-                  child: NotebookCaptureField(
-                    controller: step,
-                    focusNode: stepFocus,
-                    autofocus: true,
-                    hint: tr(context, "Add a step"),
-                    actionLabel: tr(context, "Add step"),
-                    icon: Icons.add,
-                    onAdd: addStep,
                   ),
-                ),
-              for (var i = 0; i < task.subtasks.length; i++)
-                if (widget.store.preferences.showCompleted ||
-                    !task.subtasks[i].closed)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: TaskTile(
-                          key: ValueKey(task.subtasks[i].id),
-                          store: widget.store,
-                          ai: widget.ai,
-                          date: widget.date,
-                          task: task.subtasks[i],
-                          openFocus: widget.openFocus,
-                          depth: widget.depth + 1,
-                          leadingInset: hasHandle ? 36 : 12,
-                          parentId: task.id,
-                          revealId: widget.revealId,
-                          linkedCitation: widget.linkedCitation,
-                        ),
+                  if (adding)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(44, 4, 8, 12),
+                      child: NotebookCaptureField(
+                        controller: step,
+                        focusNode: stepFocus,
+                        autofocus: true,
+                        hint: tr(context, "Add a step"),
+                        actionLabel: tr(context, "Add step"),
+                        icon: Icons.add,
+                        onAdd: addStep,
                       ),
-                      if (task.subtasks.length > 1)
-                        SizedBox(
-                          width: 32,
-                          child: Column(
-                            children: [
-                              IconButton(
-                                tooltip: tr(context, "Move step up"),
-                                padding: EdgeInsets.zero,
-                                onPressed: i == 0
-                                    ? null
-                                    : () => widget.store.reorder(
-                                        widget.date,
-                                        task.id,
-                                        i,
-                                        i - 1,
-                                      ),
-                                icon: const Icon(
-                                  Icons.keyboard_arrow_up,
-                                  size: 20,
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: tr(context, "Move step down"),
-                                padding: EdgeInsets.zero,
-                                onPressed: i == task.subtasks.length - 1
-                                    ? null
-                                    : () => widget.store.reorder(
-                                        widget.date,
-                                        task.id,
-                                        i,
-                                        i + 2,
-                                      ),
-                                icon: const Icon(
-                                  Icons.keyboard_arrow_down,
-                                  size: 20,
-                                ),
-                              ),
-                            ],
+                    ),
+                  if (shownSteps.isNotEmpty)
+                    ReorderableListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      buildDefaultDragHandles: false,
+                      itemCount: shownSteps.length,
+                      proxyDecorator: (child, index, animation) => Material(
+                        color: Theme.of(context).colorScheme.surface,
+                        elevation: 6 * animation.value,
+                        shadowColor: ink.withValues(alpha: .35),
+                        borderRadius: BorderRadius.circular(10),
+                        child: child,
+                      ),
+                      onReorderItem: (oldIndex, newIndex) {
+                        final from = task.subtasks.indexOf(
+                          shownSteps[oldIndex],
+                        );
+                        final to = task.subtasks.indexOf(shownSteps[newIndex]);
+                        NotebookHaptics.tick();
+                        widget.store.reorder(
+                          widget.date,
+                          task.id,
+                          from,
+                          to > from ? to + 1 : to,
+                        );
+                      },
+                      itemBuilder: (context, i) => TaskTile(
+                        key: ValueKey(shownSteps[i].id),
+                        store: widget.store,
+                        ai: widget.ai,
+                        date: widget.date,
+                        task: shownSteps[i],
+                        openFocus: widget.openFocus,
+                        depth: widget.depth + 1,
+                        leadingInset:
+                            (hasHandle ? 36 : 12) -
+                            (shownSteps.length > 1 ? 24 : 0),
+                        parentId: task.id,
+                        reorderIndex: shownSteps.length > 1 ? i : null,
+                        revealId: widget.revealId,
+                        linkedCitation: widget.linkedCitation,
+                      ),
+                    ),
+                ],
+                if (expanded && history.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(left: contentInset),
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      title: Text(
+                        tr(context, "Earlier steps ({0})", [history.length]),
+                        style: const TextStyle(fontSize: 13, color: mutedInk),
+                      ),
+                      children: [
+                        for (final old in history)
+                          ListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(
+                              old.task.status == TaskStatus.done
+                                  ? Icons.check
+                                  : old.task.status == TaskStatus.stopped
+                                  ? Icons.stop_circle_outlined
+                                  : Icons.history,
+                              size: 18,
+                            ),
+                            title: Text(
+                              old.task.text,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                            subtitle: Text(
+                              '${dayLabel(old.date)} · ${tr(context, const {TaskStatus.todo: "To do", TaskStatus.done: "Completed", TaskStatus.partial: "In progress", TaskStatus.question: "Needs a decision", TaskStatus.stopped: "Stopped"}[old.task.status]!)}',
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-            ],
-            if (expanded && history.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(left: contentInset),
-                child: ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  title: Text(
-                    tr(context, "Earlier steps ({0})", [history.length]),
-                    style: const TextStyle(fontSize: 13, color: mutedInk),
-                  ),
-                  children: [
-                    for (final old in history)
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          old.task.status == TaskStatus.done
-                              ? Icons.check
-                              : old.task.status == TaskStatus.stopped
-                              ? Icons.stop_circle_outlined
-                              : Icons.history,
-                          size: 18,
-                        ),
-                        title: Text(
-                          old.task.text,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        subtitle: Text(
-                          '${dayLabel(old.date)} · ${tr(context, const {TaskStatus.todo: "To do", TaskStatus.done: "Completed", TaskStatus.partial: "In progress", TaskStatus.question: "Needs a decision", TaskStatus.stopped: "Stopped"}[old.task.status]!)}',
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            if (widget.depth == 0) const Divider(height: 1, indent: 44),
-          ],
+                if (widget.depth == 0) const Divider(height: 1, indent: 44),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -893,16 +942,16 @@ Future<void> editTask(
 Future<bool> confirmDiscardEdits(BuildContext context) async =>
     await showDialog<bool>(
       context: context,
-      builder: (dialog) => AlertDialog(
-        title: Text(tr(dialog, "Discard your changes?")),
+      builder: (context) => AlertDialog(
+        title: Text(tr(context, "Discard your changes?")),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialog, false),
-            child: Text(tr(dialog, "Keep editing")),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr(context, "Keep editing")),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(dialog, true),
-            child: Text(tr(dialog, "Discard")),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr(context, "Discard")),
           ),
         ],
       ),
@@ -1086,9 +1135,7 @@ class _TaskEditorState extends State<TaskEditor> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event_outlined),
             title: Text(
-              due == null
-                  ? tr(context, "No due date")
-                  : weekdayDayLabel(due),
+              due == null ? tr(context, "No due date") : weekdayDayLabel(due),
             ),
             onTap: () async {
               final date = await showDatePicker(

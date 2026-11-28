@@ -33,7 +33,7 @@ void main() {
             )
             .first;
         final icon = find
-            .descendant(of: button, matching: find.byIcon(Icons.chevron_right))
+            .descendant(of: button, matching: find.byIcon(Icons.chevron_right_rounded))
             .first;
         double turns() => tester
             .widget<RotationTransition>(
@@ -125,7 +125,8 @@ void main() {
       expect(undoBefore, isNotNull);
       await tester.pumpWidget(StickyApp(store: store));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('3 November 1969'));
+      await tester.tap(find.byKey(const ValueKey('notebook-date')));
+      expect(find.bySemanticsLabel('Monday, November 3, 1969'), findsOneWidget);
       await tester.pumpAndSettle();
       expect(
         tester
@@ -137,7 +138,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(store.undoLabel, undoBefore);
       expect(find.text('Historical note'), findsOneWidget);
-      await tester.tap(find.text('3 November 1969'));
+      await tester.tap(find.byKey(const ValueKey('notebook-date')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('4').last);
       await tester.tap(find.text('OK'));
@@ -146,7 +147,8 @@ void main() {
       expect(find.text('Historical note'), findsNothing);
       store.selectDate('2101-12-31');
       await tester.pumpAndSettle();
-      await tester.tap(find.text('31 December 2101'));
+      expect(find.text('2101'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('notebook-date')));
       await tester.pumpAndSettle();
       expect(
         tester.widget<DatePickerDialog>(find.byType(DatePickerDialog)).lastDate,

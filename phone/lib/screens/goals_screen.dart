@@ -281,7 +281,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                                   schedule.paused
                                       ? tr(context, "Paused")
                                       : tr(context, "Next {0}", [
-                                          dayLabel(schedule.next(widget.store.today)),
+                                          dayLabel(
+                                            schedule.next(widget.store.today),
+                                          ),
                                         ]),
                                   style: const TextStyle(
                                     fontSize: 12,

@@ -813,12 +813,12 @@ class StickyStore extends ChangeNotifier {
 
       restore(current);
     };
-    undoLabel = ui(switch (next) {
-      TaskStatus.done => "Task completed",
-      TaskStatus.stopped => "Task stopped",
-      TaskStatus.todo => "Task reopened",
-      _ => "Status changed",
-    });
+    undoLabel = switch (next) {
+      TaskStatus.done => ui("Task completed"),
+      TaskStatus.stopped => ui("Task stopped"),
+      TaskStatus.todo => ui("Task reopened"),
+      _ => ui("Status changed"),
+    };
   }
 
   bool _locateList(String date, List<Task> candidate) {

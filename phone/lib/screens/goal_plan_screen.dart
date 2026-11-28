@@ -46,9 +46,8 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
     super.dispose();
   }
 
-  String dayLabel(String value) => value == widget.store.today
-      ? 'Today'
-      : weekdayDayLabel(value);
+  String dayLabel(String value) =>
+      value == widget.store.today ? 'Today' : weekdayDayLabel(value);
 
   void addSteps(List<String> steps, {String? fingerprint}) {
     final before =
