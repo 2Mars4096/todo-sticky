@@ -285,3 +285,8 @@ Project revision uses one inline Save/Cancel pattern for descriptions, unschedul
 ## Task disclosure feedback
 
 The task disclosure points right when closed and down when open. Pointer and touch rotate the glyph over 150ms and can reverse it mid-turn. Enter, Space and reduced motion show the final orientation immediately. Its hit area stays fixed and the content is immediately available.
+
+
+## Phone motion and material (2026-11-28)
+
+Motion confirms a state change: a task written (fresh-ink wash, light haptic), finished (ink strike across each rendered line, check settles), undone (receipt pill), or a day turned (short directional slide). Durations 120–280 ms with ease-out-quart or ease-out-expo; no bounce. Reduced motion makes every change instant. The Paper material carries a faint fibre grain; frosted and liquid materials stay flat. The date stamp (month over day) is the notebook's anchor; amber fills it only for today. Icons use the rounded Material family, outlined when idle and filled when selected. See [plan 27](docs/plans/27-phone-release-polish.md).

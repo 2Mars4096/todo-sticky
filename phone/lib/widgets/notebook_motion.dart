@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 // Motion confirms state (added, finished, undone, page changed); it never
 // decorates. Every effect collapses to an instant change with reduced motion.
 
-const motionPress = Duration(milliseconds: 120);
 const motionState = Duration(milliseconds: 220);
 const motionStrike = Duration(milliseconds: 280);
 const motionFresh = Duration(milliseconds: 1100);
@@ -255,38 +254,6 @@ class FreshInk extends StatelessWidget {
       child: child,
     );
   }
-}
-
-/// Scales a control down while pressed; the release settles back.
-class PressScale extends StatefulWidget {
-  const PressScale({super.key, required this.child, this.scale = .94});
-
-  final Widget child;
-  final double scale;
-
-  @override
-  State<PressScale> createState() => _PressScaleState();
-}
-
-class _PressScaleState extends State<PressScale> {
-  bool pressed = false;
-
-  void set(bool value) {
-    if (pressed != value) setState(() => pressed = value);
-  }
-
-  @override
-  Widget build(BuildContext context) => Listener(
-    onPointerDown: (_) => set(true),
-    onPointerUp: (_) => set(false),
-    onPointerCancel: (_) => set(false),
-    child: AnimatedScale(
-      scale: pressed ? widget.scale : 1,
-      duration: motion(context, motionPress),
-      curve: easeOutQuart,
-      child: widget.child,
-    ),
-  );
 }
 
 /// A short receipt above the footer with one recovery action. It stays

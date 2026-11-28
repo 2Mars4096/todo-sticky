@@ -280,7 +280,11 @@ void main() {
             );
             await settle();
             snap('expanded-task');
-            nav.currentState!.push(MaterialPageRoute<void>(builder: (_) => SettingsScreen(store: store, ai: ai)));
+            nav.currentState!.push(
+              MaterialPageRoute<void>(
+                builder: (_) => SettingsScreen(store: store, ai: ai),
+              ),
+            );
             await settle();
             await tester.tap(find.byType(InterfaceLanguageButton));
             await settle();

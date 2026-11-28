@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-28 — Phone release review, data safety and tactile notebook
+
+Fixed four phone data risks: a failed load could be overwritten, over-long or deeply nested content and multi-line Focus labels could stop sync, and restore could delete newer cloud days. Editing now asks before discarding, completion and reopening have Undo, and steps reorder with a grip. The notebook gains a date-stamp header, ink strike, fresh-ink highlight, Undo receipt, sync status, paper grain and readable dates. 184 phone tests and 34 Node suites pass. [Review, roadmap and evidence](plans/27-phone-release-polish.md)
+
 ## 2026-11-27 — Branch consolidation and selected-day planning
 
 Integrated the Dockit transfer review, restored the embedded editor’s canonical document adapter and tests, and ported selected-day planning to the current web and Mac notebook. Apply requires time for every unfinished selected-day task before adding earlier work to the same resource. [Planning and verification](plans/4-50-today-first-planning.md)

@@ -33,7 +33,10 @@ void main() {
             )
             .first;
         final icon = find
-            .descendant(of: button, matching: find.byIcon(Icons.chevron_right_rounded))
+            .descendant(
+              of: button,
+              matching: find.byIcon(Icons.chevron_right_rounded),
+            )
             .first;
         double turns() => tester
             .widget<RotationTransition>(
