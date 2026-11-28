@@ -1,9 +1,9 @@
+import '../date_labels.dart';
 import '../interface_locale.dart';
 import '../widgets/notebook_refresh.dart';
 import '../widgets/notebook_date_picker.dart';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../app.dart';
 import '../models/models.dart';
@@ -176,8 +176,8 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                             ),
                             label: Text(
                               week
-                                  ? '${DateFormat('d MMM').format(start)} – ${DateFormat('d MMM y').format(parseDate(until))}'
-                                  : DateFormat('d MMM y').format(date),
+                                  ? dayRangeLabel(dateKey(start), until)
+                                  : dayLabelOf(date),
                             ),
                             onPressed: () async {
                               final picked = await showNotebookDatePicker(
@@ -438,7 +438,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                                 : row.task.text,
                           ),
                           subtitle: Text(
-                            '${row.parents.isEmpty ? '' : '${row.parents.join(' › ')}\n'}${row.date} · ${tr(context, statusText(row.task.status))}${row.task.finish?.by == null ? '' : ' · ${tr(context, "Due {0}", [row.task.finish!.by])}'}',
+                            '${row.parents.isEmpty ? '' : '${row.parents.join(' › ')}\n'}${dayLabel(row.date)} · ${tr(context, statusText(row.task.status))}${row.task.finish?.by == null ? '' : ' · ${tr(context, "Due {0}", [dayLabel(row.task.finish!.by)])}'}',
                           ),
                           trailing: const Icon(Icons.chevron_right, size: 18),
                           onTap: () => Navigator.push(

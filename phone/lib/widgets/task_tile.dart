@@ -1,3 +1,4 @@
+import '../date_labels.dart';
 import '../interface_locale.dart';
 
 import 'dart:convert';
@@ -8,7 +9,6 @@ import 'mynit_citation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
-import 'package:intl/intl.dart';
 
 import '../app.dart';
 import 'task_grip.dart';
@@ -251,7 +251,7 @@ class _TaskTileState extends State<TaskTile> {
                 destination == widget.store.today
                     ? tr(context, "Move to today")
                     : tr(context, "Move to {0}", [
-                        DateFormat('EEE, d MMM').format(parseDate(destination)),
+                        weekdayDayLabel(destination),
                       ]),
               ),
               onTap: () => Navigator.pop(context, destination),
@@ -289,7 +289,7 @@ class _TaskTileState extends State<TaskTile> {
         .where((goal) => !goal.done)
         .toList();
     if (goals.isEmpty) {
-      showError(context, 'Add a project under Goals first.');
+      showError(context, ui('Add a project under Goals first.'));
       return;
     }
     final id = await showNoteSheet<String>(
@@ -512,9 +512,7 @@ class _TaskTileState extends State<TaskTile> {
                                   if (task.finish?.by != null)
                                     Text(
                                       tr(context, "Due {0}", [
-                                        DateFormat.MMMd().format(
-                                          parseDate(task.finish!.by!),
-                                        ),
+                                        dayLabel(task.finish!.by),
                                       ]),
                                       style: TextStyle(
                                         fontSize: 12,
@@ -530,8 +528,7 @@ class _TaskTileState extends State<TaskTile> {
                                     ),
                                   if (widget.showDate)
                                     Text(
-                                      DateFormat('d MMM')
-                                          .format(parseDate(widget.date)),
+                                      dayLabel(widget.date),
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: mutedInk,
@@ -864,7 +861,7 @@ class _TaskTileState extends State<TaskTile> {
                           style: const TextStyle(fontSize: 13),
                         ),
                         subtitle: Text(
-                          '${old.date} · ${tr(context, const {TaskStatus.todo: "To do", TaskStatus.done: "Completed", TaskStatus.partial: "In progress", TaskStatus.question: "Needs a decision", TaskStatus.stopped: "Stopped"}[old.task.status]!)}',
+                          '${dayLabel(old.date)} · ${tr(context, const {TaskStatus.todo: "To do", TaskStatus.done: "Completed", TaskStatus.partial: "In progress", TaskStatus.question: "Needs a decision", TaskStatus.stopped: "Stopped"}[old.task.status]!)}',
                         ),
                       ),
                   ],
@@ -888,8 +885,29 @@ Future<void> editTask(
   await showNoteSheet<void>(
     context,
     TaskEditor(store: store, ai: ai, date: date, task: task),
+    // A drag gesture cannot be intercepted; Back and the scrim ask first.
+    enableDrag: false,
   );
 }
+
+Future<bool> confirmDiscardEdits(BuildContext context) async =>
+    await showDialog<bool>(
+      context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(tr(dialog, "Discard your changes?")),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialog, false),
+            child: Text(tr(dialog, "Keep editing")),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialog, true),
+            child: Text(tr(dialog, "Discard")),
+          ),
+        ],
+      ),
+    ) ==
+    true;
 
 class TaskEditor extends StatefulWidget {
   final StickyStore store;
@@ -917,6 +935,43 @@ class _TaskEditorState extends State<TaskEditor> {
   late String? due = widget.task.finish?.by;
   String? suggestion;
   bool busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    title.addListener(_refresh);
+    outcome.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  bool get dirty =>
+      title.text.trim() != widget.task.text.trim() ||
+      outcome.text.trim() != (widget.task.finish?.doneWhen ?? '').trim() ||
+      due != widget.task.finish?.by ||
+      suggestion?.isNotEmpty == true;
+
+  void save() {
+    if (title.text.trim().isEmpty) return;
+    try {
+      widget.store.updateTask(
+        widget.date,
+        widget.task.id,
+        text: title.text,
+        outcome: outcome.text,
+        due: due,
+        updateFinish: true,
+      );
+    } catch (error) {
+      // Keep the sheet and its edits open when the task moved or is too long.
+      showError(context, error);
+      return;
+    }
+    Navigator.pop(context);
+  }
+
   @override
   void dispose() {
     title.dispose();
@@ -925,7 +980,17 @@ class _TaskEditorState extends State<TaskEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
+  Widget build(BuildContext context) => PopScope(
+    canPop: !dirty,
+    onPopInvokedWithResult: (didPop, _) async {
+      if (didPop) return;
+      final navigator = Navigator.of(context);
+      if (await confirmDiscardEdits(context)) navigator.pop();
+    },
+    child: _buildEditor(context),
+  );
+
+  Widget _buildEditor(BuildContext context) => ConstrainedBox(
     constraints: BoxConstraints(
       maxHeight: MediaQuery.sizeOf(context).height * .8,
     ),
@@ -941,13 +1006,23 @@ class _TaskEditorState extends State<TaskEditor> {
           const SizedBox(height: 20),
           TextField(
             controller: title,
+            autofocus: widget.task.text.isEmpty,
             maxLines: null,
-            decoration: InputDecoration(labelText: tr(context, "Task")),
+            textCapitalization: TextCapitalization.sentences,
+            scrollPadding: const EdgeInsets.only(bottom: 120),
+            decoration: InputDecoration(
+              labelText: tr(context, "Task"),
+              errorText: title.text.trim().isEmpty
+                  ? tr(context, "Write a task first")
+                  : null,
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: outcome,
             maxLines: null,
+            textCapitalization: TextCapitalization.sentences,
+            scrollPadding: const EdgeInsets.only(bottom: 120),
             decoration: InputDecoration(labelText: tr(context, "Done when…")),
           ),
           const SizedBox(height: 4),
@@ -1013,7 +1088,7 @@ class _TaskEditorState extends State<TaskEditor> {
             title: Text(
               due == null
                   ? tr(context, "No due date")
-                  : DateFormat('EEE, d MMM y').format(parseDate(due!)),
+                  : weekdayDayLabel(due),
             ),
             onTap: () async {
               final date = await showDatePicker(
@@ -1041,9 +1116,9 @@ class _TaskEditorState extends State<TaskEditor> {
                   ListTile(
                     dense: true,
                     title: Text(
-                      '${change['from'] ?? 'No date'} → ${change['to'] ?? 'No date'}',
+                      '${change['from'] == null ? tr(context, "No due date") : dayLabel(change['from'] as String?)} → ${change['to'] == null ? tr(context, "No due date") : dayLabel(change['to'] as String?)}',
                     ),
-                    subtitle: Text(change['at'] as String? ?? ''),
+                    subtitle: Text(timestampLabel(change['at'] as String?)),
                   ),
               ],
             ),
@@ -1051,23 +1126,12 @@ class _TaskEditorState extends State<TaskEditor> {
           Row(
             children: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.maybePop(context),
                 child: Text(tr(context, "Cancel")),
               ),
               const Spacer(),
               FilledButton(
-                onPressed: () {
-                  if (title.text.trim().isEmpty) return;
-                  widget.store.updateTask(
-                    widget.date,
-                    widget.task.id,
-                    text: title.text,
-                    outcome: outcome.text,
-                    due: due,
-                    updateFinish: true,
-                  );
-                  Navigator.pop(context);
-                },
+                onPressed: title.text.trim().isEmpty ? null : save,
                 child: Text(tr(context, "Save")),
               ),
             ],

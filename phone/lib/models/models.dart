@@ -28,6 +28,19 @@ Map<String, dynamic> object(Object? value) {
   return Map<String, dynamic>.from(value);
 }
 
+/// Shared sync limits: content beyond them cannot leave this device.
+const maxTaskTextLength = 5000;
+const maxStepDepth = 12;
+
+/// Focus history labels are single-line in the sync contract.
+String focusTaskLabel(String text) {
+  final line = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+  if (line.isEmpty) return '(Blank task)';
+  return line.length <= maxTaskTextLength
+      ? line
+      : line.substring(0, maxTaskTextLength);
+}
+
 String textValue(Object? value, {int max = 20000}) {
   if (value is! String || value.length > max) {
     throw FormatException(ui("Invalid text"));
@@ -307,7 +320,7 @@ class MissionRecord {
   factory MissionRecord.fromJson(Map<String, dynamic> j) => MissionRecord(
     id: textValue(j['id']),
     taskId: textValue(j['taskId']),
-    taskText: textValue(j['taskText']),
+    taskText: focusTaskLabel(textValue(j['taskText'])),
     durationMinutes: integerValue(j['durationMinutes']),
     completedAt: integerValue(j['completedAt']),
     orbitIndex: integerValue(j['orbitIndex']),

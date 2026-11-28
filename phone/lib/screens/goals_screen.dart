@@ -1,3 +1,4 @@
+import '../date_labels.dart';
 import '../interface_locale.dart';
 
 import 'package:flutter/material.dart';
@@ -280,7 +281,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                                   schedule.paused
                                       ? tr(context, "Paused")
                                       : tr(context, "Next {0}", [
-                                          schedule.next(widget.store.today),
+                                          dayLabel(schedule.next(widget.store.today)),
                                         ]),
                                   style: const TextStyle(
                                     fontSize: 12,

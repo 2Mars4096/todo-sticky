@@ -434,19 +434,32 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
   );
 }
 
+/// Readable error text without Dart exception prefixes.
+String errorText(Object error) => error.toString().replaceFirst(
+  RegExp(
+    r'^(Bad state|FormatException|Invalid argument\(s\)|Exception|AiException|StateError|ArgumentError): ?',
+  ),
+  '',
+);
+
 void showError(BuildContext context, Object error) =>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(error.toString().replaceFirst('Bad state: ', '')),
+        content: Text(errorText(error)),
         duration: const Duration(seconds: 8),
       ),
     );
-Future<T?> showNoteSheet<T>(BuildContext context, Widget child) =>
+Future<T?> showNoteSheet<T>(
+  BuildContext context,
+  Widget child, {
+  bool enableDrag = true,
+}) =>
     showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      showDragHandle: true,
+      enableDrag: enableDrag,
+      showDragHandle: enableDrag,
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.viewInsetsOf(context).bottom,

@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 /// The three amber folder tabs and dark inbox from the Dockit mark.
 /// The spaces between folders show the current notebook material.
 class DockitFooterMark extends StatelessWidget {
-  const DockitFooterMark({super.key});
+  const DockitFooterMark({super.key, this.size = 24});
+
+  final double size;
 
   @override
-  Widget build(BuildContext context) => const SizedBox.square(
-    dimension: 24,
-    child: CustomPaint(painter: _FolderTray()),
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: size,
+    child: const CustomPaint(painter: _FolderTray()),
   );
 }
 

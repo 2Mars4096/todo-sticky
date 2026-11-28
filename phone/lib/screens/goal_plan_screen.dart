@@ -1,9 +1,9 @@
+import '../date_labels.dart';
 import '../interface_locale.dart';
 
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../app.dart';
 import '../models/goal_progress.dart';
@@ -48,7 +48,7 @@ class _GoalPlanScreenState extends State<GoalPlanScreen> {
 
   String dayLabel(String value) => value == widget.store.today
       ? 'Today'
-      : DateFormat('d MMM').format(parseDate(value));
+      : weekdayDayLabel(value);
 
   void addSteps(List<String> steps, {String? fingerprint}) {
     final before =

@@ -291,10 +291,10 @@ class _FocusScreenState extends State<FocusScreen> {
                   max: 240,
                   divisions: 239,
                   label: '${focus.sessionDurationMinutes}',
-                  onChanged: (value) {
-                    focus.sessionDurationMinutes = value.round();
-                    store.changed();
-                  },
+                  onChanged: (value) => setState(
+                    () => focus.sessionDurationMinutes = value.round(),
+                  ),
+                  onChangeEnd: (_) => store.changed(),
                 ),
               ),
               SizedBox(
@@ -357,7 +357,7 @@ class _FocusScreenState extends State<FocusScreen> {
               tr(context, "{0} · {1} min planned\n{2}", [
                 mission.orbitLabel,
                 mission.durationMinutes,
-                DateFormat('d MMM, HH:mm').format(
+                DateFormat.MMMd().add_Hm().format(
                   DateTime.fromMillisecondsSinceEpoch(mission.completedAt),
                 ),
               ]),

@@ -790,8 +790,15 @@ bool preserveSyncConflict(List<dynamic> copies, SyncAction action) {
       }),
     ),
   );
+  // Recovery copies hold whole payloads; keep the newest instead of letting
+  // every save grow with months of history.
+  while (copies.length > maxSyncConflictCopies) {
+    copies.removeAt(0);
+  }
   return true;
 }
+
+const maxSyncConflictCopies = 30;
 
 class CloudSyncController extends ChangeNotifier {
   static const sessionKey = 'account-session-v1';
