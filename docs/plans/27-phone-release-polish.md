@@ -103,7 +103,7 @@ Direction: *the working note, written with ink*. Motion confirms a state change 
 
 ## Verification (2026-11-28, branch `dockit/final-release-polish`)
 - `flutter test`: 184 tests pass, one optional screenshot test skipped (new `release_safety_test.dart`: 8 tests).
-- `flutter analyze`: two existing informational lints, no warnings or errors.
+- `flutter analyze`: no issues (the two older informational lints that failed CI on `main` are fixed).
 - `npm test`: all 34 Node regression suites pass. `scripts/audit-interface.cjs`: no missing, extra, placeholder or suspect entries in nine locales.
 - Renders at 360 pt, 1.0× and 1.5× text: notes, task actions, editor, goals, routines, search, progress, plan, Focus.
 - iPhone 17 Pro simulator (iOS 26.4): debug build installed and launched in Cantonese; header stamp, grain and empty state render. Touch interaction was not exercised because simulator access was not granted in this session.

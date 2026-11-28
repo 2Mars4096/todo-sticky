@@ -128,7 +128,6 @@ class InterfaceLanguageButton extends StatelessWidget {
   Widget build(BuildContext context) => PopupMenuButton<String>(
     tooltip: tr(context, 'Display language'),
     icon: child == null ? const Icon(Icons.language_outlined) : null,
-    child: child,
     initialValue: choice,
     onSelected: onChanged,
     itemBuilder: (_) => [
@@ -144,5 +143,6 @@ class InterfaceLanguageButton extends StatelessWidget {
           child: Text(entry.value),
         ),
     ],
+    child: child,
   );
 }
