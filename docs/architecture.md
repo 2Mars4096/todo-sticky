@@ -1,5 +1,9 @@
 # Architecture
 
+## Phone notebook motion and limits
+
+`phone/lib/widgets/notebook_motion.dart` holds the phone motion vocabulary: durations, ease-out curves, haptics, paper grain, ink strike, fresh-ink wash and the Undo receipt. Every effect checks `MediaQuery.disableAnimations`. `phone/lib/date_labels.dart` formats stored `yyyy-MM-dd` keys with locale skeletons; storage and sync keep ISO keys. `maxTaskTextLength` (5,000) and `maxStepDepth` (12) in `models.dart` mirror the sync validator and are enforced by `StickyStore` at input and import. `StickyStore.changed()` never persists before a successful load. Status changes register a tree-wide Undo. [Plan 27](plans/27-phone-release-polish.md)
+
 ## Selected-day planning
 
 The web and Mac planner groups open tasks by selected date and checks coverage both in preview and immediately before mutating tasks. Earlier work uses unclaimed resources or follows selected-day work on the same resource. Existing time budgets, unavailable periods, stale-context checks and Undo still apply.

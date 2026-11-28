@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/models.dart';
+import '../app.dart' show errorText;
 
 typedef MeetingRequest = Future<Map<String, dynamic>> Function(
   String path, [
@@ -94,7 +95,7 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
         depth = pages;
       });
     } catch (e) {
-      if (mounted) setState(() => error = e.toString());
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -144,7 +145,7 @@ class _MeetingFollowupsState extends State<MeetingFollowups>
         ),
       );
     } catch (e) {
-      if (mounted) setState(() => error = e.toString());
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -253,7 +254,7 @@ class _ReviewState extends State<_Review> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => error = e.toString());
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -314,7 +315,7 @@ class _ReviewState extends State<_Review> {
       });
       widget.onAdded();
     } catch (e) {
-      if (mounted) setState(() => error = e.toString());
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => busy = false);
     }

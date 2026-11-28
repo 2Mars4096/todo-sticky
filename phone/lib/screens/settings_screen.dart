@@ -43,7 +43,7 @@ class SettingsScreen extends StatelessWidget {
           content: Text(
             tr(
               context,
-              "This replaces the tasks, goals and focus history on this device. Export your current notebook first if you need to keep both. API keys and account credentials are not imported.",
+              "This replaces the tasks, goals and focus history on this device. If sync is on, newer synced days come back and differences are shown for review. API keys and account credentials are not imported.",
             ),
           ),
           actions: [
@@ -362,7 +362,7 @@ class _ProviderEditorState extends State<ProviderEditor> {
         setState(() => message = ui("Connected. Save to use this provider."));
       }
     } catch (e) {
-      if (mounted) setState(() => message = e.toString());
+      if (mounted) setState(() => message = errorText(e));
     } finally {
       ai.dispose();
       if (mounted) setState(() => busy = false);
@@ -582,12 +582,13 @@ class _ChecklistImporterState extends State<ChecklistImporter> {
                     if (tasks.isEmpty) {
                       throw FormatException(ui("No checklist tasks found"));
                     }
+                    widget.store.checkTasksForStorage(tasks);
                     (widget.store.days[widget.store.selectedDate] ??= [])
                         .addAll(tasks);
                     widget.store.changed();
                     Navigator.pop(context);
                   } catch (e) {
-                    setState(() => error = e.toString());
+                    setState(() => error = errorText(e));
                   }
                 },
                 child: Text(tr(context, "Add tasks")),

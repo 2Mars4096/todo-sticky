@@ -56,8 +56,9 @@ void main() {
           }
 
           for (var x = 0; x < image.width; x++) {
-            if (color(x, top + 2) != surface)
+            if (color(x, top + 2) != surface) {
               fail('The footer surface changed at x=$x.');
+            }
           }
           for (final dx in [-11, 11]) {
             for (final dy in [-11, 11]) {

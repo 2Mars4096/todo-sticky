@@ -126,8 +126,20 @@ class StickyStore extends ChangeNotifier {
     final j = object(jsonDecode(value));
     final old = toJson();
     _load(j);
-    // Restore keeps this device's account baselines, never imported credentials.
+    // Restore keeps this device's account settings, never imported
+    // credentials. Sync baselines are cleared so the next sync compares the
+    // restored notebook with the cloud: newer cloud days download and
+    // differences become conflicts to review, never silent deletions.
     syncMetadata = object(old['syncMetadata'] ?? {});
+    for (final key in syncMetadata.keys.toList()) {
+      final value = syncMetadata[key];
+      if (!key.startsWith('account:') || value is! Map) continue;
+      syncMetadata[key] = {
+        ...Map<String, dynamic>.from(value),
+        'baseline': <String, dynamic>{},
+        'pending': <String, dynamic>{},
+      };
+    }
     ready = true;
     loadError = null;
     _undo = null;
@@ -137,6 +149,11 @@ class StickyStore extends ChangeNotifier {
   }
 
   void changed() {
+    if (!ready || loadError != null) {
+      // Never write defaults over a notebook that could not be read.
+      _notify();
+      return;
+    }
     _materializeRoutines();
     revision++;
     final snapshot = object(jsonDecode(jsonEncode(toJson())));
@@ -638,6 +655,7 @@ class StickyStore extends ChangeNotifier {
     if (!ready) throw StateError(ui("Notebook is loading"));
     final normalized = text.trim();
     if (normalized.isEmpty) throw ArgumentError(ui("Write a task first"));
+    _checkTaskText(normalized);
     final d = date ?? selectedDate;
     final task = Task(text: normalized);
     if (parentId == null) {
@@ -647,6 +665,9 @@ class StickyStore extends ChangeNotifier {
       if (parent == null || parent.status == TaskStatus.stopped) {
         throw StateError(ui("This task is no longer available"));
       }
+      if (_depthOf(d, parentId) + 1 > maxStepDepth) {
+        throw StateError(ui("Steps can be nested up to 12 levels."));
+      }
       task.goalId = goalIdForTask(parent);
       parent.subtasks.add(task);
       if (parent.status == TaskStatus.done) parent.status = TaskStatus.partial;
@@ -654,6 +675,40 @@ class StickyStore extends ChangeNotifier {
     }
     changed();
     return task;
+  }
+
+  void _checkTaskText(String text) {
+    if (text.length > maxTaskTextLength) {
+      throw ArgumentError(ui("Keep each task under 5,000 characters."));
+    }
+  }
+
+  int _depthOf(String date, String id) {
+    int? visit(List<Task> list, int depth) {
+      for (final t in list) {
+        if (t.id == id) return depth;
+        final found = visit(t.subtasks, depth + 1);
+        if (found != null) return found;
+      }
+      return null;
+    }
+
+    return visit(tasksFor(date), 0) ?? 0;
+  }
+
+  /// Validates imported or generated tasks against the sync limits.
+  void checkTasksForStorage(List<Task> tasks) {
+    void visit(List<Task> list, int depth) {
+      if (depth > maxStepDepth) {
+        throw StateError(ui("Steps can be nested up to 12 levels."));
+      }
+      for (final t in list) {
+        _checkTaskText(t.text);
+        visit(t.subtasks, depth + 1);
+      }
+    }
+
+    visit(tasks, 0);
   }
 
   void updateTask(
@@ -666,7 +721,16 @@ class StickyStore extends ChangeNotifier {
     bool updateFinish = false,
   }) {
     final task = findTask(date, id);
-    if (task == null) return;
+    if (task == null) {
+      if (text != null || updateFinish) {
+        throw StateError(ui("This task is no longer available"));
+      }
+      return;
+    }
+    if (text != null && text.trim().isNotEmpty) _checkTaskText(text.trim());
+    if (status != null && status != task.status) {
+      _rememberStatuses(date, id, status);
+    }
     if (text != null && text.trim().isNotEmpty) task.text = text.trim();
     if (status == TaskStatus.done) {
       task.completeTree();
@@ -674,6 +738,17 @@ class StickyStore extends ChangeNotifier {
     } else if (status != null) {
       task.status = status;
       if (status == TaskStatus.stopped) task.finish?.reviewReady = false;
+      if (status == TaskStatus.todo &&
+          task.subtasks.isNotEmpty &&
+          task.subtasks.every((s) => s.status == TaskStatus.done)) {
+        // Reopening keeps finished steps; the latest one becomes open work.
+        var leaf = task.subtasks.last;
+        while (leaf.subtasks.isNotEmpty) {
+          leaf = leaf.subtasks.last;
+        }
+        leaf.status = TaskStatus.todo;
+        task.finish?.reviewReady = false;
+      }
     }
     if (updateFinish) {
       final f = task.finish ?? FinishPromise();
@@ -710,6 +785,40 @@ class StickyStore extends ChangeNotifier {
     undoLabel = ui("Task deleted");
     _normalizeParents(tasksFor(date));
     changed();
+  }
+
+  /// Completing a parent also completes its steps. Undo restores every
+  /// status in the affected tree, without removing steps added since.
+  void _rememberStatuses(String date, String id, TaskStatus next) {
+    final root = tasksFor(date).where((t) => t.find(id) != null).firstOrNull;
+    if (root == null) return;
+    final before = <String, (TaskStatus, bool)>{};
+    void collect(Task t) {
+      before[t.id] = (t.status, t.finish?.reviewReady ?? false);
+      t.subtasks.forEach(collect);
+    }
+
+    collect(root);
+    _undo = () {
+      final current = findTask(date, root.id);
+      if (current == null) return;
+      void restore(Task t) {
+        final previous = before[t.id];
+        if (previous != null) {
+          t.status = previous.$1;
+          t.finish?.reviewReady = previous.$2;
+        }
+        t.subtasks.forEach(restore);
+      }
+
+      restore(current);
+    };
+    undoLabel = switch (next) {
+      TaskStatus.done => ui("Task completed"),
+      TaskStatus.stopped => ui("Task stopped"),
+      TaskStatus.todo => ui("Task reopened"),
+      _ => ui("Status changed"),
+    };
   }
 
   bool _locateList(String date, List<Task> candidate) {
@@ -927,7 +1036,7 @@ class StickyStore extends ChangeNotifier {
     focus.sessionDurationMinutes = minutes.clamp(1, 240);
     focus.activeSession = FocusSession(
       taskId: task.id,
-      taskText: task.text,
+      taskText: focusTaskLabel(task.text),
       durationMinutes: focus.sessionDurationMinutes,
       startedAt: now,
       endsAt: now + focus.sessionDurationMinutes * 60000,

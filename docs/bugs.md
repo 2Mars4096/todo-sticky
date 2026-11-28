@@ -1,5 +1,13 @@
 # Bugs And Failed Approaches
 
+## 2026-11-28 — Phone limits and recovery paths disagreed
+
+The phone loader accepted 20,000-character text and 32 levels while sync accepted 5,000 and 12, and Focus labels had to be single-line. Saves ran even after a failed load, and restore kept baselines so missing days were pushed as deletions. All four are fixed in [plan 27](plans/27-phone-release-polish.md). Remaining cross-client risks: routine tasks can be resurrected by a second device, and Shiprite assignment ids include the task date.
+
+## 2026-11-28 — Ink strike measured its own text layout
+
+The first ink strike laid out a separate `TextPainter`, which wrapped differently from the rendered `Text` at 1.5× scale and drew strokes below the row. It now reads line boxes from the rendered `RenderParagraph`.
+
 ## 2026-11-27 — Older branches overlap current client code
 
 The transfer and editor branches diverged before Dockit’s current account routing and localization. Their older trees would reintroduce retired code. The consolidation keeps the current client surfaces and restores the editor’s missing backend adapter and tests. The host regression inspects FastAPI’s effective OpenAPI paths because recent FastAPI versions defer expansion of included routers.

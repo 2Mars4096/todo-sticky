@@ -1,3 +1,4 @@
+import '../date_labels.dart';
 import '../interface_locale.dart';
 import '../suite_destination_label.dart';
 
@@ -178,7 +179,7 @@ class _WorkspaceAssignmentsState extends State<WorkspaceAssignments> {
                   DropdownMenuItem(
                     value: item.key,
                     child: Text(
-                      '${item.value.date} · ${item.value.task.text}',
+                      '${dayLabel(item.value.date)} · ${item.value.task.text}',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),

@@ -1,3 +1,4 @@
+import '../date_labels.dart';
 import '../interface_locale.dart';
 
 import 'package:flutter/material.dart';
@@ -278,7 +279,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                     OutlinedButton.icon(
                       onPressed: busy || applied ? null : chooseRange,
                       icon: const Icon(Icons.date_range),
-                      label: Text('$from → $until'),
+                      label: Text(dayRangeLabel(from, until)),
                     ),
                     Wrap(
                       spacing: 12,
@@ -375,7 +376,7 @@ class _ProjectScheduleScreenState extends State<ProjectScheduleScreen> {
                           title: Text(action.text),
                           subtitle: Text(
                             tr(context, "{0} · {1} min", [
-                              action.date,
+                              weekdayDayLabel(action.date),
                               action.minutes,
                             ]),
                           ),

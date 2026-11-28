@@ -17,6 +17,7 @@ import 'screens/goals_screen.dart';
 import 'screens/focus_screen.dart';
 import 'screens/settings_screen.dart';
 import 'widgets/dockit_footer_mark.dart';
+import 'widgets/notebook_motion.dart';
 
 const double _footerHeight = 48;
 const paper = Color(0xfffff8dc);
@@ -193,13 +194,15 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                   child: ListView(
                     children: [
                       ListTile(
+                        leading: const DockitFooterMark(size: 28),
                         title: Text(
                           'Dockit',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
+                      const Divider(indent: 16, endIndent: 16),
                       ListTile(
-                        leading: const Icon(Icons.settings_outlined),
+                        leading: const Icon(Icons.settings_rounded),
                         title: Text(tr(context, "Settings")),
                         onTap: () {
                           Navigator.pop(context);
@@ -221,7 +224,7 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                       ),
                       if (widget.accountBuilder != null)
                         ListTile(
-                          leading: const Icon(Icons.account_circle_outlined),
+                          leading: const Icon(Icons.account_circle_rounded),
                           title: Text(tr(context, "Account & sync")),
                           onTap: () {
                             Navigator.pop(context);
@@ -237,135 +240,165 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                   ),
                 ),
               ),
-              body: SafeArea(
-                bottom: false,
-                child: Column(
-                  children: [
-                    if (store.saveError != null)
-                      MaterialBanner(
-                        content: Text(store.saveError!),
-                        leading: const Icon(Icons.cloud_off_outlined),
-                        actions: [
-                          TextButton(
-                            onPressed: store.retrySave,
-                            child: Text(tr(context, "Retry save")),
-                          ),
-                        ],
-                      ),
-                    if (store.notice != null)
-                      MaterialBanner(
-                        content: Text(store.notice!),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              store.notice = null;
-                              store.changed();
-                            },
-                            child: Text(tr(context, "Dismiss")),
-                          ),
-                        ],
-                      ),
-                    Expanded(
-                      child: !store.ready
-                          ? Center(
-                              child: store.loadError == null
-                                  ? const CircularProgressIndicator()
-                                  : Padding(
-                                      padding: const EdgeInsets.all(24),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(
-                                            Icons.folder_off_outlined,
-                                            size: 40,
-                                          ),
-                                          const SizedBox(height: 16),
-                                          Text(store.loadError!),
-                                          const SizedBox(height: 16),
-                                          FilledButton(
-                                            onPressed: store.initialize,
-                                            child: Text(tr(context, "Retry")),
-                                          ),
-                                        ],
+              body: PaperGrain(
+                enabled: store.preferences.material == 'paper',
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      if (store.saveError != null)
+                        MaterialBanner(
+                          content: Text(store.saveError!),
+                          leading: const Icon(Icons.cloud_off_outlined),
+                          actions: [
+                            TextButton(
+                              onPressed: store.retrySave,
+                              child: Text(tr(context, "Retry save")),
+                            ),
+                          ],
+                        ),
+                      if (store.notice != null)
+                        MaterialBanner(
+                          content: Text(store.notice!),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                store.notice = null;
+                                store.changed();
+                              },
+                              child: Text(tr(context, "Dismiss")),
+                            ),
+                          ],
+                        ),
+                      Expanded(
+                        child: !store.ready
+                            ? Center(
+                                child: store.loadError == null
+                                    ? const CircularProgressIndicator()
+                                    : Padding(
+                                        padding: const EdgeInsets.all(24),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.folder_off_outlined,
+                                              size: 40,
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(store.loadError!),
+                                            const SizedBox(height: 16),
+                                            FilledButton(
+                                              onPressed: store.initialize,
+                                              child: Text(tr(context, "Retry")),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                              )
+                            : AnimatedSwitcher(
+                                duration: motion(context, motionState),
+                                reverseDuration: motion(
+                                  context,
+                                  const Duration(milliseconds: 120),
+                                ),
+                                switchInCurve: easeOutQuart,
+                                transitionBuilder: (child, animation) =>
+                                    FadeTransition(
+                                      opacity: animation,
+                                      child: ScaleTransition(
+                                        scale: Tween(
+                                          begin: .985,
+                                          end: 1.0,
+                                        ).animate(animation),
+                                        child: child,
                                       ),
                                     ),
-                            )
-                          : switch (tab) {
-                              1 => GoalsScreen(
-                                store: store,
-                                ai: ai,
-                                openFocus: () {
-                                  Navigator.of(context)
-                                      .popUntil((route) => route.isFirst);
-                                  setState(() => tab = 2);
-                                },
-                                openDay: (date) {
-                                  store.selectDate(date);
-                                  Navigator.of(context)
-                                      .popUntil((route) => route.isFirst);
-                                  setState(() => tab = 0);
-                                },
-                              ),
-                              2 => FocusScreen(
-                                store: store,
-                                onReview: (id, text) {
-                                  final matches = archiveRows(store.days)
-                                      .where(
-                                        (row) =>
-                                            row.task.id == id ||
-                                            '${row.date}:${row.task.id}' == id,
-                                      )
-                                      .toList();
-                                  void focusFromRoute() {
-                                    Navigator.of(context)
-                                        .popUntil((route) => route.isFirst);
-                                    setState(() => tab = 2);
-                                  }
-
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => matches.length == 1
-                                          ? TaskReviewScreen(
-                                              store: store,
-                                              ai: ai,
-                                              row: matches.single,
-                                              openFocus: focusFromRoute,
-                                            )
-                                          : ArchiveScreen(
-                                              store: store,
-                                              ai: ai,
-                                              initialQuery: text,
-                                              openFocus: focusFromRoute,
-                                            ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _ => HomeScreen(
-                                meetingBuilder: widget.meetingBuilder,
-                                openArchive: (progress) => Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => ArchiveScreen(
+                                child: KeyedSubtree(
+                                  key: ValueKey('tab-$tab'),
+                                  child: switch (tab) {
+                                    1 => GoalsScreen(
                                       store: store,
                                       ai: ai,
-                                      progress: progress,
                                       openFocus: () {
                                         Navigator.of(context)
                                             .popUntil((route) => route.isFirst);
                                         setState(() => tab = 2);
                                       },
+                                      openDay: (date) {
+                                        store.selectDate(date);
+                                        Navigator.of(context)
+                                            .popUntil((route) => route.isFirst);
+                                        setState(() => tab = 0);
+                                      },
                                     ),
-                                  ),
+                                    2 => FocusScreen(
+                                      store: store,
+                                      onReview: (id, text) {
+                                        final matches = archiveRows(store.days)
+                                            .where(
+                                              (row) =>
+                                                  row.task.id == id ||
+                                                  '${row.date}:${row.task.id}' ==
+                                                      id,
+                                            )
+                                            .toList();
+                                        void focusFromRoute() {
+                                          Navigator.of(
+                                            context,
+                                          ).popUntil((route) => route.isFirst);
+                                          setState(() => tab = 2);
+                                        }
+
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute<void>(
+                                            builder: (_) => matches.length == 1
+                                                ? TaskReviewScreen(
+                                                    store: store,
+                                                    ai: ai,
+                                                    row: matches.single,
+                                                    openFocus: focusFromRoute,
+                                                  )
+                                                : ArchiveScreen(
+                                                    store: store,
+                                                    ai: ai,
+                                                    initialQuery: text,
+                                                    openFocus: focusFromRoute,
+                                                  ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    _ => HomeScreen(
+                                      meetingBuilder: widget.meetingBuilder,
+                                      syncIndicator:
+                                          widget.syncIndicatorBuilder,
+                                      openArchive: (progress) => Navigator.push(
+                                        context,
+                                        MaterialPageRoute<void>(
+                                          builder: (_) => ArchiveScreen(
+                                            store: store,
+                                            ai: ai,
+                                            progress: progress,
+                                            openFocus: () {
+                                              Navigator.of(context).popUntil(
+                                                (route) => route.isFirst,
+                                              );
+                                              setState(() => tab = 2);
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      store: store,
+                                      ai: ai,
+                                      openFocus: () => setState(() => tab = 2),
+                                    ),
+                                  },
                                 ),
-                                store: store,
-                                ai: ai,
-                                openFocus: () => setState(() => tab = 2),
                               ),
-                            },
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               bottomNavigationBar: Material(
@@ -394,8 +427,10 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
                           removeBottom: true,
                           child: NavigationBar(
                             selectedIndex: tab,
-                            onDestinationSelected: (value) =>
-                                setState(() => tab = value),
+                            onDestinationSelected: (value) {
+                              if (value != tab) NotebookHaptics.tick();
+                              setState(() => tab = value);
+                            },
                             destinations: [
                               NavigationDestination(
                                 icon: Icon(Icons.sticky_note_2_outlined),
@@ -434,23 +469,33 @@ class _StickyAppState extends State<StickyApp> with WidgetsBindingObserver {
   );
 }
 
+/// Readable error text without Dart exception prefixes.
+String errorText(Object error) => error.toString().replaceFirst(
+  RegExp(
+    r'^(Bad state|FormatException|Invalid argument\(s\)|Exception|AiException|StateError|ArgumentError): ?',
+  ),
+  '',
+);
+
 void showError(BuildContext context, Object error) =>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(error.toString().replaceFirst('Bad state: ', '')),
+        content: Text(errorText(error)),
         duration: const Duration(seconds: 8),
       ),
     );
-Future<T?> showNoteSheet<T>(BuildContext context, Widget child) =>
-    showModalBottomSheet<T>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: child,
-      ),
-    );
+Future<T?> showNoteSheet<T>(
+  BuildContext context,
+  Widget child, {
+  bool enableDrag = true,
+}) => showModalBottomSheet<T>(
+  context: context,
+  isScrollControlled: true,
+  useSafeArea: true,
+  enableDrag: enableDrag,
+  showDragHandle: enableDrag,
+  builder: (context) => Padding(
+    padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+    child: child,
+  ),
+);

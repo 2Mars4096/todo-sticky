@@ -80,7 +80,7 @@ class _PlanScreenState extends State<PlanScreen> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => error = e.toString());
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -107,7 +107,7 @@ class _PlanScreenState extends State<PlanScreen> {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              DateFormat('EEEE, d MMMM').format(parseDate(store.selectedDate)),
+              DateFormat.MMMMEEEEd().format(parseDate(store.selectedDate)),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -433,7 +433,7 @@ class _PlanScreenState extends State<PlanScreen> {
                         store.applyPlan(proposal);
                         Navigator.pop(context);
                       } catch (e) {
-                        setState(() => error = e.toString());
+                        setState(() => error = errorText(e));
                       }
                     },
                     child: Text(tr(context, "Apply plan")),

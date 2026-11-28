@@ -1,5 +1,9 @@
 # Todo
 
+- [x] Review the phone app for release, fix data-safety and editing blockers, and add the tactile notebook upgrade. [Plan 27](plans/27-phone-release-polish.md)
+- [ ] Fix routine resurrection, date-independent Shiprite assignment status, schema-error load fallback and routine id length before public release. [P0](plans/27-phone-release-polish.md#p0-before-public-release)
+- [ ] Exercise the upgraded phone build by touch on simulator and physical devices. [Verification](plans/27-phone-release-polish.md#verification-2026-11-28-branch-dockitfinal-release-polish)
+
 - [x] Consolidate the Dockit transfer, embedded editor and selected-day planning branches. [Planning](plans/4-50-today-first-planning.md) · [Editor](plans/22-plugin-continuous-editing.md)
 
 - [x] Make personal Sync primary and simplify optional assignment choices without changing data scope. [Personal notebook review](plans/26-1-personal-notebook.md)
